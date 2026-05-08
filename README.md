@@ -1,0 +1,2 @@
+# airegistry
+Sovereign AI Registry
