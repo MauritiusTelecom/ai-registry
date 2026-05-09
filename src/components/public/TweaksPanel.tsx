@@ -15,7 +15,9 @@ const PALETTES: Palette[] = [
   { primary: "59,130,246", secondary: "6,182,212", tertiary: "168,85,247", label: "Sovereign" },
   { primary: "20,184,166", secondary: "52,211,153", tertiary: "14,165,233", label: "Pacific" },
   { primary: "236,72,153", secondary: "244,114,182", tertiary: "168,85,247", label: "Coral" },
-  { primary: "245,158,11", secondary: "251,191,36", tertiary: "239,68,68", label: "Solar" }
+  { primary: "245,158,11", secondary: "251,191,36", tertiary: "239,68,68", label: "Solar" },
+  // Kigali: blue primary; yellow tertiary so --grad-text / --grad-accent (primary→tertiary) balance blue and yellow. Sky = secondary.
+  { primary: "0,161,222", secondary: "79,195,247", tertiary: "250,210,1", label: "Kigali" }
 ];
 
 function applyPalette(idx: number) {

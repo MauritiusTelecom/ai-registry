@@ -39,7 +39,7 @@ function ThemeToggle() {
 }
 
 function UserMenu() {
-  const { user, login, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -59,12 +59,14 @@ function UserMenu() {
     };
   }, [open]);
 
-  if (!user) {
+  // Pre-hydration: render the same Log-In affordance the server would have
+  // emitted, so the layout doesn't shift once `/api/auth/me` resolves.
+  if (loading || !user) {
     return (
-      <button type="button" className="nav-cta" onClick={() => login("admin")}>
+      <Link href="/login" className="nav-cta">
         Log In
         <Icon name="arrow-up-right" size={12} />
-      </button>
+      </Link>
     );
   }
 
@@ -94,28 +96,28 @@ function UserMenu() {
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 2, paddingTop: 6 }}>
             {isAdmin && (
-              <button type="button" className="dropdown-item" onClick={() => setOpen(false)}>
+              <Link href="/admin" className="dropdown-item" onClick={() => setOpen(false)}>
                 <Icon name="shield" size={14} /> Admin Portal
                 <span className="role-badge">admin</span>
-              </button>
+              </Link>
             )}
             {isProvider && (
-              <button type="button" className="dropdown-item" onClick={() => setOpen(false)}>
+              <Link href="/provider" className="dropdown-item" onClick={() => setOpen(false)}>
                 <Icon name="layers" size={14} /> Provider Portal
                 <span className="role-badge">provider</span>
-              </button>
+              </Link>
             )}
             {isVerifier && (
-              <button type="button" className="dropdown-item" onClick={() => setOpen(false)}>
+              <Link href="/verifier" className="dropdown-item" onClick={() => setOpen(false)}>
                 <Icon name="check" size={14} /> Verifier Portal
                 <span className="role-badge">verifier</span>
-              </button>
+              </Link>
             )}
             {isSovereign && (
-              <button type="button" className="dropdown-item" onClick={() => setOpen(false)}>
+              <Link href="/sovereign" className="dropdown-item" onClick={() => setOpen(false)}>
                 <Icon name="flag" size={14} /> Sovereign Portal
                 <span className="role-badge">sovereign</span>
-              </button>
+              </Link>
             )}
             <button type="button" className="dropdown-item" onClick={() => setOpen(false)}>
               <Icon name="user" size={14} /> Account settings
@@ -123,9 +125,11 @@ function UserMenu() {
             <button
               type="button"
               className="dropdown-item"
-              onClick={() => {
-                logout();
+              onClick={async () => {
+                await logout();
                 setOpen(false);
+                // Hard navigation so the next request reads the cleared cookie.
+                window.location.assign("/");
               }}
             >
               <Icon name="log-out" size={14} /> Log Out

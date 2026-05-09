@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 type PageHeroProps = {
-  crumb: string;
+  crumb: ReactNode;
   title: ReactNode;
   subtitle?: string;
   children?: ReactNode;

@@ -1,12 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Icon, type IconName } from "../Icon";
 import { Reveal } from "../Reveal";
 import { useReport } from "../ReportContext";
 
 export type Resource = {
   id: string;
+  /** Slug used for the detail-page link; optional so older mock rows still work. */
+  slug?: string;
   kind: "model" | "agent" | "skill" | "tool";
   glyph: string;
   title: string;
@@ -58,6 +61,7 @@ function RegistryCard({
   resource: Resource;
   onReport: () => void;
 }) {
+  const detailHref = resource.slug ? `/registry/${resource.slug}` : null;
   return (
     <div className="r-card feature-card">
       <div className="r-card-head">
@@ -96,9 +100,15 @@ function RegistryCard({
         ))}
       </div>
       <div className="r-card-actions">
-        <button type="button">
-          <Icon name="eye" size={12} /> View
-        </button>
+        {detailHref ? (
+          <Link href={detailHref} className="r-card-action-link">
+            <Icon name="eye" size={12} /> View
+          </Link>
+        ) : (
+          <button type="button">
+            <Icon name="eye" size={12} /> View
+          </button>
+        )}
         <button type="button">
           <Icon name="doc" size={12} /> AIR-ID
         </button>
@@ -110,22 +120,35 @@ function RegistryCard({
   );
 }
 
-export function RegistrySection({ withHeader = true }: { withHeader?: boolean }) {
+export function RegistrySection({
+  withHeader = true,
+  initialResources
+}: {
+  withHeader?: boolean;
+  /** When provided, the component renders these rows instead of the inline
+   *  mock corpus. Phase 3 wires real data via this prop from the server-side
+   *  page (`/registry`, `/`). When the API errors, callers can fall back to
+   *  passing `undefined` and the inline mock takes over. */
+  initialResources?: Resource[];
+}) {
   const { open } = useReport();
   const [activeKind, setActiveKind] = useState<(typeof KINDS)[number]["id"]>("all");
   const [activeStatus, setActiveStatus] = useState<Resource["status"] | null>(null);
   const [query, setQuery] = useState("");
 
+  const sourceRows: Resource[] =
+    initialResources && initialResources.length > 0 ? initialResources : RESOURCES;
+
   const counts = useMemo(() => {
-    const c: Record<string, number> = { all: RESOURCES.length };
-    for (const resource of RESOURCES) {
+    const c: Record<string, number> = { all: sourceRows.length };
+    for (const resource of sourceRows) {
       c[resource.kind] = (c[resource.kind] || 0) + 1;
     }
     return c;
-  }, []);
+  }, [sourceRows]);
 
   const filtered = useMemo(() => {
-    return RESOURCES.filter((resource) => {
+    return sourceRows.filter((resource) => {
       if (activeKind !== "all" && resource.kind !== activeKind) return false;
       if (activeStatus && resource.status !== activeStatus) return false;
       if (query) {
@@ -137,7 +160,7 @@ export function RegistrySection({ withHeader = true }: { withHeader?: boolean })
       }
       return true;
     });
-  }, [activeKind, activeStatus, query]);
+  }, [activeKind, activeStatus, query, sourceRows]);
 
   return (
     <section className="section" id="registry-section">

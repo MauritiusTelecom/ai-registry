@@ -1,23 +1,51 @@
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { hashToken } from "@/lib/auth/tokens";
 import { AuthShell } from "@/components/public/auth/AuthShell";
 
 export const metadata = { title: "Verify email" };
 
+/**
+ * Server-side verification page. Performs the same DB transition as
+ * /api/auth/verify-email, but inline so the user sees the outcome on the
+ * very first paint without an internal HTTP round-trip.
+ *
+ * The matching API route is preserved for programmatic clients.
+ */
+
 type VerifyResult =
   | { ok: true; email: string }
-  | { ok: false; reason: string };
+  | { ok: false; reason: "expired_or_invalid" | "missing" };
 
-async function verify(token: string, origin: string): Promise<VerifyResult> {
-  try {
-    const res = await fetch(
-      `${origin}/api/auth/verify-email?token=${encodeURIComponent(token)}`,
-      { cache: "no-store" }
-    );
-    const data = (await res.json()) as VerifyResult;
-    return data;
-  } catch (e) {
-    return { ok: false, reason: e instanceof Error ? e.message : String(e) };
+async function consumeVerificationToken(rawToken: string): Promise<VerifyResult> {
+  const tokenHash = hashToken(rawToken);
+  const user = await prisma.user.findFirst({
+    where: { verificationToken: tokenHash }
+  });
+  if (!user || !user.verificationTokenExpiry || user.verificationTokenExpiry < new Date()) {
+    return { ok: false, reason: "expired_or_invalid" };
   }
+  const activeStatus = await prisma.userStatusType.findUnique({
+    where: { code: "active" }
+  });
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      emailVerified: true,
+      verificationToken: null,
+      verificationTokenExpiry: null,
+      ...(activeStatus ? { statusId: activeStatus.id } : {})
+    }
+  });
+  await prisma.auditLog.create({
+    data: {
+      actorUserId: user.id,
+      entityType: "user",
+      entityId: user.id,
+      action: "user.email_verified"
+    }
+  });
+  return { ok: true, email: user.email };
 }
 
 export default async function VerifyEmailPage({
@@ -26,38 +54,9 @@ export default async function VerifyEmailPage({
   searchParams: Promise<{ token?: string }>;
 }) {
   const { token } = await searchParams;
-  if (!token) {
-    return (
-      <AuthShell
-        eyebrow="Email verification"
-        title={<>Missing verification link.</>}
-        subtitle="Open the link sent to your inbox after registration."
-      >
-        <div style={{ textAlign: "center" }}>
-          <Link href="/login" className="btn btn-primary">
-            Back to sign in
-          </Link>
-        </div>
-      </AuthShell>
-    );
-  }
-
-  // Server-side hit the verification endpoint so the user lands directly on
-  // the outcome rather than seeing a flicker of a loading state.
-  const headers = new Headers();
-  // We can't easily reach `req.url` from a page; the Next.js runtime exposes
-  // origin only via the request lifecycle. Use a relative fetch which Next
-  // resolves to the same origin in server context.
-  const res = await fetch(
-    `/api/auth/verify-email?token=${encodeURIComponent(token)}`,
-    { cache: "no-store", headers }
-  ).catch(async () => null);
-  let result: VerifyResult;
-  if (res) {
-    result = (await res.json()) as VerifyResult;
-  } else {
-    result = { ok: false, reason: "request_failed" };
-  }
+  const result: VerifyResult = token
+    ? await consumeVerificationToken(token)
+    : { ok: false, reason: "missing" };
 
   if (result.ok) {
     return (
@@ -79,6 +78,22 @@ export default async function VerifyEmailPage({
     );
   }
 
+  if (result.reason === "missing") {
+    return (
+      <AuthShell
+        eyebrow="Email verification"
+        title={<>Missing verification link.</>}
+        subtitle="Open the link sent to your inbox after registration."
+      >
+        <div style={{ textAlign: "center" }}>
+          <Link href="/login" className="btn btn-primary">
+            Back to sign in
+          </Link>
+        </div>
+      </AuthShell>
+    );
+  }
+
   return (
     <AuthShell
       eyebrow="Email verification"
@@ -93,7 +108,3 @@ export default async function VerifyEmailPage({
     </AuthShell>
   );
 }
-
-// Suppress the unused warning for `verify` re-export (kept above for future
-// callers like a client-side polling component).
-export { verify };
