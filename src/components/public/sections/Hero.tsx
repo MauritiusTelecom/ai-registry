@@ -5,39 +5,38 @@ import type { CSSProperties } from "react";
 import { Icon } from "../Icon";
 import { Globe } from "./Globe";
 
-type HeroEntityCardProps = {
+type HeroFloatCardProps = {
   style: CSSProperties;
-  kind: string;
-  name: string;
-  status: string;
-  statusColor: string;
-  provider: string;
+  title: string;
+  subtitle?: string;
+  dot?: string;
   delay?: number;
 };
 
-function HeroEntityCard({
+function HeroFloatCard({
   style,
-  kind,
-  name,
-  status,
-  statusColor,
-  provider,
+  title,
+  subtitle,
+  dot = "#22d3ee",
   delay = 0
-}: HeroEntityCardProps) {
+}: HeroFloatCardProps) {
   return (
     <div className="float-card" style={{ ...style, animationDelay: `${delay}s` }}>
-      <div className="float-card-kind">{kind}</div>
-      <div className="float-card-name">{name}</div>
-      <div className="float-card-meta">
-        <span className="float-card-status" style={{ color: statusColor }}>
-          <span
-            className="status-dot"
-            style={{ background: "currentColor", width: 5, height: 5 }}
-          />
-          {status}
-        </span>
-        <span className="float-card-prov">· {provider}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text)" }}>
+        <span
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: dot,
+            boxShadow: `0 0 8px ${dot}`
+          }}
+        />
+        <span style={{ fontWeight: 500, letterSpacing: "0.02em" }}>{title}</span>
       </div>
+      {subtitle && (
+        <div style={{ marginTop: 4, color: "var(--text-3)", fontSize: 10.5 }}>{subtitle}</div>
+      )}
     </div>
   );
 }
@@ -93,32 +92,26 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
         <div className="globe-stage">
           <Globe motionIntensity={motionIntensity} />
 
-          <HeroEntityCard
-            style={{ top: "2%", left: "-4%" }}
-            kind="AI Agent"
-            name="agent.compliance-watch"
-            status="Active"
-            statusColor="#10b981"
-            provider="Internal"
+          <HeroFloatCard
+            style={{ top: "4%", left: "-6%" }}
+            title="claude-sonnet-4.5"
+            subtitle="Verified · Anthropic · 12ms"
+            dot="#10b981"
             delay={0}
           />
-          <HeroEntityCard
-            style={{ top: "34%", right: "-6%" }}
-            kind="AI Model"
-            name="claude-sonnet-4.5"
-            status="Verified"
-            statusColor="var(--secondary)"
-            provider="Anthropic"
-            delay={1.5}
+          <HeroFloatCard
+            style={{ top: "32%", right: "-4%" }}
+            title="mcp/treasury-ledger"
+            subtitle="Trusted · Gov · air-gapped"
+            dot="#a855f7"
+            delay={1.2}
           />
-          <HeroEntityCard
-            style={{ bottom: "6%", left: "0%" }}
-            kind="MCP Skill"
-            name="mcp/treasury-ledger"
-            status="Trusted"
-            statusColor="var(--tertiary)"
-            provider="Government"
-            delay={3}
+          <HeroFloatCard
+            style={{ bottom: "6%", left: "4%" }}
+            title="agent.compliance-watch"
+            subtitle="Active · Internal · 0 incidents"
+            dot="#22d3ee"
+            delay={2.4}
           />
         </div>
       </div>
