@@ -2,7 +2,7 @@ import { PageHero } from "@/components/public/sections/PageHero";
 import { ProvidersSection } from "@/components/public/sections/ProvidersSection";
 
 export const metadata = {
-  title: "Providers · Sovereign AI Registry"
+  title: "Providers · Mauritius AI Registry"
 };
 
 export default function ProvidersPage() {

@@ -1,3 +1,5 @@
+import { REF_TABLES } from "@/lib/admin/reference-tables";
+
 /**
  * Sidebar navigation configuration per portal role.
  *
@@ -74,6 +76,25 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
           { id: "users", label: "Users & roles", href: "/admin/users", icon: "user" },
           { id: "integrations", label: "Integrations", href: "/admin/integrations", icon: "flow", stub: true },
           { id: "settings", label: "Settings", href: "/admin/settings", icon: "settings", stub: true }
+        ]
+      },
+      {
+        id: "ref-tables",
+        label: "Reference Tables",
+        // The full registry — one row per controlled vocabulary the schema
+        // ships. Every entry routes to /admin/ref/[id] and renders the same
+        // generic CRUD grid (search, active filter, server-side pagination,
+        // view/edit/delete row icons + Add new top-right). Adding a new
+        // reference table is a one-line change in
+        // src/lib/admin/reference-tables.ts and it shows up here automatically.
+        items: [
+          { id: "ref-index", label: "All tables", href: "/admin/ref", icon: "database" },
+          ...REF_TABLES.map((t) => ({
+            id: `ref-${t.id}`,
+            label: t.label,
+            href: `/admin/ref/${t.id}`,
+            icon: "database"
+          }))
         ]
       }
     ]

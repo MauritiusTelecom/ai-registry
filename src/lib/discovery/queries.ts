@@ -12,6 +12,7 @@ import { prisma } from "../prisma";
 import { tallyCounts, toRegistryCard, type ResourceForCard } from "./serializers";
 import type {
   CountsByKind,
+  DisplayStatus,
   PublicRegistryListResponse,
   RegistryCard,
   ResourceKind
@@ -22,6 +23,7 @@ import type {
 export type ListFilters = {
   q: string | null;
   kind: ResourceKind | null;
+  /** Public UI badge filter (`verified` | `trusted` | …); matches `deriveDisplayStatus` rules in serializers. */
   status: string | null;
   jurisdictionCode: string | null;
   providerSlug: string | null;
@@ -68,45 +70,133 @@ const RESOURCE_DETAIL_INCLUDE = {
 
 // ─── List query ────────────────────────────────────────────────────────────
 
+const TRUST_KIND_VERIFIED = ["official_resource", "sovereignty_review"] as const;
+
+function normalizeDisplayStatus(raw: string | null): DisplayStatus | null {
+  if (!raw || raw.trim() === "") return null;
+  const s = raw.trim().toLowerCase();
+  const allowed: DisplayStatus[] = ["verified", "trusted", "active", "experimental", "isolated"];
+  return allowed.includes(s as DisplayStatus) ? (s as DisplayStatus) : null;
+}
+
+/** Maps public UI badge to DB predicates (aligned with `deriveDisplayStatus`). */
+function displayStatusWhereClause(status: DisplayStatus): Prisma.ResourceWhereInput {
+  switch (status) {
+    case "isolated":
+      return { lifecycleStatus: { code: { in: ["suspended", "deprecated"] } } };
+    case "experimental":
+      return { lifecycleStatus: { code: "needs_update" } };
+    case "verified":
+      return {
+        AND: [
+          { lifecycleStatus: { code: "listed" } },
+          {
+            trustSignals: {
+              some: {
+                status: { code: "passed" },
+                kind: { code: { in: [...TRUST_KIND_VERIFIED] } }
+              }
+            }
+          }
+        ]
+      };
+    case "trusted":
+      return {
+        AND: [
+          { lifecycleStatus: { code: "listed" } },
+          {
+            trustSignals: {
+              some: {
+                status: { code: "passed" },
+                kind: { code: "provider_verification" }
+              }
+            }
+          },
+          {
+            NOT: {
+              trustSignals: {
+                some: {
+                  status: { code: "passed" },
+                  kind: { code: { in: [...TRUST_KIND_VERIFIED] } }
+                }
+              }
+            }
+          }
+        ]
+      };
+    case "active":
+      return {
+        AND: [
+          { lifecycleStatus: { code: "listed" } },
+          {
+            NOT: {
+              trustSignals: {
+                some: {
+                  status: { code: "passed" },
+                  kind: {
+                    code: { in: [...TRUST_KIND_VERIFIED, "provider_verification"] }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      };
+    default:
+      return { lifecycleStatus: { code: { in: PUBLIC_LIFECYCLE_CODES } } };
+  }
+}
+
 export async function buildResourceWhere(
   filters: ListFilters
 ): Promise<Prisma.ResourceWhereInput> {
-  const where: Prisma.ResourceWhereInput = {
-    publicVisibility: true,
-    lifecycleStatus: { code: { in: PUBLIC_LIFECYCLE_CODES } }
-  };
+  const and: Prisma.ResourceWhereInput[] = [{ publicVisibility: true }];
+
+  const badge = normalizeDisplayStatus(filters.status);
+  if (badge) {
+    and.push(displayStatusWhereClause(badge));
+  } else {
+    and.push({ lifecycleStatus: { code: { in: PUBLIC_LIFECYCLE_CODES } } });
+  }
 
   if (filters.kind) {
-    where.resourceType = { code: filters.kind };
+    and.push({ resourceType: { code: filters.kind } });
   }
   if (filters.jurisdictionCode) {
-    where.primaryJurisdiction = { code: filters.jurisdictionCode };
+    and.push({ primaryJurisdiction: { code: filters.jurisdictionCode } });
   }
   if (filters.providerSlug) {
-    where.provider = { slug: filters.providerSlug };
+    and.push({ provider: { slug: filters.providerSlug } });
   }
   if (filters.sovereigntyBasisCode) {
-    where.resourceBases = {
-      some: { sovereigntyBasis: { code: filters.sovereigntyBasisCode } }
-    };
+    and.push({
+      resourceBases: {
+        some: { sovereigntyBasis: { code: filters.sovereigntyBasisCode } }
+      }
+    });
   }
   if (filters.protocolCode) {
-    where.endpoints = { some: { protocol: { code: filters.protocolCode } } };
+    and.push({ endpoints: { some: { protocol: { code: filters.protocolCode } } } });
   }
   if (filters.languageCode) {
-    where.resourceLanguages = { some: { language: { code: filters.languageCode } } };
+    and.push({
+      resourceLanguages: { some: { language: { code: filters.languageCode } } }
+    });
   }
   if (filters.q && filters.q.trim() !== "") {
     const q = filters.q.trim();
-    where.OR = [
-      { title: { contains: q, mode: "insensitive" } },
-      { shortDescription: { contains: q, mode: "insensitive" } },
-      { airId: { contains: q, mode: "insensitive" } },
-      { provider: { displayName: { contains: q, mode: "insensitive" } } },
-      { resourceTags: { some: { tag: { name: { contains: q, mode: "insensitive" } } } } }
-    ];
+    and.push({
+      OR: [
+        { title: { contains: q, mode: "insensitive" } },
+        { shortDescription: { contains: q, mode: "insensitive" } },
+        { airId: { contains: q, mode: "insensitive" } },
+        { provider: { displayName: { contains: q, mode: "insensitive" } } },
+        { resourceTags: { some: { tag: { name: { contains: q, mode: "insensitive" } } } } }
+      ]
+    });
   }
-  return where;
+
+  return { AND: and };
 }
 
 /**
@@ -147,7 +237,7 @@ export async function listPublicResources(
   const hasMore = rowsRaw.length > limit;
   const rows = (hasMore ? rowsRaw.slice(0, limit) : rowsRaw) as ResourceForCard[];
   const cards: RegistryCard[] = rows.map(toRegistryCard);
-  const counts: CountsByKind = await countsByKind();
+  const counts: CountsByKind = await countsByKindForFilters(filters);
 
   return {
     rows: cards,
@@ -162,23 +252,25 @@ export async function listPublicResources(
   };
 }
 
-async function countsByKind(): Promise<CountsByKind> {
-  const groups = await prisma.resource.groupBy({
-    by: ["resourceTypeId"],
-    where: {
-      publicVisibility: true,
-      lifecycleStatus: { code: { in: PUBLIC_LIFECYCLE_CODES } }
-    },
-    _count: { _all: true }
-  });
+/** Per-kind totals for the kind tabs — same filters as `filters` except `kind` (search + status + …). */
+async function countsByKindForFilters(filters: ListFilters): Promise<CountsByKind> {
+  const withoutKind: ListFilters = { ...filters, kind: null };
+  const where = await buildResourceWhere(withoutKind);
+  const [all, groups] = await Promise.all([
+    prisma.resource.count({ where }),
+    prisma.resource.groupBy({
+      by: ["resourceTypeId"],
+      where,
+      _count: { _all: true }
+    })
+  ]);
   const types = await prisma.resourceType.findMany({ select: { id: true, code: true } });
   const codeById = new Map(types.map((t) => [t.id, t.code]));
-  const counts: CountsByKind = { all: 0, model: 0, agent: 0, skill: 0, tool: 0 };
+  const counts: CountsByKind = { all, model: 0, agent: 0, skill: 0, tool: 0 };
   for (const g of groups) {
     const code = codeById.get(g.resourceTypeId);
     if (!code) continue;
     const c = g._count._all;
-    counts.all += c;
     if (code === "model") counts.model = c;
     else if (code === "agent") counts.agent = c;
     else if (code === "skill") counts.skill = c;

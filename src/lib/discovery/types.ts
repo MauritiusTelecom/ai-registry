@@ -23,6 +23,8 @@ export type ResourceKind = "model" | "agent" | "tool" | "skill";
 
 export type RegistryCard = {
   id: string;
+  /** Public detail route segment (`/registry/[slug]`). */
+  slug: string;
   airId: string | null;
   kind: ResourceKind | string;
   glyph: string;
@@ -85,6 +87,8 @@ export type PublicEvidenceEnvelope = {
 
 export type PublicProviderCard = {
   id: string;
+  /** Stable public slug (registry `?provider=` filter, future profile route). */
+  slug: string;
   glyph: string;
   name: string;
   kind: string;
@@ -95,6 +99,25 @@ export type PublicProviderCard = {
   since: string;
   license: string | null;
   tags: string[];
+  /** Public website when the provider published one. */
+  websiteUrl: string | null;
+};
+
+/** Kind tab counts for the public providers browse UI (`q` + `status` apply; kind does not). */
+export type CountsByProviderKind = {
+  all: number;
+  sovereign: number;
+  model: number;
+  hosting: number;
+  integrator: number;
+};
+
+export type PublicProvidersListResponse = {
+  rows: PublicProviderCard[];
+  total: number;
+  counts: CountsByProviderKind;
+  page: { cursor: string | null; size: number; hasMore: boolean };
+  generatedAt: string;
 };
 
 export type CountsByKind = {

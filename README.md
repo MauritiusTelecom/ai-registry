@@ -1,6 +1,6 @@
 # ai-registry
 
-**Reference implementation** of the [AIR-SPEC 0.4](../ai-registry-specs/.speckit/specification.md) Sovereign AI Registry — a Next.js public portal, Provider/Admin/Verifier/Sovereign workspaces, and the PostgreSQL `registry` schema. Discovery is exposed via REST under `/api/...`; an MCP Streamable HTTP adapter at `/api/mcp` is on the Phase 5 roadmap.
+**Reference implementation** of the [AIR-SPEC 0.4](../ai-registry-specs/.speckit/specification.md) Mauritius AI Registry — a Next.js public portal, Provider/Admin/Verifier/Sovereign workspaces, and the PostgreSQL `registry` schema. Discovery is exposed via REST under `/api/...`; an MCP Streamable HTTP adapter at `/api/mcp` is on the Phase 5 roadmap.
 
 The reference deployment is `airegistry.mu` (Mauritius Telecom as first reference operator). The codebase carries **no jurisdiction-specific defaults** — every deployment supplies its own `registry_name`, `jurisdiction`, `identity_domain`, `operator_name`, `default_language`, and resource-type set via configuration (see "Configuration" below).
 
