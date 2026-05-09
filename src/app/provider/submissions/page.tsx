@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { GatedPublishButton } from "@/components/portals/GatedPublishButton";
 import { prisma } from "@/lib/prisma";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 import { StatusPill } from "@/components/portals/StatusPill";
@@ -23,6 +24,7 @@ type Row = {
   title: string;
   kind: string;
   lifecycle: string;
+  lifecycleCode: string;
   status: string;
   submittedAt: string | null;
   updatedAt: string;
@@ -30,7 +32,9 @@ type Row = {
 
 export default async function ProviderSubmissionsPage() {
   const user = await getCurrentUser();
-  const providerId = user?.provider?.id ?? null;
+  if (!user) return null;
+
+  const providerId = user.provider?.id ?? null;
 
   if (!providerId) {
     return (
@@ -65,6 +69,7 @@ export default async function ProviderSubmissionsPage() {
     title: r.title,
     kind: r.resourceType.code,
     lifecycle: r.lifecycleStatus.name,
+    lifecycleCode: r.lifecycleStatus.code,
     status: deriveDisplayStatus({
       ...r,
       lifecycleStatus: r.lifecycleStatus,
@@ -78,17 +83,36 @@ export default async function ProviderSubmissionsPage() {
     {
       key: "title",
       label: "Title",
-      render: (row) => (
-        <Link href={`/registry/${row.slug}`} style={{ color: "var(--text)", textDecoration: "none" }}>
-          {row.title}
-        </Link>
-      )
+      render: (row) =>
+        row.lifecycleCode === "listed" ? (
+          <Link href={`/registry/${row.slug}`} style={{ color: "var(--text)", textDecoration: "none" }}>
+            {row.title}
+          </Link>
+        ) : (
+          <span style={{ fontWeight: 500 }}>{row.title}</span>
+        )
     },
     { key: "kind", label: "Kind", render: (row) => <span className="tag">{row.kind}</span> },
     { key: "lifecycle", label: "Lifecycle", render: (row) => row.lifecycle },
     { key: "status", label: "Visual status", render: (row) => <StatusPill status={row.status} /> },
     { key: "submitted", label: "Submitted", render: (row) => row.submittedAt ?? "—", mono: true },
-    { key: "updated", label: "Updated", render: (row) => row.updatedAt, mono: true }
+    { key: "updated", label: "Updated", render: (row) => row.updatedAt, mono: true },
+    {
+      key: "actions",
+      label: "",
+      render: (row) =>
+        row.lifecycleCode === "draft" || row.lifecycleCode === "needs_update" ? (
+          <Link href={`/provider/resources/${row.id}/edit`} className="btn btn-secondary" style={{ fontSize: 13 }}>
+            Edit / submit
+          </Link>
+        ) : row.lifecycleCode === "listed" ? (
+          <Link href={`/registry/${row.slug}`} className="btn btn-secondary" style={{ fontSize: 13 }}>
+            Public
+          </Link>
+        ) : (
+          <span style={{ color: "var(--text-3)", fontSize: 12 }}>—</span>
+        )
+    }
   ];
 
   return (
@@ -100,9 +124,9 @@ export default async function ProviderSubmissionsPage() {
           drafts, in-review, or needs-update.
         </p>
         <div className="p-actions">
-          <Link href="/provider/publish" className="btn btn-primary">
+          <GatedPublishButton href="/provider/publish" canAuthorResources={user.canAuthorResources}>
             Publish new resource
-          </Link>
+          </GatedPublishButton>
         </div>
       </div>
       <DataTable

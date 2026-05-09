@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { getConfig } from "@/lib/config";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
+import { authoringGateForbiddenResponse } from "@/lib/portal/authoring-gate-response";
 import { writeAudit } from "@/lib/audit/write-audit";
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -79,6 +80,7 @@ export async function POST(req: Request) {
   if (user.role.code !== "provider") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+  if (!user.canAuthorResources) return authoringGateForbiddenResponse();
 
   let body: CreateBody;
   try {

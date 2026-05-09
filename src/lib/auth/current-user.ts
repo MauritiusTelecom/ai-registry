@@ -13,6 +13,7 @@ import { cookies } from "next/headers";
 import { getConfig } from "@/lib/config";
 import { prisma } from "@/lib/prisma";
 import { verifySessionToken } from "./session";
+import { computeCanAuthorResources } from "./provider-profile-gate";
 
 export type SessionUser = {
   id: string;
@@ -20,6 +21,8 @@ export type SessionUser = {
   name: string;
   emailVerified: boolean;
   onboardingComplete: boolean;
+  /** True when the provider may create drafts and submit resources (T030–T032). */
+  canAuthorResources: boolean;
   role: { code: string; name: string };
   status: { code: string; name: string };
   provider: { id: string; slug: string; displayName: string } | null;
@@ -39,7 +42,16 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     include: {
       role: true,
       status: true,
-      provider: { select: { id: true, slug: true, displayName: true } },
+      provider: {
+        select: {
+          id: true,
+          slug: true,
+          displayName: true,
+          contactEmail: true,
+          homeJurisdictionId: true,
+          typeId: true
+        }
+      },
       roleAssignments: { include: { role: true } }
     }
   });
@@ -52,15 +64,29 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   const extraRoles = (user.roleAssignments ?? []).map((ra) => ra.role.code);
   const roles = Array.from(new Set([user.role.code, ...extraRoles]));
 
+  const canAuthorResources = computeCanAuthorResources(
+    {
+      emailVerified: user.emailVerified,
+      onboardingComplete: user.onboardingComplete,
+      roleCode: user.role.code
+    },
+    user.provider
+  );
+
+  const providerSummary = user.provider
+    ? { id: user.provider.id, slug: user.provider.slug, displayName: user.provider.displayName }
+    : null;
+
   return {
     id: user.id,
     email: user.email,
     name: user.name,
     emailVerified: user.emailVerified,
     onboardingComplete: user.onboardingComplete,
+    canAuthorResources,
     role: { code: user.role.code, name: user.role.name },
     status: { code: user.status.code, name: user.status.name },
-    provider: user.provider,
+    provider: providerSummary,
     roles
   };
 }

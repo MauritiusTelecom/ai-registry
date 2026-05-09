@@ -2,12 +2,14 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { StatCard } from "@/components/portals/StatCard";
+import { GatedPublishButton } from "@/components/portals/GatedPublishButton";
 
 export const metadata = { title: "Provider · Dashboard" };
 export const dynamic = "force-dynamic";
 
 export default async function ProviderDashboardPage() {
   const user = await getCurrentUser();
+  if (!user) return null;
   // Layout already enforced auth; this is the canonical lookup for provider scoping.
   const providerId = user?.provider?.id ?? null;
 
@@ -74,6 +76,13 @@ export default async function ProviderDashboardPage() {
             ? "Catalogue, the public's inbox, and operations for your provider."
             : "Your account isn't linked to a provider yet. An admin will assign you to one."}
         </p>
+        {providerId ? (
+          <div className="p-actions" style={{ marginTop: 12 }}>
+            <GatedPublishButton href="/provider/publish" canAuthorResources={user.canAuthorResources}>
+              Publish resource
+            </GatedPublishButton>
+          </div>
+        ) : null}
       </div>
 
       <h2 style={{ marginTop: 0, marginBottom: 12, fontSize: 13, letterSpacing: "0.16em", textTransform: "uppercase", color: "var(--text-3)", fontFamily: "IBM Plex Mono, monospace" }}>
