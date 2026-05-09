@@ -40,7 +40,7 @@ function applyDensity(d: Density) {
  */
 export function TweaksPanel() {
   const [palette, setPalette] = useState(0);
-  const [density, setDensity] = useState<Density>("balanced");
+  const [density, setDensity] = useState<Density>("compact");
 
   useEffect(() => {
     applyPalette(palette);
