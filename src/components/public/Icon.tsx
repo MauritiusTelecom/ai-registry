@@ -26,7 +26,10 @@ export type IconName =
   | "flow"
   | "zap"
   | "layers"
-  | "menu";
+  | "menu"
+  | "bell"
+  | "chevron-down"
+  | "palette";
 
 type IconProps = {
   name: IconName;
@@ -97,6 +100,12 @@ export function Icon({ name, size = 16, stroke = 1.5 }: IconProps) {
       return (<svg {...props}><path d="M12 2l10 5-10 5L2 7l10-5zM2 12l10 5 10-5M2 17l10 5 10-5" /></svg>);
     case "menu":
       return (<svg {...props}><path d="M4 7h16M4 12h16M4 17h16" /></svg>);
+    case "bell":
+      return (<svg {...props}><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10 21a2 2 0 0 0 4 0" /></svg>);
+    case "chevron-down":
+      return (<svg {...props}><path d="M6 9l6 6 6-6" /></svg>);
+    case "palette":
+      return (<svg {...props}><path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 2-2s-1-1-1-2 1-2 2-2h2a4 4 0 0 0 4-4 9 9 0 0 0-9-8z" /><circle cx="7.5" cy="11" r="1" /><circle cx="10" cy="7" r="1" /><circle cx="14" cy="7" r="1" /><circle cx="16.5" cy="10" r="1" /></svg>);
     default:
       return null;
   }
