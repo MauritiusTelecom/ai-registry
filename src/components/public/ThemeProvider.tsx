@@ -29,16 +29,15 @@ function writeThemeCookie(theme: Theme) {
   document.cookie = `${SAR_THEME_KEY}=${theme};path=/;max-age=${COOKIE_MAX_AGE};SameSite=Lax${secure ? ";Secure" : ""}`;
 }
 
-function readInitialTheme(): Theme {
-  if (typeof document !== "undefined") {
-    const attr = document.documentElement.getAttribute("data-theme");
-    if (attr === "light" || attr === "dark") return attr;
-  }
-  return "dark";
-}
-
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(readInitialTheme);
+export function ThemeProvider({
+  children,
+  initialTheme
+}: {
+  children: ReactNode;
+  /** Must match `RootLayout` cookie-derived `<html data-theme>` or hydration mismatches. */
+  initialTheme: Theme;
+}) {
+  const [theme, setThemeState] = useState<Theme>(() => initialTheme);
 
   // Legacy: prefer localStorage if it disagrees with SSR cookie/html (one-time reconcile).
   useEffect(() => {

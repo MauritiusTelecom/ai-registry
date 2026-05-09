@@ -5,6 +5,7 @@ import { getConfig } from "@/lib/config";
 import { isPortalPath } from "@/lib/portals/auth-gate";
 import { SAR_THEME_KEY, themeFromCookie } from "@/lib/theme-cookie";
 import { SiteShell } from "@/components/public/SiteShell";
+import { ThemeProvider } from "@/components/public/ThemeProvider";
 
 // Title is sourced from the deployment configuration (REGISTRY_NAME) so the
 // codebase ships no jurisdiction-specific default.
@@ -42,7 +43,11 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href={FONT_HREF} />
       </head>
-      <body>{inPortal ? children : <SiteShell>{children}</SiteShell>}</body>
+      <body>
+        <ThemeProvider initialTheme={theme}>
+          {inPortal ? children : <SiteShell>{children}</SiteShell>}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import type { SessionUser } from "@/lib/auth/current-user";
 import type { PortalConfig } from "@/lib/portals/nav-config";
-import { ThemeProvider } from "@/components/public/ThemeProvider";
 import { PortalSidebar } from "./PortalSidebar";
 import { PortalSearch } from "./header/PortalSearch";
 import { PortalPalette } from "./header/PortalPalette";
@@ -20,9 +19,9 @@ import { PortalUserDropdown } from "./header/PortalUserDropdown";
  *      `portal-shell.jsx` — search button, accent-palette switcher, light/
  *      dark mode toggle, notifications dropdown, user dropdown with role
  *      switcher.
- *   2. The chrome wraps in `ThemeProvider` so the mode toggle works (the
- *      provider portal isn't nested under the public `SiteShell`'s
- *      ThemeProvider, so we need our own).
+ *   2. Theme mode is provided by root `ThemeProvider` in `app/layout.tsx`
+ *      (cookie-aligned with `<html data-theme>`); this chrome only renders
+ *      `PortalThemeToggle`.
  *   3. The breadcrumb shows "Provider" only — pages render their own page
  *      header inside `.p-content`.
  *
@@ -52,58 +51,56 @@ export function ProviderPortalChrome({
           : (user.role.code as string);
 
   return (
-    <ThemeProvider>
-      <div className="p-shell">
-        <PortalSidebar config={config} />
+    <div className="p-shell">
+      <PortalSidebar config={config} />
 
-        <div className="p-main">
-          <header className="p-header">
-            <div className="p-header-left">
-              <div className="p-crumbs">
-                <span className="p-crumb-active">{config.label}</span>
-                {user.provider ? (
-                  <>
-                    <span className="p-crumb-sep">/</span>
-                    <span>{user.provider.displayName}</span>
-                  </>
-                ) : null}
-              </div>
+      <div className="p-main">
+        <header className="p-header">
+          <div className="p-header-left">
+            <div className="p-crumbs">
+              <span className="p-crumb-active">{config.label}</span>
+              {user.provider ? (
+                <>
+                  <span className="p-crumb-sep">/</span>
+                  <span>{user.provider.displayName}</span>
+                </>
+              ) : null}
             </div>
-            <div className="p-header-right">
-              <PortalSearch placeholder="Search resources, complaints, contacts…" />
-              <PortalPalette />
-              <PortalThemeToggle />
-              <PortalNotifications />
-              <PortalUserDropdown
-                user={{
-                  name: user.name,
-                  email: user.email,
-                  roles: user.roles,
-                  providerName: user.provider?.displayName ?? null
-                }}
-                currentRole={currentRole}
-              />
-            </div>
-          </header>
+          </div>
+          <div className="p-header-right">
+            <PortalSearch placeholder="Search resources, complaints, contacts…" />
+            <PortalPalette />
+            <PortalThemeToggle />
+            <PortalNotifications />
+            <PortalUserDropdown
+              user={{
+                name: user.name,
+                email: user.email,
+                roles: user.roles,
+                providerName: user.provider?.displayName ?? null
+              }}
+              currentRole={currentRole}
+            />
+          </div>
+        </header>
 
-          {/*
-            Pages own their inner layout. New portal pages opt into the
-            portal-style page shell via `<div className="p-content">…</div>`;
-            older pages use the public PageHero pattern. Both work.
-          */}
-          <main>{children}</main>
+        {/*
+          Pages own their inner layout. New portal pages opt into the
+          portal-style page shell via `<div className="p-content">…</div>`;
+          older pages use the public PageHero pattern. Both work.
+        */}
+        <main>{children}</main>
 
-          <footer className="p-footer">
-            <span>
-              Listing is not endorsement. The registry points; the provider operates; the
-              hosting environment secures.
-            </span>
-            <Link href="/governance" className="p-footer-link">
-              Governance charter →
-            </Link>
-          </footer>
-        </div>
+        <footer className="p-footer">
+          <span>
+            Listing is not endorsement. The registry points; the provider operates; the
+            hosting environment secures.
+          </span>
+          <Link href="/governance" className="p-footer-link">
+            Governance charter →
+          </Link>
+        </footer>
       </div>
-    </ThemeProvider>
+    </div>
   );
 }

@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { getConfig } from "@/lib/config";
-import { ThemeProvider } from "./ThemeProvider";
 import { AuthProvider } from "./AuthProvider";
 import { ReportProvider } from "./ReportContext";
 import { TopNav } from "./TopNav";
@@ -20,16 +19,14 @@ export function SiteShell({ children }: { children: ReactNode }) {
   const isDev = process.env.NODE_ENV !== "production";
   const cfg = getConfig();
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ReportProvider>
-          <TopNav registryName={cfg.registryName} />
-          <main>{children}</main>
-          <Footer registryName={cfg.registryName} />
-          <ReportModal />
-          {isDev ? <TweaksPanel /> : null}
-        </ReportProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <ReportProvider>
+        <TopNav registryName={cfg.registryName} />
+        <main>{children}</main>
+        <Footer registryName={cfg.registryName} />
+        <ReportModal />
+        {isDev ? <TweaksPanel /> : null}
+      </ReportProvider>
+    </AuthProvider>
   );
 }
