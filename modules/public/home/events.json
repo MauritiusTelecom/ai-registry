@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "public.home",
+  "description": "Telemetry events emitted by the public marketing home route. The site is unauthenticated; events MAY include an anonymous visitor id but MUST NOT include any PII.",
+  "events": [
+    {
+      "name": "public.home.viewed",
+      "trigger": "App mounts on hash '' or '#/home'.",
+      "payload": {
+        "type": "object",
+        "required": ["bundle", "theme", "palette"],
+        "properties": {
+          "bundle":  { "enum": ["A", "B"], "description": "Which HTML entry served the page (A=index.html, B=Sovereign AI Registry.html / home-spa.html)." },
+          "theme":   { "enum": ["dark", "light"] },
+          "palette": { "enum": [0, 1, 2, 3] }
+        }
+      }
+    },
+    {
+      "name": "public.home.cta.launch_registry.clicked",
+      "trigger": "Hero primary CTA 'Launch Registry' is clicked.",
+      "side_effects": ["navigate(#/registry)"]
+    },
+    {
+      "name": "public.home.cta.explore_ecosystem.clicked",
+      "trigger": "Hero secondary CTA 'Explore Ecosystem' is clicked.",
+      "side_effects": ["navigate(#/ecosystem)"]
+    },
+    {
+      "name": "public.home.metric.count_up_complete",
+      "trigger": "Each MetricsBar cell finishes its 1600ms count-up animation.",
+      "payload": {
+        "type": "object",
+        "required": ["label", "target"],
+        "properties": {
+          "label":  { "type": "string" },
+          "target": { "type": "number" }
+        }
+      }
+    },
+    {
+      "name": "public.home.registry.search.changed",
+      "trigger": "User types in the RegistrySection search input.",
+      "payload": {
+        "type": "object",
+        "required": ["queryLength"],
+        "properties": { "queryLength": { "type": "integer", "minimum": 0 } }
+      }
+    },
+    {
+      "name": "public.home.registry.kind_tab.clicked",
+      "trigger": "User selects a kind tab (All / Models / Agents / MCP skills / Tools).",
+      "payload": {
+        "type": "object",
+        "required": ["kind"],
+        "properties": { "kind": { "enum": ["all", "model", "agent", "mcp", "tool"] } }
+      }
+    },
+    {
+      "name": "public.home.registry.card.action_clicked",
+      "trigger": "User clicks View / AIR-ID / Report on a registry card.",
+      "payload": {
+        "type": "object",
+        "required": ["airId", "action"],
+        "properties": {
+          "airId":  { "type": "string" },
+          "action": { "enum": ["view", "air_id", "report"] }
+        }
+      }
+    },
+    {
+      "name": "public.home.report.modal.opened",
+      "trigger": "ReportModal opens (reportTarget set non-null).",
+      "payload": {
+        "type": "object",
+        "required": ["airId"],
+        "properties": { "airId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "public.home.report.modal.submitted",
+      "trigger": "POST /public/report (202) succeeds from the ReportModal.",
+      "payload": {
+        "type": "object",
+        "required": ["airId", "reason", "reportId"],
+        "properties": {
+          "airId":    { "type": "string" },
+          "reason":   { "enum": ["out-of-date", "broken", "unsafe", "off-topic", "other"] },
+          "reportId": { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "public.home.faq.opened",
+      "trigger": "User expands an FAQ entry.",
+      "payload": {
+        "type": "object",
+        "required": ["index"],
+        "properties": { "index": { "type": "integer", "minimum": 0 } }
+      }
+    },
+    {
+      "name": "public.home.tweaks.changed",
+      "trigger": "Operator changes any tweaks-panel control (design-time only).",
+      "payload": {
+        "type": "object",
+        "required": ["key", "value"],
+        "properties": {
+          "key":   { "enum": ["accentPalette", "motionIntensity", "density", "heroVariant"] },
+          "value": {}
+        }
+      }
+    },
+    {
+      "name": "public.home.theme.toggled",
+      "trigger": "User toggles light/dark theme via the top nav.",
+      "payload": {
+        "type": "object",
+        "required": ["to"],
+        "properties": { "to": { "enum": ["dark", "light"] } }
+      }
+    },
+    {
+      "name": "public.home.metrics.fetched",
+      "trigger": "GET /public/metrics completes."
+    },
+    {
+      "name": "public.home.featured_registry.fetched",
+      "trigger": "GET /public/registry/featured completes."
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "sovereign.settings",
+  "description": "Explicit UI contract for the Sovereign portal /settings route.",
+
+  "route": {
+    "portal": "sovereign",
+    "path": "/settings",
+    "html_entry": "portals/sovereign.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Settings",
+    "breadcrumb": ["Sovereign", "Settings"],
+    "active_sidebar_item": "settings"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Settings",
+      "subtitle": null,
+      "actions": []
+    },
+
+    "card": {
+      "component": "p-card",
+      "container_style": { "maxWidth": 640 },
+      "title": "Sovereign profile",
+      "title_class": "p-card-title",
+      "title_style": { "marginBottom": 14 },
+      "fields": [
+        { "label": "Operator",          "kind": "input",  "binding": "operator",         "default_value": "Marie Laurent",                        "test_id": "sovereign.settings.operator" },
+        { "label": "Authority",         "kind": "input",  "binding": "authority",        "default_value": "Ministry of Finance, Republic of Mauritius", "test_id": "sovereign.settings.authority" },
+        { "label": "Reporting cadence", "kind": "select", "binding": "reportingCadence", "default_value": "weekly",
+          "options": [
+            { "label": "weekly",    "value": "weekly" },
+            { "label": "monthly",   "value": "monthly" },
+            { "label": "quarterly", "value": "quarterly" }
+          ],
+          "test_id": "sovereign.settings.reportingCadence"
+        }
+      ]
+    }
+  },
+
+  "icons_used": [],
+
+  "save_pattern": {
+    "default": "implicit_save_on_blur",
+    "alternative": "sticky_footer_with_save_changes_button",
+    "debounce_ms": 250,
+    "endpoint": "PATCH /sovereign/settings"
+  },
+
+  "non_negotiables": [
+    "PageHeader has NO subtitle and NO action buttons.",
+    "Page renders ONE card with maxWidth 640.",
+    "Card title is 'Sovereign profile' with marginBottom 14.",
+    "Three fields in fixed order: Operator → Authority → Reporting cadence.",
+    "Default values: 'Marie Laurent', 'Ministry of Finance, Republic of Mauritius', 'weekly' (first select option).",
+    "Reporting cadence select has exactly THREE options: weekly / monthly / quarterly (lowercase, no defaultValue in source).",
+    "Authority change triggers a confirmation dialog AND requires second-actor approval (production)."
+  ]
+}

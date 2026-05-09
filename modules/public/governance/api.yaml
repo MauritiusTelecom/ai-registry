@@ -1,0 +1,128 @@
+# Copyright 2026 rakesh.khoodeeram
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Public · Governance module — API contract
+# Public, unauthenticated, optional (the page may inline the charter copy).
+
+openapi: 3.0.3
+
+info:
+  title: Sovereign AI Registry — Public Governance API
+  version: 0.4.0
+
+servers:
+  - url: https://airegistry.mu/api/v1
+  - url: https://staging.airegistry.mu/api/v1
+
+tags:
+  - name: public-governance
+
+paths:
+  /public/governance:
+    get:
+      summary: Get the current charter (two cards)
+      description: >
+        Optional in v0.4. The prototype inlines the charter in the SPA; production
+        may either keep the inline copy or fetch it from this endpoint with a long
+        CDN cache (24 hours).
+      operationId: getPublicGovernance
+      tags: [public-governance]
+      responses:
+        '200':
+          description: Charter payload
+          headers:
+            Cache-Control:
+              schema: { type: string, example: 'public, max-age=86400' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicGovernanceResponse' }
+
+  /public/governance/audit:
+    get:
+      summary: 'Future: read-only public audit ledger view'
+      description: 'Out of scope for v0.4 prototype; reserved for production.'
+      operationId: getPublicGovernanceAudit
+      tags: [public-governance]
+      responses:
+        '501':
+          description: Not implemented in v0.4
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+components:
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:     { type: string, format: uri }
+        title:    { type: string }
+        status:   { type: integer }
+        detail:   { type: string }
+        instance: { type: string }
+
+    InlineMonoSpan:
+      type: object
+      required: [kind, value, color]
+      properties:
+        kind:  { type: string, enum: [mono] }
+        value: { type: string, example: 'air://' }
+        color: { type: string, enum: [var(--text), var(--text-2)] }
+
+    InlineTextSpan:
+      type: object
+      required: [kind, value]
+      properties:
+        kind:  { type: string, enum: [text] }
+        value: { type: string }
+
+    Bullet:
+      oneOf:
+        - type: string
+        - type: object
+          required: [parts]
+          properties:
+            parts:
+              type: array
+              items:
+                oneOf:
+                  - { $ref: '#/components/schemas/InlineTextSpan' }
+                  - { $ref: '#/components/schemas/InlineMonoSpan' }
+
+    CharterCard:
+      type: object
+      required: [heading, bullets]
+      properties:
+        heading: { type: string, enum: ['What it is', 'What it is not'] }
+        bullets:
+          type: array
+          items: { $ref: '#/components/schemas/Bullet' }
+
+    PublicGovernanceResponse:
+      type: object
+      required: [charter, publishedAt, generatedAt]
+      properties:
+        charter:
+          type: array
+          items: { $ref: '#/components/schemas/CharterCard' }
+          minItems: 2
+          maxItems: 2
+        publishedAt:
+          type: string
+          format: date
+          description: 'When the current charter was ratified.'
+        generatedAt:
+          type: string
+          format: date-time

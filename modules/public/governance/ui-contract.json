@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "public.governance",
+  "description": "Explicit UI contract for the public marketing /governance route.",
+
+  "route": {
+    "site": "public",
+    "path": "/governance",
+    "html_entry_bundle_a": "index.html",
+    "html_entry_bundle_b": "Sovereign AI Registry.html"
+  },
+
+  "shell_inherited_from": "modules/public/home/ui-contract.json",
+
+  "page": {
+    "page_hero": {
+      "component": "PageHero",
+      "class": "page-hero",
+      "grid_bg_overlay": {
+        "class": "grid-bg",
+        "style": { "position": "absolute", "inset": 0, "opacity": 0.6, "zIndex": 0 }
+      },
+      "inner_style": { "position": "relative", "zIndex": 1 },
+      "crumb": "Governance · Charter & Review",
+      "h1_lines": [
+        "Governance ",
+        { "kind": "gradient_span", "text": "without overreach" },
+        "."
+      ],
+      "subtitle": "The discipline of the registry is in what it refuses to do. Many adjacent capabilities are reasonable; each one would make the registry a different kind of platform.",
+      "subtitle_style": { "marginTop": 18, "fontSize": 17, "maxWidth": 680, "color": "var(--text-2)" }
+    },
+
+    "section": {
+      "class": "section",
+      "container_class": "gov-grid",
+      "container_style": { "gap": 32 },
+      "cards": [
+        {
+          "wrap": "Reveal",
+          "delay_ms": 0,
+          "component": "glass",
+          "style": { "padding": 28 },
+          "h3": "What it is",
+          "ul_style": { "marginTop": 14, "paddingLeft": 18, "color": "var(--text-2)", "fontSize": 14, "lineHeight": 1.65 },
+          "bullets": [
+            { "kind": "text", "value": "A locally-governed catalogue of sovereign AI resources." },
+            {
+              "kind": "mixed",
+              "parts": [
+                { "kind": "text", "value": "Stable identifiers under " },
+                { "kind": "mono", "value": "air://", "color": "var(--text)" },
+                { "kind": "text", "value": "." }
+              ]
+            },
+            { "kind": "text", "value": "Three independent governance signals: provider-verified, sovereignty-reviewed, official-resource." },
+            { "kind": "text", "value": "An open, append-only audit log." }
+          ]
+        },
+        {
+          "wrap": "Reveal",
+          "delay_ms": 120,
+          "component": "glass",
+          "style": { "padding": 28 },
+          "h3": "What it is not",
+          "ul_style": { "marginTop": 14, "paddingLeft": 18, "color": "var(--text-2)", "fontSize": 14, "lineHeight": 1.65 },
+          "bullets": [
+            { "kind": "text", "value": "A runtime, gateway or proxy." },
+            { "kind": "text", "value": "A certification authority. (Listing ≠ endorsement.)" },
+            { "kind": "text", "value": "A marketplace or payment layer." },
+            { "kind": "text", "value": "A hosting provider for any AI resource." }
+          ]
+        }
+      ]
+    }
+  },
+
+  "icons_used": [],
+
+  "interactions": [],
+
+  "non_negotiables": [
+    "Page renders PageHero followed by a 2-card .gov-grid; no other body content in v0.4.",
+    "Hero crumb uses Unicode middle dot U+00B7: 'Governance · Charter & Review'.",
+    "Hero gradient span text is exactly 'without overreach' (no terminating space; period is outside the span).",
+    "Card 1 heading is 'What it is'; Card 2 heading is 'What it is not'. Order is fixed.",
+    "Card 1 has no Reveal delay; Card 2 has Reveal delay = 120 ms.",
+    "Card 1 bullet 2 includes a mono span with text 'air://' and color var(--text) (NOT var(--text-2)).",
+    "Card 2 bullet 2 uses Unicode 'not equal to' (U+2260) in 'Listing ≠ endorsement.' — do NOT substitute '!='.",
+    "Both cards use the .glass wrapper with padding 28.",
+    "Bullet list style: paddingLeft 18, color var(--text-2), fontSize 14, lineHeight 1.65.",
+    "No interactive elements on this page in v0.4 — no clicks, no hover-to-detail."
+  ]
+}

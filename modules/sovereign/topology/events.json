@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "sovereign.topology",
+  "description": "Telemetry events emitted by the Sovereign portal /topology route.",
+  "events": [
+    {
+      "name": "sovereign.topology.viewed",
+      "trigger": "SovTopology component mount.",
+      "payload": {
+        "type": "object",
+        "required": ["nodeCount", "edgeCount", "dependencyCount"],
+        "properties": {
+          "nodeCount":       { "type": "integer" },
+          "edgeCount":       { "type": "integer" },
+          "dependencyCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "sovereign.topology.fetched",
+      "trigger": "GET /sovereign/topology completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms", "edgeCount"],
+        "properties": {
+          "status":    { "type": "integer" },
+          "ms":        { "type": "integer", "minimum": 0 },
+          "edgeCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "sovereign.topology.window.changed",
+      "trigger": "Operator changes the topology window selector (production-only).",
+      "payload": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from": { "enum": ["7d", "30d", "90d"] },
+          "to":   { "enum": ["7d", "30d", "90d"] }
+        }
+      }
+    },
+    {
+      "name": "sovereign.topology.kind.filtered",
+      "trigger": "Operator filters by edge kind (production-only).",
+      "payload": {
+        "type": "object",
+        "required": ["kind"],
+        "properties": {
+          "kind": { "enum": ["all", "mcp", "tool", "model-call"] }
+        }
+      }
+    },
+    {
+      "name": "sovereign.topology.node.hovered",
+      "trigger": "User hovers a TopologyCard node (production-only).",
+      "payload": {
+        "type": "object",
+        "required": ["nodeId", "kind"],
+        "properties": {
+          "nodeId": { "type": "string" },
+          "kind":   { "enum": ["agent", "mcp", "tool", "model-ext"] }
+        }
+      }
+    },
+    {
+      "name": "sovereign.topology.edge.hovered",
+      "trigger": "User hovers a TopologyCard edge (production-only).",
+      "payload": {
+        "type": "object",
+        "required": ["src", "dst", "kind"],
+        "properties": {
+          "src":  { "type": "string" },
+          "dst":  { "type": "string" },
+          "kind": { "enum": ["mcp", "tool", "model-call"] }
+        }
+      }
+    },
+    {
+      "name": "sovereign.topology.row.viewed",
+      "trigger": "Each row in the dependencies table is rendered.",
+      "payload": {
+        "type": "object",
+        "required": ["src", "dst", "kind"],
+        "properties": {
+          "src":  { "type": "string" },
+          "dst":  { "type": "string" },
+          "kind": { "enum": ["mcp", "tool", "model-call"] }
+        }
+      }
+    },
+    {
+      "name": "sovereign.topology.error",
+      "trigger": "GET /sovereign/topology returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status":  { "type": "integer" },
+          "problem": { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

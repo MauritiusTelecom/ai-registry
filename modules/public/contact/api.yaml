@@ -1,0 +1,130 @@
+# Copyright 2026 rakesh.khoodeeram
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Public · Contact module — API contract
+
+openapi: 3.0.3
+
+info:
+  title: Sovereign AI Registry — Public Contact API
+  version: 0.4.0
+
+servers:
+  - url: https://airegistry.mu/api/v1
+  - url: https://staging.airegistry.mu/api/v1
+
+tags:
+  - name: public-contact
+
+paths:
+  /public/contact-info:
+    get:
+      summary: Get the public contact-info block (left column)
+      description: >
+        Optional in v0.4 — the prototype inlines the contact info. Production
+        may serve from this endpoint with a long CDN cache (1 hour) so the
+        operator can update without redeploying.
+      operationId: getPublicContactInfo
+      tags: [public-contact]
+      responses:
+        '200':
+          description: Contact info
+          headers:
+            Cache-Control:
+              schema: { type: string, example: 'public, max-age=3600' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContactInfo' }
+
+  /public/contact:
+    post:
+      summary: Submit the contact form
+      description: >
+        Accepts a contact-form submission. A spam-resistant CAPTCHA token SHOULD
+        be required in production.
+      operationId: submitPublicContact
+      tags: [public-contact]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContactSubmission' }
+      responses:
+        '202':
+          description: Acknowledged; SPA switches to success view
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ContactSubmissionResponse' }
+        '400':
+          description: Validation errors (per-field)
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '429':
+          description: Rate-limited (anti-spam)
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+components:
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:     { type: string, format: uri }
+        title:    { type: string }
+        status:   { type: integer }
+        detail:   { type: string }
+        instance: { type: string }
+        errors:
+          type: object
+          additionalProperties: { type: string }
+          description: 'Per-field error messages keyed by field name.'
+
+    ContactInfo:
+      type: object
+      required: [email, operatorDesk, office, hours, status]
+      properties:
+        email:        { type: string, example: 'hello@airegistry.mu' }
+        operatorDesk: { type: string, example: '+230 460 0400' }
+        office:       { type: string, example: 'Cyber City, Ebène\nRepublic of Mauritius' }
+        hours:        { type: string, example: 'Mon–Fri · 09:00–17:30 · GMT+4' }
+        status:
+          type: object
+          required: [operational, slo90d, label]
+          properties:
+            operational: { type: boolean }
+            slo90d:      { type: string, example: '99.97%' }
+            label:       { type: string, example: 'All systems nominal' }
+
+    ContactSubmission:
+      type: object
+      required: [name, org, email, topic, message]
+      properties:
+        name:    { type: string, minLength: 2 }
+        org:     { type: string, minLength: 2 }
+        email:   { type: string, format: email }
+        topic:   { type: string, enum: [general, submit, review, report, jurisdiction, press] }
+        message: { type: string, minLength: 16 }
+        captchaToken:
+          type: string
+          description: 'Production CAPTCHA token (Turnstile / hCaptcha).'
+
+    ContactSubmissionResponse:
+      type: object
+      required: [ticketId, acknowledgedAt]
+      properties:
+        ticketId:       { type: string, example: 'tkt_2026_05_07_a8c1' }
+        acknowledgedAt: { type: string, format: date-time }

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "verifier.decided",
+  "description": "Explicit UI contract for the Verifier portal /decided route.",
+
+  "route": {
+    "portal": "verifier",
+    "path": "/decided",
+    "html_entry": "portals/verifier.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Decided",
+    "breadcrumb": ["Verifier", "Queue", "Decided"],
+    "active_sidebar_item": "decided"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Decided reviews",
+      "subtitle": "History of approvals, rejections and archive decisions.",
+      "actions": []
+    },
+
+    "data_table": {
+      "component": "DataTable",
+      "row_click_bound": false,
+      "columns": [
+        { "key": "id",       "label": "ID",       "width": 100, "cell": { "kind": "text", "class": "p-mono-val",   "binding": "id" } },
+        { "key": "target",   "label": "Target",                "cell": { "kind": "text", "class": "p-cell-strong", "binding": "target" } },
+        { "key": "decision", "label": "Decision", "width": 130,
+          "cell": {
+            "kind": "renderer",
+            "renderer": "StatusPill",
+            "props": { "status": "row.decision === 'approved' ? 'verified' : row.decision === 'archived' ? 'archived' : 'rejected'" }
+          }
+        },
+        { "key": "closed",   "label": "Closed",   "width": 110, "cell": { "kind": "text", "class": "p-mono-key", "binding": "closed" } },
+        { "key": "verifier", "label": "Verifier",                "cell": { "kind": "text", "style": { "color": "var(--p-text-2)" }, "binding": "verifier" } }
+      ]
+    }
+  },
+
+  "icons_used": [],
+
+  "status_pill_states_used": ["verified", "archived", "rejected"],
+
+  "interactions": [],
+
+  "empty_states": {
+    "no_rows": { "body_text": "No decisions yet." }
+  },
+
+  "non_negotiables": [
+    "PageHeader has NO action buttons — decisions are immutable.",
+    "DataTable column order is fixed: ID → Target → Decision → Closed → Verifier.",
+    "Decision column maps the persisted enum (approved / rejected / withdrawn / archived) to a StatusPill visual: approved → verified, archived → archived, anything else → rejected.",
+    "Verifier column uses muted text style (var(--p-text-2)).",
+    "DataTable rows are non-interactive in v0.4 — do NOT bind onRowClick.",
+    "Decisions are IMMUTABLE — no Reopen / Edit buttons under any role."
+  ]
+}

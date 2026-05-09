@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "provider.dashboard",
+  "description": "Telemetry events emitted by the Provider portal dashboard route. All events carry the standard envelope plus providerId derived from the session.",
+  "events": [
+    {
+      "name": "provider.dashboard.viewed",
+      "trigger": "ProvDashboard component mount after the provider portal shell finishes hydration.",
+      "payload": {
+        "type": "object",
+        "required": ["route", "summary", "openSubmissionsCount"],
+        "properties": {
+          "route": { "const": "/" },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "resourcesLive":   { "type": "integer" },
+              "calls7d":         { "type": "string" },
+              "uptime90d":       { "type": "string" },
+              "openSubmissions": { "type": "integer" }
+            }
+          },
+          "openSubmissionsCount": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    {
+      "name": "provider.dashboard.action.public_profile.clicked",
+      "trigger": "User clicks the 'View public profile' secondary button in the PageHeader."
+    },
+    {
+      "name": "provider.dashboard.action.publish_resource.clicked",
+      "trigger": "User clicks the 'Publish resource' primary button in the PageHeader.",
+      "side_effects": ["navigate(#/publish)"]
+    },
+    {
+      "name": "provider.dashboard.submissions.all.clicked",
+      "trigger": "User clicks the 'All' link in the Open submissions card header.",
+      "side_effects": ["navigate(#/submissions)"]
+    },
+    {
+      "name": "provider.dashboard.submission_row.viewed",
+      "trigger": "Open submissions card renders a submission row.",
+      "payload": {
+        "type": "object",
+        "required": ["submissionId", "stage", "status"],
+        "properties": {
+          "submissionId": { "type": "string" },
+          "stage":        { "enum": ["sovereignty", "evaluation", "safety"] },
+          "status":       { "enum": ["pending", "review"] }
+        }
+      }
+    },
+    {
+      "name": "provider.dashboard.summary.fetched",
+      "trigger": "GET /provider/summary completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms"],
+        "properties": {
+          "status": { "type": "integer" },
+          "ms":     { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    {
+      "name": "provider.dashboard.usage.fetched",
+      "trigger": "GET /provider/usage completes."
+    },
+    {
+      "name": "provider.dashboard.submissions.fetched",
+      "trigger": "GET /provider/submissions/open completes."
+    },
+    {
+      "name": "provider.dashboard.error",
+      "trigger": "Any of the dashboard endpoints returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["endpoint", "status"],
+        "properties": {
+          "endpoint": { "type": "string" },
+          "status":   { "type": "integer" },
+          "problem":  { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

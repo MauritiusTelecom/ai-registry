@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "admin.reviews",
+  "description": "Explicit UI contract for the Admin portal /reviews route.",
+
+  "route": {
+    "portal": "admin",
+    "path": "/reviews",
+    "html_entry": "portals/admin.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Review queue",
+    "breadcrumb": ["Admin", "Governance", "Reviews"],
+    "active_sidebar_item": "reviews",
+    "sidebar_badge": "14"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Review queue",
+      "subtitle": "Submissions awaiting sovereignty, evaluation or safety review.",
+      "actions": [
+        { "kind": "Btn", "variant": "primary", "icon": "plus", "label": "New review", "test_id": "admin.reviews.action.new_review" }
+      ]
+    },
+
+    "stat_grid": {
+      "container_class": "p-grid p-grid-3",
+      "container_style": { "marginBottom": 20 },
+      "cards": [
+        { "label": "Sovereignty", "value_binding": "counters.sovereignty", "icon": "shield", "sub": "board review", "test_id": "admin.reviews.stat.sovereignty" },
+        { "label": "Evaluation",  "value_binding": "counters.evaluation",  "icon": "check",  "sub": "benchmark",    "test_id": "admin.reviews.stat.evaluation" },
+        { "label": "Safety",      "value_binding": "counters.safety",      "icon": "flag",   "sub": "red-team",     "test_id": "admin.reviews.stat.safety" }
+      ],
+      "value_animation": {
+        "renderer": "useCountUp",
+        "duration_ms": 1600,
+        "ease": "ease-out cubic"
+      },
+      "deltas_present": false
+    },
+
+    "data_table": {
+      "component": "DataTable",
+      "row_click_bound": false,
+      "columns": [
+        { "key": "id",       "label": "Review",   "width": 110, "cell": { "kind": "text", "class": "p-mono-val",   "binding": "id" } },
+        { "key": "target",   "label": "Target",                "cell": { "kind": "text", "class": "p-cell-strong", "binding": "target" } },
+        { "key": "stage",    "label": "Stage",    "width": 130, "cell": { "kind": "tag",  "class": "p-tag",         "binding": "stage" } },
+        { "key": "priority", "label": "Priority", "width": 100,
+          "cell": {
+            "kind": "pill",
+            "pill_class_map": { "high": "p-pill p-pill-isolated", "med": "p-pill p-pill-pending", "low": "p-pill p-pill-draft" },
+            "pill_dot_class": "p-pill-dot",
+            "binding": "priority"
+          }
+        },
+        { "key": "assigned", "label": "Assignee",
+          "cell": {
+            "kind": "text",
+            "color_when": {
+              "match": "row.assigned === 'unassigned'",
+              "true":  "var(--p-text-3)",
+              "false": "var(--p-text-2)"
+            },
+            "binding": "assigned"
+          }
+        },
+        { "key": "queued", "label": "Queued", "width": 110, "cell": { "kind": "text", "class": "p-mono-key", "binding": "queued" } },
+        { "key": "age",    "label": "Age",    "width": 80,  "cell": { "kind": "text", "class": "p-mono-val", "binding": "age" } }
+      ]
+    }
+  },
+
+  "icons_used": ["plus", "shield", "check", "flag"],
+
+  "interactions": [
+    { "id": "new_review", "trigger_test_id": "admin.reviews.action.new_review", "effect": "open_create_modal_or_navigate" }
+  ],
+
+  "empty_states": {
+    "no_rows": { "body_text": "Queue is empty. Submissions appear here as they arrive." }
+  },
+
+  "non_negotiables": [
+    "Header has only ONE action button (primary 'New review'). Do NOT add a secondary button.",
+    "StatCard order must remain: Sovereignty → Evaluation → Safety.",
+    "StatCards display headline counts only — no deltas.",
+    "Priority pill mapping: high → p-pill-isolated, med → p-pill-pending, low → p-pill-draft.",
+    "Assignee tone branches on the literal 'unassigned' (sentinel string), not on null/empty.",
+    "DataTable rows are non-interactive in v0.4 — do NOT bind onRowClick.",
+    "Sidebar badge value must come from list endpoint total, not from the page's row count."
+  ]
+}

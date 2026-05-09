@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "sovereign.reports",
+  "description": "Explicit UI contract for the Sovereign portal /reports route.",
+
+  "route": {
+    "portal": "sovereign",
+    "path": "/reports",
+    "html_entry": "portals/sovereign.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Reports",
+    "breadcrumb": ["Sovereign", "Programmes", "Reports"],
+    "active_sidebar_item": "reports"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Reports",
+      "subtitle": "National-level reports issued by sovereign operations.",
+      "actions": []
+    },
+
+    "card_grid": {
+      "container_class": "p-grid p-grid-2",
+      "card_template": {
+        "component": "p-card",
+        "head": {
+          "left": {
+            "kind": "stack",
+            "lines": [
+              { "binding": "name", "class": "p-card-title" },
+              { "template": "issued ${issued}", "class": "p-card-sub" }
+            ]
+          },
+          "right": {
+            "kind": "icon",
+            "name": "audit",
+            "size": 18,
+            "aria_hidden": true
+          }
+        },
+        "actions_row": {
+          "container_class": "p-row",
+          "container_style": { "gap": 8, "marginTop": 6 },
+          "items": [
+            { "kind": "Btn", "variant": "secondary", "size": "sm", "icon": "eye",            "label": "View",     "test_id": "sovereign.reports.card.view" },
+            { "kind": "Btn", "variant": "ghost",     "size": "sm", "icon": "arrow-up-right", "label": "Download", "test_id": "sovereign.reports.card.download" }
+          ]
+        }
+      }
+    }
+  },
+
+  "icons_used": ["audit", "eye", "arrow-up-right"],
+
+  "interactions": [
+    { "id": "view",     "trigger_test_id": "sovereign.reports.card.view",     "effect": "GET /sovereign/reports/{id} → window.open(signed_url)" },
+    { "id": "download", "trigger_test_id": "sovereign.reports.card.download", "effect": "GET /sovereign/reports/{id}/file.pdf with Content-Disposition: attachment" }
+  ],
+
+  "empty_states": {
+    "no_rows": { "single_full_width_card": true, "body_text": "No reports issued yet." }
+  },
+
+  "non_negotiables": [
+    "PageHeader has NO action buttons.",
+    "Page uses a 2-column card grid (p-grid p-grid-2).",
+    "Each card has exactly: head (name + 'issued ${issued}' sub on left, audit icon on right) and an action row (View secondary sm + Download ghost sm).",
+    "Action buttons are size='sm' — do NOT eyeball-shrink.",
+    "Card sub composes the literal prefix 'issued ' before the ISO date.",
+    "Em dash (U+2014) in titles like 'Q2 2026 — Sovereignty review' MUST be preserved.",
+    "Audit icon is decorative; production must mark aria-hidden=\"true\".",
+    "Signed PDF URLs have short TTL (≤5 minutes) — never cache the URL in the SPA."
+  ]
+}

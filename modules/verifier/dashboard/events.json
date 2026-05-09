@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "verifier.dashboard",
+  "description": "Telemetry events emitted by the Verifier portal dashboard route.",
+  "events": [
+    {
+      "name": "verifier.dashboard.viewed",
+      "trigger": "VerDashboard component mount.",
+      "payload": {
+        "type": "object",
+        "required": ["route", "summary"],
+        "properties": {
+          "route": { "const": "/" },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "openReviews": { "type": "integer" },
+              "decided30d":  { "type": "integer" },
+              "passRate":    { "type": "string" },
+              "openRedteam": { "type": "integer" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "verifier.dashboard.action.open_next.clicked",
+      "trigger": "User clicks the 'Open next in queue' header primary button.",
+      "side_effects": ["navigate(#/queue)", "select_first_row"]
+    },
+    {
+      "name": "verifier.dashboard.queue.see_all.clicked",
+      "trigger": "User clicks the 'See all' link in the Top of queue card.",
+      "side_effects": ["navigate(#/queue)"]
+    },
+    {
+      "name": "verifier.dashboard.queue.row.viewed",
+      "trigger": "Each Top-of-queue row renders.",
+      "payload": {
+        "type": "object",
+        "required": ["reviewId", "stage", "age", "slaBreached"],
+        "properties": {
+          "reviewId":    { "type": "string" },
+          "stage":       { "enum": ["sovereignty", "evaluation", "safety"] },
+          "age":         { "type": "string" },
+          "slaBreached": { "type": "boolean", "description": "true when age ends with 'd' AND parseInt(age) > 4" }
+        }
+      }
+    },
+    {
+      "name": "verifier.dashboard.redteam.row.viewed",
+      "trigger": "Each Active red-team row renders.",
+      "payload": {
+        "type": "object",
+        "required": ["findingId", "severity"],
+        "properties": {
+          "findingId": { "type": "string" },
+          "severity":  { "enum": ["high", "med", "low"] }
+        }
+      }
+    },
+    {
+      "name": "verifier.dashboard.summary.fetched",
+      "trigger": "GET /verifier/summary completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms"],
+        "properties": {
+          "status": { "type": "integer" },
+          "ms":     { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    {
+      "name": "verifier.dashboard.queue.fetched",
+      "trigger": "GET /verifier/queue/top completes."
+    },
+    {
+      "name": "verifier.dashboard.redteam.fetched",
+      "trigger": "GET /verifier/redteam/active completes."
+    },
+    {
+      "name": "verifier.dashboard.error",
+      "trigger": "Any of the dashboard endpoints returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["endpoint", "status"],
+        "properties": {
+          "endpoint": { "type": "string" },
+          "status":   { "type": "integer" },
+          "problem":  { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

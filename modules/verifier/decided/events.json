@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "verifier.decided",
+  "description": "Telemetry events emitted by the Verifier portal /decided route. Read-only.",
+  "events": [
+    {
+      "name": "verifier.decided.viewed",
+      "trigger": "VerDecided component mount.",
+      "payload": {
+        "type": "object",
+        "required": ["totalCount"],
+        "properties": {
+          "totalCount":     { "type": "integer" },
+          "approvedCount":  { "type": "integer" },
+          "rejectedCount":  { "type": "integer" },
+          "archivedCount":  { "type": "integer" },
+          "withdrawnCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "verifier.decided.row.viewed",
+      "trigger": "Each decision row renders.",
+      "payload": {
+        "type": "object",
+        "required": ["reviewId", "decision"],
+        "properties": {
+          "reviewId": { "type": "string" },
+          "decision": { "enum": ["approved", "rejected", "withdrawn", "archived"] }
+        }
+      }
+    },
+    {
+      "name": "verifier.decided.list.fetched",
+      "trigger": "GET /verifier/decided completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms", "rowCount"],
+        "properties": {
+          "status":   { "type": "integer" },
+          "ms":       { "type": "integer", "minimum": 0 },
+          "rowCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "verifier.decided.row.opened",
+      "trigger": "Production-only: user clicks a row to open the decision detail drawer.",
+      "payload": {
+        "type": "object",
+        "required": ["reviewId"],
+        "properties": { "reviewId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "verifier.decided.error",
+      "trigger": "GET /verifier/decided returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status":  { "type": "integer" },
+          "problem": { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

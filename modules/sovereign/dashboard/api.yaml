@@ -1,0 +1,224 @@
+# Copyright 2026 rakesh.khoodeeram
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Sovereign · Dashboard module — API contract
+# All endpoints are tenant-scoped via session.
+# Auth: see airegistry-specs/shared/auth.md (sovereign role required).
+
+openapi: 3.0.3
+
+info:
+  title: Sovereign AI Registry — Sovereign Dashboard API
+  version: 0.4.0
+
+servers:
+  - url: https://air.gov.mu/api/v1
+  - url: https://air-staging.gov.mu/api/v1
+
+tags:
+  - name: sovereign-dashboard
+
+paths:
+  /sovereign/dashboard:
+    get:
+      summary: Get sovereign dashboard payload
+      operationId: getSovereignDashboard
+      tags: [sovereign-dashboard]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Dashboard payload
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SovDashboardResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /sovereign/summary:
+    get:
+      summary: Get the four StatCard counters
+      operationId: getSovereignSummary
+      tags: [sovereign-dashboard]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Summary
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SovDashboardSummary' }
+
+  /sovereign/topology:
+    get:
+      summary: Resource topology graph
+      operationId: getSovereignTopology
+      tags: [sovereign-dashboard]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: window
+          schema: { type: string, enum: [7d, 30d, 90d], default: 30d }
+      responses:
+        '200':
+          description: Nodes + edges with layout coordinates
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TopologyGraph' }
+
+  /sovereign/heatmap:
+    get:
+      summary: Sector × tier coverage matrix
+      operationId: getSovereignHeatmap
+      tags: [sovereign-dashboard]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Sector × tier matrix
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SectorTierMatrix' }
+
+  /sovereign/risk:
+    get:
+      summary: Composite risk timeline (weekly)
+      operationId: getSovereignRisk
+      tags: [sovereign-dashboard]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: weeks
+          schema: { type: integer, minimum: 4, maximum: 52, default: 13 }
+      responses:
+        '200':
+          description: Weekly risk scores
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RiskWeek' }
+
+  /sovereign/national-report:
+    get:
+      summary: 'Open national report' header action — returns latest report metadata
+      operationId: getLatestNationalReport
+      tags: [sovereign-dashboard]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Latest report metadata + signed URL
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, name, issued, url]
+                properties:
+                  id:     { type: string }
+                  name:   { type: string }
+                  issued: { type: string, format: date }
+                  url:    { type: string, format: uri }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid session
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    Forbidden:
+      description: Authenticated but lacks sovereign role
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:     { type: string, format: uri }
+        title:    { type: string }
+        status:   { type: integer }
+        detail:   { type: string }
+        instance: { type: string }
+
+    SovDashboardSummary:
+      type: object
+      required: [sovereignResources, sovereignResourcesDelta7d, crossBorderCalls, crossBorderCallsDeltaPct, riskIndex, riskIndexDelta, openIncidents, openIncidentsDelta7d]
+      properties:
+        sovereignResources:        { type: integer, example: 48 }
+        sovereignResourcesDelta7d: { type: integer, example: 5 }
+        crossBorderCalls:          { type: string,  example: '94k' }
+        crossBorderCallsDeltaPct:  { type: string,  example: '+18%' }
+        riskIndex:                 { type: integer, example: 27 }
+        riskIndexDelta:            { type: integer, example: -4 }
+        openIncidents:             { type: integer, example: 2 }
+        openIncidentsDelta7d:      { type: integer, example: 1 }
+
+    TopologyNode:
+      type: object
+      required: [id, x, y, kind]
+      properties:
+        id:   { type: string }
+        x:    { type: number }
+        y:    { type: number }
+        kind: { type: string, enum: [agent, mcp, tool, model-ext] }
+
+    TopologyGraph:
+      type: object
+      required: [nodes, edges]
+      properties:
+        nodes:
+          type: array
+          items: { $ref: '#/components/schemas/TopologyNode' }
+        edges:
+          type: array
+          items:
+            type: array
+            items: { type: string }
+            minItems: 2
+            maxItems: 2
+
+    SectorTierMatrix:
+      type: object
+      required: [sectors, tiers, data, max]
+      properties:
+        sectors:
+          type: array
+          items: { type: string }
+        tiers:
+          type: array
+          items: { type: string }
+        data:
+          type: array
+          items:
+            type: array
+            items: { type: integer }
+        max: { type: integer }
+
+    RiskWeek:
+      type: object
+      required: [day, score]
+      properties:
+        day:   { type: string, example: 'May 07' }
+        score: { type: integer, minimum: 0 }
+
+    SovDashboardResponse:
+      type: object
+      required: [summary, topology, heatmap, risk, generatedAt]
+      properties:
+        summary:  { $ref: '#/components/schemas/SovDashboardSummary' }
+        topology: { $ref: '#/components/schemas/TopologyGraph' }
+        heatmap:  { $ref: '#/components/schemas/SectorTierMatrix' }
+        risk:
+          type: array
+          items: { $ref: '#/components/schemas/RiskWeek' }
+        generatedAt: { type: string, format: date-time }

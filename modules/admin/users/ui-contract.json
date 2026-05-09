@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "admin.users",
+  "description": "Explicit UI contract for the Admin portal /users route.",
+
+  "route": {
+    "portal": "admin",
+    "path": "/users",
+    "html_entry": "portals/admin.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Users & roles",
+    "breadcrumb": ["Admin", "Operations", "Users"],
+    "active_sidebar_item": "users"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Users & roles",
+      "subtitle": "Operators across all four portals. SSO bound to gov.mu OIDC.",
+      "actions": [
+        { "kind": "Btn", "variant": "secondary", "icon": "arrow-up-right", "label": "Invite log",  "test_id": "admin.users.action.invite_log" },
+        { "kind": "Btn", "variant": "primary",   "icon": "plus",            "label": "Invite user", "test_id": "admin.users.action.invite_user" }
+      ]
+    },
+
+    "data_table": {
+      "component": "DataTable",
+      "row_click_bound": false,
+      "columns": [
+        {
+          "key": "name", "label": "User",
+          "cell": {
+            "kind": "stack",
+            "class": "p-cell-stack",
+            "lines": [
+              { "binding": "name",  "class": "p-cell-strong" },
+              { "binding": "email", "class": "p-cell-meta" }
+            ]
+          }
+        },
+        { "key": "role",     "label": "Role",      "width": 130, "cell": { "kind": "tag",  "class": "p-tag",      "binding": "role" } },
+        { "key": "scope",    "label": "Scope",                   "cell": { "kind": "text", "class": "p-mono-key", "binding": "scope" } },
+        { "key": "mfa",      "label": "MFA",       "width": 80,
+          "cell": {
+            "kind": "text",
+            "class": "mono",
+            "style": { "fontSize": 11, "letterSpacing": ".08em" },
+            "value_map": { "true": "ON", "false": "OFF" },
+            "color_map": { "true": "#10b981", "false": "#ef4444" },
+            "binding": "mfa"
+          }
+        },
+        { "key": "lastSeen", "label": "Last seen", "width": 120, "cell": { "kind": "text", "class": "p-mono-key", "binding": "lastSeen" } },
+        { "key": "status",   "label": "Status",    "width": 110,
+          "cell": {
+            "kind": "renderer",
+            "renderer": "StatusPill",
+            "props": { "status": "row.status === 'active' ? 'active' : 'isolated'" }
+          }
+        }
+      ]
+    }
+  },
+
+  "icons_used": ["arrow-up-right", "plus"],
+
+  "status_pill_states_used": ["active", "isolated"],
+
+  "interactions": [
+    { "id": "invite_log",  "trigger_test_id": "admin.users.action.invite_log",  "effect": "navigate_or_open_invite_log" },
+    { "id": "invite_user", "trigger_test_id": "admin.users.action.invite_user", "effect": "open_invite_user_modal" }
+  ],
+
+  "empty_states": {
+    "no_rows": { "body_text": "No operators yet. Invite the first one.", "cta_label": "Invite user" }
+  },
+
+  "non_negotiables": [
+    "Header has TWO action buttons in this exact order: secondary 'Invite log' → primary 'Invite user'.",
+    "No StatCards and no FilterBar on this page in v0.4.",
+    "MFA cell renders the literal text 'ON' / 'OFF' — colour pairs with text.",
+    "MFA colour mapping: ON=#10b981 (green), OFF=#ef4444 (red).",
+    "Status column maps the persisted enum to a binary StatusPill visual: active→active, anything else→isolated.",
+    "Email cell preserves diacritics; do NOT strip or transliterate.",
+    "DataTable rows are non-interactive in v0.4 — do NOT bind onRowClick.",
+    "User cannot suspend / revoke / demote themselves — surface as disabled with tooltip."
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "verifier.settings",
+  "description": "Telemetry events emitted by the Verifier portal /settings route.",
+  "events": [
+    {
+      "name": "verifier.settings.viewed",
+      "trigger": "VerSettings component mount."
+    },
+    {
+      "name": "verifier.settings.field.changed",
+      "trigger": "Any field's value changes (debounce 250ms in production).",
+      "payload": {
+        "type": "object",
+        "required": ["card", "field"],
+        "properties": {
+          "card":  { "enum": ["profile", "preferences"] },
+          "field": { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "verifier.settings.profile.saved",
+      "trigger": "PATCH /verifier/settings with profile changes (200) succeeds.",
+      "payload": {
+        "type": "object",
+        "required": ["fields"],
+        "properties": {
+          "fields": {
+            "type": "array",
+            "items": { "enum": ["displayName", "collegium", "specialisation"] }
+          }
+        }
+      }
+    },
+    {
+      "name": "verifier.settings.preferences.saved",
+      "trigger": "PATCH /verifier/settings with preferences changes (200) succeeds.",
+      "payload": {
+        "type": "object",
+        "required": ["fields"],
+        "properties": {
+          "fields": {
+            "type": "array",
+            "items": { "enum": ["defaultStage", "maxConcurrent"] }
+          }
+        }
+      }
+    },
+    {
+      "name": "verifier.settings.maxConcurrent.changed",
+      "trigger": "maxConcurrent value persists.",
+      "payload": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from": { "type": "integer" },
+          "to":   { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "verifier.settings.fetched",
+      "trigger": "GET /verifier/settings completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms"],
+        "properties": {
+          "status": { "type": "integer" },
+          "ms":     { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    {
+      "name": "verifier.settings.error",
+      "trigger": "Any settings endpoint returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["endpoint", "status"],
+        "properties": {
+          "endpoint": { "type": "string" },
+          "status":   { "type": "integer" },
+          "problem":  { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "provider.docs",
+  "description": "Explicit UI contract for the Provider portal /docs route.",
+
+  "route": {
+    "portal": "provider",
+    "path": "/docs",
+    "html_entry": "portals/provider.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Docs",
+    "breadcrumb": ["Provider", "Docs"],
+    "active_sidebar_item": "docs"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Documentation",
+      "subtitle": "Guides, references and runbooks for providers.",
+      "actions": []
+    },
+
+    "card_grid": {
+      "container_class": "p-grid p-grid-2",
+      "card_template": {
+        "component": "p-card",
+        "as_element": "a",
+        "href_binding": "url || '#'",
+        "style": { "textDecoration": "none", "display": "block" },
+        "head": {
+          "left": {
+            "kind": "stack",
+            "lines": [
+              { "binding": "title", "class": "p-card-title" },
+              { "template": "${kind} · updated ${updated}", "class": "p-card-sub" }
+            ]
+          },
+          "right": {
+            "kind": "icon",
+            "name": "arrow-up-right",
+            "size": 16,
+            "aria_hidden": true
+          }
+        },
+        "body": null
+      }
+    }
+  },
+
+  "icons_used": ["arrow-up-right"],
+
+  "interactions": [
+    { "id": "card_click", "trigger": "card.click", "effect": "navigate_to_doc_url" }
+  ],
+
+  "empty_states": {
+    "no_rows": { "body_text": "Documentation is being prepared. Check back soon." }
+  },
+
+  "non_negotiables": [
+    "PageHeader has NO action buttons.",
+    "Page uses a 2-column card grid (p-grid p-grid-2).",
+    "Each card is rendered as an <a> element — the entire card is the clickable surface.",
+    "Each card has only a head (no body block beyond title + sub + corner icon).",
+    "Card sub line composes '${kind} · updated ${updated}' (note Unicode middle dot U+00B7, NOT a hyphen-minus).",
+    "Em dash (U+2014) in titles like 'Eval harness — submitting benchmarks' must be preserved.",
+    "The arrow-up-right icon is decorative; production must set aria-hidden=\"true\".",
+    "Production must replace href=\"#\" stub with the canonical doc URL."
+  ]
+}

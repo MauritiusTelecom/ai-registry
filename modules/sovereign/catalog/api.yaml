@@ -1,0 +1,116 @@
+# Copyright 2026 rakesh.khoodeeram
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Sovereign · Catalog module — API contract
+# Tenant-scoped via session.
+
+openapi: 3.0.3
+
+info:
+  title: Sovereign AI Registry — Sovereign Catalog API
+  version: 0.4.0
+
+servers:
+  - url: https://air.gov.mu/api/v1
+  - url: https://air-staging.gov.mu/api/v1
+
+tags:
+  - name: sovereign-catalog
+
+paths:
+  /sovereign/catalog:
+    get:
+      summary: List all registry entries across the active sovereign tenant
+      operationId: listSovereignCatalog
+      tags: [sovereign-catalog]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: kind
+          schema: { type: string, enum: [all, mcp-server, agent, tool, model] }
+        - in: query
+          name: tier
+          schema: { type: string, enum: [all, Tier-1, Tier-2, Tier-3, Restricted] }
+        - in: query
+          name: sector
+          schema: { type: string }
+        - in: query
+          name: risk
+          schema: { type: string, enum: [all, low, med, high] }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200':
+          description: Sovereign catalog page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SovCatalogResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid session
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    Forbidden:
+      description: Authenticated but lacks sovereign role
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:     { type: string, format: uri }
+        title:    { type: string }
+        status:   { type: integer }
+        detail:   { type: string }
+        instance: { type: string }
+
+    SovCatalogEntry:
+      type: object
+      required: [id, slug, kind, tier, region, usage, risk, sectors]
+      properties:
+        id:      { type: string, example: res_001 }
+        slug:    { type: string }
+        kind:    { type: string, enum: [mcp-server, agent, tool, model] }
+        tier:    { type: string, enum: [Tier-1, Tier-2, Tier-3, Restricted] }
+        region:  { type: string }
+        usage:   { type: string }
+        risk:    { type: string, enum: [low, med, high] }
+        sectors: { type: string }
+
+    SovCatalogResponse:
+      type: object
+      required: [rows, total, generatedAt]
+      properties:
+        rows:
+          type: array
+          items: { $ref: '#/components/schemas/SovCatalogEntry' }
+        total: { type: integer }
+        page:
+          type: object
+          properties:
+            cursor:  { type: string }
+            size:    { type: integer }
+            hasMore: { type: boolean }
+        generatedAt: { type: string, format: date-time }

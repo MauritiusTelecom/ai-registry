@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "sovereign.settings",
+  "description": "Telemetry events emitted by the Sovereign portal /settings route.",
+  "events": [
+    {
+      "name": "sovereign.settings.viewed",
+      "trigger": "SovSettings component mount."
+    },
+    {
+      "name": "sovereign.settings.field.changed",
+      "trigger": "Any field's value changes (debounce 250ms in production).",
+      "payload": {
+        "type": "object",
+        "required": ["field"],
+        "properties": {
+          "field": { "enum": ["operator", "authority", "reportingCadence"] }
+        }
+      }
+    },
+    {
+      "name": "sovereign.settings.saved",
+      "trigger": "PATCH /sovereign/settings (200) succeeds.",
+      "payload": {
+        "type": "object",
+        "required": ["fields"],
+        "properties": {
+          "fields": {
+            "type": "array",
+            "items": { "enum": ["operator", "authority", "reportingCadence"] }
+          }
+        }
+      }
+    },
+    {
+      "name": "sovereign.settings.cadence.changed",
+      "trigger": "Reporting cadence change persists (drives the report scheduler).",
+      "payload": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from": { "enum": ["weekly", "monthly", "quarterly"] },
+          "to":   { "enum": ["weekly", "monthly", "quarterly"] }
+        }
+      }
+    },
+    {
+      "name": "sovereign.settings.fetched",
+      "trigger": "GET /sovereign/settings completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms"],
+        "properties": {
+          "status": { "type": "integer" },
+          "ms":     { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    {
+      "name": "sovereign.settings.error",
+      "trigger": "Any settings endpoint returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["endpoint", "status"],
+        "properties": {
+          "endpoint": { "type": "string" },
+          "status":   { "type": "integer" },
+          "problem":  { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}
