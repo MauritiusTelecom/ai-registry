@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 
-export function LoginForm({ redirect }: { redirect: string }) {
+/**
+ * `redirect` carries the URL the user should land on if they were deep-linked
+ * to /login (via `?next=…`). When the page didn't supply one, we let the
+ * server pick — the login API returns `redirectTo` based on the user's role,
+ * so a provider lands on `/provider`, an admin on `/admin`, etc. (`null`
+ * means "no explicit deep-link; defer to the server").
+ */
+export function LoginForm({ redirect }: { redirect: string | null }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -18,13 +25,16 @@ export function LoginForm({ redirect }: { redirect: string }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email, password })
       });
-      const data = (await res.json()) as { error?: string };
+      const data = (await res.json()) as { error?: string; redirectTo?: string };
       if (!res.ok) {
         setError(data.error ?? "Login failed.");
         return;
       }
+      // Priority: an explicit `?next=…` (deep-link) wins; otherwise the
+      // server's role-based `redirectTo`; otherwise the generic /portal.
+      const target = redirect ?? data.redirectTo ?? "/portal";
       // Hard redirect so the server reads the new cookie.
-      window.location.assign(redirect);
+      window.location.assign(target);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {

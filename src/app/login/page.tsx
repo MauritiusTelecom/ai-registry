@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { portalForRole } from "@/lib/portals/auth-gate";
 import { AuthShell } from "@/components/public/auth/AuthShell";
 import { LoginForm } from "@/components/public/auth/LoginForm";
 
@@ -12,10 +13,14 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const { next } = await searchParams;
-  const target = sanitizeNext(next) ?? "/portal";
+  const sanitized = sanitizeNext(next);
 
   const user = await getCurrentUser();
-  if (user) redirect(target);
+  if (user) {
+    // Already signed in — honour the deep-link if present, otherwise route
+    // to the user's role-specific portal.
+    redirect(sanitized ?? portalForRole(user.role.code));
+  }
 
   return (
     <AuthShell
@@ -39,7 +44,7 @@ export default async function LoginPage({
         </>
       }
     >
-      <LoginForm redirect={target} />
+      <LoginForm redirect={sanitized} />
     </AuthShell>
   );
 }
