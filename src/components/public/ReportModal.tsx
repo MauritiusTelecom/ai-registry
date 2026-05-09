@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Icon } from "./Icon";
 import { Modal } from "./Modal";
 import { useReport } from "./ReportContext";
+import { withBase } from "@/lib/with-base";
 
 const REASONS = [
   { value: "impersonation", label: "Provider impersonation" },
@@ -51,7 +52,7 @@ export function ReportModal() {
 
     setSubmitting(true);
     try {
-      const response = await fetch("/api/public/report", {
+      const response = await fetch(withBase("/api/public/report"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

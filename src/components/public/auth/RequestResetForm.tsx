@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { withBase } from "@/lib/with-base";
 
 export function RequestResetForm() {
   const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ export function RequestResetForm() {
     event.preventDefault();
     setBusy(true);
     try {
-      const res = await fetch("/api/auth/request-reset", {
+      const res = await fetch(withBase("/api/auth/request-reset"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email })

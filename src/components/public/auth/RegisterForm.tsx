@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { withBase } from "@/lib/with-base";
 
 export function RegisterForm() {
   const [name, setName] = useState("");
@@ -17,7 +18,7 @@ export function RegisterForm() {
     setError(null);
     setDevVerifyUrl(null);
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch(withBase("/api/auth/register"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name, organisationName, email, password })
@@ -35,7 +36,7 @@ export function RegisterForm() {
       // Server picks the role-appropriate landing — provider self-registration
       // lands on /provider, admin-seeded accounts will land elsewhere when
       // self-registration is enabled for them. Fallback to /portal.
-      window.location.assign(data.redirectTo ?? "/portal");
+      window.location.assign(withBase(data.redirectTo ?? "/portal"));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {

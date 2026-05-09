@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "./Icon";
 import { useTheme } from "./ThemeProvider";
 import { useAuth } from "./AuthProvider";
+import { withBase } from "@/lib/with-base";
 
 // Top-nav links. Ecosystem / Governance / Documentation moved out of the
 // top nav — they remain reachable from the footer columns (see Footer in
@@ -129,7 +130,7 @@ function UserMenu() {
                 await logout();
                 setOpen(false);
                 // Hard navigation so the next request reads the cleared cookie.
-                window.location.assign("/");
+                window.location.assign(withBase("/"));
               }}
             >
               <Icon name="log-out" size={14} /> Log Out

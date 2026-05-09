@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { withBase } from "@/lib/with-base";
 
 export function ResetPasswordForm({ token }: { token: string }) {
   const [password, setPassword] = useState("");
@@ -19,7 +20,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       return;
     }
     try {
-      const res = await fetch("/api/auth/reset-password", {
+      const res = await fetch(withBase("/api/auth/reset-password"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ token, password })

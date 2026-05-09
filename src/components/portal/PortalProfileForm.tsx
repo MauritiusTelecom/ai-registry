@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { withBase } from "@/lib/with-base";
 
 type Props = { initialName: string; initialOrganisation: string | null };
 
@@ -18,7 +19,7 @@ export function PortalProfileForm({ initialName, initialOrganisation }: Props) {
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch("/api/portal/profile", {
+      const res = await fetch(withBase("/api/portal/profile"), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
