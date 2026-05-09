@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { withBase } from "@/lib/with-base";
 
 /**
  * Sign-out button. Calls POST /api/auth/logout and then hard-navigates to /
@@ -11,9 +12,9 @@ export function LogoutButton({ next = "/" }: { next?: string }) {
   async function onClick() {
     setBusy(true);
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await fetch(withBase("/api/auth/logout"), { method: "POST" });
     } finally {
-      window.location.assign(next);
+      window.location.assign(withBase(next));
     }
   }
   return (

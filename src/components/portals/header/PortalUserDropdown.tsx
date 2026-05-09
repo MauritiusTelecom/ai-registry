@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/public/Icon";
+import { withBase } from "@/lib/with-base";
 
 /**
  * User dropdown — avatar + name + role badge that reveals a panel with:
@@ -62,9 +63,9 @@ export function PortalUserDropdown({ user, currentRole }: { user: PortalUser; cu
 
   async function handleLogout() {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await fetch(withBase("/api/auth/logout"), { method: "POST" });
     } finally {
-      window.location.assign("/");
+      window.location.assign(withBase("/"));
     }
   }
 

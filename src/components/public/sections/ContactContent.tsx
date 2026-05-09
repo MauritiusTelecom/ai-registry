@@ -4,6 +4,7 @@ import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Icon } from "../Icon";
 import { Reveal } from "../Reveal";
 import { PageHero } from "./PageHero";
+import { withBase } from "@/lib/with-base";
 
 type Form = {
   name: string;
@@ -48,7 +49,7 @@ export function ContactContent() {
 
     setSubmitting(true);
     try {
-      const response = await fetch("/api/public/contact", {
+      const response = await fetch(withBase("/api/public/contact"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

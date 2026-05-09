@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { withBase } from "@/lib/with-base";
 
 const TYPES = ["model", "agent", "tool", "skill"] as const;
 
@@ -18,7 +19,7 @@ export function NewResourceForm({ allowedTypes }: { allowedTypes: string[] }) {
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch("/api/portal/resources", {
+      const res = await fetch(withBase("/api/portal/resources"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

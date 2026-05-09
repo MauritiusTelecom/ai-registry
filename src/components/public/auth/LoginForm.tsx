@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { withBase } from "@/lib/with-base";
 
 /**
  * `redirect` carries the URL the user should land on if they were deep-linked
@@ -20,7 +21,7 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch(withBase("/api/auth/login"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email, password })
@@ -34,7 +35,7 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
       // server's role-based `redirectTo`; otherwise the generic /portal.
       const target = redirect ?? data.redirectTo ?? "/portal";
       // Hard redirect so the server reads the new cookie.
-      window.location.assign(target);
+      window.location.assign(withBase(target));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {

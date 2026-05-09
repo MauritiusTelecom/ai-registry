@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode
 } from "react";
+import { withBase } from "@/lib/with-base";
 
 /**
  * Phase 2 AuthProvider.
@@ -74,7 +75,7 @@ function firstNameFrom(name: string): string {
 
 async function fetchMe(): Promise<AuthUser | null> {
   try {
-    const res = await fetch("/api/auth/me", { credentials: "same-origin" });
+    const res = await fetch(withBase("/api/auth/me"), { credentials: "same-origin" });
     if (!res.ok) return null;
     const data = (await res.json()) as MeResponse;
     if (!data.user) return null;
@@ -107,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     async (email: string, password: string) => {
       try {
-        const res = await fetch("/api/auth/login", {
+        const res = await fetch(withBase("/api/auth/login"), {
           method: "POST",
           headers: { "content-type": "application/json" },
           credentials: "same-origin",
@@ -126,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+      await fetch(withBase("/api/auth/logout"), { method: "POST", credentials: "same-origin" });
     } finally {
       setUser(null);
     }
