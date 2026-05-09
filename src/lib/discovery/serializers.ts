@@ -143,6 +143,7 @@ function pickContext(r: ResourceForCard): string {
 export function toRegistryCard(r: ResourceForCard): RegistryCard {
   return {
     id: r.id,
+    slug: r.slug,
     airId: r.airId,
     kind: r.resourceType.code,
     glyph: deriveGlyph(r.title || r.slug),
@@ -293,25 +294,62 @@ export type ProviderForCard = Provider & {
   _count?: { resources: number };
 };
 
-const PROVIDER_DISPLAY_STATUS: Record<string, DisplayStatus> = {
-  verified: "verified",
-  official_provider: "verified",
-  unverified: "experimental",
-  suspended: "isolated"
-};
+/**
+ * Maps `ProviderStatusType.code` to the five public browse badges.
+ * `official_provider` surfaces as `trusted` so filters and chips stay meaningful.
+ */
+export function deriveProviderDisplayStatus(statusCode: string): DisplayStatus {
+  switch (statusCode) {
+    case "verified":
+      return "verified";
+    case "official_provider":
+      return "trusted";
+    case "unverified":
+      return "experimental";
+    case "suspended":
+      return "isolated";
+    default:
+      return "active";
+  }
+}
+
+/** DB `ProviderStatusType.code` values that match a public browse badge (for Prisma `where`). */
+export function providerStatusCodesForBadgeFilter(badge: DisplayStatus): string[] {
+  switch (badge) {
+    case "verified":
+      return ["verified"];
+    case "trusted":
+      return ["official_provider"];
+    case "experimental":
+      return ["unverified"];
+    case "isolated":
+      return ["suspended"];
+    case "active":
+      return [];
+    default:
+      return [];
+  }
+}
+
+/** Collapse research labs into the "Model providers" tab for the public grid. */
+export function publicProviderKind(typeCode: string): string {
+  return typeCode === "research" ? "model" : typeCode;
+}
 
 export function toPublicProviderCard(p: ProviderForCard): PublicProviderCard {
   return {
     id: p.id,
+    slug: p.slug,
     glyph: deriveGlyph(p.displayName || p.slug),
     name: p.displayName,
-    kind: p.type.code,
-    status: PROVIDER_DISPLAY_STATUS[p.status.code] ?? "active",
+    kind: publicProviderKind(p.type.code),
+    status: deriveProviderDisplayStatus(p.status.code),
     desc: p.description ?? "",
     jurisdiction: p.homeJurisdiction.code,
     listings: p._count?.resources ?? 0,
     since: p.createdAt.toISOString().slice(0, 7),
     license: null,
-    tags: []
+    tags: [],
+    websiteUrl: p.websiteUrl ?? null
   };
 }

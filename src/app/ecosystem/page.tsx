@@ -1,7 +1,7 @@
 import { EcosystemContent } from "@/components/public/sections/EcosystemContent";
 
 export const metadata = {
-  title: "Ecosystem · Sovereign AI Registry"
+  title: "Ecosystem · Mauritius AI Registry"
 };
 
 export default function EcosystemPage() {

@@ -1,7 +1,7 @@
 import { DocsContent } from "@/components/public/sections/DocsContent";
 
 export const metadata = {
-  title: "Documentation · Sovereign AI Registry"
+  title: "Documentation · Mauritius AI Registry"
 };
 
 export default function DocsPage() {

@@ -14,6 +14,7 @@ import type { ResourceKind } from "@/lib/discovery/types";
  *   sovereignty_basis      sovereignty basis code (e.g. local_law)
  *   protocol               endpoint protocol code (e.g. rest, mcp)
  *   language               BCP-47 language code (e.g. en, fr, mfe)
+ *   status                 display badge filter: verified | trusted | active | experimental | isolated
  *   limit                  page size 1..100, default 20
  *   cursor                 resource id of last row from previous page
  *
@@ -30,12 +31,14 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const params = url.searchParams;
 
-  const limit = parseInt(params.get("limit") ?? "20", 10);
+  const limitRaw = parseInt(params.get("limit") ?? "20", 10);
+  const limit = Math.min(100, Math.max(1, Number.isFinite(limitRaw) ? limitRaw : 20));
+  const status = params.get("status");
   const data = await listPublicResources(
     {
       q: params.get("q"),
       kind: pickKind(params.get("kind")),
-      status: null, // status filter is currently UI-only; Phase 5 may add server-side support
+      status: status && status.trim() !== "" ? status.trim() : null,
       jurisdictionCode: params.get("jurisdiction"),
       providerSlug: params.get("provider"),
       sovereigntyBasisCode: params.get("sovereignty_basis"),
@@ -43,7 +46,7 @@ export async function GET(req: Request) {
       languageCode: params.get("language")
     },
     {
-      limit: Number.isFinite(limit) ? limit : 20,
+      limit,
       cursor: params.get("cursor")
     }
   );

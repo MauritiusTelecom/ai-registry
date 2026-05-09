@@ -102,7 +102,7 @@ export function Footer({ registryName }: { registryName: string }) {
       </div>
 
       <div className="footer-bottom">
-        <span>© 2026 Sovereign AI Registry · airegistry.mu</span>
+        <span>© 2026 Mauritius AI Registry · airegistry.mu</span>
         <span>BUILD 2026.05.07-r3 · TZ:GMT+4 · v0.4-mvp</span>
       </div>
     </footer>

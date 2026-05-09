@@ -2,7 +2,7 @@
   "name": "airegistry",
   "version": "0.1.0",
   "private": true,
-  "description": "Sovereign AI Registry — Next.js public portal and Prisma schema",
+  "description": "Mauritius AI Registry — Next.js public portal and Prisma schema",
   "scripts": {
     "dev": "next dev -p 3002",
     "build": "next build",

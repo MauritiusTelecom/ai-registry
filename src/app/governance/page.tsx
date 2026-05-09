@@ -1,7 +1,7 @@
 import { GovernancePageContent } from "@/components/public/sections/GovernancePageContent";
 
 export const metadata = {
-  title: "Governance · Sovereign AI Registry"
+  title: "Governance · Mauritius AI Registry"
 };
 
 export default function GovernancePage() {

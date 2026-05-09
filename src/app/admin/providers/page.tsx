@@ -20,7 +20,7 @@ type Row = {
 const STATUS_DISPLAY: Record<string, string> = {
   unverified: "experimental",
   verified: "verified",
-  official_provider: "verified",
+  official_provider: "trusted",
   suspended: "isolated"
 };
 

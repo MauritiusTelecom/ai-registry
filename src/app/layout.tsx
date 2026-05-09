@@ -14,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: cfg.registryName,
     description:
-      "Sovereign AI Registry — public portal for the locally-governed AI Registry under AIR-SPEC 0.4."
+      "Mauritius AI Registry — public portal for the locally-governed AI Registry under AIR-SPEC 0.4."
   };
 }
 
