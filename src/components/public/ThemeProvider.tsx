@@ -1,5 +1,6 @@
 "use client";
 
+import { SAR_THEME_KEY, type ThemeMode } from "@/lib/theme-cookie";
 import {
   createContext,
   useCallback,
@@ -9,7 +10,7 @@ import {
   type ReactNode
 } from "react";
 
-type Theme = "dark" | "light";
+type Theme = ThemeMode;
 
 type ThemeContextValue = {
   theme: Theme;
@@ -21,7 +22,12 @@ const ThemeContext = createContext<ThemeContextValue>({
   setTheme: () => {}
 });
 
-const STORAGE_KEY = "sar-theme";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+function writeThemeCookie(theme: Theme) {
+  const secure = typeof window !== "undefined" && window.location.protocol === "https:";
+  document.cookie = `${SAR_THEME_KEY}=${theme};path=/;max-age=${COOKIE_MAX_AGE};SameSite=Lax${secure ? ";Secure" : ""}`;
+}
 
 function readInitialTheme(): Theme {
   if (typeof document !== "undefined") {
@@ -34,11 +40,25 @@ function readInitialTheme(): Theme {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(readInitialTheme);
 
-  // Sync attribute and storage whenever the user changes themes after mount.
+  // Legacy: prefer localStorage if it disagrees with SSR cookie/html (one-time reconcile).
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(SAR_THEME_KEY);
+      const htmlTheme = document.documentElement.getAttribute("data-theme");
+      if ((stored === "light" || stored === "dark") && stored !== htmlTheme) {
+        setThemeState(stored);
+      }
+    } catch {
+      /* private mode etc. */
+    }
+  }, []);
+
+  // Sync attribute, cookie (for next SSR), and localStorage whenever theme changes.
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
+    writeThemeCookie(theme);
     try {
-      window.localStorage.setItem(STORAGE_KEY, theme);
+      window.localStorage.setItem(SAR_THEME_KEY, theme);
     } catch {
       // Storage may be blocked (private mode) — non-fatal.
     }
@@ -56,22 +76,3 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 export function useTheme(): ThemeContextValue {
   return useContext(ThemeContext);
 }
-
-/**
- * Inline script run before hydration to avoid a flash of the wrong theme.
- * Reads localStorage and falls back to prefers-color-scheme.
- */
-export const themeBootstrapScript = `
-(function () {
-  try {
-    var stored = localStorage.getItem('${STORAGE_KEY}');
-    var theme = stored;
-    if (!theme) {
-      theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-    }
-    document.documentElement.setAttribute('data-theme', theme);
-  } catch (e) {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  }
-})();
-`.trim();

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import "./globals.css";
+import { SAR_THEME_KEY, themeFromCookie } from "@/lib/theme-cookie";
 import { SiteShell } from "@/components/public/SiteShell";
-import { themeBootstrapScript } from "@/components/public/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "Mauritius AI Registry",
@@ -12,20 +13,18 @@ export const metadata: Metadata = {
 const FONT_HREF =
   "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap";
 
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: Readonly<{ children: React.ReactNode }>) {
+  const jar = await cookies();
+  const theme = themeFromCookie(jar.get(SAR_THEME_KEY)?.value);
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning data-theme={theme}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href={FONT_HREF} />
-        {/*
-          Inline bootstrap to apply the saved theme attribute before the body paints,
-          avoiding a flash of the wrong theme on hydration.
-        */}
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
       <body>
         <SiteShell>{children}</SiteShell>

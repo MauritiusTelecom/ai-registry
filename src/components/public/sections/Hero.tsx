@@ -51,6 +51,25 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
       <div className="hero-content">
         <div className="eyebrow">
           <span className="dot" />
+          <svg
+            width="21"
+            height="14"
+            viewBox="0 0 60 40"
+            role="img"
+            aria-label="Mauritius flag"
+            style={{
+              flexShrink: 0,
+              borderRadius: 2,
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
+              display: "block"
+            }}
+          >
+            <title>Mauritius</title>
+            <rect x="0" y="0" width="60" height="10" fill="#EA2839" />
+            <rect x="0" y="10" width="60" height="10" fill="#1A206D" />
+            <rect x="0" y="20" width="60" height="10" fill="#FFD500" />
+            <rect x="0" y="30" width="60" height="10" fill="#00A04D" />
+          </svg>
           <span>v0.4 · airegistry.mu</span>
         </div>
 
