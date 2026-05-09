@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 const nextConfig = {
   reactStrictMode: true,
+  basePath,
+  assetPrefix: basePath || undefined,
 
   // AIR-SPEC §13 names `/.well-known/ai-registry` as the capability document
   // path. Next.js's App Router excludes dot-prefixed folders, so the route
