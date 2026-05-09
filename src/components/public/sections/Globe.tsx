@@ -268,25 +268,47 @@ type Slot = {
  *  spanning North/West/Central/East/Southern Africa for a balanced opening view. */
 const INITIAL_SLOT_INDICES = [3, 13, 25, 37, 53] as const; // EG, GH, CF, KE, ZA
 
+/** Minimum projected z-depth for a node to be considered "well visible" — i.e.
+ *  comfortably on the front hemisphere with rotation buffer before it hides.
+ *  At rotation speed ~0.31 rad/s, z=0.35 gives ~3s of visibility before the
+ *  z=-0.05 hide threshold, which covers most of a slot's fade-in + hold. */
+const VISIBLE_Z_MIN = 0.35;
+
 /** Pick a random pool index with bias toward African nodes, excluding any index
- *  in `used` and any pinned anchor. Falls back to the other range if the biased
- *  range is exhausted. */
-function pickRandomIdx(used: Set<number>): number {
+ *  in `used` and any pinned anchor. When a `currentRot` is supplied, only nodes
+ *  whose projected z exceeds `VISIBLE_Z_MIN` are considered; if no visible
+ *  candidates remain, we relax the visibility filter and pick from the broader
+ *  range so the picker never returns -1 just because the front hemisphere is
+ *  briefly empty in one bias range. */
+function pickRandomIdx(used: Set<number>, currentRot?: number): number {
   const pickAfrican = Math.random() < AFRICAN_BIAS;
   const ranges: Array<[number, number]> = pickAfrican
     ? [[0, AFRICAN_END], [AFRICAN_END, NODE_POOL.length]]
     : [[AFRICAN_END, NODE_POOL.length], [0, AFRICAN_END]];
-  for (const [start, end] of ranges) {
-    const candidates: number[] = [];
-    for (let i = start; i < end; i++) {
-      if (!used.has(i) && !PINNED.has(i)) candidates.push(i);
+
+  const collect = (requireVisible: boolean) => {
+    for (const [start, end] of ranges) {
+      const candidates: number[] = [];
+      for (let i = start; i < end; i++) {
+        if (used.has(i) || PINNED.has(i)) continue;
+        if (requireVisible && currentRot !== undefined) {
+          const node = NODE_POOL[i];
+          const z = Math.cos(node.lat) * Math.cos(node.lon + currentRot);
+          if (z < VISIBLE_Z_MIN) continue;
+        }
+        candidates.push(i);
+      }
+      if (candidates.length > 0) {
+        return candidates[Math.floor(Math.random() * candidates.length)];
+      }
     }
-    if (candidates.length > 0) {
-      return candidates[Math.floor(Math.random() * candidates.length)];
-    }
-  }
-  // Pool fully consumed — caller should keep the existing slot.
-  return -1;
+    return -1;
+  };
+
+  // Prefer well-visible nodes; relax to any-unused if none are currently visible.
+  const visible = collect(true);
+  if (visible >= 0) return visible;
+  return collect(false);
 }
 
 function deterministicInitialSlots(): Slot[] {
@@ -321,7 +343,7 @@ function deterministicInitialSlots(): Slot[] {
   return initial;
 }
 
-function randomSlotsFromNow(now: number, startKey: number): Slot[] {
+function randomSlotsFromNow(now: number, startKey: number, currentRot: number): Slot[] {
   const initial: Slot[] = [];
   let key = startKey;
   const used = new Set<number>([MU_INDEX, RW_INDEX]);
@@ -342,7 +364,7 @@ function randomSlotsFromNow(now: number, startKey: number): Slot[] {
   });
 
   for (let i = 2; i < ACTIVE_COUNT; i++) {
-    const idx = pickRandomIdx(used);
+    const idx = pickRandomIdx(used, currentRot);
     if (idx < 0) break;
     used.add(idx);
     const lifetime = Math.round(LIFETIME_MIN + Math.random() * LIFETIME_RANGE);
@@ -389,25 +411,43 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
   const slotKeyRef = useRef(ACTIVE_COUNT);
   const [slots, setSlots] = useState<Slot[]>(deterministicInitialSlots);
 
+  // Track current rotation in a ref so non-rerendering callbacks (the replacement
+  // tick interval and post-mount seed) can read up-to-date rot without retriggering.
+  const rotRef = useRef(rot);
+  useEffect(() => {
+    rotRef.current = rot;
+  }, [rot]);
+
   // Swap to seeded-random slots only after mount so SSR markup matches hydrate.
   useEffect(() => {
     const now = performance.now();
-    setSlots(randomSlotsFromNow(now, slotKeyRef.current));
+    setSlots(randomSlotsFromNow(now, slotKeyRef.current, rotRef.current));
     slotKeyRef.current += ACTIVE_COUNT;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // The replacement tick reads rotRef (declared above) so it can swap slots whose
+  // nodes have rotated to the back of the globe and pick fresh nodes from the
+  // front hemisphere.
   useEffect(() => {
     const handle = window.setInterval(() => {
       const now = performance.now();
+      const currentRot = rotRef.current;
       setSlots((prev) => {
         const used = new Set(prev.map((s) => s.nodeIdx));
         let changed = false;
         const next = prev.map((s) => {
           // air.mu and air.rw are permanent anchors — skip expiry.
           if (PINNED.has(s.nodeIdx)) return s;
-          if (now - s.bornAt < s.lifetime) return s;
+          // Compute current visibility of this slot's node.
+          const node = NODE_POOL[s.nodeIdx];
+          const z = Math.cos(node.lat) * Math.cos(node.lon + currentRot);
+          const rotatedOut = z < -0.05;
+          // Replace when lifetime expired OR when the node has rotated out of
+          // sight (the user can't see it anyway, so swap it for a visible one).
+          if (now - s.bornAt < s.lifetime && !rotatedOut) return s;
           used.delete(s.nodeIdx);
-          const idx = pickRandomIdx(used);
+          const idx = pickRandomIdx(used, currentRot);
           if (idx < 0) return s; // pool exhausted — keep the existing slot
           used.add(idx);
           changed = true;
