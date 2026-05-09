@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "public.docs",
+  "description": "Telemetry events emitted by the public marketing /docs route. Anonymous; no PII.",
+  "events": [
+    {
+      "name": "public.docs.viewed",
+      "trigger": "App mounts on hash '#/docs'.",
+      "payload": {
+        "type": "object",
+        "required": ["sectionCount"],
+        "properties": { "sectionCount": { "type": "integer", "enum": [5] } }
+      }
+    },
+    {
+      "name": "public.docs.section.revealed",
+      "trigger": "A section block enters the viewport (Reveal IntersectionObserver fires).",
+      "payload": {
+        "type": "object",
+        "required": ["id", "index"],
+        "properties": {
+          "id":    { "enum": ["overview", "air-id", "metadata", "verification", "review"] },
+          "index": { "type": "integer", "minimum": 0, "maximum": 4 }
+        }
+      }
+    },
+    {
+      "name": "public.docs.nav_link.clicked",
+      "trigger": "User clicks a sticky-nav anchor link.",
+      "payload": {
+        "type": "object",
+        "required": ["id"],
+        "properties": { "id": { "enum": ["overview", "air-id", "metadata", "verification", "review"] } }
+      }
+    },
+    {
+      "name": "public.docs.code.copied",
+      "trigger": "User clicks a 'Copy' button on a code block (production-only).",
+      "payload": {
+        "type": "object",
+        "required": ["sectionId"],
+        "properties": { "sectionId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "public.docs.spec.fetched",
+      "trigger": "GET /public/docs/spec completes (production-only when fetched).",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms"],
+        "properties": {
+          "status": { "type": "integer" },
+          "ms":     { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    {
+      "name": "public.docs.error",
+      "trigger": "GET /public/docs/spec returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status":  { "type": "integer" },
+          "problem": { "type": "string" }
+        }
+      }
+    }
+  ]
+}

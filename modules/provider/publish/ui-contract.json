@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "provider.publish",
+  "description": "Explicit UI contract for the Provider portal /publish wizard.",
+
+  "route": {
+    "portal": "provider",
+    "path": "/publish",
+    "html_entry": "portals/provider.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Publish",
+    "breadcrumb": ["Provider", "Publishing", "Publish"],
+    "active_sidebar_item": "publish"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Publish a resource",
+      "subtitle": "Five steps. Validation runs locally before submission.",
+      "actions": []
+    },
+
+    "form_card": {
+      "component": "p-card",
+      "container_style": { "maxWidth": 760 },
+      "steps": [
+        {
+          "step_number": 1,
+          "step_heading": "1 · Manifest",
+          "step_heading_class": "p-card-title",
+          "step_heading_style": { "marginBottom": 12 },
+          "fields": [
+            {
+              "row": "p-field-row",
+              "items": [
+                { "label": "Slug", "kind": "input",  "binding": "manifest.slug",  "placeholder": "mcp/your-server", "test_id": "provider.publish.field.slug" },
+                { "label": "Kind", "kind": "select", "binding": "manifest.kind",  "default_value": "mcp-server",
+                  "options": [
+                    { "label": "mcp-server", "value": "mcp-server" },
+                    { "label": "agent",      "value": "agent" },
+                    { "label": "tool",       "value": "tool" },
+                    { "label": "model",      "value": "model" }
+                  ],
+                  "test_id": "provider.publish.field.kind"
+                }
+              ]
+            },
+            {
+              "label": "Description",
+              "kind": "textarea",
+              "binding": "manifest.description",
+              "placeholder": "One-paragraph description; what it does, who it's for, who shouldn't use it.",
+              "test_id": "provider.publish.field.description"
+            },
+            {
+              "row": "p-field-row",
+              "items": [
+                { "label": "Sovereignty tier", "kind": "select", "binding": "manifest.sov", "default_value": "Tier-1",
+                  "options": [
+                    { "label": "Tier-1", "value": "Tier-1" },
+                    { "label": "Tier-2", "value": "Tier-2" },
+                    { "label": "Tier-3", "value": "Tier-3" }
+                  ],
+                  "test_id": "provider.publish.field.sov"
+                },
+                { "label": "Region", "kind": "input", "binding": "manifest.region", "default_value": "MU", "test_id": "provider.publish.field.region" }
+              ]
+            }
+          ]
+        },
+        { "kind": "divider", "class": "p-divider" },
+        {
+          "step_number": 2,
+          "step_heading": "2 · Endpoint",
+          "step_heading_class": "p-card-title",
+          "step_heading_style": { "marginBottom": 12 },
+          "fields": [
+            { "label": "Endpoint URL", "kind": "input", "binding": "endpoint.url", "placeholder": "https://mcp.edu.gov.mu/", "test_id": "provider.publish.field.url" },
+            {
+              "row": "p-field-row",
+              "items": [
+                { "label": "Auth method", "kind": "select", "binding": "endpoint.authMethod", "default_value": "OIDC",
+                  "options": [
+                    { "label": "OIDC", "value": "OIDC" },
+                    { "label": "HMAC", "value": "HMAC" },
+                    { "label": "mTLS", "value": "mTLS" }
+                  ],
+                  "test_id": "provider.publish.field.authMethod"
+                },
+                { "label": "Health probe", "kind": "input", "binding": "endpoint.healthProbe", "default_value": "/healthz", "test_id": "provider.publish.field.healthProbe" }
+              ]
+            }
+          ]
+        },
+        { "kind": "divider", "class": "p-divider" },
+        {
+          "kind": "action_row",
+          "container_class": "p-row-end",
+          "container_style": { "gap": 8 },
+          "items": [
+            { "kind": "Btn", "variant": "ghost",     "label": "Save draft",       "test_id": "provider.publish.action.save_draft" },
+            { "kind": "Btn", "variant": "secondary", "label": "Run local checks", "test_id": "provider.publish.action.run_checks" },
+            { "kind": "Btn", "variant": "primary",   "icon": "arrow-right", "label": "Continue", "test_id": "provider.publish.action.continue" }
+          ]
+        }
+      ]
+    },
+
+    "production_only_steps": [
+      { "step_number": 3, "step_heading": "3 · Verification",          "described_in": "data-model.md / flows.md" },
+      { "step_number": 4, "step_heading": "4 · Sovereignty review prep","described_in": "data-model.md / flows.md" },
+      { "step_number": 5, "step_heading": "5 · Confirm & submit",      "described_in": "data-model.md / flows.md" }
+    ]
+  },
+
+  "icons_used": ["arrow-right"],
+
+  "interactions": [
+    { "id": "save_draft", "trigger_test_id": "provider.publish.action.save_draft", "effect": "POST /provider/drafts" },
+    { "id": "run_checks", "trigger_test_id": "provider.publish.action.run_checks", "effect": "POST /provider/drafts/{id}/checks → render inline panel" },
+    { "id": "continue",   "trigger_test_id": "provider.publish.action.continue",   "effect": "validate_then_PATCH_then_navigate_next_step" }
+  ],
+
+  "non_negotiables": [
+    "Form card has maxWidth: 760.",
+    "Step headings: '1 · Manifest' and '2 · Endpoint' (note middle dot U+00B7, NOT a hyphen-minus).",
+    "Action row uses p-row-end (right-justified) with three buttons in this exact order: Save draft (ghost) → Run local checks (secondary) → Continue (primary, icon arrow-right).",
+    "Steps 1 and 2 are separated from each other AND from the action row by p-divider.",
+    "Kind select default value is 'mcp-server'.",
+    "Sovereignty tier select default value is 'Tier-1'.",
+    "Region input default value is 'MU'.",
+    "Health probe input default value is '/healthz'.",
+    "Auth method select has NO defaultValue in source — first option ('OIDC') is selected by default.",
+    "Steps 3-5 are normative for production; v0.4 prototype renders only steps 1 and 2.",
+    "Inputs are uncontrolled (defaultValue) in the prototype — production must convert to controlled state for cross-step persistence."
+  ]
+}

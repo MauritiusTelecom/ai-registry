@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "provider.analytics",
+  "description": "Telemetry events emitted by the Provider portal /analytics route.",
+  "events": [
+    {
+      "name": "provider.analytics.viewed",
+      "trigger": "ProvAnalytics component mount.",
+      "payload": {
+        "type": "object",
+        "required": ["window"],
+        "properties": {
+          "window": { "enum": ["7d", "30d", "90d"] },
+          "summary": {
+            "type": "object",
+            "properties": {
+              "calls30d":   { "type": "string" },
+              "p95Latency": { "type": "string" },
+              "errorRate":  { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "provider.analytics.window.changed",
+      "trigger": "User changes the analytics window (production-only — no UI in v0.4).",
+      "payload": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from": { "enum": ["7d", "30d", "90d"] },
+          "to":   { "enum": ["7d", "30d", "90d"] }
+        }
+      }
+    },
+    {
+      "name": "provider.analytics.summary.fetched",
+      "trigger": "GET /provider/analytics/summary or /provider/analytics completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms"],
+        "properties": {
+          "status": { "type": "integer" },
+          "ms":     { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    {
+      "name": "provider.analytics.usage.fetched",
+      "trigger": "Usage portion of GET /provider/analytics completes."
+    },
+    {
+      "name": "provider.analytics.calls.fetched",
+      "trigger": "GET /provider/analytics/calls completes (production-only)."
+    },
+    {
+      "name": "provider.analytics.latency.fetched",
+      "trigger": "GET /provider/analytics/latency completes (production-only)."
+    },
+    {
+      "name": "provider.analytics.errors.fetched",
+      "trigger": "GET /provider/analytics/errors completes (production-only)."
+    },
+    {
+      "name": "provider.analytics.error",
+      "trigger": "Any of the analytics endpoints returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["endpoint", "status"],
+        "properties": {
+          "endpoint": { "type": "string" },
+          "status":   { "type": "integer" },
+          "problem":  { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

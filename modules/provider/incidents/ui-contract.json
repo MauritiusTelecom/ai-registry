@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "provider.incidents",
+  "description": "Explicit UI contract for the Provider portal /incidents route.",
+
+  "route": {
+    "portal": "provider",
+    "path": "/incidents",
+    "html_entry": "portals/provider.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Incidents",
+    "breadcrumb": ["Provider", "Observe", "Incidents"],
+    "active_sidebar_item": "incidents",
+    "sidebar_badge": "1"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Incidents",
+      "subtitle": "Reliability and evaluation incidents on your resources.",
+      "actions": [
+        { "kind": "Btn", "variant": "primary", "icon": "plus", "label": "Report incident", "test_id": "provider.incidents.action.report_incident" }
+      ]
+    },
+
+    "data_table": {
+      "component": "DataTable",
+      "row_click_bound": false,
+      "columns": [
+        { "key": "id",       "label": "ID",       "width": 100, "cell": { "kind": "text", "class": "p-mono-val",   "binding": "id" } },
+        { "key": "resource", "label": "Resource",               "cell": { "kind": "text", "class": "p-cell-strong", "binding": "resource" } },
+        { "key": "kind",     "label": "Kind",                   "cell": { "kind": "tag",  "class": "p-tag",         "binding": "kind" } },
+        { "key": "severity", "label": "Severity", "width": 110,
+          "cell": {
+            "kind": "pill",
+            "pill_class_map": { "high": "p-pill p-pill-isolated", "med": "p-pill p-pill-pending", "low": "p-pill p-pill-draft" },
+            "pill_dot_class": "p-pill-dot",
+            "binding": "severity"
+          }
+        },
+        { "key": "opened",   "label": "Opened",   "width": 160, "cell": { "kind": "text", "class": "p-mono-key", "binding": "opened" } },
+        { "key": "status",   "label": "Status",   "width": 110,
+          "cell": {
+            "kind": "renderer",
+            "renderer": "StatusPill",
+            "props": { "status": "row.status === 'open' ? 'pending' : 'verified'" }
+          }
+        }
+      ]
+    }
+  },
+
+  "icons_used": ["plus"],
+
+  "status_pill_states_used": ["pending", "verified"],
+
+  "interactions": [
+    { "id": "report_incident", "trigger_test_id": "provider.incidents.action.report_incident", "effect": "open_report_incident_modal" }
+  ],
+
+  "empty_states": {
+    "no_rows": { "body_text": "No incidents. Healthy week." }
+  },
+
+  "non_negotiables": [
+    "Header has only ONE action button (primary 'Report incident').",
+    "No StatCards and no FilterBar on this page in v0.4.",
+    "Severity pill mapping: high → p-pill-isolated, med → p-pill-pending, low → p-pill-draft.",
+    "Status column maps the persisted enum (open / investigating / resolved) to a binary StatusPill visual: open → pending, anything else → verified. Production should add a third 'review'-style visual for 'investigating' once available.",
+    "DataTable rows are non-interactive in v0.4 — do NOT bind onRowClick.",
+    "Sidebar badge value comes from openCount in the list endpoint, not from page row count.",
+    "Public toggle is OUT of scope on this page (lives on the planned detail route)."
+  ]
+}

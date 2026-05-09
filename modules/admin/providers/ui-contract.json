@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "admin.providers",
+  "description": "Explicit UI contract for the Admin portal /providers route.",
+
+  "route": {
+    "portal": "admin",
+    "path": "/providers",
+    "html_entry": "portals/admin.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Providers",
+    "breadcrumb": ["Admin", "Registry", "Providers"],
+    "active_sidebar_item": "providers"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Providers",
+      "subtitle_template": "${total} entities — sovereign, regional, private and external.",
+      "actions": [
+        { "kind": "Btn", "variant": "secondary", "icon": "arrow-up-right", "label": "Onboarding queue", "test_id": "admin.providers.action.onboarding_queue" },
+        { "kind": "Btn", "variant": "primary",   "icon": "plus",            "label": "Add provider",     "test_id": "admin.providers.action.add_provider" }
+      ]
+    },
+
+    "stat_grid": {
+      "container_class": "p-grid p-grid-4",
+      "container_style": { "marginBottom": 20 },
+      "cards": [
+        { "label": "Sovereign", "value_binding": "counters.sovereign", "icon": "shield", "sub": "gov entities",       "test_id": "admin.providers.stat.sovereign" },
+        { "label": "Regional",  "value_binding": "counters.regional",  "icon": "globe",  "sub": "ioc partners",       "test_id": "admin.providers.stat.regional" },
+        { "label": "Private",   "value_binding": "counters.private",   "icon": "layers", "sub": "domestic",           "test_id": "admin.providers.stat.private" },
+        { "label": "External",  "value_binding": "counters.external",  "icon": "zap",    "sub": "frontier vendors",   "test_id": "admin.providers.stat.external" }
+      ],
+      "value_animation": {
+        "renderer": "useCountUp",
+        "duration_ms": 1600,
+        "ease": "ease-out cubic"
+      },
+      "deltas_present": false
+    },
+
+    "filter_bar": {
+      "component": "FilterBar",
+      "children_in_order": [
+        {
+          "kind": "input",
+          "class": "p-input",
+          "placeholder": "Search providers…",
+          "binding": "q",
+          "style": { "minWidth": 280 },
+          "test_id": "admin.providers.filter.q"
+        },
+        {
+          "kind": "select",
+          "class": "p-input p-select",
+          "binding": "kind",
+          "default_value": "all",
+          "options": [
+            { "label": "All kinds",  "value": "all" },
+            { "label": "Sovereign",  "value": "sovereign" },
+            { "label": "Regional",   "value": "regional" },
+            { "label": "Private",    "value": "private" },
+            { "label": "External",   "value": "external" }
+          ],
+          "test_id": "admin.providers.filter.kind"
+        },
+        {
+          "kind": "counter",
+          "class": "mono",
+          "style": { "marginLeft": "auto", "color": "var(--p-text-3)", "fontSize": 11 },
+          "template": "${filtered} entities",
+          "test_id": "admin.providers.filter.counter"
+        }
+      ],
+      "filter_logic": {
+        "search_match": "kind === 'all' || row.kind === kind",
+        "name_match":   "!q || row.name.toLowerCase().includes(q.toLowerCase())",
+        "domain_search": false,
+        "combinator":   "AND"
+      }
+    },
+
+    "data_table": {
+      "component": "DataTable",
+      "row_click_bound": false,
+      "columns": [
+        {
+          "key": "name", "label": "Provider",
+          "cell": {
+            "kind": "stack",
+            "class": "p-cell-stack",
+            "lines": [
+              { "binding": "name",                  "class": "p-cell-strong" },
+              { "template": "${domain} · ${kind}",   "class": "p-cell-meta" }
+            ]
+          }
+        },
+        { "key": "tier",      "label": "Tier",            "width": 120, "cell": { "kind": "tag",  "class": "p-tag",      "binding": "tier" } },
+        { "key": "resources", "label": "Resources",       "width": 100, "cell": { "kind": "text", "class": "p-mono-val", "binding": "resources" } },
+        { "key": "primary",   "label": "Primary contact",               "cell": { "kind": "text", "style": { "color": "var(--p-text-2)" }, "binding": "primary" } },
+        { "key": "status",    "label": "Status",          "width": 130, "cell": { "kind": "renderer", "renderer": "StatusPill", "props": { "status": "row.status" } } },
+        { "key": "verified",  "label": "Verified",        "width": 110, "cell": { "kind": "text", "class": "p-mono-key", "binding": "verified" } }
+      ]
+    }
+  },
+
+  "icons_used": ["arrow-up-right", "plus", "shield", "globe", "layers", "zap"],
+
+  "status_pill_states_used": ["verified", "review", "isolated"],
+
+  "interactions": [
+    { "id": "onboarding_queue", "trigger_test_id": "admin.providers.action.onboarding_queue", "effect": "navigate_or_open_queue_board" },
+    { "id": "add_provider",     "trigger_test_id": "admin.providers.action.add_provider",     "effect": "open_create_modal" }
+  ],
+
+  "non_negotiables": [
+    "StatCard order must remain: Sovereign → Regional → Private → External.",
+    "StatCards display headline counts only — no deltas.",
+    "Filter searches `name` only (case-insensitive); `domain` is NOT searched.",
+    "Counter chip text uses 'entities', not 'X of Y'.",
+    "Table rows are non-interactive in v0.4 — do NOT bind onRowClick.",
+    "DataTable column order must remain: Provider → Tier → Resources → Primary contact → Status → Verified."
+  ]
+}

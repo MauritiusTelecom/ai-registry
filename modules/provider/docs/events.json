@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "provider.docs",
+  "description": "Telemetry events emitted by the Provider portal /docs route.",
+  "events": [
+    {
+      "name": "provider.docs.viewed",
+      "trigger": "ProvDocs component mount.",
+      "payload": {
+        "type": "object",
+        "required": ["totalCount"],
+        "properties": {
+          "totalCount":    { "type": "integer" },
+          "guideCount":    { "type": "integer" },
+          "referenceCount": { "type": "integer" },
+          "runbookCount":  { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "provider.docs.card.clicked",
+      "trigger": "User clicks a doc card.",
+      "payload": {
+        "type": "object",
+        "required": ["docId", "kind"],
+        "properties": {
+          "docId": { "type": "string" },
+          "kind":  { "enum": ["guide", "reference", "runbook", "tutorial", "changelog"] },
+          "title": { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "provider.docs.list.fetched",
+      "trigger": "GET /provider/docs completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms", "rowCount"],
+        "properties": {
+          "status":   { "type": "integer" },
+          "ms":       { "type": "integer", "minimum": 0 },
+          "rowCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "provider.docs.error",
+      "trigger": "GET /provider/docs returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status":  { "type": "integer" },
+          "problem": { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

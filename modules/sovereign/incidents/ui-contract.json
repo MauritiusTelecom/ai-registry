@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "sovereign.incidents",
+  "description": "Explicit UI contract for the Sovereign portal /incidents route.",
+
+  "route": {
+    "portal": "sovereign",
+    "path": "/incidents",
+    "html_entry": "portals/sovereign.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Incidents",
+    "breadcrumb": ["Sovereign", "Governance", "Incidents"],
+    "active_sidebar_item": "incidents",
+    "sidebar_badge": "2"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Incidents",
+      "subtitle": "National-impact incidents under sovereign oversight.",
+      "actions": []
+    },
+
+    "data_table": {
+      "component": "DataTable",
+      "row_click_bound": false,
+      "columns": [
+        { "key": "id",       "label": "ID",       "width": 110, "cell": { "kind": "text", "class": "p-mono-val",   "binding": "id" } },
+        { "key": "sector",   "label": "Sector",   "width": 130, "cell": { "kind": "tag",  "class": "p-tag",         "binding": "sector" } },
+        { "key": "target",   "label": "Target",                "cell": { "kind": "text", "class": "p-cell-strong", "binding": "target" } },
+        { "key": "kind",     "label": "Kind",                  "cell": { "kind": "text", "style": { "color": "var(--p-text-2)" }, "binding": "kind" } },
+        { "key": "severity", "label": "Severity", "width": 110,
+          "cell": {
+            "kind": "pill",
+            "v04_hardcoded_class": "p-pill p-pill-isolated",
+            "production_pill_class_map": { "high": "p-pill p-pill-isolated", "med": "p-pill p-pill-pending", "low": "p-pill p-pill-draft" },
+            "pill_dot_class": "p-pill-dot",
+            "binding": "severity"
+          }
+        },
+        { "key": "opened",   "label": "Opened",   "width": 120, "cell": { "kind": "text", "class": "p-mono-key", "binding": "opened" } }
+      ]
+    }
+  },
+
+  "icons_used": [],
+
+  "interactions": [],
+
+  "empty_states": {
+    "no_rows": { "body_text": "No national-impact incidents under sovereign oversight." }
+  },
+
+  "non_negotiables": [
+    "PageHeader has NO action buttons.",
+    "DataTable column order is fixed: ID → Sector → Target → Kind → Severity → Opened.",
+    "Severity pill is hard-coded `p-pill-isolated` in v0.4 because all mock rows are 'high' — production must derive from severity.",
+    "Kind column uses muted text style (var(--p-text-2)), NOT a p-tag chip.",
+    "Sector column uses the standard p-tag chip.",
+    "DataTable rows are non-interactive in v0.4 — do NOT bind onRowClick.",
+    "Sidebar badge value comes from openCount in the list endpoint, not from page row count.",
+    "This page is a SUBSET of admin /flags + provider /incidents — only items elevated to sovereign oversight."
+  ]
+}

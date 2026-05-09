@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "sovereign.topology",
+  "description": "Explicit UI contract for the Sovereign portal /topology route.",
+
+  "route": {
+    "portal": "sovereign",
+    "path": "/topology",
+    "html_entry": "portals/sovereign.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Topology",
+    "breadcrumb": ["Sovereign", "National", "Topology"],
+    "active_sidebar_item": "topology"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Topology",
+      "subtitle": "Inter-resource dependencies — agents calling MCP servers, tools and external models.",
+      "actions": []
+    },
+
+    "topology_card": {
+      "component": "TopologyCard",
+      "described_in": "modules/sovereign/dashboard/ui-contract.json (topology_row.card)",
+      "comment": "Same component as the dashboard's TopologyCard — full-width on this route."
+    },
+
+    "spacer": { "kind": "spacer", "style": { "height": 16 } },
+
+    "data_table": {
+      "component": "DataTable",
+      "row_click_bound": false,
+      "columns": [
+        { "key": "src",  "label": "Source",                "cell": { "kind": "text", "class": "p-cell-strong", "binding": "src" } },
+        { "key": "kind", "label": "Edge",   "width": 130, "cell": { "kind": "tag",  "class": "p-tag",         "binding": "kind" } },
+        { "key": "dst",  "label": "Target",                "cell": { "kind": "text", "class": "p-mono-val",    "binding": "dst" } }
+      ]
+    }
+  },
+
+  "icons_used": [],
+
+  "interactions": [],
+
+  "empty_states": {
+    "no_dependencies": { "body_text": "No dependencies recorded." }
+  },
+
+  "non_negotiables": [
+    "PageHeader has NO action buttons.",
+    "TopologyCard renders FULL-WIDTH (NOT inside a 2fr/1fr split) — it's the only widget at the top of this route.",
+    "16px spacer between TopologyCard and DataTable.",
+    "DataTable column order is fixed: Source → Edge → Target.",
+    "Edge column uses a p-tag chip; the kind values are 'mcp', 'tool', 'model-call'.",
+    "Source and Target column tones differ (Source is strong; Target is mono-val) to mirror admin's audit table.",
+    "Subtitle uses an em dash (U+2014) between 'dependencies' and the description."
+  ]
+}

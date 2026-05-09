@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "public.governance",
+  "description": "Telemetry events emitted by the public marketing /governance route. Anonymous; no PII.",
+  "events": [
+    {
+      "name": "public.governance.viewed",
+      "trigger": "App mounts on hash '#/governance'."
+    },
+    {
+      "name": "public.governance.card.revealed",
+      "trigger": "A charter card enters the viewport (Reveal IntersectionObserver fires).",
+      "payload": {
+        "type": "object",
+        "required": ["heading", "index"],
+        "properties": {
+          "heading": { "enum": ["What it is", "What it is not"] },
+          "index":   { "type": "integer", "enum": [0, 1] }
+        }
+      }
+    },
+    {
+      "name": "public.governance.fetched",
+      "trigger": "GET /public/governance completes (production-only when fetched).",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms"],
+        "properties": {
+          "status": { "type": "integer" },
+          "ms":     { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    {
+      "name": "public.governance.error",
+      "trigger": "GET /public/governance returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status":  { "type": "integer" },
+          "problem": { "type": "string" }
+        }
+      }
+    }
+  ]
+}

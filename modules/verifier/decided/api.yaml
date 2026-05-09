@@ -1,0 +1,154 @@
+# Copyright 2026 rakesh.khoodeeram
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Verifier · Decided module — API contract
+# Read-only history of closed reviews. Tenant-scoped via session.
+
+openapi: 3.0.3
+
+info:
+  title: Sovereign AI Registry — Verifier Decided API
+  version: 0.4.0
+
+servers:
+  - url: https://air.gov.mu/api/v1
+  - url: https://air-staging.gov.mu/api/v1
+
+tags:
+  - name: verifier-decided
+
+paths:
+  /verifier/decided:
+    get:
+      summary: List closed reviews
+      operationId: listVerifierDecided
+      tags: [verifier-decided]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: decision
+          schema: { type: string, enum: [all, approved, rejected, withdrawn, archived] }
+        - in: query
+          name: verifier
+          schema: { type: string, description: 'Filter by verifier email; omit to show all.' }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200':
+          description: Decided history page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VerifierDecidedResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /verifier/decided/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      summary: Get full decision detail (drawer payload)
+      operationId: getVerifierDecidedItem
+      tags: [verifier-decided]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Decision detail
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/DecidedReview'
+                  - type: object
+                    properties:
+                      body:           { type: string, description: 'Decision body (≥12 chars).' }
+                      auditId:        { type: string, description: 'Cross-link to the audit ledger row.' }
+                      submission:     { type: string, description: 'Original submission body.' }
+                      attachedRunIds:
+                        type: array
+                        items: { type: string }
+        '404':
+          description: Not found
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid session
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    Forbidden:
+      description: Authenticated but lacks verifier role
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:     { type: string, format: uri }
+        title:    { type: string }
+        status:   { type: integer }
+        detail:   { type: string }
+        instance: { type: string }
+
+    DecidedReview:
+      type: object
+      required: [id, target, decision, closed, verifier]
+      properties:
+        id:       { type: string, example: rev_8810 }
+        target:   { type: string }
+        decision: { type: string, enum: [approved, rejected, withdrawn, archived] }
+        closed:   { type: string, format: date }
+        verifier: { type: string, format: email }
+
+    VerifierDecidedResponse:
+      type: object
+      required: [rows, total, counters, generatedAt]
+      properties:
+        rows:
+          type: array
+          items: { $ref: '#/components/schemas/DecidedReview' }
+        total: { type: integer }
+        counters:
+          type: object
+          required: [approved, rejected, withdrawn, archived]
+          properties:
+            approved:  { type: integer }
+            rejected:  { type: integer }
+            withdrawn: { type: integer }
+            archived:  { type: integer }
+        page:
+          type: object
+          properties:
+            cursor:  { type: string }
+            size:    { type: integer }
+            hasMore: { type: boolean }
+        generatedAt: { type: string, format: date-time }

@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "sovereign.dashboard",
+  "description": "Explicit UI contract for the Sovereign portal dashboard route.",
+
+  "route": {
+    "portal": "sovereign",
+    "path": "/",
+    "html_entry": "portals/sovereign.html",
+    "default_path_when_hash_empty": "/"
+  },
+
+  "design_tokens_inherited_from": "modules/admin/dashboard/ui-contract.json",
+
+  "shell": {
+    "component": "PortalShell",
+    "props": {
+      "role": "sovereign",
+      "portalLabel": "Sovereign Ops",
+      "portalIcon": "globe",
+      "currentTitle": "Dashboard",
+      "breadcrumb": ["Sovereign", "Dashboard"]
+    },
+    "sidebar": {
+      "logo_text": "AI Registry",
+      "logo_sub_label": "Sovereign Ops",
+      "logo_sub_icon": "globe",
+      "items": [
+        { "id": "home",      "label": "Dashboard",         "icon": "home",     "path": "/" },
+        { "divider": true, "id": "div_n", "label": "National view" },
+        { "id": "catalog",   "label": "Catalog",           "icon": "layers",   "path": "/catalog" },
+        { "id": "topology",  "label": "Topology",          "icon": "flow",     "path": "/topology" },
+        { "id": "sectors",   "label": "Sectors",           "icon": "database", "path": "/sectors" },
+        { "divider": true, "id": "div_g", "label": "Governance" },
+        { "id": "risk",      "label": "Risk",              "icon": "activity", "path": "/risk" },
+        { "id": "policies",  "label": "Policies",          "icon": "shield",   "path": "/policies" },
+        { "id": "incidents", "label": "Incidents",         "icon": "flag",     "path": "/incidents", "badge": "2" },
+        { "divider": true, "id": "div_p", "label": "Programmes" },
+        { "id": "partners",  "label": "Regional partners", "icon": "globe",    "path": "/partners" },
+        { "id": "reports",   "label": "Reports",           "icon": "doc",      "path": "/reports" },
+        { "id": "settings",  "label": "Settings",          "icon": "settings", "path": "/settings" }
+      ]
+    }
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Sovereign operations",
+      "subtitle_template": "${authorityName} — strategic view across the registry.",
+      "subtitle_default":  "Mauritius Ministry of Finance — strategic view across the registry.",
+      "actions": [
+        { "kind": "Btn", "variant": "primary", "icon": "arrow-up-right", "label": "Open national report", "test_id": "sovereign.dashboard.action.open_national_report" }
+      ]
+    },
+
+    "stat_grid": {
+      "container_class": "p-grid p-grid-4",
+      "container_style": { "marginBottom": 20 },
+      "cards": [
+        { "label": "Sovereign resources", "value": "48",  "delta": "+5",   "deltaTone": "pos", "sub": "Tier-1",        "icon": "shield",   "test_id": "sovereign.dashboard.stat.sovereignResources" },
+        { "label": "Cross-border calls",  "value": "94k", "delta": "+18%", "deltaTone": "neu", "sub": "Tier-3",        "icon": "globe",    "test_id": "sovereign.dashboard.stat.crossBorderCalls" },
+        { "label": "Risk index",          "value": "27",  "delta": "-4",   "deltaTone": "pos", "sub": "vs last week", "icon": "activity", "test_id": "sovereign.dashboard.stat.riskIndex" },
+        { "label": "Open incidents",      "value": "2",   "delta": "+1",   "deltaTone": "neg", "sub": "critical",     "icon": "flag",     "test_id": "sovereign.dashboard.stat.openIncidents" }
+      ],
+      "tone_rules": {
+        "riskIndex":   { "negative_delta": "pos", "positive_delta": "neg", "comment": "Lower risk is better." },
+        "openIncidents": { "positive_delta": "neg" }
+      }
+    },
+
+    "topology_row": {
+      "container_class": "p-grid",
+      "container_style": { "gridTemplateColumns": "1fr", "gap": 16, "marginBottom": 16 },
+      "card": {
+        "component": "TopologyCard",
+        "head": {
+          "title": "Resource topology",
+          "sub": "agent → mcp / tool / external model",
+          "right": {
+            "kind": "legend",
+            "items": [
+              { "label": "agent",    "swatch_token": "rgb(var(--primary-rgb))",   "swatch_shape": "circle" },
+              { "label": "mcp",      "swatch_token": "rgb(var(--secondary-rgb))", "swatch_shape": "circle" },
+              { "label": "tool",     "swatch_token": "rgb(var(--tertiary-rgb))",  "swatch_shape": "circle" },
+              { "label": "external", "swatch_token": "#f59e0b",                   "swatch_shape": "circle" }
+            ]
+          }
+        },
+        "svg": {
+          "viewBox": "0 0 720 320",
+          "edge_stroke": "var(--p-border-strong)",
+          "edge_stroke_width": 1.2,
+          "edge_path_template": "M${a.x},${a.y} Q${(a.x+b.x)/2},${(a.y+b.y)/2 - 20} ${b.x},${b.y}",
+          "node_outer_r": 8,
+          "node_outer_opacity": 0.18,
+          "node_inner_r": 4,
+          "node_label_offset_x": 10,
+          "node_label_offset_y": 4,
+          "node_label_font_family": "IBM Plex Mono",
+          "node_label_font_size": 11,
+          "node_label_fill": "var(--p-text-2)"
+        }
+      }
+    },
+
+    "split_row": {
+      "container_class": "p-grid p-grid-2",
+      "left_card": {
+        "component": "HeatmapCard",
+        "head": { "title": "Sector × tier coverage", "sub": "resource counts" },
+        "grid": {
+          "container_style": { "display": "grid", "gridTemplateColumns": "60px repeat(4, 1fr)", "gap": 4, "marginTop": 8 },
+          "tiers": ["T-1", "T-2", "T-3", "Restr."],
+          "tier_header_style": { "fontSize": 10, "textAlign": "center", "color": "var(--p-text-3)", "textTransform": "uppercase", "letterSpacing": ".1em" },
+          "sectors": ["Edu", "Fin", "Health", "Trade", "Log", "Agri"],
+          "cell_style": {
+            "aspectRatio": "2/1",
+            "borderRadius": 4,
+            "background_zero": "var(--p-input)",
+            "background_template_nonzero": "rgba(var(--primary-rgb), ${0.15 + (v/max)*0.6})",
+            "border": "1px solid var(--p-border)",
+            "color_zero": "var(--p-text-3)",
+            "color_nonzero": "#fff",
+            "fontFamily": "IBM Plex Mono",
+            "fontSize": 12,
+            "zero_glyph": "·"
+          },
+          "max_alpha_anchor": 4
+        }
+      },
+      "right_card": {
+        "component": "RiskTimelineCard",
+        "head": {
+          "title": "Sovereign risk index",
+          "sub": "composite · weekly · lower is better",
+          "right_big_number": {
+            "binding": "data[data.length-1].score",
+            "class": "p-mono-val",
+            "style": { "fontSize": 22 }
+          }
+        },
+        "svg": {
+          "viewBox": "0 0 720 220",
+          "padding": 30,
+          "y_max": 50,
+          "grid_lines": 5,
+          "grid_stroke": "var(--p-border)",
+          "grid_dash": "2 4",
+          "grid_stroke_width": 0.8,
+          "fill_color": "rgb(var(--primary-rgb))",
+          "fill_opacity": 0.15,
+          "stroke_color": "rgb(var(--primary-rgb))",
+          "stroke_width": 1.8,
+          "dot_r": 3,
+          "day_label": {
+            "font_family": "IBM Plex Mono",
+            "font_size": 10,
+            "fill": "var(--p-text-3)"
+          }
+        }
+      }
+    }
+  },
+
+  "icons_used": ["arrow-up-right", "shield", "globe", "activity", "flag"],
+
+  "interactions": [
+    { "id": "open_national_report", "trigger_test_id": "sovereign.dashboard.action.open_national_report", "effect": "GET /sovereign/national-report → open URL in new tab" }
+  ],
+
+  "non_negotiables": [
+    "Header has only ONE action button (primary 'Open national report' with arrow-up-right icon).",
+    "StatCard order is fixed: Sovereign resources → Cross-border calls → Risk index → Open incidents.",
+    "Risk index tone is INVERTED: negative delta = pos (lower risk is better).",
+    "Open incidents tone is NEGATIVE for a positive delta.",
+    "Topology card uses ROUND swatches (8×8 borderRadius 50%), NOT square (unlike provider's chart legend).",
+    "Heatmap card title uses Unicode multiplication sign × (U+00D7), NOT lowercase 'x'.",
+    "Heatmap zero cells render the literal character '·' (U+00B7 middle dot).",
+    "Tier header abbreviations: 'T-1', 'T-2', 'T-3', 'Restr.' — fixed strings.",
+    "Risk timeline y-axis ceiling is 50.",
+    "Day labels use 'MMM DD' format (e.g. 'May 07') with leading zero on the day."
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "provider.billing",
+  "description": "Explicit UI contract for the Provider portal /billing route.",
+
+  "route": {
+    "portal": "provider",
+    "path": "/billing",
+    "html_entry": "portals/provider.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Billing",
+    "breadcrumb": ["Provider", "Org", "Billing"],
+    "active_sidebar_item": "billing"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Billing",
+      "subtitle": "Sovereign-tier providers operate at zero cost; usage is reported for transparency.",
+      "actions": []
+    },
+
+    "data_table": {
+      "component": "DataTable",
+      "row_click_bound": false,
+      "columns": [
+        { "key": "period", "label": "Period",                 "cell": { "kind": "text", "class": "p-cell-strong", "binding": "period" } },
+        { "key": "usage",  "label": "Usage",                  "cell": { "kind": "text", "class": "p-mono-val",   "binding": "usage" } },
+        { "key": "tier",   "label": "Tier",   "width": 130,   "cell": { "kind": "tag",  "class": "p-tag",         "binding": "tier" } },
+        { "key": "amount", "label": "Amount", "width": 130,   "cell": { "kind": "text", "class": "p-mono-val",   "binding": "amount" } },
+        { "key": "status", "label": "Status", "width": 130,
+          "cell": {
+            "kind": "renderer",
+            "renderer": "StatusPill",
+            "props": { "status": "verified" },
+            "comment": "v0.4 hard-codes 'verified'. Production should map per data-model.md (covered/paid → verified, due → pending, overdue → failed, disputed → review)."
+          }
+        }
+      ]
+    }
+  },
+
+  "icons_used": [],
+
+  "status_pill_states_used": ["verified"],
+
+  "interactions": [],
+
+  "empty_states": {
+    "no_rows": { "body_text": "No statements yet. The first statement will appear after your first month of usage." }
+  },
+
+  "non_negotiables": [
+    "PageHeader has NO action buttons in v0.4 (sovereign-tier only).",
+    "No StatCards and no FilterBar on this page in v0.4.",
+    "Status pill is hard-coded to 'verified' in the prototype; production must remap from the persisted enum.",
+    "Amount cell renders the currency-code prefix verbatim (e.g. 'MUR 0'); do NOT strip it.",
+    "Tier tag uses uniform p-tag colour in v0.4 — production may colour-code by tier when paid tiers ship.",
+    "DataTable rows are non-interactive in v0.4 — do NOT bind onRowClick.",
+    "Sovereign-tier rows MUST NOT surface a Download invoice action — there is no invoice."
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "sovereign.partners",
+  "description": "Explicit UI contract for the Sovereign portal /partners route.",
+
+  "route": {
+    "portal": "sovereign",
+    "path": "/partners",
+    "html_entry": "portals/sovereign.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Regional partners",
+    "breadcrumb": ["Sovereign", "Programmes", "Partners"],
+    "active_sidebar_item": "partners"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Regional partners",
+      "subtitle": "MOUs and shared resources with Indian Ocean partners.",
+      "actions": []
+    },
+
+    "data_table": {
+      "component": "DataTable",
+      "row_click_bound": false,
+      "columns": [
+        { "key": "name",      "label": "Partner",                      "cell": { "kind": "text", "class": "p-cell-strong", "binding": "name" } },
+        { "key": "kind",      "label": "Kind",      "width": 130,       "cell": { "kind": "tag",  "class": "p-tag",         "binding": "kind" } },
+        { "key": "resources", "label": "Shared resources", "width": 160, "cell": { "kind": "text", "class": "p-mono-val",   "binding": "resources" } },
+        { "key": "mou",       "label": "MOU",       "width": 130,       "cell": { "kind": "text", "class": "p-mono-key",    "binding": "mou" } }
+      ]
+    }
+  },
+
+  "icons_used": [],
+
+  "interactions": [],
+
+  "empty_states": {
+    "no_rows": { "body_text": "No regional partners yet." }
+  },
+
+  "non_negotiables": [
+    "PageHeader has NO action buttons.",
+    "DataTable column order is fixed: Partner → Kind → Shared resources → MOU.",
+    "Diacritics in partner names (e.g. 'Madagascar Numérique') MUST be preserved.",
+    "MOU column accepts the literal string 'pending' as a sentinel for in-negotiation MOUs.",
+    "Pending MOUs MUST have resources === 0 (server-side invariant).",
+    "DataTable rows are non-interactive in v0.4 — do NOT bind onRowClick.",
+    "The page is purely a sovereign-side view; partner add / remove / MOU update happens admin-side."
+  ]
+}

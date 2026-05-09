@@ -1,0 +1,195 @@
+# Copyright 2026 rakesh.khoodeeram
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Provider · Analytics module — API contract
+
+openapi: 3.0.3
+
+info:
+  title: Sovereign AI Registry — Provider Analytics API
+  version: 0.4.0
+
+servers:
+  - url: https://air.gov.mu/api/v1
+  - url: https://air-staging.gov.mu/api/v1
+
+tags:
+  - name: provider-analytics
+
+paths:
+  /provider/analytics:
+    get:
+      summary: Get the analytics page payload (summary + usage)
+      operationId: getProviderAnalytics
+      tags: [provider-analytics]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: window
+          schema: { type: string, enum: [7d, 30d, 90d], default: 30d }
+      responses:
+        '200':
+          description: Analytics payload
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProviderAnalyticsResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /provider/analytics/summary:
+    get:
+      summary: Get the three StatCard counters
+      operationId: getProviderAnalyticsSummary
+      tags: [provider-analytics]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Summary
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProviderAnalyticsSummary' }
+
+  /provider/analytics/calls:
+    get:
+      summary: Calls breakdown
+      operationId: getProviderCalls
+      tags: [provider-analytics]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: window
+          schema: { type: string, enum: [7d, 30d, 90d], default: 30d }
+        - in: query
+          name: groupBy
+          schema: { type: string, enum: [day, kind, resource], default: day }
+      responses:
+        '200':
+          description: Buckets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [bucket, count]
+                  properties:
+                    bucket: { type: string }
+                    count:  { type: integer }
+
+  /provider/analytics/latency:
+    get:
+      summary: Latency percentile breakdown
+      operationId: getProviderLatency
+      tags: [provider-analytics]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: window
+          schema: { type: string, enum: [7d, 30d, 90d], default: 30d }
+        - in: query
+          name: percentile
+          schema: { type: integer, enum: [50, 90, 95, 99], default: 95 }
+      responses:
+        '200':
+          description: Latency series
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [bucket, ms]
+                  properties:
+                    bucket: { type: string }
+                    ms:     { type: number }
+
+  /provider/analytics/errors:
+    get:
+      summary: Error rate breakdown
+      operationId: getProviderErrors
+      tags: [provider-analytics]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: window
+          schema: { type: string, enum: [7d, 30d, 90d], default: 30d }
+        - in: query
+          name: groupBy
+          schema: { type: string, enum: [day, resource], default: day }
+      responses:
+        '200':
+          description: Error rate buckets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [bucket, errorRate]
+                  properties:
+                    bucket:    { type: string }
+                    errorRate: { type: number, description: 'Fraction in [0,1]' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid session
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    Forbidden:
+      description: Authenticated but lacks provider role
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:     { type: string, format: uri }
+        title:    { type: string }
+        status:   { type: integer }
+        detail:   { type: string }
+        instance: { type: string }
+
+    ProviderAnalyticsSummary:
+      type: object
+      required: [calls30d, calls30dDelta, p95Latency, p95LatencyDelta, errorRate, errorRateDelta]
+      properties:
+        calls30d:        { type: string, example: '94.2k' }
+        calls30dDelta:   { type: string, example: '+18%' }
+        p95Latency:      { type: string, example: '142ms' }
+        p95LatencyDelta: { type: string, example: '-8ms' }
+        errorRate:       { type: string, example: '0.04%' }
+        errorRateDelta:  { type: string, example: '0' }
+
+    UsageSeries:
+      type: array
+      items:
+        type: object
+        required: [day, mcp, tool, agent]
+        properties:
+          day:   { type: string }
+          mcp:   { type: integer }
+          tool:  { type: integer }
+          agent: { type: integer }
+
+    ProviderAnalyticsResponse:
+      type: object
+      required: [summary, usage, generatedAt]
+      properties:
+        summary:     { $ref: '#/components/schemas/ProviderAnalyticsSummary' }
+        usage:       { $ref: '#/components/schemas/UsageSeries' }
+        generatedAt: { type: string, format: date-time }

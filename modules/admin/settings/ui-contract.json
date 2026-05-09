@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "admin.settings",
+  "description": "Explicit UI contract for the Admin portal /settings route.",
+
+  "route": {
+    "portal": "admin",
+    "path": "/settings",
+    "html_entry": "portals/admin.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Settings",
+    "breadcrumb": ["Admin", "Settings"],
+    "active_sidebar_item": "settings"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Settings",
+      "subtitle": "Registry-wide configuration.",
+      "actions": []
+    },
+
+    "card_grid": {
+      "container_class": "p-grid p-grid-2",
+      "cards": [
+        {
+          "id": "identity",
+          "title": "Identity",
+          "title_class": "p-card-title",
+          "title_style": { "marginBottom": 14 },
+          "fields": [
+            { "label": "Primary IdP",      "kind": "input",  "binding": "identity.primaryIdp",      "default_value": "gov.mu OIDC",   "test_id": "admin.settings.identity.primaryIdp" },
+            { "label": "MFA enforcement",  "kind": "select", "binding": "identity.mfaEnforcement",  "default_value": "all",
+              "options": [
+                { "label": "All roles",    "value": "all" },
+                { "label": "Admins only",  "value": "admin" }
+              ],
+              "test_id": "admin.settings.identity.mfaEnforcement"
+            },
+            { "label": "Session lifetime", "kind": "input",  "binding": "identity.sessionLifetime", "default_value": "8h",            "test_id": "admin.settings.identity.sessionLifetime" }
+          ]
+        },
+        {
+          "id": "sovereignty",
+          "title": "Sovereignty defaults",
+          "title_class": "p-card-title",
+          "title_style": { "marginBottom": 14 },
+          "fields": [
+            { "label": "Default tier for new resources", "kind": "select", "binding": "sovereignty.defaultTier", "default_value": "Tier-2",
+              "options": [
+                { "label": "Tier-1", "value": "Tier-1" },
+                { "label": "Tier-2", "value": "Tier-2" },
+                { "label": "Tier-3", "value": "Tier-3" }
+              ],
+              "test_id": "admin.settings.sovereignty.defaultTier"
+            },
+            { "label": "Egress posture",  "kind": "select", "binding": "sovereignty.egressPosture", "default_value": "logged",
+              "options": [
+                { "label": "blocked", "value": "blocked" },
+                { "label": "logged",  "value": "logged" },
+                { "label": "open",    "value": "open" }
+              ],
+              "test_id": "admin.settings.sovereignty.egressPosture"
+            },
+            { "label": "DPIA threshold",  "kind": "input",  "binding": "sovereignty.dpiaThreshold", "default_value": "any-PII", "test_id": "admin.settings.sovereignty.dpiaThreshold" }
+          ]
+        },
+        {
+          "id": "audit",
+          "title": "Audit & retention",
+          "title_class": "p-card-title",
+          "title_style": { "marginBottom": 14 },
+          "fields": [
+            { "label": "Retention",            "kind": "input", "binding": "audit.retention",           "default_value": "7 years",          "test_id": "admin.settings.audit.retention" },
+            { "label": "Notarisation cadence", "kind": "input", "binding": "audit.notarisationCadence", "default_value": "hourly",           "test_id": "admin.settings.audit.notarisationCadence" },
+            { "label": "Archive bucket",       "kind": "input", "binding": "audit.archiveBucket",       "default_value": "s3://air-audit-mu", "test_id": "admin.settings.audit.archiveBucket" }
+          ]
+        },
+        {
+          "id": "branding",
+          "title": "Branding",
+          "title_class": "p-card-title",
+          "title_style": { "marginBottom": 14 },
+          "fields": [
+            { "label": "Public name",   "kind": "input", "binding": "branding.publicName",   "default_value": "Sovereign AI Registry", "test_id": "admin.settings.branding.publicName" },
+            { "label": "Support email", "kind": "input", "binding": "branding.supportEmail", "default_value": "registry@gov.mu",       "test_id": "admin.settings.branding.supportEmail" },
+            { "label": "Status page",   "kind": "input", "binding": "branding.statusPage",   "default_value": "status.air.gov.mu",     "test_id": "admin.settings.branding.statusPage" }
+          ]
+        }
+      ]
+    }
+  },
+
+  "icons_used": [],
+
+  "save_pattern": {
+    "default": "implicit_save_on_blur",
+    "alternative": "sticky_footer_with_save_changes_button",
+    "debounce_ms": 250,
+    "endpoints": {
+      "identity":    "PATCH /admin/settings/identity",
+      "sovereignty": "PATCH /admin/settings/sovereignty",
+      "audit":       "PATCH /admin/settings/audit",
+      "branding":    "PATCH /admin/settings/branding"
+    }
+  },
+
+  "confirmation_dialogs": {
+    "identity_primaryIdp_changed": {
+      "title": "Change identity provider?",
+      "body_template": "All current sessions will end on the next request and operators will need to sign in again with ${newIdp}.",
+      "confirm_label": "Change provider",
+      "cancel_label_template": "Keep ${currentIdp}",
+      "role": "alertdialog"
+    },
+    "identity_mfaEnforcement_lowered": {
+      "title": "Lower MFA enforcement?",
+      "body": "Provider, verifier and sovereign roles will no longer require MFA. This is rarely the right choice for production.",
+      "confirm_label": "Lower enforcement",
+      "cancel_label": "Keep 'All roles'",
+      "role": "alertdialog"
+    }
+  },
+
+  "non_negotiables": [
+    "Page uses a 2-column card grid (p-grid p-grid-2). Card order is fixed: Identity → Sovereignty defaults → Audit & retention → Branding.",
+    "PageHeader has NO action buttons.",
+    "Each field is rendered via the p-field wrapper (label + input/select side-by-side).",
+    "Default values must match exactly: 'gov.mu OIDC', 'all', '8h', 'Tier-2', 'logged', 'any-PII', '7 years', 'hourly', 's3://air-audit-mu', 'Sovereign AI Registry', 'registry@gov.mu', 'status.air.gov.mu'.",
+    "Identity primaryIdp change MUST trigger the all-sessions-will-end confirmation dialog.",
+    "MFA lowering from 'all' to 'admin' MUST trigger the lower-enforcement confirmation dialog.",
+    "audit.archiveBucket MUST cross-validate against an active kind='storage' integration; mismatches surface an inline 'Add a storage integration' link."
+  ]
+}

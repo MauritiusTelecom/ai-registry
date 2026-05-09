@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "public.contact",
+  "description": "Telemetry events emitted by the public marketing /contact route. Anonymous; no PII unless the user submits the form.",
+  "events": [
+    {
+      "name": "public.contact.viewed",
+      "trigger": "App mounts on hash '#/contact'.",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "fromCta": { "type": "string", "description": "Where the visitor arrived from (e.g. 'topnav.login', 'home.promo.submit', 'topnav.contact')." }
+        }
+      }
+    },
+    {
+      "name": "public.contact.field.changed",
+      "trigger": "Any form field changes (debounce 500ms in production).",
+      "payload": {
+        "type": "object",
+        "required": ["field"],
+        "properties": {
+          "field": { "enum": ["name", "org", "email", "topic", "message"] }
+        }
+      }
+    },
+    {
+      "name": "public.contact.topic.changed",
+      "trigger": "Topic select value changes.",
+      "payload": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from": { "enum": ["general", "submit", "review", "report", "jurisdiction", "press"] },
+          "to":   { "enum": ["general", "submit", "review", "report", "jurisdiction", "press"] }
+        }
+      }
+    },
+    {
+      "name": "public.contact.submit.clicked",
+      "trigger": "User clicks 'Send message' submit button."
+    },
+    {
+      "name": "public.contact.submit.validation_failed",
+      "trigger": "Client-side validation produces a non-empty errors object.",
+      "payload": {
+        "type": "object",
+        "required": ["fields"],
+        "properties": {
+          "fields": {
+            "type": "array",
+            "items": { "enum": ["name", "org", "email", "message"] }
+          }
+        }
+      }
+    },
+    {
+      "name": "public.contact.submit.succeeded",
+      "trigger": "POST /public/contact returns 202.",
+      "payload": {
+        "type": "object",
+        "required": ["topic", "ticketId"],
+        "properties": {
+          "topic":    { "enum": ["general", "submit", "review", "report", "jurisdiction", "press"] },
+          "ticketId": { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "public.contact.submit.failed",
+      "trigger": "POST /public/contact returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status":  { "type": "integer" },
+          "problem": { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "public.contact.send_another.clicked",
+      "trigger": "User clicks 'Send another' on the success view."
+    },
+    {
+      "name": "public.contact.info.row.viewed",
+      "trigger": "Each contact-info row renders.",
+      "payload": {
+        "type": "object",
+        "required": ["row"],
+        "properties": {
+          "row": { "enum": ["email", "operator-desk", "office", "hours", "status"] }
+        }
+      }
+    },
+    {
+      "name": "public.contact.info.fetched",
+      "trigger": "GET /public/contact-info completes (production-only when fetched).",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms"],
+        "properties": {
+          "status": { "type": "integer" },
+          "ms":     { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "sovereign.catalog",
+  "description": "Explicit UI contract for the Sovereign portal /catalog route.",
+
+  "route": {
+    "portal": "sovereign",
+    "path": "/catalog",
+    "html_entry": "portals/sovereign.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Catalog",
+    "breadcrumb": ["Sovereign", "National", "Catalog"],
+    "active_sidebar_item": "catalog"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "National catalog",
+      "subtitle_template": "All registry entries across ${jurisdictionName} sovereign operations.",
+      "subtitle_default":  "All registry entries across Mauritian sovereign operations.",
+      "actions": []
+    },
+
+    "data_table": {
+      "component": "DataTable",
+      "row_click_bound": false,
+      "columns": [
+        { "key": "slug",    "label": "Resource",                 "cell": { "kind": "text", "class": "p-cell-strong", "binding": "slug" } },
+        { "key": "kind",    "label": "Kind",   "width": 130,    "cell": { "kind": "tag",  "class": "p-tag",         "binding": "kind" } },
+        { "key": "tier",    "label": "Tier",   "width": 110,    "cell": { "kind": "tag",  "class": "p-tag",         "binding": "tier" } },
+        { "key": "region",  "label": "Region", "width": 110,    "cell": { "kind": "text", "class": "p-mono-key",    "binding": "region" } },
+        { "key": "sectors", "label": "Sector", "width": 130,    "cell": { "kind": "text", "style": { "color": "var(--p-text-2)" }, "binding": "sectors" } },
+        { "key": "usage",   "label": "30d",    "width": 80,     "cell": { "kind": "text", "class": "p-mono-val",    "binding": "usage" } },
+        { "key": "risk",    "label": "Risk",   "width": 80,
+          "cell": {
+            "kind": "text",
+            "class": "mono",
+            "style": { "fontSize": 11 },
+            "color_map": { "high": "#ef4444", "med": "#f59e0b", "low": "#10b981" },
+            "transform": "uppercase",
+            "binding": "risk"
+          }
+        }
+      ]
+    }
+  },
+
+  "icons_used": [],
+
+  "interactions": [],
+
+  "empty_states": {
+    "no_rows": { "body_text": "No registered resources yet. Onboard providers to populate the national catalog." }
+  },
+
+  "non_negotiables": [
+    "PageHeader has NO action buttons.",
+    "No StatCards and no FilterBar on this page in v0.4.",
+    "Risk cell uppercases the value (HIGH / MED / LOW) at render time AND colour-codes it.",
+    "Risk colour map is fixed: high=#ef4444, med=#f59e0b, low=#10b981.",
+    "Sector cell is a single string in v0.4 (e.g. 'education', 'cross-cutting'); production may evolve to multi-sector.",
+    "DataTable rows are non-interactive in v0.4 — do NOT bind onRowClick.",
+    "This page is a SUBSET of admin's resource catalogue — only entries relevant to the active sovereign tenant."
+  ]
+}

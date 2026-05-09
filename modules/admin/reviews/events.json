@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "admin.reviews",
+  "description": "Telemetry events emitted by the Admin portal /reviews route. All events carry the standard envelope (actorId, sessionId, ts, traceId).",
+  "events": [
+    {
+      "name": "admin.reviews.viewed",
+      "trigger": "AdminReviews mounts.",
+      "payload": {
+        "type": "object",
+        "required": ["totalCount", "counters"],
+        "properties": {
+          "totalCount": { "type": "integer" },
+          "counters": {
+            "type": "object",
+            "properties": {
+              "sovereignty": { "type": "integer" },
+              "evaluation":  { "type": "integer" },
+              "safety":      { "type": "integer" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "admin.reviews.action.new_review.clicked",
+      "trigger": "User clicks 'New review' header primary button."
+    },
+    {
+      "name": "admin.reviews.list.fetched",
+      "trigger": "GET /admin/reviews completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms", "rowCount"],
+        "properties": {
+          "status":   { "type": "integer" },
+          "ms":       { "type": "integer", "minimum": 0 },
+          "rowCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "admin.reviews.review.assigned",
+      "trigger": "POST /admin/reviews/{id}/assign succeeds (production-only; no UI in v0.4 dashboard).",
+      "payload": {
+        "type": "object",
+        "required": ["reviewId", "reviewer"],
+        "properties": {
+          "reviewId": { "type": "string" },
+          "reviewer": { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "admin.reviews.review.decided",
+      "trigger": "POST /admin/reviews/{id}/decision succeeds (production-only).",
+      "payload": {
+        "type": "object",
+        "required": ["reviewId", "decision", "auditId"],
+        "properties": {
+          "reviewId": { "type": "string" },
+          "decision": { "enum": ["approve", "reject", "withdraw"] },
+          "auditId":  { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "admin.reviews.error",
+      "trigger": "Any of the reviews endpoints returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["endpoint", "status"],
+        "properties": {
+          "endpoint": { "type": "string" },
+          "status":   { "type": "integer" },
+          "problem":  { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

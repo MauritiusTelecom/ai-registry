@@ -1,0 +1,162 @@
+# Copyright 2026 rakesh.khoodeeram
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Verifier · Runs module — API contract
+# Tenant-scoped via session.
+
+openapi: 3.0.3
+
+info:
+  title: Sovereign AI Registry — Verifier Runs API
+  version: 0.4.0
+
+servers:
+  - url: https://air.gov.mu/api/v1
+  - url: https://air-staging.gov.mu/api/v1
+
+tags:
+  - name: verifier-runs
+
+paths:
+  /verifier/runs:
+    get:
+      summary: List eval runs
+      operationId: listVerifierRuns
+      tags: [verifier-runs]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: target
+          schema: { type: string }
+        - in: query
+          name: bench
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { type: string, enum: [all, pass, fail] }
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200':
+          description: Runs page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VerifierRunsResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /verifier/runs/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      summary: Get run detail with per-item results
+      operationId: getVerifierRun
+      tags: [verifier-runs]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Run detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RunDetail' }
+        '404':
+          description: Run not found
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid session
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    Forbidden:
+      description: Authenticated but lacks verifier role
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:     { type: string, format: uri }
+        title:    { type: string }
+        status:   { type: integer }
+        detail:   { type: string }
+        instance: { type: string }
+
+    EvalRun:
+      type: object
+      required: [id, target, bench, score, baseline, status, ran]
+      properties:
+        id:       { type: string, example: run_4421 }
+        target:   { type: string }
+        bench:    { type: string }
+        score:    { type: number, minimum: 0, maximum: 1 }
+        baseline: { type: number, minimum: 0, maximum: 1 }
+        status:   { type: string, enum: [pass, fail] }
+        ran:      { type: string, example: '2026-05-06 14:21' }
+
+    RunDetail:
+      allOf:
+        - $ref: '#/components/schemas/EvalRun'
+        - type: object
+          properties:
+            benchId:      { type: string }
+            benchVersion: { type: string }
+            triggeredBy:  { type: string, format: email }
+            itemResults:
+              type: array
+              items:
+                type: object
+                required: [itemId, score, passed]
+                properties:
+                  itemId:     { type: string }
+                  score:      { type: number, minimum: 0, maximum: 1 }
+                  passed:     { type: boolean }
+                  output:     { type: string }
+                  rubricNote: { type: string }
+
+    VerifierRunsResponse:
+      type: object
+      required: [rows, total, passRate30d, generatedAt]
+      properties:
+        rows:
+          type: array
+          items: { $ref: '#/components/schemas/EvalRun' }
+        total:        { type: integer }
+        passRate30d:  { type: string, example: '74%' }
+        page:
+          type: object
+          properties:
+            cursor:  { type: string }
+            size:    { type: integer }
+            hasMore: { type: boolean }
+        generatedAt: { type: string, format: date-time }
