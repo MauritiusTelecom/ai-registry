@@ -8,6 +8,7 @@ import { PortalPalette } from "./header/PortalPalette";
 import { PortalThemeToggle } from "./header/PortalThemeToggle";
 import { PortalNotifications } from "./header/PortalNotifications";
 import { PortalUserDropdown } from "./header/PortalUserDropdown";
+import { ProviderRegistrationBanner } from "./ProviderRegistrationBanner";
 
 /**
  * Provider-specific portal chrome.
@@ -83,6 +84,11 @@ export function ProviderPortalChrome({
             />
           </div>
         </header>
+
+        <ProviderRegistrationBanner
+          emailVerified={user.emailVerified}
+          canAuthorResources={user.canAuthorResources}
+        />
 
         {/*
           Pages own their inner layout. New portal pages opt into the

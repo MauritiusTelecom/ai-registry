@@ -36,6 +36,9 @@ export type AuthUser = {
   roles: string[];
   /** Provider linkage if any (provider portal targets, etc.). */
   provider: { id: string; slug: string; displayName: string } | null;
+  emailVerified: boolean;
+  onboardingComplete: boolean;
+  canAuthorResources: boolean;
 };
 
 type AuthContextValue = {
@@ -64,6 +67,9 @@ type MeResponse = {
     name: string;
     roles: string[];
     provider: { id: string; slug: string; displayName: string } | null;
+    emailVerified?: boolean;
+    onboardingComplete?: boolean;
+    canAuthorResources?: boolean;
   } | null;
 };
 
@@ -83,7 +89,10 @@ async function fetchMe(): Promise<AuthUser | null> {
       firstName: firstNameFrom(data.user.name) || data.user.email.split("@")[0],
       email: data.user.email,
       roles: data.user.roles,
-      provider: data.user.provider
+      provider: data.user.provider,
+      emailVerified: data.user.emailVerified ?? false,
+      onboardingComplete: data.user.onboardingComplete ?? false,
+      canAuthorResources: data.user.canAuthorResources ?? false
     };
   } catch {
     return null;

@@ -101,7 +101,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         items: [
           { id: "resources", label: "Resources", href: "/provider/resources", icon: "layers" },
           { id: "submissions", label: "Submissions", href: "/provider/submissions", icon: "inbox" },
-          { id: "publish", label: "Publish new", href: "/provider/publish", icon: "plus", stub: true }
+          { id: "publish", label: "Publish new", href: "/provider/publish", icon: "plus" }
         ]
       },
       {
@@ -119,10 +119,6 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         label: "Account",
         items: [
           { id: "analytics", label: "Analytics", href: "/provider/analytics", icon: "activity", stub: true },
-          { id: "keys", label: "API keys", href: "/provider/keys", icon: "key", stub: true },
-          { id: "team", label: "Team", href: "/provider/team", icon: "users", stub: true },
-          { id: "billing", label: "Billing", href: "/provider/billing", icon: "doc", stub: true },
-          { id: "docs", label: "Docs", href: "/provider/docs", icon: "doc", stub: true },
           { id: "settings", label: "Settings", href: "/provider/settings", icon: "settings", stub: true }
         ]
       }

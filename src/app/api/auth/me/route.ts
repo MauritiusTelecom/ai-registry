@@ -10,5 +10,20 @@ import { getCurrentUser } from "@/lib/auth/current-user";
  */
 export async function GET() {
   const user = await getCurrentUser();
-  return NextResponse.json({ user });
+  if (!user) return NextResponse.json({ user: null });
+
+  return NextResponse.json({
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      emailVerified: user.emailVerified,
+      onboardingComplete: user.onboardingComplete,
+      canAuthorResources: user.canAuthorResources,
+      roles: user.roles,
+      role: user.role,
+      status: user.status,
+      provider: user.provider
+    }
+  });
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
+import { authoringGateForbiddenResponse } from "@/lib/portal/authoring-gate-response";
 import { writeAudit } from "@/lib/audit/write-audit";
 
 /**
@@ -14,6 +15,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   if (user.role.code !== "provider") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+  if (!user.canAuthorResources) return authoringGateForbiddenResponse();
 
   const { id } = await ctx.params;
   const providerId = await ensureUserProviderLinked(user.id);

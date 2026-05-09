@@ -2,20 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 import type { PortalConfig } from "@/lib/portals/nav-config";
 
 /**
  * Sidebar (client component for active-link highlighting).
  * Mirrors the prototype's `Sidebar` shape but uses Next.js routing instead
- * of the hash router.
+ * of the hash router. The collapse toggle was removed — the sidebar is the
+ * primary navigation surface and shouldn't be hideable from the chrome.
  */
 export function PortalSidebar({ config }: { config: PortalConfig }) {
   const pathname = usePathname() ?? "";
-  const [open, setOpen] = useState(true);
 
   return (
-    <aside className={`p-sidebar ${open ? "" : "collapsed"}`}>
+    <aside className="p-sidebar">
       <div className="p-sidebar-head">
         <Link href="/" className="p-logo">
           <span className="p-logo-mark" />
@@ -24,14 +23,6 @@ export function PortalSidebar({ config }: { config: PortalConfig }) {
             <span className="p-logo-sub">{config.label}</span>
           </div>
         </Link>
-        <button
-          type="button"
-          className="p-sidebar-toggle"
-          aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
-          onClick={() => setOpen((v) => !v)}
-        >
-          ☰
-        </button>
       </div>
 
       <nav className="p-nav">

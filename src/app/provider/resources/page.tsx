@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/current-user";
+import { GatedPublishButton } from "@/components/portals/GatedPublishButton";
 import { prisma } from "@/lib/prisma";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 import { StatusPill } from "@/components/portals/StatusPill";
@@ -16,12 +17,15 @@ type Row = {
   kind: string;
   status: string;
   lifecycle: string;
+  lifecycleCode: string;
   updatedAt: string;
 };
 
 export default async function ProviderResourcesPage() {
   const user = await getCurrentUser();
-  const providerId = user?.provider?.id ?? null;
+  if (!user) return null;
+
+  const providerId = user.provider?.id ?? null;
 
   if (!providerId) {
     return (
@@ -62,6 +66,7 @@ export default async function ProviderResourcesPage() {
       trustSignals: r.trustSignals
     }),
     lifecycle: r.lifecycleStatus.name,
+    lifecycleCode: r.lifecycleStatus.code,
     updatedAt: r.updatedAt.toISOString().slice(0, 10)
   }));
 
@@ -89,7 +94,23 @@ export default async function ProviderResourcesPage() {
     { key: "kind", label: "Kind", render: (row) => <span className="tag">{row.kind}</span> },
     { key: "lifecycle", label: "Lifecycle", render: (row) => row.lifecycle },
     { key: "status", label: "Public status", render: (row) => <StatusPill status={row.status} /> },
-    { key: "updatedAt", label: "Updated", render: (row) => row.updatedAt, mono: true }
+    { key: "updatedAt", label: "Updated", render: (row) => row.updatedAt, mono: true },
+    {
+      key: "actions",
+      label: "",
+      render: (row) =>
+        row.lifecycleCode === "draft" || row.lifecycleCode === "needs_update" ? (
+          <Link href={`/provider/resources/${row.id}/edit`} className="btn btn-secondary" style={{ fontSize: 13 }}>
+            Edit / submit
+          </Link>
+        ) : row.lifecycleCode === "listed" ? (
+          <Link href={`/registry/${row.slug}`} className="btn btn-secondary" style={{ fontSize: 13 }}>
+            Public
+          </Link>
+        ) : (
+          <span style={{ color: "var(--text-3)", fontSize: 12 }}>—</span>
+        )
+    }
   ];
 
   return (
@@ -101,9 +122,9 @@ export default async function ProviderResourcesPage() {
           {user?.provider?.displayName ?? "this provider"}.
         </p>
         <div className="p-actions">
-          <Link href="/provider/publish" className="btn btn-primary">
+          <GatedPublishButton href="/provider/publish" canAuthorResources={user.canAuthorResources}>
             Publish new resource
-          </Link>
+          </GatedPublishButton>
         </div>
       </div>
       <DataTable
