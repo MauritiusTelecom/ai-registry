@@ -7,12 +7,14 @@ import { Icon } from "./Icon";
 import { useTheme } from "./ThemeProvider";
 import { useAuth } from "./AuthProvider";
 
+// Top-nav links. Ecosystem / Governance / Documentation moved out of the
+// top nav — they remain reachable from the footer columns (see Footer in
+// components/public/Footer.tsx) so this primary navigation stays focused on
+// the four core surfaces: Home, Registry, Providers, Contact.
 const NAV_ITEMS = [
   { href: "/", label: "Home", id: "home" },
   { href: "/registry", label: "Registry", id: "registry" },
-  { href: "/ecosystem", label: "Ecosystem", id: "ecosystem" },
-  { href: "/governance", label: "Governance", id: "governance" },
-  { href: "/docs", label: "Documentation", id: "docs" },
+  { href: "/providers", label: "Providers", id: "providers" },
   { href: "/contact", label: "Contact", id: "contact" }
 ];
 
