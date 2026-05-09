@@ -291,10 +291,15 @@ p { color: var(--text-2); margin: 0; }
   background: var(--panel-strong);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid var(--border);
+  /* Palette-tinted border + outer glow — tracks the active --primary so the
+     nav pill matches whichever palette is selected in the Tweaks panel. */
+  border: 1px solid rgba(var(--primary-rgb), 0.35);
   border-radius: 999px;
-  box-shadow: var(--shadow-1);
-  transition: border-color 180ms, background-color 180ms;
+  box-shadow:
+    var(--shadow-1),
+    0 0 24px -6px rgba(var(--primary-rgb), 0.45),
+    inset 0 0 0 1px rgba(var(--primary-rgb), 0.06);
+  transition: border-color 180ms, background-color 180ms, box-shadow 180ms;
 }
 .nav-logo {
   display: flex;
