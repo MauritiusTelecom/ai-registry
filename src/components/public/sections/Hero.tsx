@@ -56,7 +56,7 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
         </div>
 
         <h1 className="hero-title">
-          The Sovereign
+          Mauritius
           <br />
           <span className="gradient-text">AI Registry.</span>
         </h1>

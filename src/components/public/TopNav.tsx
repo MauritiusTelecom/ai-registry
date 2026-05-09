@@ -142,7 +142,7 @@ export function TopNav() {
       <div className="nav-inner">
         <Link href="/" className="nav-logo">
           <span className="nav-logo-mark" />
-          <span>Sovereign Registry</span>
+          <span>Mauritius AI Registry</span>
         </Link>
         <div className="nav-links">
           {NAV_ITEMS.map((item) => (

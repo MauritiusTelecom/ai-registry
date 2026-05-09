@@ -80,7 +80,7 @@ export function Footer() {
         <div className="footer-col">
           <Link href="/" className="nav-logo" style={{ marginBottom: 16 }}>
             <span className="nav-logo-mark" />
-            <span style={{ fontSize: 15 }}>Sovereign Registry</span>
+            <span style={{ fontSize: 15 }}>Mauritius AI Registry</span>
           </Link>
           <p className="footer-brand">
             Open-source infrastructure for sovereign AI discovery. The registry points; the

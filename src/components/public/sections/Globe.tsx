@@ -8,19 +8,28 @@ type GlobeProps = {
 
 type Projected = { x: number; y: number; z: number; visible: boolean };
 
+function stableCoord(value: number) {
+  return Number(value.toFixed(4));
+}
+
 function project(lat: number, lon: number, rotation: number, R: number): Projected {
   const x3 = Math.cos(lat) * Math.sin(lon + rotation);
   const y3 = Math.sin(lat);
   const z3 = Math.cos(lat) * Math.cos(lon + rotation);
-  return { x: x3 * R, y: -y3 * R, z: z3, visible: z3 > -0.05 };
+  return {
+    x: stableCoord(x3 * R),
+    y: stableCoord(-y3 * R),
+    z: z3,
+    visible: z3 > -0.05
+  };
 }
 
 function arcPath(p1: Projected, p2: Projected, R: number, lift = 1.3) {
-  const mx = (p1.x + p2.x) / 2;
-  const my = (p1.y + p2.y) / 2;
+  const mx = stableCoord((p1.x + p2.x) / 2);
+  const my = stableCoord((p1.y + p2.y) / 2);
   const len = Math.hypot(mx, my) || 1;
-  const cx = (mx / len) * R * lift;
-  const cy = (my / len) * R * lift;
+  const cx = stableCoord((mx / len) * R * lift);
+  const cy = stableCoord((my / len) * R * lift);
   return `M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}`;
 }
 
@@ -132,8 +141,8 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
 
       <g transform={`translate(${cx} ${cy})`} opacity="0.55">
         {lats.map((lat, i) => {
-          const r = Math.cos(lat) * R;
-          const yOff = -Math.sin(lat) * R;
+          const r = stableCoord(Math.cos(lat) * R);
+          const yOff = stableCoord(-Math.sin(lat) * R);
           return (
             <ellipse
               key={`lat-${i}`}
@@ -149,7 +158,7 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
           );
         })}
         {lons.map((lon, i) => {
-          const rx = Math.abs(Math.sin(lon + rot)) * R;
+          const rx = stableCoord(Math.abs(Math.sin(lon + rot)) * R);
           if (rx < 0.5) return null;
           return (
             <ellipse
