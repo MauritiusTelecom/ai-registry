@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import "./globals.css";
 import { getConfig } from "@/lib/config";
+import { isPortalPath } from "@/lib/portals/auth-gate";
 import { SAR_THEME_KEY, themeFromCookie } from "@/lib/theme-cookie";
 import { SiteShell } from "@/components/public/SiteShell";
 
@@ -25,6 +26,15 @@ export default async function RootLayout({
   const jar = await cookies();
   const theme = themeFromCookie(jar.get(SAR_THEME_KEY)?.value);
 
+  // Portal routes (/admin /provider /verifier /sovereign /portal) render
+  // their own chrome (sidebar + per-portal header). The public TopNav +
+  // Footer would double up on top of that, so we skip the SiteShell when
+  // we're inside a portal. The middleware stamps `x-pathname` on every
+  // request — see src/middleware.ts.
+  const headerList = await headers();
+  const pathname = headerList.get("x-pathname") ?? "";
+  const inPortal = isPortalPath(pathname);
+
   return (
     <html lang="en" suppressHydrationWarning data-theme={theme}>
       <head>
@@ -32,9 +42,7 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href={FONT_HREF} />
       </head>
-      <body>
-        <SiteShell>{children}</SiteShell>
-      </body>
+      <body>{inPortal ? children : <SiteShell>{children}</SiteShell>}</body>
     </html>
   );
 }

@@ -85,9 +85,25 @@ async function verifyCookie(token: string): Promise<boolean> {
   }
 }
 
+/**
+ * The middleware also propagates an `x-pathname` request header on every
+ * request so the root layout can detect portal routes and skip the public
+ * site chrome (TopNav / Footer). Portal pages already render their own
+ * sidebar + header; rendering the home-page nav above them would double up.
+ */
+function withPathnameHeader(req: NextRequest): Headers {
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", req.nextUrl.pathname);
+  return requestHeaders;
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  if (!requiresSession(pathname)) return NextResponse.next();
+  const requestHeaders = withPathnameHeader(req);
+
+  if (!requiresSession(pathname)) {
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
 
   const token = req.cookies.get(COOKIE_NAME)?.value;
   const valid = token ? await verifyCookie(token) : false;
@@ -105,18 +121,12 @@ export async function middleware(req: NextRequest) {
     return res;
   }
 
-  return NextResponse.next();
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {
-  // Keep this list in sync with PROTECTED_PREFIXES above. All four role
-  // portals are gated; the portal layouts also call requireRole() for the
-  // canonical user-lookup + role check (defence in depth).
-  matcher: [
-    "/portal/:path*",
-    "/admin/:path*",
-    "/provider/:path*",
-    "/verifier/:path*",
-    "/sovereign/:path*"
-  ]
+  // The middleware now runs on every page-rendering request so it can stamp
+  // `x-pathname` for the root layout's chrome detection. Static assets, API
+  // routes, and Next internals are excluded so the cost stays trivial.
+  matcher: ["/((?!_next/|favicon|api/|.*\\..*).*)"]
 };

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/password";
 import { issueSessionToken, sessionCookieAttributes } from "@/lib/auth/session";
 import { linkContactsToUser } from "@/lib/contacts/link-to-user";
+import { portalForRole } from "@/lib/portals/auth-gate";
 
 /**
  * POST /api/auth/login
@@ -90,7 +91,10 @@ export async function POST(req: Request) {
         emailVerified: user.emailVerified,
         role: user.role.code,
         status: user.status.code
-      }
+      },
+      // Role-based default landing — clients use this when no `next=` query
+      // param was set on the /login page.
+      redirectTo: portalForRole(user.role.code)
     },
     { status: 200 }
   );

@@ -7,6 +7,7 @@ import { issueSessionToken, sessionCookieAttributes } from "@/lib/auth/session";
 import { generateRawToken, hashToken, verificationExpiry } from "@/lib/auth/tokens";
 import { emailTemplates, sendEmail } from "@/lib/email";
 import { linkContactsToUser } from "@/lib/contacts/link-to-user";
+import { portalForRole } from "@/lib/portals/auth-gate";
 
 /**
  * POST /api/auth/register
@@ -150,6 +151,9 @@ export async function POST(req: Request) {
     {
       ok: true,
       user: { id: user.id, email: user.email, name: user.name, emailVerified: false },
+      // New providers land on /provider; future support for self-registering
+      // other roles plugs in here via portalForRole().
+      redirectTo: portalForRole(providerRole.code),
       verifyUrl: process.env.NODE_ENV !== "production" ? verifyUrl : undefined
     },
     { status: 201 }

@@ -22,15 +22,20 @@ export function RegisterForm() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name, organisationName, email, password })
       });
-      const data = (await res.json()) as { error?: string; verifyUrl?: string };
+      const data = (await res.json()) as {
+        error?: string;
+        verifyUrl?: string;
+        redirectTo?: string;
+      };
       if (!res.ok) {
         setError(data.error ?? "Registration failed.");
         return;
       }
       if (data.verifyUrl) setDevVerifyUrl(data.verifyUrl);
-      // Land on the protected dashboard. The verification email is in flight;
-      // the dashboard surfaces a "verify your email" banner until clicked.
-      window.location.assign("/portal");
+      // Server picks the role-appropriate landing — provider self-registration
+      // lands on /provider, admin-seeded accounts will land elsewhere when
+      // self-registration is enabled for them. Fallback to /portal.
+      window.location.assign(data.redirectTo ?? "/portal");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
