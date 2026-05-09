@@ -732,7 +732,7 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
                 fontSize={isPinned ? 11 : 9.5}
                 fontFamily="'IBM Plex Mono', monospace"
                 letterSpacing="0.06em"
-                fill={isPinned ? `rgba(${accent},0.95)` : "rgba(220,235,255,0.78)"}
+                fill={isPinned ? `rgba(${accent},0.95)` : "var(--primary)"}
                 fontWeight={isPinned ? 600 : 400}
                 opacity={isPinned ? 1 : p.z > 0.35 ? 1 : 0}
               >
