@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "admin.users",
+  "description": "Telemetry events emitted by the Admin portal /users route. All events carry the standard envelope (actorId, sessionId, ts, traceId).",
+  "events": [
+    {
+      "name": "admin.users.viewed",
+      "trigger": "AdminUsers mounts.",
+      "payload": {
+        "type": "object",
+        "required": ["totalCount", "mfaOffCount"],
+        "properties": {
+          "totalCount":  { "type": "integer" },
+          "mfaOffCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "admin.users.action.invite_log.clicked",
+      "trigger": "User clicks 'Invite log' header secondary button."
+    },
+    {
+      "name": "admin.users.action.invite_user.clicked",
+      "trigger": "User clicks 'Invite user' header primary button."
+    },
+    {
+      "name": "admin.users.action.invite_user.submitted",
+      "trigger": "Invite-user modal submits successfully (POST /admin/users/invite 201).",
+      "payload": {
+        "type": "object",
+        "required": ["userId", "email", "role"],
+        "properties": {
+          "userId": { "type": "string" },
+          "email":  { "type": "string" },
+          "role":   { "enum": ["admin", "provider", "verifier", "sovereign"] }
+        }
+      }
+    },
+    {
+      "name": "admin.users.list.fetched",
+      "trigger": "GET /admin/users completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms", "rowCount"],
+        "properties": {
+          "status":   { "type": "integer" },
+          "ms":       { "type": "integer", "minimum": 0 },
+          "rowCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "admin.users.user.suspended",
+      "trigger": "POST /admin/users/{id}/suspend succeeds (production-only).",
+      "payload": {
+        "type": "object",
+        "required": ["userId"],
+        "properties": { "userId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "admin.users.user.revoked",
+      "trigger": "POST /admin/users/{id}/revoke succeeds (production-only).",
+      "payload": {
+        "type": "object",
+        "required": ["userId"],
+        "properties": { "userId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "admin.users.error",
+      "trigger": "Any of the users endpoints returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["endpoint", "status"],
+        "properties": {
+          "endpoint": { "type": "string" },
+          "status":   { "type": "integer" },
+          "problem":  { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

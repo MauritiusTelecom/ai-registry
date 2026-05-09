@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "sovereign.reports",
+  "description": "Telemetry events emitted by the Sovereign portal /reports route.",
+  "events": [
+    {
+      "name": "sovereign.reports.viewed",
+      "trigger": "SovReports component mount.",
+      "payload": {
+        "type": "object",
+        "required": ["totalCount"],
+        "properties": { "totalCount": { "type": "integer" } }
+      }
+    },
+    {
+      "name": "sovereign.reports.card.view.clicked",
+      "trigger": "User clicks the 'View' secondary button on a report card.",
+      "payload": {
+        "type": "object",
+        "required": ["reportId"],
+        "properties": { "reportId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "sovereign.reports.card.download.clicked",
+      "trigger": "User clicks the 'Download' ghost button on a report card.",
+      "payload": {
+        "type": "object",
+        "required": ["reportId"],
+        "properties": { "reportId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "sovereign.reports.list.fetched",
+      "trigger": "GET /sovereign/reports completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms", "rowCount"],
+        "properties": {
+          "status":   { "type": "integer" },
+          "ms":       { "type": "integer", "minimum": 0 },
+          "rowCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "sovereign.reports.file.downloaded",
+      "trigger": "GET /sovereign/reports/{id}/file.pdf returns 200.",
+      "payload": {
+        "type": "object",
+        "required": ["reportId"],
+        "properties": { "reportId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "sovereign.reports.error",
+      "trigger": "Any of the reports endpoints returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["endpoint", "status"],
+        "properties": {
+          "endpoint": { "type": "string" },
+          "status":   { "type": "integer" },
+          "problem":  { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

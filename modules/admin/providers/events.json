@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "admin.providers",
+  "description": "Telemetry events emitted by the Admin portal /providers route. All events carry the standard envelope (actorId, sessionId, ts, traceId).",
+  "events": [
+    {
+      "name": "admin.providers.viewed",
+      "trigger": "AdminProviders mounts.",
+      "payload": {
+        "type": "object",
+        "required": ["totalCount", "counters"],
+        "properties": {
+          "totalCount": { "type": "integer" },
+          "counters": {
+            "type": "object",
+            "properties": {
+              "sovereign": { "type": "integer" },
+              "regional":  { "type": "integer" },
+              "private":   { "type": "integer" },
+              "external":  { "type": "integer" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "admin.providers.filtered",
+      "trigger": "q or kind changes.",
+      "payload": {
+        "type": "object",
+        "required": ["filters", "resultCount"],
+        "properties": {
+          "filters": {
+            "type": "object",
+            "properties": {
+              "q":    { "type": "string" },
+              "kind": { "type": "string" }
+            }
+          },
+          "resultCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "admin.providers.action.onboarding_queue.clicked",
+      "trigger": "User clicks 'Onboarding queue' header secondary button."
+    },
+    {
+      "name": "admin.providers.action.add_provider.clicked",
+      "trigger": "User clicks 'Add provider' header primary button."
+    },
+    {
+      "name": "admin.providers.list.fetched",
+      "trigger": "GET /admin/providers completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms", "rowCount"],
+        "properties": {
+          "status":   { "type": "integer" },
+          "ms":       { "type": "integer", "minimum": 0 },
+          "rowCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "admin.providers.error",
+      "trigger": "Any of the providers endpoints returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["endpoint", "status"],
+        "properties": {
+          "endpoint": { "type": "string" },
+          "status":   { "type": "integer" },
+          "problem":  { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

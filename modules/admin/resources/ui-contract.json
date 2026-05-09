@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "admin.resources",
+  "description": "Explicit UI contract for the Admin portal /resources route. Production must render every named element with the listed text, classes, icon, and binding so visual regression vs. the prototype is mechanical.",
+
+  "route": {
+    "portal": "admin",
+    "path": "/resources",
+    "html_entry": "portals/admin.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Resources",
+    "breadcrumb": ["Admin", "Registry", "Resources"],
+    "active_sidebar_item": "resources"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Resources",
+      "subtitle_template": "${total} registry entries · MCP servers, agents, models and tools.",
+      "actions": [
+        { "kind": "Btn", "variant": "secondary", "icon": "arrow-up-right", "label": "Export CSV",  "test_id": "admin.resources.action.export_csv" },
+        { "kind": "Btn", "variant": "primary",   "icon": "plus",            "label": "New resource", "test_id": "admin.resources.action.new_resource" }
+      ]
+    },
+
+    "filter_bar": {
+      "component": "FilterBar",
+      "children_in_order": [
+        {
+          "kind": "input",
+          "class": "p-input",
+          "placeholder": "Search slug or provider…",
+          "binding": "q",
+          "style": { "minWidth": 280 },
+          "test_id": "admin.resources.filter.q"
+        },
+        {
+          "kind": "select",
+          "class": "p-input p-select",
+          "binding": "kind",
+          "default_value": "all",
+          "options": [
+            { "label": "All kinds",   "value": "all" },
+            { "label": "MCP servers", "value": "mcp-server" },
+            { "label": "Agents",      "value": "agent" },
+            { "label": "Models",      "value": "model" },
+            { "label": "Tools",       "value": "tool" }
+          ],
+          "test_id": "admin.resources.filter.kind"
+        },
+        {
+          "kind": "select",
+          "class": "p-input p-select",
+          "binding": "status",
+          "default_value": "all",
+          "options": [
+            { "label": "Any status",   "value": "all" },
+            { "label": "Verified",     "value": "verified" },
+            { "label": "In review",    "value": "review" },
+            { "label": "Experimental", "value": "experimental" },
+            { "label": "Isolated",     "value": "isolated" },
+            { "label": "Archived",     "value": "archived" }
+          ],
+          "test_id": "admin.resources.filter.status"
+        },
+        {
+          "kind": "counter",
+          "class": "mono",
+          "style": { "marginLeft": "auto", "color": "var(--p-text-3)", "fontSize": 11 },
+          "template": "${filtered} of ${total}",
+          "test_id": "admin.resources.filter.counter"
+        }
+      ],
+      "filter_logic": {
+        "search_match": "row.slug.includes(q) || row.provider.toLowerCase().includes(q.toLowerCase())",
+        "kind_match":   "kind === 'all' || row.kind === kind",
+        "status_match": "status === 'all' || row.status === status",
+        "combinator":   "AND"
+      }
+    },
+
+    "data_table": {
+      "component": "DataTable",
+      "row_click_bound": true,
+      "row_click_effect": "open_drawer",
+      "columns": [
+        {
+          "key": "slug", "label": "Resource",
+          "cell": {
+            "kind": "stack",
+            "class": "p-cell-stack",
+            "lines": [
+              { "binding": "slug",                  "class": "p-cell-strong" },
+              { "template": "${kind} · ${provider}", "class": "p-cell-meta" }
+            ]
+          }
+        },
+        { "key": "status",  "label": "Status",      "width": 120, "cell": { "kind": "renderer", "renderer": "StatusPill", "props": { "status": "row.status" } } },
+        { "key": "sov",     "label": "Sovereignty", "width": 130, "cell": { "kind": "tag",      "class": "p-tag",          "binding": "sov" } },
+        { "key": "region",  "label": "Region",      "width": 130, "cell": { "kind": "text",     "class": "p-mono-key",     "binding": "region" } },
+        { "key": "risk",    "label": "Risk",        "width": 90,
+          "cell": {
+            "kind": "text",
+            "class": "mono",
+            "style": { "fontSize": 11, "textTransform": "uppercase", "letterSpacing": ".08em" },
+            "color_map": { "high": "#ef4444", "med": "#f59e0b", "low": "#10b981" },
+            "binding": "risk"
+          }
+        },
+        { "key": "usage",   "label": "30d",     "width": 80,  "cell": { "kind": "text", "class": "p-mono-val", "binding": "usage" } },
+        { "key": "updated", "label": "Updated", "width": 110, "cell": { "kind": "text", "class": "p-mono-key", "binding": "updated" } }
+      ]
+    },
+
+    "drawer": {
+      "component": "Drawer",
+      "open_when": "selectedRow !== null",
+      "anchor": "right",
+      "width_token": "--p-drawer-w",
+      "transition_ms": 220,
+      "header": {
+        "title_binding": "selectedRow.slug",
+        "sub_template": "${selectedRow.kind.toUpperCase()} · ${selectedRow.id}"
+      },
+      "body": {
+        "container_style": { "display": "grid", "gap": 18 },
+        "blocks": [
+          {
+            "id": "tag_row",
+            "kind": "row",
+            "class": "p-row",
+            "style": { "flexWrap": "wrap", "gap": 6 },
+            "items": [
+              { "kind": "renderer", "renderer": "StatusPill", "props": { "status": "selectedRow.status" } },
+              { "kind": "tag", "class": "p-tag", "binding": "selectedRow.sov" },
+              { "kind": "tag", "class": "p-tag", "binding": "selectedRow.region" },
+              {
+                "kind": "tag", "class": "p-tag",
+                "template": "risk · ${selectedRow.risk}",
+                "color_map": { "high": "#ef4444", "med": "#f59e0b", "low": "#10b981" }
+              }
+            ]
+          },
+          {
+            "id": "description_card",
+            "kind": "card",
+            "class": "p-card",
+            "style": { "background": "var(--p-input)", "padding": 14 },
+            "blocks": [
+              { "kind": "label", "class": "p-card-sub", "text": "Description" },
+              { "kind": "text", "binding": "selectedRow.desc", "style": { "fontSize": 13.5, "marginTop": 6 } }
+            ]
+          },
+          {
+            "id": "provenance_list",
+            "kind": "list",
+            "class": "p-list-bare",
+            "header_label": { "class": "p-card-sub", "text": "Provenance", "marginBottom": 8 },
+            "rows": [
+              { "label": "provider",     "value_binding": "selectedRow.provider" },
+              { "label": "last updated", "value_binding": "selectedRow.updated" },
+              { "label": "30d usage",    "value_binding": "selectedRow.usage" },
+              { "label": "resource id",  "value_binding": "selectedRow.id" }
+            ],
+            "label_class": "p-mono-key",
+            "value_class": "p-mono-val"
+          },
+          {
+            "id": "actions_row",
+            "kind": "row",
+            "class": "p-row",
+            "style": { "gap": 8 },
+            "items": [
+              { "kind": "Btn", "variant": "primary",   "icon": "check", "label": "Re-verify",  "test_id": "admin.resources.drawer.action.reverify" },
+              { "kind": "Btn", "variant": "secondary", "icon": "edit",  "label": "Edit",       "test_id": "admin.resources.drawer.action.edit" },
+              { "kind": "Btn", "variant": "ghost",     "icon": "flag",  "label": "Raise flag", "test_id": "admin.resources.drawer.action.raise_flag" },
+              { "kind": "Btn", "variant": "danger",    "icon": "trash", "label": "Isolate",    "test_id": "admin.resources.drawer.action.isolate" }
+            ]
+          }
+        ]
+      }
+    }
+  },
+
+  "icons_used": ["arrow-up-right", "plus", "check", "edit", "flag", "trash"],
+
+  "status_pill_states_used": ["verified", "review", "experimental", "isolated", "archived"],
+
+  "interactions": [
+    { "id": "row_open",         "trigger": "row.click",                                                       "effect": "set_drawer_row" },
+    { "id": "drawer_close",     "trigger": "drawer.close (X | backdrop | Esc)",                               "effect": "clear_drawer_row" },
+    { "id": "export_csv",       "trigger_test_id": "admin.resources.action.export_csv",                       "effect": "download_csv" },
+    { "id": "new_resource",     "trigger_test_id": "admin.resources.action.new_resource",                     "effect": "navigate_to_create" },
+    { "id": "drawer_reverify",  "trigger_test_id": "admin.resources.drawer.action.reverify",                  "effect": "POST /admin/resources/{id}/reverify" },
+    { "id": "drawer_edit",      "trigger_test_id": "admin.resources.drawer.action.edit",                      "effect": "open_inline_edit" },
+    { "id": "drawer_raise_flag","trigger_test_id": "admin.resources.drawer.action.raise_flag",                "effect": "open_flag_modal_then_POST /admin/resources/{id}/flags" },
+    { "id": "drawer_isolate",   "trigger_test_id": "admin.resources.drawer.action.isolate",                   "effect": "confirm_then_POST /admin/resources/{id}/isolate" }
+  ],
+
+  "empty_states": {
+    "no_results": { "body_text": "No resources match these filters." }
+  },
+
+  "non_negotiables": [
+    "FilterBar children must remain in order: q input → kind select → status select → counter.",
+    "DataTable column order must remain: Resource → Status → Sovereignty → Region → Risk → 30d → Updated.",
+    "Risk cell colour mapping is fixed: high=#ef4444, med=#f59e0b, low=#10b981.",
+    "Drawer body block order must remain: tag row → description card → provenance list → action row.",
+    "Action row order must remain: Re-verify → Edit → Raise flag → Isolate.",
+    "Counter denominator is the unfiltered total, not the filtered count."
+  ]
+}

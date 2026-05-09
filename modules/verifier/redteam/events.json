@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "verifier.redteam",
+  "description": "Telemetry events emitted by the Verifier portal /redteam route.",
+  "events": [
+    {
+      "name": "verifier.redteam.viewed",
+      "trigger": "VerRedteam component mount.",
+      "payload": {
+        "type": "object",
+        "required": ["totalCount", "openCount"],
+        "properties": {
+          "totalCount": { "type": "integer" },
+          "openCount":  { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "verifier.redteam.action.new_finding.clicked",
+      "trigger": "User clicks 'New finding' header primary button."
+    },
+    {
+      "name": "verifier.redteam.finding.created",
+      "trigger": "POST /verifier/redteam (201) succeeds.",
+      "payload": {
+        "type": "object",
+        "required": ["findingId", "target", "severity"],
+        "properties": {
+          "findingId": { "type": "string" },
+          "target":    { "type": "string" },
+          "severity":  { "enum": ["high", "med", "low"] }
+        }
+      }
+    },
+    {
+      "name": "verifier.redteam.finding.reviewing",
+      "trigger": "POST /verifier/redteam/{id}/review (200) succeeds.",
+      "payload": {
+        "type": "object",
+        "required": ["findingId"],
+        "properties": { "findingId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "verifier.redteam.finding.resolved",
+      "trigger": "POST /verifier/redteam/{id}/resolve (200) succeeds.",
+      "payload": {
+        "type": "object",
+        "required": ["findingId"],
+        "properties": { "findingId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "verifier.redteam.finding.reopened",
+      "trigger": "POST /verifier/redteam/{id}/reopen (200) succeeds.",
+      "payload": {
+        "type": "object",
+        "required": ["findingId"],
+        "properties": { "findingId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "verifier.redteam.list.fetched",
+      "trigger": "GET /verifier/redteam completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms", "rowCount"],
+        "properties": {
+          "status":   { "type": "integer" },
+          "ms":       { "type": "integer", "minimum": 0 },
+          "rowCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "verifier.redteam.error",
+      "trigger": "Any of the redteam endpoints returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["endpoint", "status"],
+        "properties": {
+          "endpoint": { "type": "string" },
+          "status":   { "type": "integer" },
+          "problem":  { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

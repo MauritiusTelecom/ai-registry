@@ -1,0 +1,295 @@
+# Copyright 2026 rakesh.khoodeeram
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Provider · Publish module — API contract
+# All endpoints scoped to the active provider tenant via session.
+# Auth: see airegistry-specs/shared/auth.md (provider role + scope publish:write required for writes).
+
+openapi: 3.0.3
+
+info:
+  title: Sovereign AI Registry — Provider Publish API
+  version: 0.4.0
+
+servers:
+  - url: https://air.gov.mu/api/v1
+  - url: https://air-staging.gov.mu/api/v1
+
+tags:
+  - name: provider-publish
+
+paths:
+  /provider/drafts:
+    get:
+      summary: List the provider's drafts (open wizard sessions)
+      operationId: listProviderDrafts
+      tags: [provider-publish]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Drafts owned by this provider, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PublishDraft' }
+
+    post:
+      summary: 'Save draft' button — first save creates the draft id
+      operationId: createOrUpdateProviderDraft
+      tags: [provider-publish]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PublishDraftPatch' }
+      responses:
+        '201':
+          description: Draft created / updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublishDraft' }
+
+  /provider/drafts/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      summary: Get a draft
+      operationId: getProviderDraft
+      tags: [provider-publish]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Draft
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublishDraft' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    patch:
+      summary: Update a draft (typically per step transition)
+      operationId: patchProviderDraft
+      tags: [provider-publish]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/PublishDraftPatch' }
+      responses:
+        '200':
+          description: Updated draft
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublishDraft' }
+
+    delete:
+      summary: Discard a draft
+      operationId: deleteProviderDraft
+      tags: [provider-publish]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204':
+          description: Draft discarded
+
+  /provider/drafts/{id}/checks:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      summary: 'Run local checks' — server-side validation of the draft
+      operationId: runDraftChecks
+      tags: [provider-publish]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Check results
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [results]
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      required: [check, ok]
+                      properties:
+                        check:  { type: string, example: 'slug.format' }
+                        ok:     { type: boolean }
+                        detail: { type: string }
+
+  /provider/drafts/{id}/verification/challenge:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      summary: Issue a proof-of-control challenge token (Step 3)
+      operationId: issueDraftChallenge
+      tags: [provider-publish]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [proofChannel]
+              properties:
+                proofChannel: { type: string, enum: [dns-txt, signed-manifest, https-callback] }
+      responses:
+        '201':
+          description: Challenge token issued
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [token, expiresAt]
+                properties:
+                  token:     { type: string }
+                  expiresAt: { type: string, format: date-time }
+
+  /provider/drafts/{id}/submit:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      summary: Submit the completed draft for review (Step 5)
+      operationId: submitProviderDraft
+      tags: [provider-publish]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '202':
+          description: Submission accepted; resource transitions to status='review'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [resourceId, version, submissionId]
+                properties:
+                  resourceId:   { type: string }
+                  version:      { type: string }
+                  submissionId: { type: string }
+        '422':
+          description: Draft incomplete or failed validation
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid session
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    Forbidden:
+      description: Authenticated but lacks provider role / write scope
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    NotFound:
+      description: Draft id not found in this provider's drafts
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:     { type: string, format: uri }
+        title:    { type: string }
+        status:   { type: integer }
+        detail:   { type: string }
+        instance: { type: string }
+
+    ManifestStep:
+      type: object
+      required: [slug, kind, description, sov, region]
+      properties:
+        slug:        { type: string }
+        kind:        { type: string, enum: [mcp-server, agent, tool, model] }
+        description: { type: string, minLength: 12 }
+        sov:         { type: string, enum: [Tier-1, Tier-2, Tier-3] }
+        region:      { type: string }
+
+    EndpointStep:
+      type: object
+      required: [url, authMethod, healthProbe]
+      properties:
+        url:         { type: string, format: uri }
+        authMethod:  { type: string, enum: [OIDC, HMAC, mTLS] }
+        healthProbe: { type: string, example: '/healthz' }
+
+    VerificationStep:
+      type: object
+      properties:
+        proofChannel:    { type: string, enum: [dns-txt, signed-manifest, https-callback] }
+        challengeToken:  { type: string }
+        proofVerifiedAt: { type: string, format: date-time, nullable: true }
+        evalsNote:       { type: string }
+
+    SovereigntyStep:
+      type: object
+      properties:
+        dpiaThreshold:    { type: string, enum: [none, any-PII, bulk-PII, restricted] }
+        jurisdictionNote: { type: string }
+        attestations:
+          type: object
+          properties:
+            antiMisuse: { type: boolean }
+            ageGate:    { type: boolean }
+            ip:         { type: boolean }
+            license:    { type: boolean }
+
+    ConfirmStep:
+      type: object
+      properties:
+        diffApproved:  { type: boolean }
+        publicVersion: { type: string }
+
+    PublishDraft:
+      type: object
+      required: [id, providerId, step, manifest, endpoint, createdAt, updatedAt]
+      properties:
+        id:           { type: string, example: draft_001 }
+        providerId:   { type: string }
+        step:         { type: integer, minimum: 1, maximum: 5 }
+        manifest:     { $ref: '#/components/schemas/ManifestStep' }
+        endpoint:     { $ref: '#/components/schemas/EndpointStep' }
+        verification: { $ref: '#/components/schemas/VerificationStep' }
+        sovereignty:  { $ref: '#/components/schemas/SovereigntyStep' }
+        confirm:      { $ref: '#/components/schemas/ConfirmStep' }
+        createdAt:    { type: string, format: date-time }
+        updatedAt:    { type: string, format: date-time }
+
+    PublishDraftPatch:
+      type: object
+      properties:
+        step:         { type: integer, minimum: 1, maximum: 5 }
+        manifest:     { $ref: '#/components/schemas/ManifestStep' }
+        endpoint:     { $ref: '#/components/schemas/EndpointStep' }
+        verification: { $ref: '#/components/schemas/VerificationStep' }
+        sovereignty:  { $ref: '#/components/schemas/SovereigntyStep' }
+        confirm:      { $ref: '#/components/schemas/ConfirmStep' }

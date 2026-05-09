@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "sovereign.incidents",
+  "description": "Telemetry events emitted by the Sovereign portal /incidents route. Read-only.",
+  "events": [
+    {
+      "name": "sovereign.incidents.viewed",
+      "trigger": "SovIncidents component mount.",
+      "payload": {
+        "type": "object",
+        "required": ["totalCount", "openCount"],
+        "properties": {
+          "totalCount": { "type": "integer" },
+          "openCount":  { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "sovereign.incidents.row.viewed",
+      "trigger": "Each incident row renders.",
+      "payload": {
+        "type": "object",
+        "required": ["incidentId", "sector", "severity"],
+        "properties": {
+          "incidentId": { "type": "string" },
+          "sector":     { "type": "string" },
+          "severity":   { "enum": ["high", "med", "low"] }
+        }
+      }
+    },
+    {
+      "name": "sovereign.incidents.list.fetched",
+      "trigger": "GET /sovereign/incidents completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms", "rowCount"],
+        "properties": {
+          "status":   { "type": "integer" },
+          "ms":       { "type": "integer", "minimum": 0 },
+          "rowCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "sovereign.incidents.row.clicked",
+      "trigger": "Production-only: user clicks a row to drill into the detail drawer.",
+      "payload": {
+        "type": "object",
+        "required": ["incidentId"],
+        "properties": { "incidentId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "sovereign.incidents.error",
+      "trigger": "GET /sovereign/incidents returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status":  { "type": "integer" },
+          "problem": { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

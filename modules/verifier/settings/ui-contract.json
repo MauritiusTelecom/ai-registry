@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "verifier.settings",
+  "description": "Explicit UI contract for the Verifier portal /settings route.",
+
+  "route": {
+    "portal": "verifier",
+    "path": "/settings",
+    "html_entry": "portals/verifier.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Settings",
+    "breadcrumb": ["Verifier", "Settings"],
+    "active_sidebar_item": "settings"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Settings",
+      "subtitle": null,
+      "actions": []
+    },
+
+    "card_grid": {
+      "container_class": "p-grid p-grid-2",
+      "cards": [
+        {
+          "component": "p-card",
+          "title": "Reviewer profile",
+          "title_class": "p-card-title",
+          "title_style": { "marginBottom": 14 },
+          "fields": [
+            { "label": "Display name",   "kind": "input", "binding": "profile.displayName",   "default_value": "Sanjay Boodhoo",     "test_id": "verifier.settings.displayName" },
+            { "label": "Collegium",      "kind": "input", "binding": "profile.collegium",     "default_value": "Sovereignty Board",  "test_id": "verifier.settings.collegium" },
+            { "label": "Specialisation", "kind": "input", "binding": "profile.specialisation","default_value": "legal · safety",     "test_id": "verifier.settings.specialisation" }
+          ]
+        },
+        {
+          "component": "p-card",
+          "title": "Queue preferences",
+          "title_class": "p-card-title",
+          "title_style": { "marginBottom": 14 },
+          "fields": [
+            { "label": "Default stage",  "kind": "select", "binding": "preferences.defaultStage",
+              "default_value": null,
+              "options": [
+                { "label": "sovereignty", "value": "sovereignty" },
+                { "label": "evaluation",  "value": "evaluation"  },
+                { "label": "safety",      "value": "safety"      }
+              ],
+              "test_id": "verifier.settings.defaultStage"
+            },
+            { "label": "Max concurrent", "kind": "input", "binding": "preferences.maxConcurrent", "default_value": "4", "test_id": "verifier.settings.maxConcurrent" }
+          ]
+        }
+      ]
+    }
+  },
+
+  "icons_used": [],
+
+  "save_pattern": {
+    "default": "implicit_save_on_blur",
+    "alternative": "sticky_footer_with_save_changes_button",
+    "debounce_ms": 250,
+    "endpoint": "PATCH /verifier/settings",
+    "toast_on_success": "Settings saved"
+  },
+
+  "non_negotiables": [
+    "PageHeader has NO subtitle and NO action buttons.",
+    "Page uses a 2-column card grid (p-grid p-grid-2): Reviewer profile (left) + Queue preferences (right).",
+    "Card titles are 'Reviewer profile' and 'Queue preferences', each with marginBottom 14.",
+    "Reviewer profile fields in fixed order: Display name → Collegium → Specialisation.",
+    "Queue preferences fields in fixed order: Default stage → Max concurrent.",
+    "Default values exactly: 'Sanjay Boodhoo', 'Sovereignty Board', 'legal · safety' (Unicode middle dot U+00B7), '4'.",
+    "Default stage select has exactly THREE options in fixed order: sovereignty / evaluation / safety (lowercase, no defaultValue in source — first option selected by default).",
+    "Specialisation default uses Unicode middle dot U+00B7 between 'legal' and 'safety' — NOT an ASCII period or middle-dot-look-alike.",
+    "All inputs use class p-input; the select also uses p-select.",
+    "Page renders NO StatCards and NO DataTable in v0.4.",
+    "Page does NOT animate cards on mount.",
+    "Cross-user edits are forbidden — actor can only edit their own settings (server-enforced 403; UI offers no affordance to edit others)."
+  ]
+}

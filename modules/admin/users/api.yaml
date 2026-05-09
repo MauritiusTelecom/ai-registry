@@ -1,0 +1,273 @@
+# Copyright 2026 rakesh.khoodeeram
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Admin · Users module — API contract
+# Auth: see airegistry-specs/shared/auth.md (admin role required, often + scope=global).
+
+openapi: 3.0.3
+
+info:
+  title: Sovereign AI Registry — Admin Users API
+  version: 0.4.0
+
+servers:
+  - url: https://air.gov.mu/api/v1
+  - url: https://air-staging.gov.mu/api/v1
+
+tags:
+  - name: admin-users
+
+paths:
+  /admin/users:
+    get:
+      summary: List operators across all four portals
+      operationId: listAdminUsers
+      tags: [admin-users]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: role
+          schema: { type: string, enum: [all, admin, provider, verifier, sovereign] }
+        - in: query
+          name: status
+          schema: { type: string, enum: [all, active, suspended, invited, revoked] }
+        - in: query
+          name: mfa
+          schema: { type: string, enum: [all, on, off] }
+        - in: query
+          name: q
+          schema: { type: string, description: 'Case-insensitive search on name and email.' }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+        - in: query
+          name: cursor
+          schema: { type: string }
+      responses:
+        '200':
+          description: User list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AdminUsersResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /admin/users/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      summary: Get a user by id
+      operationId: getAdminUser
+      tags: [admin-users]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: User record
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    patch:
+      summary: Edit role / scope (production-only; no UI on /users in v0.4)
+      operationId: patchAdminUser
+      tags: [admin-users]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/UserPatch' }
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /admin/users/invite:
+    post:
+      summary: 'Invite user' header action
+      operationId: inviteAdminUser
+      tags: [admin-users]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserInvite' }
+      responses:
+        '201':
+          description: Invitation sent; user appears with status='invited'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /admin/users/{id}/suspend:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      summary: Suspend a user (status → suspended)
+      operationId: suspendAdminUser
+      tags: [admin-users]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 12 }
+      responses:
+        '200':
+          description: User suspended
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /admin/users/{id}/revoke:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      summary: Revoke a user (status → revoked, irreversible)
+      operationId: revokeAdminUser
+      tags: [admin-users]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 12 }
+      responses:
+        '200':
+          description: User revoked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /admin/users/invite-log:
+    get:
+      summary: 'Invite log' header link target
+      operationId: getInviteLog
+      tags: [admin-users]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Recent invitations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [id, email, role, scope, sentAt, state]
+                  properties:
+                    id:     { type: string }
+                    email:  { type: string }
+                    role:   { type: string }
+                    scope:  { type: string }
+                    sentAt: { type: string, format: date-time }
+                    state:  { type: string, enum: [sent, accepted, expired, revoked] }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid session
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    Forbidden:
+      description: Authenticated but lacks admin role / scope
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    NotFound:
+      description: User id not found in tenant
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:     { type: string, format: uri }
+        title:    { type: string }
+        status:   { type: integer }
+        detail:   { type: string }
+        instance: { type: string }
+
+    User:
+      type: object
+      required: [id, name, email, role, mfa, scope, lastSeen, status]
+      properties:
+        id:       { type: string, example: u_001 }
+        name:     { type: string }
+        email:    { type: string }
+        role:     { type: string, enum: [admin, provider, verifier, sovereign] }
+        mfa:      { type: boolean }
+        scope:    { type: string }
+        lastSeen: { type: string }
+        status:   { type: string, enum: [active, suspended, invited, revoked] }
+
+    UserInvite:
+      type: object
+      required: [email, role, scope]
+      properties:
+        email:   { type: string, format: email }
+        role:    { type: string, enum: [admin, provider, verifier, sovereign] }
+        scope:   { type: string }
+        message: { type: string }
+
+    UserPatch:
+      type: object
+      properties:
+        role:  { type: string, enum: [admin, provider, verifier, sovereign] }
+        scope: { type: string }
+
+    AdminUsersResponse:
+      type: object
+      required: [rows, total, generatedAt]
+      properties:
+        rows:
+          type: array
+          items: { $ref: '#/components/schemas/User' }
+        total: { type: integer }
+        counters:
+          type: object
+          properties:
+            active:    { type: integer }
+            suspended: { type: integer }
+            invited:   { type: integer }
+            revoked:   { type: integer }
+        page:
+          type: object
+          properties:
+            cursor:  { type: string }
+            size:    { type: integer }
+            hasMore: { type: boolean }
+        generatedAt: { type: string, format: date-time }

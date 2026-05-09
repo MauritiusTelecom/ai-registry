@@ -1,0 +1,230 @@
+# Copyright 2026 rakesh.khoodeeram
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Provider · API keys module — API contract
+# Auth: see airegistry-specs/shared/auth.md (provider role + owner of the org for writes).
+
+openapi: 3.0.3
+
+info:
+  title: Sovereign AI Registry — Provider Keys API
+  version: 0.4.0
+
+servers:
+  - url: https://air.gov.mu/api/v1
+  - url: https://air-staging.gov.mu/api/v1
+
+tags:
+  - name: provider-keys
+
+paths:
+  /provider/keys:
+    get:
+      summary: List API keys (NEVER returns the full secret)
+      operationId: listProviderKeys
+      tags: [provider-keys]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Keys list (truncated)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProviderKeysResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+    post:
+      summary: 'Create key' header action — returns the full secret ONCE
+      operationId: createProviderKey
+      tags: [provider-keys]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/KeyCreate' }
+      responses:
+        '201':
+          description: Key created; full secret returned in this response and never again
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiKeyCreatedOnce' }
+
+  /provider/keys/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      summary: Get key (truncated form only)
+      operationId: getProviderKey
+      tags: [provider-keys]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Key (truncated)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiKey' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    patch:
+      summary: Edit key name only (scope changes require rotate)
+      operationId: patchProviderKey
+      tags: [provider-keys]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+      responses:
+        '200':
+          description: Updated key
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiKey' }
+
+  /provider/keys/{id}/rotate:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      summary: Rotate a key — issues a new secret, retires the old one
+      operationId: rotateProviderKey
+      tags: [provider-keys]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                gracePeriodHours:
+                  type: integer
+                  minimum: 0
+                  maximum: 168
+                  default: 24
+                  description: 'Hours during which the old secret remains valid alongside the new.'
+      responses:
+        '200':
+          description: New full secret returned ONCE
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiKeyCreatedOnce' }
+
+  /provider/keys/{id}/revoke:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      summary: Revoke a key (irreversible)
+      operationId: revokeProviderKey
+      tags: [provider-keys]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 12 }
+      responses:
+        '200':
+          description: Key revoked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiKey' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid session
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    Forbidden:
+      description: Authenticated but lacks provider role / owner role
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+    NotFound:
+      description: Key id not found in this provider
+      content: { application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } } }
+
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:     { type: string, format: uri }
+        title:    { type: string }
+        status:   { type: integer }
+        detail:   { type: string }
+        instance: { type: string }
+
+    ApiKey:
+      type: object
+      required: [id, name, prefix, last4, scope, created, lastUsed]
+      properties:
+        id:       { type: string, example: k_001 }
+        name:     { type: string, example: production }
+        prefix:   { type: string, enum: [air_pk_live_, air_pk_test_] }
+        last4:    { type: string, minLength: 4, maxLength: 4 }
+        scope:    { type: string, example: 'publish:read,write' }
+        created:  { type: string, format: date }
+        lastUsed: { type: string }
+
+    ApiKeyCreatedOnce:
+      allOf:
+        - $ref: '#/components/schemas/ApiKey'
+        - type: object
+          required: [fullSecret, fullSecretShownAt]
+          properties:
+            fullSecret:        { type: string, description: 'Returned ONCE — never re-fetchable.' }
+            fullSecretShownAt: { type: string, format: date-time }
+
+    KeyCreate:
+      type: object
+      required: [name, scope]
+      properties:
+        name:    { type: string, minLength: 1, maxLength: 64 }
+        scope:   { type: string, example: 'publish:read,write' }
+        expires: { type: string, format: date-time, description: 'Optional expiry; default never.' }
+
+    ProviderKeysResponse:
+      type: object
+      required: [rows, total, generatedAt]
+      properties:
+        rows:
+          type: array
+          items: { $ref: '#/components/schemas/ApiKey' }
+        total: { type: integer }
+        page:
+          type: object
+          properties:
+            cursor:  { type: string }
+            size:    { type: integer }
+            hasMore: { type: boolean }
+        generatedAt: { type: string, format: date-time }

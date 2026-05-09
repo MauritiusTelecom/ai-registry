@@ -133,6 +133,28 @@ Each reference table follows the pattern: `id`, `code` (unique), `name`, `descri
 | `SubmissionSourceType` | `Provider` | How the provider record was created. |
 | `SovereigntyBasis` | `ResourceSovereigntyBasis`, `SovereigntyEvidence` | Four canonical bases (local law, data, system, language/culture). |
 
+#### 3.1.1 National AI Registry (`nat-ai-registry`) — enum vocabulary as `Lookup*` tables
+
+The NAR app ships **physical reference tables** in schema `registry` that mirror every Prisma `enum` still used on entity columns. Each table uses the shared pattern (`id`, `code`, `name`, `description`, `sortOrder`, `active`, timestamps) and is populated by `src/prisma/seeds/enum-lookups.ts` (idempotent upserts). **Entity FK migration:** application models may still read/write Prisma enums until a follow-up change replaces those columns with `…Id` foreign keys pointing at these lookups; the tables are the canonical row-level vocabulary for admin UIs, reporting, and future migrations without PostgreSQL enum type churn.
+
+| Prisma `enum` (NAR) | Lookup model | `@@map` table |
+|---------------------|----------------|---------------|
+| `UserRole` | `LookupUserRole` | `lookup_user_roles` |
+| `UserStatus` | `LookupUserStatus` | `lookup_user_statuses` |
+| `ProviderType` | `LookupProviderType` | `lookup_provider_types` |
+| `HealthStatus` | `LookupHealthStatus` | `lookup_health_statuses` |
+| `Transport` | `LookupTransport` | `lookup_transports` |
+| `VerificationStatus` | `LookupVerificationStatus` | `lookup_verification_statuses` |
+| `DeploymentModel` | `LookupDeploymentModel` | `lookup_deployment_models` |
+| `HostingType` | `LookupHostingType` | `lookup_hosting_types` |
+| `MaturityLevel` | `LookupMaturityLevel` | `lookup_maturity_levels` |
+| `AISolutionStatus` | `LookupSolutionStatus` | `lookup_solution_statuses` |
+| `SubmissionSource` | `LookupSubmissionSource` | `lookup_submission_sources` |
+| `PartnerStatus` | `LookupPartnerStatus` | `lookup_partner_statuses` |
+| `ApiStyle` | `LookupApiStyle` | `lookup_api_styles` |
+
+**Already reference-style (not Prisma enums):** `Industry`, `Capability`, `ComplianceFramework`, `SolutionKind`, `AccessChannel`, `InteractionMode` — these are first-class reference tables with M:N joins to `AISolution`, separate from the enum list above.
+
 ---
 
 ### 3.2 `User`

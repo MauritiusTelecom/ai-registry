@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "verifier.reports",
+  "description": "Explicit UI contract for the Verifier portal /reports route.",
+
+  "route": {
+    "portal": "verifier",
+    "path": "/reports",
+    "html_entry": "portals/verifier.html"
+  },
+
+  "shell_overrides": {
+    "currentTitle": "Reports",
+    "breadcrumb": ["Verifier", "Output", "Reports"],
+    "active_sidebar_item": "reports"
+  },
+
+  "page": {
+    "header": {
+      "component": "PageHeader",
+      "title": "Reports",
+      "subtitle": "Public-facing reports issued by the verifier collegium.",
+      "actions": [
+        { "kind": "Btn", "variant": "primary", "icon": "plus", "label": "Draft report", "test_id": "verifier.reports.action.draft_report" }
+      ]
+    },
+
+    "card_grid": {
+      "container_class": "p-grid p-grid-2",
+      "card_template": {
+        "component": "p-card",
+        "head": {
+          "left": {
+            "kind": "stack",
+            "lines": [
+              { "binding": "name",                       "class": "p-card-title" },
+              { "template": "${kind} · issued ${issued}", "class": "p-card-sub" }
+            ]
+          },
+          "right": {
+            "kind": "icon",
+            "name": "audit",
+            "size": 18,
+            "aria_hidden": true
+          }
+        },
+        "actions_row": {
+          "container_class": "p-row",
+          "container_style": { "gap": 8, "marginTop": 6 },
+          "items": [
+            { "kind": "Btn", "variant": "secondary", "size": "sm", "icon": "eye",            "label": "View",         "test_id": "verifier.reports.card.view" },
+            { "kind": "Btn", "variant": "ghost",     "size": "sm", "icon": "arrow-up-right", "label": "Download PDF", "test_id": "verifier.reports.card.download" },
+            {
+              "kind": "tag",
+              "class": "p-tag",
+              "style": { "marginLeft": "auto", "color": "#10b981" },
+              "text": "signed",
+              "shown_when": "row.signed === true"
+            }
+          ]
+        }
+      }
+    }
+  },
+
+  "icons_used": ["plus", "audit", "eye", "arrow-up-right"],
+
+  "interactions": [
+    { "id": "draft_report", "trigger_test_id": "verifier.reports.action.draft_report", "effect": "open_draft_report_flow" },
+    { "id": "view",         "trigger_test_id": "verifier.reports.card.view",            "effect": "GET /verifier/reports/{id} → window.open(signed_url)" },
+    { "id": "download",     "trigger_test_id": "verifier.reports.card.download",        "effect": "GET /verifier/reports/{id}/file.pdf with Content-Disposition: attachment" }
+  ],
+
+  "empty_states": {
+    "no_rows": { "single_full_width_card": true, "body_text": "No reports yet. Draft the first." }
+  },
+
+  "non_negotiables": [
+    "Header has only ONE primary action: 'Draft report' with plus icon.",
+    "Page uses a 2-column card grid (p-grid p-grid-2).",
+    "Each card has exactly: head (name + '${kind} · issued ${issued}' sub on left, audit icon on right) and an action row (View secondary sm + Download PDF ghost sm + optional signed p-tag pushed right with marginLeft: auto).",
+    "Action buttons are size='sm' — do NOT eyeball-shrink.",
+    "Card sub composes '${kind} · issued ${issued}' (Unicode middle dot U+00B7).",
+    "Em dashes in titles (e.g. 'mcp/health-records — special review') MUST be preserved as Unicode U+2014.",
+    "Audit icon is decorative; production must mark aria-hidden=\"true\".",
+    "Signed p-tag colour is #10b981 (green) and pushed to the right via marginLeft: 'auto'.",
+    "Signed p-tag renders ONLY when row.signed === true; in v0.4 mock data all rows are signed so the tag always shows.",
+    "Signed reports are IMMUTABLE — no Edit / Re-sign affordances under any role."
+  ]
+}

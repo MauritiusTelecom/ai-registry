@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "provider.team",
+  "description": "Telemetry events emitted by the Provider portal /team route.",
+  "events": [
+    {
+      "name": "provider.team.viewed",
+      "trigger": "ProvTeam component mount.",
+      "payload": {
+        "type": "object",
+        "required": ["totalCount"],
+        "properties": {
+          "totalCount":  { "type": "integer" },
+          "ownerCount":  { "type": "integer" },
+          "editorCount": { "type": "integer" },
+          "serviceCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "provider.team.action.invite.clicked",
+      "trigger": "User clicks 'Invite' header primary button."
+    },
+    {
+      "name": "provider.team.member.invited",
+      "trigger": "POST /provider/team/invite (201) succeeds.",
+      "payload": {
+        "type": "object",
+        "required": ["memberId", "role"],
+        "properties": {
+          "memberId": { "type": "string" },
+          "role":     { "enum": ["owner", "editor", "service"] }
+        }
+      }
+    },
+    {
+      "name": "provider.team.member.role_changed",
+      "trigger": "PATCH /provider/team/{id} succeeds (production-only).",
+      "payload": {
+        "type": "object",
+        "required": ["memberId", "from", "to"],
+        "properties": {
+          "memberId": { "type": "string" },
+          "from":     { "enum": ["owner", "editor", "service"] },
+          "to":       { "enum": ["owner", "editor", "service"] }
+        }
+      }
+    },
+    {
+      "name": "provider.team.member.removed",
+      "trigger": "DELETE /provider/team/{id} succeeds (production-only).",
+      "payload": {
+        "type": "object",
+        "required": ["memberId"],
+        "properties": { "memberId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "provider.team.list.fetched",
+      "trigger": "GET /provider/team completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms", "rowCount"],
+        "properties": {
+          "status":   { "type": "integer" },
+          "ms":       { "type": "integer", "minimum": 0 },
+          "rowCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "provider.team.error",
+      "trigger": "Any of the team endpoints returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["endpoint", "status"],
+        "properties": {
+          "endpoint": { "type": "string" },
+          "status":   { "type": "integer" },
+          "problem":  { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

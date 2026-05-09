@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "module": "admin.integrations",
+  "description": "Telemetry events emitted by the Admin portal /integrations route. All events carry the standard envelope (actorId, sessionId, ts, traceId).",
+  "events": [
+    {
+      "name": "admin.integrations.viewed",
+      "trigger": "AdminIntegrations mounts.",
+      "payload": {
+        "type": "object",
+        "required": ["totalCount"],
+        "properties": {
+          "totalCount":      { "type": "integer" },
+          "connectedCount":  { "type": "integer" },
+          "degradedCount":   { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "admin.integrations.action.add_integration.clicked",
+      "trigger": "User clicks 'Add integration' header primary button."
+    },
+    {
+      "name": "admin.integrations.card.configure.clicked",
+      "trigger": "User clicks the 'Configure' card action.",
+      "payload": {
+        "type": "object",
+        "required": ["integrationId", "kind"],
+        "properties": {
+          "integrationId": { "type": "string" },
+          "kind":          { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "admin.integrations.card.logs.clicked",
+      "trigger": "User clicks the 'Logs' card action.",
+      "payload": {
+        "type": "object",
+        "required": ["integrationId"],
+        "properties": { "integrationId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "admin.integrations.integration.tested",
+      "trigger": "POST /admin/integrations/{id}/test completes (production-only).",
+      "payload": {
+        "type": "object",
+        "required": ["integrationId", "ok"],
+        "properties": {
+          "integrationId": { "type": "string" },
+          "ok":            { "type": "boolean" },
+          "latencyMs":     { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "admin.integrations.integration.revoked",
+      "trigger": "POST /admin/integrations/{id}/revoke succeeds (production-only).",
+      "payload": {
+        "type": "object",
+        "required": ["integrationId"],
+        "properties": { "integrationId": { "type": "string" } }
+      }
+    },
+    {
+      "name": "admin.integrations.list.fetched",
+      "trigger": "GET /admin/integrations completes.",
+      "payload": {
+        "type": "object",
+        "required": ["status", "ms", "rowCount"],
+        "properties": {
+          "status":   { "type": "integer" },
+          "ms":       { "type": "integer", "minimum": 0 },
+          "rowCount": { "type": "integer" }
+        }
+      }
+    },
+    {
+      "name": "admin.integrations.error",
+      "trigger": "Any of the integrations endpoints returns non-2xx.",
+      "payload": {
+        "type": "object",
+        "required": ["endpoint", "status"],
+        "properties": {
+          "endpoint": { "type": "string" },
+          "status":   { "type": "integer" },
+          "problem":  { "type": "string" }
+        }
+      }
+    }
+  ],
+  "shell_events_inherited": [
+    "shell.command_palette.opened",
+    "shell.command_palette.executed",
+    "shell.theme.toggled",
+    "shell.palette.changed",
+    "shell.notifications.opened",
+    "shell.user_menu.opened",
+    "shell.role.switched",
+    "shell.signed_out"
+  ]
+}

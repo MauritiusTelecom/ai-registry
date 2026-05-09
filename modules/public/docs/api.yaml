@@ -1,0 +1,101 @@
+# Copyright 2026 rakesh.khoodeeram
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Public · Docs module — API contract
+
+openapi: 3.0.3
+
+info:
+  title: Sovereign AI Registry — Public Docs API
+  version: 0.4.0
+
+servers:
+  - url: https://airegistry.mu/api/v1
+  - url: https://staging.airegistry.mu/api/v1
+
+tags:
+  - name: public-docs
+
+paths:
+  /public/docs/spec:
+    get:
+      summary: Get the AIR-SPEC sections for the documentation page
+      description: >
+        Optional in v0.4 — the prototype inlines the five sections in the SPA.
+        Production may serve them from this endpoint with a long CDN cache.
+      operationId: getPublicDocsSpec
+      tags: [public-docs]
+      responses:
+        '200':
+          description: Spec sections payload
+          headers:
+            Cache-Control:
+              schema: { type: string, example: 'public, max-age=86400' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicDocsResponse' }
+
+  '/.well-known/air-spec/{id}':
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, enum: [overview, air-id, metadata, verification, review] }
+    get:
+      summary: Per-section spec fetch (yaml)
+      description: >
+        The endpoint that the per-section code example demonstrates. Served as
+        application/yaml; out of scope for the SPA but documented here for parity
+        with the page copy.
+      operationId: getAirSpecSection
+      tags: [public-docs]
+      responses:
+        '200':
+          description: Spec section
+          content:
+            application/yaml:
+              schema:
+                type: string
+
+components:
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:     { type: string, format: uri }
+        title:    { type: string }
+        status:   { type: integer }
+        detail:   { type: string }
+        instance: { type: string }
+
+    DocSection:
+      type: object
+      required: [id, label, body]
+      properties:
+        id:    { type: string, enum: [overview, air-id, metadata, verification, review] }
+        label: { type: string }
+        body:  { type: string }
+
+    PublicDocsResponse:
+      type: object
+      required: [specVersion, publishedAt, sections, generatedAt]
+      properties:
+        specVersion: { type: string, example: 'v0.4-MVP' }
+        publishedAt: { type: string, format: date }
+        sections:
+          type: array
+          items: { $ref: '#/components/schemas/DocSection' }
+          minItems: 5
+        generatedAt: { type: string, format: date-time }
