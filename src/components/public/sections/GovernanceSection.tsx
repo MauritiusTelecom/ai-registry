@@ -67,7 +67,7 @@ export function GovernanceSection() {
         <Reveal>
           <div className="gov-pillars">
             {PILLARS.map((pillar) => (
-              <div className="pillar" key={pillar.title}>
+              <div className="pillar feature-card" key={pillar.title}>
                 <div className="pillar-icon">
                   <Icon name={pillar.icon} size={16} />
                 </div>
