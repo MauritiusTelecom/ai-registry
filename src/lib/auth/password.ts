@@ -14,9 +14,22 @@
  */
 
 import { randomBytes, scrypt as scryptCb, timingSafeEqual } from "node:crypto";
-import { promisify } from "node:util";
 
-const scrypt = promisify(scryptCb);
+type ScryptOpts = { N: number; r: number; p: number };
+
+function scryptAsync(
+  password: string | Buffer,
+  salt: Buffer,
+  keylen: number,
+  opts: ScryptOpts
+): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    scryptCb(password, salt, keylen, opts, (err, derived) => {
+      if (err) reject(err);
+      else resolve(derived as Buffer);
+    });
+  });
+}
 
 const SCRYPT_N = 16384;
 const SCRYPT_R = 8;
@@ -30,11 +43,11 @@ export async function hashPassword(plain: string): Promise<string> {
     throw new Error("Password must be at least 8 characters.");
   }
   const salt = randomBytes(SALT_LEN);
-  const key = (await scrypt(plain.normalize("NFKC"), salt, KEY_LEN, {
+  const key = await scryptAsync(plain.normalize("NFKC"), salt, KEY_LEN, {
     N: SCRYPT_N,
     r: SCRYPT_R,
     p: SCRYPT_P
-  })) as Buffer;
+  });
   return `${PREFIX}$${salt.toString("base64")}$${key.toString("base64")}`;
 }
 
@@ -60,11 +73,11 @@ export async function verifyPassword(plain: string, stored: string): Promise<boo
     return false;
   }
 
-  const candidate = (await scrypt(plain.normalize("NFKC"), salt, expected.length, {
+  const candidate = await scryptAsync(plain.normalize("NFKC"), salt, expected.length, {
     N,
     r,
     p
-  })) as Buffer;
+  });
 
   // Lengths must match before timingSafeEqual.
   if (candidate.length !== expected.length) return false;

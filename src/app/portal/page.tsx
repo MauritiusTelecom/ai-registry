@@ -3,7 +3,13 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { PageHero } from "@/components/public/sections/PageHero";
+import { LogoutButton } from "@/components/public/auth/LogoutButton";
+import { PortalProfileForm } from "@/components/portal/PortalProfileForm";
 import { CONTACT_TOPIC_LABELS, type ContactTopicCode } from "@/lib/contacts/topics";
+
+function isStaff(roles: string[]) {
+  return roles.includes("admin") || roles.includes("reviewer");
+}
 
 export const metadata = { title: "Provider portal" };
 
@@ -15,7 +21,12 @@ export default async function PortalPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/portal");
 
-  const verifiedContacts = await prisma.contact.findMany({
+  const [profile, verifiedContacts] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: user.id },
+      select: { organisationName: true }
+    }),
+    prisma.contact.findMany({
     where: { linkedUserId: user.id, emailVerified: true },
     orderBy: { createdAt: "desc" },
     select: {
@@ -26,7 +37,8 @@ export default async function PortalPage() {
       organisationName: true,
       createdAt: true
     }
-  });
+  })
+  ]);
 
   return (
     <div>
@@ -43,7 +55,87 @@ export default async function PortalPage() {
         }
       />
 
-      <section className="section" style={{ paddingTop: 24, paddingBottom: 80 }}>
+      <section className="section" style={{ paddingTop: 24, paddingBottom: 24 }}>
+        <div style={{ maxWidth: 800, margin: "0 auto" }}>
+          {!user.emailVerified ? (
+            <div
+              className="glass"
+              style={{
+                padding: 18,
+                marginBottom: 24,
+                display: "flex",
+                gap: 14,
+                alignItems: "center"
+              }}
+              role="status"
+            >
+              <span
+                className="status-dot"
+                style={{ background: "#f59e0b", boxShadow: "0 0 8px #f59e0b" }}
+              />
+              <div style={{ flex: 1, fontSize: 14 }}>
+                <strong>Verify your email</strong> — a verification link was sent to{" "}
+                <span style={{ color: "var(--text-2)" }}>{user.email}</span>. Open it to
+                activate the account fully (check the dev console for the link if SMTP is
+                not configured).
+              </div>
+            </div>
+          ) : null}
+
+          <div
+            className="glass"
+            style={{ padding: 28, display: "grid", gap: 18, marginBottom: 24 }}
+          >
+            <ProfileRow label="Name" value={user.name} />
+            <ProfileRow label="Email" value={user.email} />
+            <ProfileRow label="Status" value={user.status.name} />
+            <ProfileRow label="Role" value={user.role.name} />
+            <ProfileRow
+              label="Provider linkage"
+              value={
+                user.provider
+                  ? `${user.provider.displayName} (${user.provider.slug})`
+                  : "Not yet linked"
+              }
+            />
+            <ProfileRow
+              label="Onboarding"
+              value={user.onboardingComplete ? "Complete" : "Pending"}
+            />
+            <PortalProfileForm
+              initialName={user.name}
+              initialOrganisation={profile?.organisationName ?? null}
+            />
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              gap: 12,
+              flexWrap: "wrap",
+              marginBottom: 32
+            }}
+          >
+            <Link href="/portal/resources" className="btn btn-primary">
+              My resources
+            </Link>
+            <Link href="/registry" className="btn btn-secondary">
+              Browse the registry
+            </Link>
+            <Link href="/providers" className="btn btn-secondary">
+              Browse providers
+            </Link>
+            {isStaff(user.roles) ? (
+              <Link href="/admin" className="btn btn-secondary">
+                Operator console
+              </Link>
+            ) : null}
+            <LogoutButton />
+          </div>
+        </div>
+      </section>
+
+      <section className="section" style={{ paddingTop: 0, paddingBottom: 80 }}>
       <div className="glass" style={{ padding: 32, maxWidth: 800, margin: "0 auto" }}>
         <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Verified contact messages</h2>
         <p style={{ color: "var(--text-2)", fontSize: 14, marginBottom: 20 }}>
@@ -85,6 +177,34 @@ export default async function PortalPage() {
         )}
       </div>
       </section>
+    </div>
+  );
+}
+
+function ProfileRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "180px 1fr",
+        gap: 16,
+        alignItems: "baseline",
+        borderBottom: "1px dashed var(--hairline)",
+        paddingBottom: 12
+      }}
+    >
+      <div
+        style={{
+          fontFamily: "IBM Plex Mono, monospace",
+          fontSize: 11,
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          color: "var(--text-3)"
+        }}
+      >
+        {label}
+      </div>
+      <div style={{ fontSize: 15, color: "var(--text)" }}>{value}</div>
     </div>
   );
 }

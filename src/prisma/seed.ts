@@ -20,9 +20,22 @@
  *   DATABASE_URL must be set. SEED_PROVIDER_SLUG and SEED_PROVIDER_NAME
  *   override the exemplar provider so re-deployments aren't tied to the
  *   reference operator name.
+ *
+ *   SEED_ADMIN_PASSWORD — when set, creates or updates a bootstrap operator
+ *   admin (email SEED_ADMIN_EMAIL, default admin@registry.com) with that
+ *   password, role admin, status active, email verified. Omit in CI; set
+ *   locally or in a secure deploy pipeline only.
+ *
+ *   SEED_PROVIDER_PASSWORD — when set, creates or updates a bootstrap portal
+ *   user for the exemplar provider (email SEED_PROVIDER_EMAIL, default
+ *   provider@registry.com), role provider, linked to the seeded Provider row.
+ *   Any legacy row at provider@example.com is renamed to that email first.
  */
 
+import { config as loadDotenv } from "dotenv";
+import { resolve } from "node:path";
 import { PrismaClient } from "../generated/prisma";
+import { hashPassword } from "../lib/auth/password";
 
 type RefRow = { code: string; name: string; description?: string; sortOrder?: number };
 
@@ -239,7 +252,9 @@ const SECTORS: { code: string; name: string; description: string }[] = [
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 async function seedRef<T extends { code: string }>(
-  table: { upsert: (args: unknown) => Promise<unknown> },
+  // Prisma delegate upsert args are model-specific; keep seed rows structurally uniform.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  table: any,
   rows: RefRow[],
   label: string
 ): Promise<Map<string, string>> {
@@ -271,6 +286,8 @@ async function seedRef<T extends { code: string }>(
 const prisma = new PrismaClient();
 
 async function main() {
+  loadDotenv({ path: resolve(process.cwd(), ".env") });
+
   console.log("Seeding reference taxonomies…");
 
     const userRoleIds = await seedRef(prisma.userRoleType, USER_ROLES, "user roles");
@@ -374,6 +391,55 @@ async function main() {
       }
     });
     console.log(`Provider seeded: ${provider.displayName} (slug=${provider.slug})`);
+
+    const providerUserEmail = (process.env.SEED_PROVIDER_EMAIL ?? "provider@registry.com")
+      .toLowerCase()
+      .trim();
+    await prisma.user.updateMany({
+      where: { email: "provider@example.com" },
+      data: { email: providerUserEmail }
+    });
+
+    const providerPassword = process.env.SEED_PROVIDER_PASSWORD;
+    if (providerPassword) {
+      const providerRoleId = userRoleIds.get("provider")!;
+      const activeStatusId = userStatusIds.get("active")!;
+      const passwordHash = await hashPassword(providerPassword);
+      const providerUserName =
+        process.env.SEED_PROVIDER_USER_NAME?.trim() ?? `${provider.displayName} operator`;
+
+      await prisma.user.upsert({
+        where: { email: providerUserEmail },
+        update: {
+          name: providerUserName,
+          passwordHash,
+          roleId: providerRoleId,
+          statusId: activeStatusId,
+          providerId: provider.id,
+          emailVerified: true,
+          verificationToken: null,
+          verificationTokenExpiry: null,
+          resetToken: null,
+          resetTokenExpiry: null,
+          onboardingComplete: true
+        },
+        create: {
+          email: providerUserEmail,
+          name: providerUserName,
+          passwordHash,
+          roleId: providerRoleId,
+          statusId: activeStatusId,
+          providerId: provider.id,
+          emailVerified: true,
+          onboardingComplete: true
+        }
+      });
+      console.log(`\n  ✓ bootstrap provider portal user: ${providerUserEmail}`);
+    } else {
+      console.log(
+        "\n  (bootstrap provider portal user skipped — set SEED_PROVIDER_PASSWORD to create or refresh)"
+      );
+    }
 
     // ─── One resource per AIR-SPEC §7 type ─────────────────────────────────
 
@@ -492,6 +558,54 @@ async function main() {
     if (!userRoleIds.has("admin") || !userStatusIds.has("active")) {
       throw new Error(
         "Reference data inconsistency: expected user 'admin' role and 'active' status."
+      );
+    }
+
+    const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+    if (adminPassword) {
+      const adminEmail = (process.env.SEED_ADMIN_EMAIL ?? "admin@registry.com")
+        .toLowerCase()
+        .trim();
+      const adminName = process.env.SEED_ADMIN_NAME?.trim() ?? adminEmail;
+      const passwordHash = await hashPassword(adminPassword);
+      const adminRoleId = userRoleIds.get("admin")!;
+      const activeStatusId = userStatusIds.get("active")!;
+
+      const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+      if (existingAdmin) {
+        await prisma.user.update({
+          where: { id: existingAdmin.id },
+          data: {
+            name: adminName,
+            passwordHash,
+            roleId: adminRoleId,
+            statusId: activeStatusId,
+            emailVerified: true,
+            verificationToken: null,
+            verificationTokenExpiry: null,
+            resetToken: null,
+            resetTokenExpiry: null,
+            onboardingComplete: true
+          }
+        });
+        console.log(`\n  ✓ bootstrap admin updated: ${adminEmail}`);
+      } else {
+        await prisma.user.create({
+          data: {
+            email: adminEmail,
+            name: adminName,
+            passwordHash,
+            roleId: adminRoleId,
+            statusId: activeStatusId,
+            emailVerified: true,
+            onboardingComplete: true
+          }
+        });
+        console.log(`\n  ✓ bootstrap admin created: ${adminEmail}`);
+      }
+    } else {
+      console.log(
+        "\n  (bootstrap admin skipped — set SEED_ADMIN_PASSWORD to create or refresh operator admin)"
       );
     }
 
