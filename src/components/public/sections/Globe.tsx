@@ -33,6 +33,48 @@ function arcPath(p1: Projected, p2: Projected, R: number, lift = 1.3) {
   return `M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}`;
 }
 
+type PoolNode = {
+  lat: number;
+  lon: number;
+  label: string;
+  kind: "sov" | "edge" | "gov";
+};
+
+// Pool of sovereign / edge / gov network nodes that cycle on the globe.
+// Coordinates are radians (lat ~[-π/2..π/2], lon ~[-π..π]) approximating each region.
+const NODE_POOL: PoolNode[] = [
+  { lat: -0.35, lon: 1.0, label: "air.mu", kind: "sov" },
+  { lat: 0.66, lon: -1.71, label: "air.us", kind: "sov" },
+  { lat: 0.87, lon: 0.17, label: "air.eu", kind: "sov" },
+  { lat: 0.35, lon: 1.36, label: "air.in", kind: "edge" },
+  { lat: 0.91, lon: 0.0, label: "air.uk", kind: "sov" },
+  { lat: -0.44, lon: 2.34, label: "air.au", kind: "edge" },
+  { lat: 0.63, lon: 2.43, label: "air.jp", kind: "sov" },
+  { lat: -0.17, lon: -0.96, label: "air.br", kind: "edge" },
+  { lat: 0.17, lon: 0.14, label: "air.ng", kind: "gov" },
+  { lat: 0.42, lon: 0.94, label: "air.ae", kind: "gov" },
+  { lat: 0.0, lon: 0.66, label: "air.ke", kind: "edge" },
+  { lat: 0.98, lon: -1.85, label: "air.ca", kind: "sov" },
+  { lat: -0.51, lon: 0.42, label: "air.za", kind: "edge" },
+  { lat: 0.84, lon: 0.18, label: "air.de", kind: "sov" },
+  { lat: 0.84, lon: 0.04, label: "air.fr", kind: "sov" },
+  { lat: 0.45, lon: 0.62, label: "air.tr", kind: "edge" },
+  { lat: 0.02, lon: 1.81, label: "air.sg", kind: "edge" },
+  { lat: 0.62, lon: 1.97, label: "air.cn", kind: "gov" }
+];
+
+const ACTIVE_COUNT = 7;
+const LIFETIME_MIN = 4500;
+const LIFETIME_RANGE = 3500;
+
+type Slot = {
+  key: number;
+  nodeIdx: number;
+  bornAt: number;
+  lifetime: number;
+  delayMs: number;
+};
+
 export function Globe({ motionIntensity = 1 }: GlobeProps) {
   const [rot, setRot] = useState(0);
   const rafRef = useRef<number | null>(null);
@@ -56,30 +98,86 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
   const cx = 300;
   const cy = 300;
 
-  const nodes = useMemo(
-    () => [
-      { lat: 0.9, lon: -0.5 }, { lat: 0.7, lon: 0.2 }, { lat: 0.6, lon: 1.4 },
-      { lat: -0.3, lon: -1.2 }, { lat: 0.2, lon: 0.7 }, { lat: -0.6, lon: 2.2 },
-      { lat: 0.4, lon: -2.8 }, { lat: 1.0, lon: 2.6 }, { lat: -0.1, lon: -2.0 },
-      { lat: 0.55, lon: 1.9 }
-    ],
-    []
-  );
+  // ---- Active fading network slots -------------------------------------------------
+  // 7 slots are active at any moment. Each slot picks a node from NODE_POOL, fades in,
+  // holds, fades out, and is replaced with a fresh random node — independent of all
+  // other slots, so the globe surface always shows ~7 named nodes that turn over.
+  const slotKeyRef = useRef(0);
+  const [slots, setSlots] = useState<Slot[]>(() => {
+    const initial: Slot[] = [];
+    const used = new Set<number>();
+    const now = typeof performance !== "undefined" ? performance.now() : 0;
+    for (let i = 0; i < ACTIVE_COUNT; i++) {
+      let idx: number;
+      do {
+        idx = Math.floor(Math.random() * NODE_POOL.length);
+      } while (used.has(idx));
+      used.add(idx);
+      const lifetime = LIFETIME_MIN + Math.random() * LIFETIME_RANGE;
+      // Stagger initial slots across their lifetime cycle so they don't fade together.
+      const phase = (i / ACTIVE_COUNT) * lifetime;
+      initial.push({
+        key: slotKeyRef.current++,
+        nodeIdx: idx,
+        bornAt: now - phase,
+        lifetime,
+        delayMs: -phase
+      });
+    }
+    return initial;
+  });
+
+  useEffect(() => {
+    const handle = window.setInterval(() => {
+      const now = performance.now();
+      setSlots((prev) => {
+        const used = new Set(prev.map((s) => s.nodeIdx));
+        let changed = false;
+        const next = prev.map((s) => {
+          if (now - s.bornAt < s.lifetime) return s;
+          used.delete(s.nodeIdx);
+          let idx: number;
+          do {
+            idx = Math.floor(Math.random() * NODE_POOL.length);
+          } while (used.has(idx));
+          used.add(idx);
+          changed = true;
+          return {
+            key: slotKeyRef.current++,
+            nodeIdx: idx,
+            bornAt: now,
+            lifetime: LIFETIME_MIN + Math.random() * LIFETIME_RANGE,
+            delayMs: 0
+          };
+        });
+        return changed ? next : prev;
+      });
+    }, 200);
+    return () => window.clearInterval(handle);
+  }, []);
+
+  // Arcs connect random pairs from the pool.
+  const slotsRef = useRef(slots);
+  useEffect(() => {
+    slotsRef.current = slots;
+  }, [slots]);
 
   const [arcs, setArcs] = useState<{ a: number; b: number; id: string }[]>([]);
   useEffect(() => {
     const interval = Math.max(2400, 5000 - motionIntensity * 25);
     const tick = () => {
-      const a = Math.floor(Math.random() * nodes.length);
-      let b = Math.floor(Math.random() * nodes.length);
-      if (b === a) b = (b + 1) % nodes.length;
+      const cur = slotsRef.current;
+      if (cur.length < 2) return;
+      const ai = Math.floor(Math.random() * cur.length);
+      let bi = Math.floor(Math.random() * cur.length);
+      if (bi === ai) bi = (bi + 1) % cur.length;
       const id = Math.random().toString(36).slice(2);
-      setArcs((prev) => [...prev.slice(-3), { a, b, id }]);
+      setArcs((prev) => [...prev.slice(-3), { a: cur[ai].nodeIdx, b: cur[bi].nodeIdx, id }]);
     };
     const handle = window.setInterval(tick, interval);
     tick();
     return () => window.clearInterval(handle);
-  }, [motionIntensity, nodes.length]);
+  }, [motionIntensity]);
 
   const lats = [-0.9, -0.45, 0, 0.45, 0.9];
   const lons = useMemo(
@@ -186,8 +284,8 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
 
       <g transform={`translate(${cx} ${cy})`} filter="url(#soft-glow)">
         {arcs.map((arc) => {
-          const a = nodes[arc.a];
-          const b = nodes[arc.b];
+          const a = NODE_POOL[arc.a];
+          const b = NODE_POOL[arc.b];
           const pa = project(a.lat, a.lon, rot, R);
           const pb = project(b.lat, b.lon, rot, R);
           if (!pa.visible || !pb.visible) return null;
@@ -209,33 +307,51 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
         })}
       </g>
 
+      {/* Active fading network nodes — 7 named slots, each fades in/holds/fades out
+          on its own independent timeline. */}
       <g transform={`translate(${cx} ${cy})`}>
-        {[
-          { x: -180, y: -150, color: "var(--primary)" },
-          { x: 200, y: -40, color: "var(--secondary)" },
-          { x: -120, y: 170, color: "var(--tertiary)" }
-        ].map((p, i) => (
-          <g key={i}>
-            <circle cx={p.x} cy={p.y} r="10" fill={p.color} opacity="0.18">
-              <animate attributeName="r" values="6;14;6" dur="3.6s" repeatCount="indefinite" begin={`${i * 0.6}s`} />
-              <animate
-                attributeName="opacity"
-                values="0.25;0.05;0.25"
-                dur="3.6s"
-                repeatCount="indefinite"
-                begin={`${i * 0.6}s`}
-              />
-            </circle>
-            <circle cx={p.x} cy={p.y} r="2.4" fill={p.color} />
-            <circle cx={p.x} cy={p.y} r="0.9" fill="#fff" />
-          </g>
-        ))}
-      </g>
-
-      <g transform={`translate(${cx} ${cy})`} opacity="0.6">
-        <line x1="-180" y1="-150" x2="-260" y2="-220" stroke="rgba(var(--primary-rgb),0.5)" strokeWidth="0.8" strokeDasharray="3 4" />
-        <line x1="200" y1="-40" x2="280" y2="-90" stroke="rgba(var(--secondary-rgb),0.5)" strokeWidth="0.8" strokeDasharray="3 4" />
-        <line x1="-120" y1="170" x2="-220" y2="240" stroke="rgba(var(--tertiary-rgb),0.5)" strokeWidth="0.8" strokeDasharray="3 4" />
+        {slots.map((slot) => {
+          const node = NODE_POOL[slot.nodeIdx];
+          const p = project(node.lat, node.lon, rot, R);
+          const color =
+            node.kind === "gov"
+              ? "var(--tertiary)"
+              : node.kind === "sov"
+              ? "var(--primary)"
+              : "var(--secondary)";
+          return (
+            <g
+              key={slot.key}
+              style={{
+                animation: `node-fade ${slot.lifetime}ms ease-in-out forwards`,
+                animationDelay: `${slot.delayMs}ms`,
+                visibility: p.visible ? "visible" : "hidden"
+              }}
+            >
+              <circle cx={p.x} cy={p.y} r="10" fill={color} opacity="0.18">
+                <animate
+                  attributeName="r"
+                  values="6;14;6"
+                  dur="2.8s"
+                  repeatCount="indefinite"
+                />
+              </circle>
+              <circle cx={p.x} cy={p.y} r="2.4" fill={color} />
+              <circle cx={p.x} cy={p.y} r="0.9" fill="#fff" />
+              <text
+                x={p.x + 9}
+                y={p.y - 7}
+                fontSize="9.5"
+                fontFamily="'IBM Plex Mono', monospace"
+                letterSpacing="0.06em"
+                fill="rgba(220,235,255,0.78)"
+                opacity={p.z > 0.35 ? 1 : 0}
+              >
+                {node.label}
+              </text>
+            </g>
+          );
+        })}
       </g>
 
       <style>{`
@@ -243,6 +359,10 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
           0% { stroke-dashoffset: 600; opacity: 0.2; }
           50% { opacity: 1; }
           100% { stroke-dashoffset: 0; opacity: 0; }
+        }
+        @keyframes node-fade {
+          0%, 100% { opacity: 0; }
+          18%, 82% { opacity: 1; }
         }
       `}</style>
     </svg>
