@@ -15,8 +15,8 @@ export default async function RegisterPage() {
       eyebrow="Create account"
       title={
         <>
-          List your sovereign{" "}
-          <span className="gradient-text">AI resource</span>.
+          Register as a{" "}
+          <span className="gradient-text">Sovereign AI provider</span>.
         </>
       }
       subtitle="Provider accounts can publish, maintain, and request reviews on the resources they operate."
