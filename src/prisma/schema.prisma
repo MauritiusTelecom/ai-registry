@@ -412,23 +412,23 @@ model SubmissionSourceType {
 // ─── User ───────────────────────────────────────────────
 
 model User {
-  id                      String     @id @default(uuid()) @db.Uuid
-  email                   String     @unique
+  id                      String    @id @default(uuid()) @db.Uuid
+  email                   String    @unique
   passwordHash            String?
   name                    String
   organisationName        String?
   roleId                  String
   statusId                String
   providerId              String?
-  emailVerified           Boolean    @default(false)
+  emailVerified           Boolean   @default(false)
   verificationToken       String?
   verificationTokenExpiry DateTime?
   resetToken              String?
   resetTokenExpiry        DateTime?
-  onboardingComplete      Boolean    @default(true)
+  onboardingComplete      Boolean   @default(true)
   image                   String?
-  createdAt               DateTime   @default(now())
-  updatedAt               DateTime   @updatedAt
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
 
   role     UserRoleType   @relation(fields: [roleId], references: [id], onDelete: Restrict)
   status   UserStatusType @relation(fields: [statusId], references: [id], onDelete: Restrict)
@@ -444,6 +444,7 @@ model User {
   trustSignalDecisions     TrustSignal[]                   @relation("TrustSignalDecidedBy")
   complaintsAssigned       Complaint[]                     @relation("ComplaintAssignedTo")
   enforcementActions       EnforcementAction[]             @relation("EnforcementPerformedBy")
+  contacts                 Contact[]
 
   @@index([providerId])
   @@index([roleId])
@@ -979,6 +980,33 @@ model EnforcementAction {
   @@index([targetResourceId])
   @@index([targetProviderId])
   @@index([actionTypeId])
+  @@schema("registry")
+}
+
+// ─── Public contact form (operator desk) ────────────────
+
+model Contact {
+  id                      String    @id @default(uuid())
+  senderName              String
+  organisationName        String
+  email                   String
+  topic                   String
+  message                 String    @db.Text
+  emailVerified           Boolean   @default(false)
+  emailVerificationToken  String?
+  emailVerificationExpiry DateTime?
+  linkedUserId            String?   @db.Uuid
+  ipAddress               String?
+  userAgent               String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  linkedUser User? @relation(fields: [linkedUserId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([linkedUserId])
+  @@index([emailVerificationToken])
+  @@map("Contacts")
   @@schema("registry")
 }
 

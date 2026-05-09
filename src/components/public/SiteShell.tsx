@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { getConfig } from "@/lib/config";
 import { ThemeProvider } from "./ThemeProvider";
 import { AuthProvider } from "./AuthProvider";
 import { ReportProvider } from "./ReportContext";
@@ -9,17 +10,22 @@ import { TweaksPanel } from "./TweaksPanel";
 
 /**
  * Public site shell — providers + nav + footer + modal + (dev) tweaks panel.
- * Server component shell; the providers below are all `"use client"`.
+ * Server component shell; the React-context providers below are all `"use client"`.
+ *
+ * Brand strings (registry name) flow from `src/lib/config.ts` (driven by
+ * `REGISTRY_NAME` in `.env`) so the codebase carries no jurisdiction-specific
+ * default. Forks change `.env`, never the components.
  */
 export function SiteShell({ children }: { children: ReactNode }) {
   const isDev = process.env.NODE_ENV !== "production";
+  const cfg = getConfig();
   return (
     <ThemeProvider>
       <AuthProvider>
         <ReportProvider>
-          <TopNav />
+          <TopNav registryName={cfg.registryName} />
           <main>{children}</main>
-          <Footer />
+          <Footer registryName={cfg.registryName} />
           <ReportModal />
           {isDev ? <TweaksPanel /> : null}
         </ReportProvider>

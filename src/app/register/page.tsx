@@ -1,0 +1,35 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth/current-user";
+import { AuthShell } from "@/components/public/auth/AuthShell";
+import { RegisterForm } from "@/components/public/auth/RegisterForm";
+
+export const metadata = { title: "Create an account" };
+
+export default async function RegisterPage() {
+  const user = await getCurrentUser();
+  if (user) redirect("/portal");
+
+  return (
+    <AuthShell
+      eyebrow="Create account"
+      title={
+        <>
+          List your sovereign{" "}
+          <span className="gradient-text">AI resource</span>.
+        </>
+      }
+      subtitle="Provider accounts can publish, maintain, and request reviews on the resources they operate."
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link href="/login" style={{ color: "var(--text-2)" }}>
+            Sign in
+          </Link>
+        </>
+      }
+    >
+      <RegisterForm />
+    </AuthShell>
+  );
+}

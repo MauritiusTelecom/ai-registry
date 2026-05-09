@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import "./globals.css";
+import { getConfig } from "@/lib/config";
 import { SAR_THEME_KEY, themeFromCookie } from "@/lib/theme-cookie";
 import { SiteShell } from "@/components/public/SiteShell";
 
-export const metadata: Metadata = {
-  title: "Mauritius AI Registry",
-  description:
-    "Sovereign AI Registry — public portal for the locally-governed AI Registry under AIR-SPEC 0.4."
-};
+// Title is sourced from the deployment configuration (REGISTRY_NAME) so the
+// codebase ships no jurisdiction-specific default.
+export async function generateMetadata(): Promise<Metadata> {
+  const cfg = getConfig();
+  return {
+    title: cfg.registryName,
+    description:
+      "Sovereign AI Registry — public portal for the locally-governed AI Registry under AIR-SPEC 0.4."
+  };
+}
 
 const FONT_HREF =
   "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap";

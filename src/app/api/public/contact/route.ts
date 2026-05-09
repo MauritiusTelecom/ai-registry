@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
-
-// Phase 0 stub: validate the shape of contact submissions and log them.
-// Persistence + email routing land alongside the operator notification work.
-
-const TOPICS = new Set([
-  "general",
-  "submit",
-  "review",
-  "report",
-  "jurisdiction",
-  "press"
-]);
+import { Prisma } from "@/generated/prisma";
+import { prisma } from "@/lib/prisma";
+import { getConfig } from "@/lib/config";
+import { getCurrentUser } from "@/lib/auth/current-user";
+import { generateRawToken, hashToken, verificationExpiry } from "@/lib/auth/tokens";
+import { emailTemplates, sendEmail } from "@/lib/email";
+import { normalizeContactEmail } from "@/lib/contacts/link-to-user";
+import { CONTACT_TOPIC_LABELS, CONTACT_TOPICS, type ContactTopicCode } from "@/lib/contacts/topics";
 
 type ContactPayload = {
   name?: string;
@@ -22,6 +18,23 @@ type ContactPayload = {
 
 function isEmail(value: unknown): value is string {
   return typeof value === "string" && /^\S+@\S+\.\S+$/.test(value);
+}
+
+function prismaErrorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== "object") return undefined;
+  const e = error as Record<string, unknown>;
+  if (typeof e.code === "string") return e.code;
+  // PrismaClientInitializationError (e.g. P1000 auth) exposes `errorCode`, not `code`.
+  if (typeof e.errorCode === "string") return e.errorCode;
+  return undefined;
+}
+
+function verboseContactErrors(): boolean {
+  return (
+    process.env.NODE_ENV === "development" ||
+    process.env.CONTACT_API_VERBOSE_ERRORS === "true" ||
+    process.env.CONTACT_API_VERBOSE_ERRORS === "1"
+  );
 }
 
 export async function POST(req: Request) {
@@ -36,8 +49,8 @@ export async function POST(req: Request) {
   if (!payload.name || payload.name.trim().length < 2) errors.push("name is required");
   if (!payload.org || payload.org.trim().length < 2) errors.push("org is required");
   if (!isEmail(payload.email)) errors.push("email must be valid");
-  if (!payload.topic || !TOPICS.has(payload.topic)) {
-    errors.push("topic must be one of: " + [...TOPICS].join(", "));
+  if (!payload.topic || !CONTACT_TOPICS.has(payload.topic)) {
+    errors.push("topic must be one of: " + [...CONTACT_TOPICS].join(", "));
   }
   if (!payload.message || payload.message.trim().length < 16) {
     errors.push("message must be at least 16 characters");
@@ -47,14 +60,167 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: errors.join("; ") }, { status: 400 });
   }
 
+  const email = normalizeContactEmail(payload.email as string);
+  const senderName = (payload.name as string).trim();
+  const organisationName = (payload.org as string).trim();
+  const topic = payload.topic as ContactTopicCode;
+  const message = (payload.message as string).trim();
+  const topicLabel = CONTACT_TOPIC_LABELS[topic];
+
+  let linkToUserId: string | null = null;
+  try {
+    const sessionUser = await getCurrentUser();
+    if (sessionUser && normalizeContactEmail(sessionUser.email) === email) {
+      const stillThere = await prisma.user.findUnique({
+        where: { id: sessionUser.id },
+        select: { id: true }
+      });
+      if (stillThere) linkToUserId = sessionUser.id;
+    }
+  } catch {
+    // Anonymous submit must succeed even if session resolution hits a DB glitch.
+    linkToUserId = null;
+  }
+
+  const rawVerify = generateRawToken();
+  const tokenHash = hashToken(rawVerify);
+  const tokenExpiry = verificationExpiry();
+
+  const ipAddress = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
+  const userAgent = req.headers.get("user-agent") ?? null;
+
+  let contactId: string;
+  let linkedForAudit: string | null = null;
+  try {
+    const createData = {
+      senderName,
+      organisationName,
+      email,
+      topic,
+      message,
+      emailVerified: false,
+      emailVerificationToken: tokenHash,
+      emailVerificationExpiry: tokenExpiry,
+      linkedUserId: linkToUserId,
+      ipAddress,
+      userAgent
+    };
+
+    let row;
+    try {
+      row = await prisma.contact.create({ data: createData });
+    } catch (first) {
+      if (
+        linkToUserId &&
+        prismaErrorCode(first) === "P2003" &&
+        first instanceof Prisma.PrismaClientKnownRequestError
+      ) {
+        row = await prisma.contact.create({
+          data: { ...createData, linkedUserId: null }
+        });
+      } else {
+        throw first;
+      }
+    }
+    contactId = row.id;
+    linkedForAudit = row.linkedUserId;
+  } catch (error) {
+    console.error("public.contact.persist_failed", error);
+
+    let message = "Could not save your message. Please try again later.";
+    const code = prismaErrorCode(error);
+    if (code === "P1000" || error instanceof Prisma.PrismaClientInitializationError) {
+      message =
+        "Database authentication failed (P1000). Fix DATABASE_URL in ai-registry/.env — use a real PostgreSQL user and password (not the USER/PASSWORD placeholders), then restart `npm run dev`.";
+    } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (
+        error.code === "P2021" ||
+        /relation.*"Contacts"|table.*"Contacts"|relation.*contacts|table.*contacts/i.test(
+          error.message ?? ""
+        )
+      ) {
+        message =
+          "Contact storage is not initialised on this database. Run `npm run prisma:migrate` (or `npx prisma db push`) from the ai-registry project, then retry.";
+      } else if (error.code === "P1001") {
+        message = "Cannot reach the database. Check DATABASE_URL and that PostgreSQL is running.";
+      } else if (error.code === "P2003") {
+        message =
+          "Could not link this submission to your account (invalid session). Try signing out and submitting again, or use a private window.";
+      }
+    }
+
+    if (code) message = `${message} (${code})`;
+
+    const body: { error: string; prismaCode?: string; devMessage?: string } = { error: message };
+    if (code) body.prismaCode = code;
+    if (verboseContactErrors() && error instanceof Error) {
+      body.devMessage = error.message;
+    }
+
+    return NextResponse.json(body, { status: 503 });
+  }
+
+  try {
+    await prisma.auditLog.create({
+      data: {
+        actorUserId: linkedForAudit,
+        entityType: "contact",
+        entityId: contactId,
+        action: "contact.created",
+        newValue: {
+          email,
+          topic,
+          senderName,
+          organisationName,
+          messageLength: message.length,
+          linkedUserId: linkedForAudit
+        },
+        ipAddress,
+        userAgent
+      }
+    });
+  } catch (error) {
+    console.error("public.contact.audit_log_failed", { contactId, error });
+  }
+
+  const cfg = getConfig();
+  const origin = new URL(req.url).origin;
+  const verifyUrl = `${origin}/contact/verify?token=${encodeURIComponent(rawVerify)}`;
+  const tmpl = emailTemplates.contactConfirmation({
+    senderName,
+    registryName: cfg.registryName,
+    operatorName: cfg.operatorName,
+    topicLabel,
+    replyIntro: cfg.contactFormReplyMessage,
+    verifyUrl
+  });
+
+  let emailSent = true;
+  try {
+    await sendEmail({ to: email, subject: tmpl.subject, text: tmpl.text });
+  } catch (error) {
+    emailSent = false;
+    console.error("public.contact.email_failed", { contactId, error });
+  }
+
   console.info(
     JSON.stringify({
       event: "public.contact.received",
-      topic: payload.topic,
-      messageLength: payload.message?.length ?? 0,
+      topic,
+      contactId,
+      messageLength: message.length,
+      emailSent,
       ts: new Date().toISOString()
     })
   );
 
-  return NextResponse.json({ accepted: true }, { status: 202 });
+  const acknowledgedAt = new Date().toISOString();
+  return NextResponse.json(
+    {
+      ticketId: contactId,
+      acknowledgedAt,
+      ...(emailSent ? {} : { emailWarning: "Message saved but confirmation email could not be sent. Check server logs / SMTP." })
+    },
+    { status: 202 }
+  );
 }
