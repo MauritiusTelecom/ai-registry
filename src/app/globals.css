@@ -813,9 +813,17 @@ p { color: var(--text-2); margin: 0; }
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--panel);
-  transition: border-color 200ms, background-color 200ms;
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1), border-color 220ms, background-color 220ms, box-shadow 220ms;
 }
-.pillar:hover { border-color: var(--border-strong); }
+.pillar:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+.feature-card:hover {
+  box-shadow:
+    0 12px 26px -18px rgba(var(--primary-rgb), 0.55),
+    0 14px 30px -22px rgba(var(--tertiary-rgb), 0.5);
+}
 .pillar-icon {
   width: 32px; height: 32px;
   border-radius: 8px;
@@ -1187,6 +1195,52 @@ p { color: var(--text-2); margin: 0; }
   color: var(--text);
   background: rgba(var(--primary-rgb), 0.12);
   border-color: rgba(var(--primary-rgb), 0.5);
+}
+
+/*
+ * Feature-card hover glow — applied to the border itself.
+ *
+ * Used by .pillar (governance pillars on home + governance) and .r-card
+ * (registry resource cards on home + /registry). On hover, an inset gradient
+ * ring using var(--grad-text) (primary → tertiary, 13deg) fades in, and a
+ * matching drop-shadow makes the ring glow. The card body is unchanged — only
+ * the border lights up. Keeps the existing translate/border-color hover.
+ */
+.feature-card {
+  position: relative;
+}
+.feature-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--grad-text);
+  /* Mask out the interior so only a 1px gradient ring remains. */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 320ms cubic-bezier(.2, .8, .2, 1);
+  pointer-events: none;
+  /* The drop-shadows make the gradient ring itself glow. */
+  filter:
+    drop-shadow(0 0 6px rgba(var(--primary-rgb), 0.55))
+    drop-shadow(0 0 14px rgba(var(--tertiary-rgb), 0.35));
+}
+.feature-card:hover::before {
+  opacity: 1;
+}
+[data-theme="light"] .feature-card::before {
+  filter:
+    drop-shadow(0 0 5px rgba(var(--primary-rgb), 0.35))
+    drop-shadow(0 0 12px rgba(var(--tertiary-rgb), 0.22));
+}
+@media (prefers-reduced-motion: reduce) {
+  .feature-card::before {
+    transition: none;
+  }
 }
 
 /* Scrollbar */

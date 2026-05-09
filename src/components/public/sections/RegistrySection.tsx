@@ -59,7 +59,7 @@ function RegistryCard({
   onReport: () => void;
 }) {
   return (
-    <div className="r-card">
+    <div className="r-card feature-card">
       <div className="r-card-head">
         <div className="r-icon">{resource.glyph}</div>
         <div style={{ flex: 1, minWidth: 0 }}>

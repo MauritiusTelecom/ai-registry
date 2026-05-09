@@ -4,7 +4,7 @@ import { SiteShell } from "@/components/public/SiteShell";
 import { themeBootstrapScript } from "@/components/public/ThemeProvider";
 
 export const metadata: Metadata = {
-  title: "Sovereign AI Registry",
+  title: "Mauritius AI Registry",
   description:
     "Sovereign AI Registry — public portal for the locally-governed AI Registry under AIR-SPEC 0.4."
 };
