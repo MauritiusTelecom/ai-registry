@@ -23,7 +23,7 @@ const RESOURCES_LINKS: FooterLink[] = [
 
 const PROVIDER_LINKS: FooterLink[] = [
   { label: "Submit a resource", href: "/contact" },
-  { label: "Provider portal", href: "#" },
+  { label: "Provider portal", href: "/portal" },
   { label: "Sovereignty rubric", href: "#" },
   { label: "Verification proofs", href: "#" },
   { label: "Pricing (free)", href: "#" }
@@ -72,7 +72,7 @@ function FooterColumn({
   );
 }
 
-export function Footer() {
+export function Footer({ registryName }: { registryName: string }) {
   return (
     <footer className="footer">
       <div className="footer-glow" />
@@ -80,7 +80,7 @@ export function Footer() {
         <div className="footer-col">
           <Link href="/" className="nav-logo" style={{ marginBottom: 16 }}>
             <span className="nav-logo-mark" />
-            <span style={{ fontSize: 15 }}>Mauritius AI Registry</span>
+            <span style={{ fontSize: 15 }}>{registryName}</span>
           </Link>
           <p className="footer-brand">
             Open-source infrastructure for sovereign AI discovery. The registry points; the

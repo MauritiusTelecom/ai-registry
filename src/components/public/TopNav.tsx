@@ -137,14 +137,14 @@ function UserMenu() {
   );
 }
 
-export function TopNav() {
+export function TopNav({ registryName }: { registryName: string }) {
   const pathname = usePathname() ?? "/";
   return (
     <nav className="nav">
       <div className="nav-inner">
         <Link href="/" className="nav-logo">
           <span className="nav-logo-mark" />
-          <span>Mauritius AI Registry</span>
+          <span>{registryName}</span>
         </Link>
         <div className="nav-links">
           {NAV_ITEMS.map((item) => (

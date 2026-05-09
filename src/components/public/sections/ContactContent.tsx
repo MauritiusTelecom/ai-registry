@@ -59,9 +59,13 @@ export function ContactContent() {
           message: form.message
         })
       });
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        ticketId?: string;
+        acknowledgedAt?: string;
+      };
       if (!response.ok) {
-        const data = (await response.json().catch(() => ({}))) as { error?: string };
-        setErrors({ submit: data.error ?? "Could not send your message. Please retry." });
+        setErrors({ submit: payload.error ?? "Could not send your message. Please retry." });
         return;
       }
       setSent(true);
@@ -147,7 +151,11 @@ export function ContactContent() {
                 <div>
                   <div className="form-success">
                     <Icon name="check" size={16} />
-                    <span>Message received. We respond within 2 working days.</span>
+                    <span>
+                      Message received. We respond within 2 working days. Check your inbox for a
+                      confirmation email and click the link there to verify your address — then, if
+                      you register with the same email, your verified messages appear in your portal.
+                    </span>
                   </div>
                   <button
                     type="button"
