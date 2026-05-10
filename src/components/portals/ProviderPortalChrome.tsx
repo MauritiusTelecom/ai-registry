@@ -3,31 +3,18 @@ import Link from "next/link";
 import type { SessionUser } from "@/lib/auth/current-user";
 import type { PortalConfig } from "@/lib/portals/nav-config";
 import { PortalSidebar } from "./PortalSidebar";
-import { PortalSearch } from "./header/PortalSearch";
-import { PortalPalette } from "./header/PortalPalette";
-import { PortalThemeToggle } from "./header/PortalThemeToggle";
-import { PortalNotifications } from "./header/PortalNotifications";
-import { PortalUserDropdown } from "./header/PortalUserDropdown";
+import { PortalHeader } from "./PortalHeader";
 import { ProviderRegistrationBanner } from "./ProviderRegistrationBanner";
 
 /**
- * Provider-specific portal chrome.
+ * Provider-specific portal chrome. Layers the provider-only registration
+ * banner on top of the shared `PortalHeader`.
  *
- * Differs from the shared `PortalLayoutChrome` (still used by admin /
- * verifier / sovereign) in three ways:
- *
- *   1. The topbar is replaced with the rich header from the prototype's
- *      `portal-shell.jsx` — search button, accent-palette switcher, light/
- *      dark mode toggle, notifications dropdown, user dropdown with role
- *      switcher.
- *   2. Theme mode is provided by root `ThemeProvider` in `app/layout.tsx`
- *      (cookie-aligned with `<html data-theme>`); this chrome only renders
- *      `PortalThemeToggle`.
- *   3. The breadcrumb shows "Provider" only — pages render their own page
- *      header inside `.p-content`.
- *
- * Used only by `src/app/provider/layout.tsx`. The other portals continue
- * to use `PortalLayoutChrome` until they're upgraded similarly.
+ * The header is identical to the one used by admin / verifier / sovereign
+ * (search, palette, theme toggle, notifications, user dropdown) — only the
+ * sub-crumb (provider display name) and the inline registration banner are
+ * provider-specific. See `ai-registry-specs/shared/portal-chrome.md` for
+ * the normative description.
  */
 export function ProviderPortalChrome({
   config,
@@ -38,52 +25,23 @@ export function ProviderPortalChrome({
   user: SessionUser;
   children: ReactNode;
 }) {
-  // Resolve the "current role" badge text. Provider users see "provider";
-  // an admin viewing the provider portal sees "admin (viewing provider)".
+  // A provider-only user sees `provider`; admins viewing the provider portal
+  // still see `admin` so the dropdown highlights their primary identity.
   const isAdmin = user.roles.includes("admin");
-  const isProvider = user.roles.includes("provider");
-  const currentRole =
-    isProvider && !isAdmin
-      ? "provider"
-      : isAdmin && isProvider
-        ? "admin"
-        : isAdmin
-          ? "admin"
-          : (user.role.code as string);
+  const currentRole: "admin" | "provider" = isAdmin ? "admin" : "provider";
 
   return (
     <div className="p-shell">
       <PortalSidebar config={config} />
 
       <div className="p-main">
-        <header className="p-header">
-          <div className="p-header-left">
-            <div className="p-crumbs">
-              <span className="p-crumb-active">{config.label}</span>
-              {user.provider ? (
-                <>
-                  <span className="p-crumb-sep">/</span>
-                  <span>{user.provider.displayName}</span>
-                </>
-              ) : null}
-            </div>
-          </div>
-          <div className="p-header-right">
-            <PortalSearch placeholder="Search resources, complaints, contacts…" />
-            <PortalPalette />
-            <PortalThemeToggle />
-            <PortalNotifications />
-            <PortalUserDropdown
-              user={{
-                name: user.name,
-                email: user.email,
-                roles: user.roles,
-                providerName: user.provider?.displayName ?? null
-              }}
-              currentRole={currentRole}
-            />
-          </div>
-        </header>
+        <PortalHeader
+          label={config.label}
+          currentRole={currentRole}
+          subCrumb={user.provider?.displayName ?? null}
+          searchPlaceholder="Search resources, complaints, contacts…"
+          user={user}
+        />
 
         <ProviderRegistrationBanner
           emailVerified={user.emailVerified}

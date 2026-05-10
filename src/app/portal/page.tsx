@@ -11,7 +11,7 @@ function isStaff(roles: string[]) {
   return roles.includes("admin") || roles.includes("reviewer");
 }
 
-export const metadata = { title: "Provider portal" };
+export const metadata = { title: "Your account" };
 
 function topicLabel(code: string): string {
   return CONTACT_TOPIC_LABELS[code as ContactTopicCode] ?? code;
