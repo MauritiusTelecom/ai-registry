@@ -36,7 +36,7 @@ export default async function AdminFlagsPage() {
   const rows = await prisma.complaint.findMany({
     where: { status: { code: { in: ["open", "investigating"] } } },
     include: {
-      type: { select: { name: true } },
+      complaintType: { select: { name: true } },
       severity: { select: { code: true, name: true } },
       status: { select: { code: true, name: true } },
       targetResource: {
@@ -56,7 +56,7 @@ export default async function AdminFlagsPage() {
         : "—";
     return {
       id: c.id,
-      type: c.type.name,
+      type: c.complaintType.name,
       severity: c.severity.code,
       status: c.status.name,
       target,

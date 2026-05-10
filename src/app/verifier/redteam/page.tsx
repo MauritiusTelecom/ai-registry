@@ -36,13 +36,13 @@ const SEVERITY_COLOUR: Record<string, string> = {
 export default async function VerifierRedteamPage() {
   const findings = await prisma.complaint.findMany({
     where: {
-      type: { code: { in: ["safety", "policy"] } },
+      complaintType: { code: { in: ["safety", "policy"] } },
       targetResource: {
         lifecycleStatus: { code: { in: ["listed", "deprecated", "needs_update"] } }
       }
     },
     include: {
-      type: { select: { code: true, name: true } },
+      complaintType: { select: { code: true, name: true } },
       severity: { select: { code: true, name: true } },
       status: { select: { code: true, name: true } },
       targetResource: {
@@ -59,7 +59,7 @@ export default async function VerifierRedteamPage() {
 
   const projected: Row[] = findings.map((c) => ({
     id: c.id,
-    type: c.type.name,
+    type: c.complaintType.name,
     severity: c.severity.code,
     status: c.status.name,
     target: c.targetResource
