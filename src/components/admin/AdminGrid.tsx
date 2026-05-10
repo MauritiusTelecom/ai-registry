@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Icon } from "@/components/public/Icon";
+import { withBase } from "@/lib/with-base";
 
 /**
  * Generic admin CRUD grid used by `/admin/users`, `/admin/providers`,
@@ -92,7 +93,7 @@ export function AdminGrid<Row extends { id: string }>(props: AdminGridProps<Row>
       params.set("page", String(page));
       params.set("pageSize", String(pageSize));
       try {
-        const res = await fetch(`${props.endpoint}?${params.toString()}`);
+        const res = await fetch(withBase(`${props.endpoint}?${params.toString()}`));
         if (!res.ok) {
           const body = (await res.json().catch(() => ({}))) as {
             error?: string;
