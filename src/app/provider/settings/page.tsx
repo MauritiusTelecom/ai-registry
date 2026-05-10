@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
@@ -11,6 +12,43 @@ export const dynamic = "force-dynamic";
 export default async function ProviderSettingsPage() {
   const user = await getCurrentUser();
   if (!user) return null;
+
+  // /provider/settings is the self-serve surface for a provider user to edit
+  // their own organisation. Admins land here via the role-aliased gate
+  // (admin can act in any portal), but they aren't linked to a Provider row,
+  // so route them to /admin/providers instead of crashing inside
+  // ensureUserProviderLinked.
+  if (user.role.code !== "provider") {
+    return (
+      <div className="p-content">
+        <div className="p-page-header">
+          <h1 className="p-title">Settings</h1>
+          <p className="p-subtitle">
+            This page is the provider&rsquo;s self-serve view of their own
+            organisation.
+          </p>
+        </div>
+        <div
+          className="glass"
+          style={{
+            padding: 24,
+            maxWidth: 720,
+            fontSize: 14,
+            lineHeight: 1.6
+          }}
+        >
+          You&rsquo;re signed in as <strong>{user.role.code}</strong>, not as a
+          provider. To manage providers as an operator, switch to the admin
+          surface.
+          <div style={{ marginTop: 16 }}>
+            <Link href="/admin/providers" className="btn btn-primary">
+              Open admin · Providers →
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const providerId = await ensureUserProviderLinked(user.id);
   const cfg = getConfig();
