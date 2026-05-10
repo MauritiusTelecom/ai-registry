@@ -1,9 +1,16 @@
 import Link from "next/link";
+import { ProviderPortalFooterLink } from "./ProviderPortalFooterLink";
 
 // Bundle B footer (matches the home composition in app.jsx + sections.jsx).
 // Six columns, brand block, then bottom row with build/operational tags.
 
 type FooterLink = { label: string; href: string; external?: boolean };
+type FooterProviderPortalItem = { kind: "provider-portal" };
+type FooterColumnLink = FooterLink | FooterProviderPortalItem;
+
+function isProviderPortalFooterItem(link: FooterColumnLink): link is FooterProviderPortalItem {
+  return "kind" in link && link.kind === "provider-portal";
+}
 
 const PRODUCT_LINKS: FooterLink[] = [
   { label: "Registry", href: "/registry" },
@@ -21,9 +28,9 @@ const RESOURCES_LINKS: FooterLink[] = [
   { label: "Audit log", href: "#" }
 ];
 
-const PROVIDER_LINKS: FooterLink[] = [
+const PROVIDER_LINKS: FooterColumnLink[] = [
   { label: "Submit a resource", href: "/contact" },
-  { label: "Provider portal", href: "/portal" },
+  { kind: "provider-portal" },
   { label: "Sovereignty rubric", href: "#" },
   { label: "Verification proofs", href: "#" },
   { label: "Pricing (free)", href: "#" }
@@ -51,22 +58,28 @@ function FooterColumn({
   className
 }: {
   title: string;
-  links: FooterLink[];
+  links: FooterColumnLink[];
   className?: string;
 }) {
   return (
     <div className={`footer-col${className ? ` ${className}` : ""}`}>
       <h5>{title}</h5>
       <ul>
-        {links.map((link) => (
-          <li key={link.label}>
-            {link.href.startsWith("/") ? (
-              <Link href={link.href}>{link.label}</Link>
-            ) : (
-              <a href={link.href}>{link.label}</a>
-            )}
-          </li>
-        ))}
+        {links.map((link) =>
+          isProviderPortalFooterItem(link) ? (
+            <li key="provider-portal">
+              <ProviderPortalFooterLink />
+            </li>
+          ) : (
+            <li key={link.label}>
+              {link.href.startsWith("/") ? (
+                <Link href={link.href}>{link.label}</Link>
+              ) : (
+                <a href={link.href}>{link.label}</a>
+              )}
+            </li>
+          )
+        )}
       </ul>
     </div>
   );
