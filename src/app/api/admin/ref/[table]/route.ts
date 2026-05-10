@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@/generated/prisma";
 import { requireRole } from "@/lib/portals/auth-gate";
 import { getRefTable } from "@/lib/admin/reference-tables";
 import { isPrismaKnownError, modelFor, PrismaErrorCode } from "@/lib/admin/ref-prisma";
@@ -112,7 +113,7 @@ export async function POST(
         entityType: `ref.${config.id}`,
         entityId: (created as { id: string }).id,
         action: "ref.created",
-        newValue: data as Record<string, unknown>
+        newValue: data as unknown as Prisma.InputJsonValue
       }
     });
     return NextResponse.json(projectRow(config, created as Record<string, unknown>), {

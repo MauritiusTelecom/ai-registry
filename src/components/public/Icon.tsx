@@ -29,7 +29,9 @@ export type IconName =
   | "menu"
   | "bell"
   | "chevron-down"
-  | "palette";
+  | "palette"
+  | "edit"
+  | "trash";
 
 type IconProps = {
   name: IconName;
@@ -106,6 +108,10 @@ export function Icon({ name, size = 16, stroke = 1.5 }: IconProps) {
       return (<svg {...props}><path d="M6 9l6 6 6-6" /></svg>);
     case "palette":
       return (<svg {...props}><path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 2-2s-1-1-1-2 1-2 2-2h2a4 4 0 0 0 4-4 9 9 0 0 0-9-8z" /><circle cx="7.5" cy="11" r="1" /><circle cx="10" cy="7" r="1" /><circle cx="14" cy="7" r="1" /><circle cx="16.5" cy="10" r="1" /></svg>);
+    case "edit":
+      return (<svg {...props}><path d="M4 20h4l10-10-4-4L4 16v4z" /><path d="M14 6l4 4" /></svg>);
+    case "trash":
+      return (<svg {...props}><path d="M4 7h16M9 7V4h6v3M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" /><path d="M10 11v6M14 11v6" /></svg>);
     default:
       return null;
   }
