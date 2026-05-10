@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { withBase } from "@/lib/with-base";
 
 type Props = {
   resourceId: string;
@@ -39,7 +40,7 @@ export function EditResourceForm({
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(`/api/portal/resources/${resourceId}`, {
+      const res = await fetch(withBase(`/api/portal/resources/${resourceId}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -66,7 +67,7 @@ export function EditResourceForm({
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(`/api/portal/resources/${resourceId}/submit`, { method: "POST" });
+      const res = await fetch(withBase(`/api/portal/resources/${resourceId}/submit`), { method: "POST" });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
         setError(data.error ?? "Submit failed");

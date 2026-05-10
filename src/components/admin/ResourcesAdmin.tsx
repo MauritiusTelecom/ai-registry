@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Icon } from "@/components/public/Icon";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
+import { withBase } from "@/lib/with-base";
 
 export type ResourceRow = {
   id: string;
@@ -206,7 +207,7 @@ function ResourceRowActions({
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(`/api/admin/resources/${row.id}`, { method: "DELETE" });
+      const res = await fetch(withBase(`/api/admin/resources/${row.id}`), { method: "DELETE" });
       const data = (await res.json()) as { error?: string; detail?: string };
       if (!res.ok) {
         setError(data.error ?? data.detail ?? "Delete failed");
@@ -389,7 +390,7 @@ function ActionDialog({
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(`/api/admin/resources/${row.id}/transition`, {
+      const res = await fetch(withBase(`/api/admin/resources/${row.id}/transition`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, reason: reason.trim() })
@@ -530,7 +531,7 @@ function ResourceForm({
     try {
       let res: Response;
       if (mode === "create") {
-        res = await fetch("/api/admin/resources", {
+        res = await fetch(withBase("/api/admin/resources"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -544,7 +545,7 @@ function ResourceForm({
           })
         });
       } else {
-        res = await fetch(`/api/admin/resources/${initial!.id}`, {
+        res = await fetch(withBase(`/api/admin/resources/${initial!.id}`), {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

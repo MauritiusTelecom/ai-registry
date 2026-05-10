@@ -6,6 +6,7 @@ import type { PublicRegistryListResponse, RegistryCard } from "@/lib/discovery/t
 import { Icon, type IconName } from "../Icon";
 import { Reveal } from "../Reveal";
 import { useReport } from "../ReportContext";
+import { withBase } from "@/lib/with-base";
 
 export type Resource = {
   id: string;
@@ -93,7 +94,7 @@ function resourcesListQuery(opts: {
   if (opts.cursor) sp.set("cursor", opts.cursor);
   sp.set("limit", String(opts.limit));
   const q = sp.toString();
-  return q ? `/api/resources?${q}` : "/api/resources";
+  return withBase(q ? `/api/resources?${q}` : "/api/resources");
 }
 
 function FeatureResourceCard({

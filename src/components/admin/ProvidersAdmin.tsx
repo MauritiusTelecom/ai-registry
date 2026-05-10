@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Icon } from "@/components/public/Icon";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
 import { StatusPill } from "@/components/portals/StatusPill";
+import { withBase } from "@/lib/with-base";
 
 export type ProviderRow = {
   id: string;
@@ -153,7 +154,7 @@ function ProviderRowActions({
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(`/api/admin/providers/${row.id}`, { method: "DELETE" });
+      const res = await fetch(withBase(`/api/admin/providers/${row.id}`), { method: "DELETE" });
       const data = (await res.json()) as { error?: string; detail?: string };
       if (!res.ok) {
         setError(data.error ?? data.detail ?? "Delete failed");
@@ -332,9 +333,11 @@ function ProviderForm({
       if (mode === "create") body.slug = slug.trim();
 
       const res = await fetch(
-        mode === "create"
-          ? "/api/admin/providers"
-          : `/api/admin/providers/${initial!.id}`,
+        withBase(
+          mode === "create"
+            ? "/api/admin/providers"
+            : `/api/admin/providers/${initial!.id}`
+        ),
         {
           method: mode === "create" ? "POST" : "PATCH",
           headers: { "Content-Type": "application/json" },

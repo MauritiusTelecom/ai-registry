@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { PublicProviderCard, PublicProvidersListResponse } from "@/lib/discovery/types";
 import { Icon, type IconName } from "../Icon";
 import { Reveal } from "../Reveal";
+import { withBase } from "@/lib/with-base";
 
 /** @deprecated Use `PublicProviderCard` from discovery types; kept for mock-mode rows. */
 export type Provider = PublicProviderCard;
@@ -58,7 +59,7 @@ function providersListUrl(opts: {
   if (opts.cursor) sp.set("cursor", opts.cursor);
   sp.set("limit", String(opts.limit));
   const q = sp.toString();
-  return q ? `/api/providers?${q}` : "/api/providers";
+  return withBase(q ? `/api/providers?${q}` : "/api/providers");
 }
 
 function ProviderCard({ provider }: { provider: PublicProviderCard }) {

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { withBase } from "@/lib/with-base";
 
 type Props = {
   initial: {
@@ -31,7 +32,7 @@ export function ProviderNotificationsForm({ initial }: Props) {
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch("/api/portal/provider/notifications", {
+      const res = await fetch(withBase("/api/portal/provider/notifications"), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
