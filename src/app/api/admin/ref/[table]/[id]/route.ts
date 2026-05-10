@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@/generated/prisma";
 import { requireRole } from "@/lib/portals/auth-gate";
 import { getRefTable } from "@/lib/admin/reference-tables";
 import { modelFor } from "@/lib/admin/ref-prisma";
@@ -59,11 +60,14 @@ export async function PATCH(
         entityType: `ref.${config.id}`,
         entityId: id,
         action: "ref.updated",
-        previousValue: projectRow(config, before as Record<string, unknown>) as Record<
-          string,
-          unknown
-        >,
-        newValue: projectRow(config, updated as Record<string, unknown>) as Record<string, unknown>
+        previousValue: projectRow(
+          config,
+          before as Record<string, unknown>
+        ) as unknown as Prisma.InputJsonValue,
+        newValue: projectRow(
+          config,
+          updated as Record<string, unknown>
+        ) as unknown as Prisma.InputJsonValue
       }
     });
     return NextResponse.json(projectRow(config, updated as Record<string, unknown>));
@@ -92,10 +96,10 @@ export async function DELETE(
         entityType: `ref.${config.id}`,
         entityId: id,
         action: "ref.deleted",
-        previousValue: projectRow(config, before as Record<string, unknown>) as Record<
-          string,
-          unknown
-        >
+        previousValue: projectRow(
+          config,
+          before as Record<string, unknown>
+        ) as unknown as Prisma.InputJsonValue
       }
     });
     return new Response(null, { status: 204 });

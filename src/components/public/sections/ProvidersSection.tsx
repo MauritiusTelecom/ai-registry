@@ -100,20 +100,9 @@ function ProviderCard({ provider }: { provider: PublicProviderCard }) {
         ))}
       </div>
       <div className="r-card-actions">
-        {provider.websiteUrl ? (
-          <a
-            href={provider.websiteUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="r-card-action-link"
-          >
-            <Icon name="eye" size={12} /> Profile
-          </a>
-        ) : (
-          <button type="button" disabled title="No public website on file">
-            <Icon name="eye" size={12} /> Profile
-          </button>
-        )}
+        <Link href={`/providers/${encodeURIComponent(provider.slug)}`} className="r-card-action-link">
+          <Icon name="eye" size={12} /> Profile
+        </Link>
         <Link href={`/registry?provider=${encodeURIComponent(provider.slug)}`} className="r-card-action-link">
           <Icon name="layers" size={12} /> Listings
         </Link>
