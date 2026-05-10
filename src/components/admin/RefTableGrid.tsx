@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/public/Icon";
 import type { RefTableConfig } from "@/lib/admin/reference-tables";
+import { withBase } from "@/lib/with-base";
 
 /**
  * Server-side-paginated CRUD grid driven by a `RefTableConfig`. Renders the
@@ -58,7 +59,7 @@ export function RefTableGrid({ config }: { config: RefTableConfig }) {
       params.set("page", String(page));
       params.set("pageSize", String(pageSize));
       try {
-        const res = await fetch(`/api/admin/ref/${config.id}?${params.toString()}`);
+        const res = await fetch(withBase(`/api/admin/ref/${config.id}?${params.toString()}`));
         if (!res.ok) {
           const body = (await res.json().catch(() => ({}))) as { detail?: string; error?: string };
           throw new Error(body.detail ?? body.error ?? `HTTP ${res.status}`);
@@ -87,7 +88,7 @@ export function RefTableGrid({ config }: { config: RefTableConfig }) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/ref/${config.id}/${deleting.id}`, {
+      const res = await fetch(withBase(`/api/admin/ref/${config.id}/${deleting.id}`), {
         method: "DELETE"
       });
       if (!res.ok) {

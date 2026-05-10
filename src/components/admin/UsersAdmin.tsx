@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Icon } from "@/components/public/Icon";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
 import { StatusPill } from "@/components/portals/StatusPill";
+import { withBase } from "@/lib/with-base";
 
 export type UserRow = {
   id: string;
@@ -170,7 +171,7 @@ function UserRowActions({
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(`/api/admin/users/${row.id}`, {
+      const res = await fetch(withBase(`/api/admin/users/${row.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
@@ -194,7 +195,7 @@ function UserRowActions({
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(`/api/admin/users/${row.id}`, { method: "DELETE" });
+      const res = await fetch(withBase(`/api/admin/users/${row.id}`), { method: "DELETE" });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
         setError(data.error ?? "Delete failed");
@@ -373,7 +374,7 @@ function UserForm({
       const url =
         mode === "create" ? "/api/admin/users" : `/api/admin/users/${initial!.id}`;
       const method = mode === "create" ? "POST" : "PATCH";
-      const res = await fetch(url, {
+      const res = await fetch(withBase(url), {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)

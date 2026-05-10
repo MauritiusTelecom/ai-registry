@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { RefTableConfig } from "@/lib/admin/reference-tables";
+import { withBase } from "@/lib/with-base";
 
 /**
  * Form used by both /new and /[id]/edit routes. Fields are rendered from
@@ -51,7 +52,7 @@ export function RefRowForm({
           ? `/api/admin/ref/${config.id}`
           : `/api/admin/ref/${config.id}/${initial!.id}`;
       const method = mode === "create" ? "POST" : "PATCH";
-      const res = await fetch(url, {
+      const res = await fetch(withBase(url), {
         method,
         headers: { "content-type": "application/json" },
         body: JSON.stringify(values)
