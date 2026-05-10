@@ -111,6 +111,41 @@ async function countsByProviderKindForFilters(
   return counts;
 }
 
+const PROVIDER_DETAIL_INCLUDE = {
+  homeJurisdiction: true,
+  type: { select: { code: true, name: true } },
+  status: { select: { code: true, name: true } },
+  resources: {
+    where: {
+      lifecycleStatus: { code: { in: ["listed", "deprecated", "needs_update"] } }
+    },
+    include: {
+      lifecycleStatus: true,
+      resourceType: { select: { code: true, name: true } },
+      trustSignals: { include: { kind: true, status: true } }
+    },
+    orderBy: [{ title: "asc" }]
+  }
+} satisfies Prisma.ProviderInclude;
+
+export type ProviderForDetail = Prisma.ProviderGetPayload<{
+  include: typeof PROVIDER_DETAIL_INCLUDE;
+}>;
+
+export async function findProviderForDetail({
+  slug
+}: {
+  slug: string;
+}): Promise<ProviderForDetail | null> {
+  const provider = await prisma.provider.findUnique({
+    where: { slug },
+    include: PROVIDER_DETAIL_INCLUDE
+  });
+  if (!provider) return null;
+  if (!provider.published || provider.adminSuspended) return null;
+  return provider;
+}
+
 export async function listPublicProviders(
   filters: ProviderListFilters,
   pagination: ProviderListPagination
