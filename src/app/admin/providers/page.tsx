@@ -1,95 +1,52 @@
-import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
-import { DataTable, type Column } from "@/components/portals/DataTable";
-import { StatusPill } from "@/components/portals/StatusPill";
+import { ProvidersAdmin } from "@/components/admin/ProvidersAdmin";
 
 export const metadata = { title: "Admin · Providers" };
 export const dynamic = "force-dynamic";
 
-type Row = {
-  id: string;
-  slug: string;
-  displayName: string;
-  kind: string;
-  status: string;
-  jurisdiction: string;
-  resources: number;
-  contact: string;
-  createdAt: string;
-};
-
-const STATUS_DISPLAY: Record<string, string> = {
-  unverified: "experimental",
-  verified: "verified",
-  official_provider: "trusted",
-  suspended: "isolated"
-};
-
+/**
+ * Admin · Providers — bespoke CRUD grid backed by `/api/admin/providers`.
+ * Add new opens a modal that creates an `operator_added` provider in
+ * `unverified` status; per-row Verify routes to the existing
+ * `/admin/providers/[id]` page (which holds the verification form).
+ *
+ * See `ai-registry-specs/shared/admin-crud.md` §5.2.
+ */
 export default async function AdminProvidersPage() {
-  const rows = await prisma.provider.findMany({
-    include: {
-      type: { select: { code: true } },
-      status: { select: { code: true, name: true } },
-      homeJurisdiction: { select: { code: true } },
-      _count: { select: { resources: true } }
-    },
-    orderBy: [{ status: { sortOrder: "asc" } }, { displayName: "asc" }],
-    take: 200
-  });
+  const actor = await getCurrentUser();
+  if (!actor || !actor.roles.includes("admin")) notFound();
 
-  const projected: Row[] = rows.map((p) => ({
-    id: p.id,
-    slug: p.slug,
-    displayName: p.displayName,
-    kind: p.type.code,
-    status: STATUS_DISPLAY[p.status.code] ?? "active",
-    jurisdiction: p.homeJurisdiction.code,
-    resources: p._count.resources,
-    contact: p.contactEmail,
-    createdAt: p.createdAt.toISOString().slice(0, 10)
-  }));
-
-  const columns: Column<Row>[] = [
-    {
-      key: "name",
-      label: "Provider",
-      render: (row) => (
-        <Link
-          href={`/admin/providers/${row.id}`}
-          style={{ color: "var(--text)", textDecoration: "none" }}
-        >
-          <div>
-            <div style={{ color: "var(--text)" }}>{row.displayName}</div>
-            <div
-              style={{
-                fontSize: 11.5,
-                color: "var(--text-3)",
-                fontFamily: "IBM Plex Mono, monospace"
-              }}
-            >
-              {row.slug}
-            </div>
-          </div>
-        </Link>
-      )
-    },
-    { key: "kind", label: "Type", render: (row) => <span className="tag">{row.kind}</span> },
-    { key: "jurisdiction", label: "Region", render: (row) => row.jurisdiction, mono: true },
-    { key: "resources", label: "Resources", render: (row) => row.resources, mono: true },
-    { key: "contact", label: "Contact", render: (row) => row.contact, mono: true },
-    { key: "status", label: "Status", render: (row) => <StatusPill status={row.status} /> },
-    { key: "createdAt", label: "Joined", render: (row) => row.createdAt, mono: true }
-  ];
+  const [types, statuses, jurisdictions] = await Promise.all([
+    prisma.providerTypeRef.findMany({
+      where: { active: true },
+      orderBy: { name: "asc" },
+      select: { code: true, name: true }
+    }),
+    prisma.providerStatusType.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+      select: { code: true, name: true }
+    }),
+    prisma.jurisdiction.findMany({
+      where: { active: true },
+      orderBy: { name: "asc" },
+      select: { code: true, name: true }
+    })
+  ]);
 
   return (
     <div className="p-content">
       <div className="p-page-header">
         <h1 className="p-title">Providers</h1>
         <p className="p-subtitle">
-          {projected.length} entities — sovereign, regional, private and external.
+          Sovereign, regional, private, and external operators. Add new starts an{" "}
+          <code>operator_added</code> record in <code>unverified</code> status — verification
+          remains a separate decision (per-row Verify).
         </p>
       </div>
-      <DataTable rows={projected} columns={columns} emptyState="No providers yet." keyOf={(r) => r.id} />
+      <ProvidersAdmin types={types} statuses={statuses} jurisdictions={jurisdictions} />
     </div>
   );
 }

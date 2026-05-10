@@ -1,15 +1,8 @@
-import { StubPanel } from "@/components/portals/StubPanel";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "Provider · Team" };
-
-export default function ProviderTeamPage() {
-  return (
-    <div className="p-content">
-      <div className="p-page-header">
-        <h1 className="p-title">Team</h1>
-        <p className="p-subtitle">Operators authorised to act on behalf of this provider.</p>
-      </div>
-      <StubPanel area="Team management" specHref="ai-registry-specs/modules/provider/team/product.md" />
-    </div>
-  );
+// Removed from the provider sidebar — multi-user team management is out of
+// MVP scope. The /admin/users surface manages all users including provider
+// linkage. Redirect bookmarks to the dashboard.
+export default function ProviderTeamDeprecated() {
+  redirect("/provider");
 }

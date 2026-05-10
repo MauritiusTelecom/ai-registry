@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getConfig } from "@/lib/config";
+import { emailTemplates } from "@/lib/email";
+import { sendTransactionalEmail } from "@/lib/email/transactional-send";
 
 /**
  * POST /api/complaints
@@ -148,6 +151,54 @@ export async function POST(req: Request) {
       }
     }
   });
+
+  const cfg = getConfig();
+  const origin = new URL(req.url).origin;
+
+  let targetSummary = "—";
+  if (targetResourceId) {
+    const r = await prisma.resource.findUnique({
+      where: { id: targetResourceId },
+      select: { title: true }
+    });
+    targetSummary = r ? `Resource: ${r.title}` : targetResourceId;
+  } else if (targetProviderId) {
+    const p = await prisma.provider.findUnique({
+      where: { id: targetProviderId },
+      select: { displayName: true, slug: true }
+    });
+    targetSummary = p ? `Provider: ${p.displayName} (${p.slug})` : targetProviderId;
+  }
+
+  if (created.complainantEmail) {
+    const tmpl = emailTemplates.complaintReceivedComplainant({
+      registryName: cfg.registryName,
+      operatorName: cfg.operatorName,
+      complaintId: created.id,
+      contactUrl: `${origin}/contact`
+    });
+    sendTransactionalEmail("complaint_complainant", {
+      to: created.complainantEmail,
+      subject: tmpl.subject,
+      text: tmpl.text
+    });
+  }
+
+  if (cfg.operatorInboxEmail) {
+    const tmpl = emailTemplates.complaintReceivedOperator({
+      registryName: cfg.registryName,
+      complaintId: created.id,
+      complaintType: body.complaintType as string,
+      severity: body.severity as string,
+      targetSummary,
+      adminHomeUrl: `${origin}/admin`
+    });
+    sendTransactionalEmail("complaint_operator", {
+      to: cfg.operatorInboxEmail,
+      subject: tmpl.subject,
+      text: tmpl.text
+    });
+  }
 
   return NextResponse.json({ id: created.id }, { status: 202 });
 }

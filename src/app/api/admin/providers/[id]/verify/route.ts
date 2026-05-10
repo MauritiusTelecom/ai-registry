@@ -3,6 +3,10 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { assertCanReview, SeparationOfDutiesError } from "@/lib/auth/separation-of-duties";
 import { writeAudit } from "@/lib/audit/write-audit";
+import { getConfig } from "@/lib/config";
+import { emailTemplates } from "@/lib/email";
+import { uniqueValidEmails } from "@/lib/email/recipients";
+import { sendTransactionalEmailAll } from "@/lib/email/transactional-send";
 
 /**
  * POST /api/admin/providers/:id/verify
@@ -151,6 +155,25 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     previousValue: before,
     newValue: { status, summary }
   });
+
+  const cfg = getConfig();
+  const origin = new URL(req.url).origin;
+  const recipients = uniqueValidEmails([provider.contactEmail, provider.legalContactEmail]);
+  if (recipients.length > 0) {
+    const tmpl = emailTemplates.providerVerificationUpdate({
+      registryName: cfg.registryName,
+      providerDisplayName: provider.displayName,
+      statusLabel: target.name,
+      summary,
+      publicNote,
+      portalSettingsUrl: `${origin}/provider/settings`
+    });
+    sendTransactionalEmailAll("provider_verification", recipients, (to) => ({
+      to,
+      subject: tmpl.subject,
+      text: tmpl.text
+    }));
+  }
 
   return NextResponse.json({
     ok: true,

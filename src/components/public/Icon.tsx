@@ -29,7 +29,17 @@ export type IconName =
   | "menu"
   | "bell"
   | "chevron-down"
-  | "palette";
+  | "palette"
+  | "edit"
+  | "trash"
+  | "inbox"
+  | "users"
+  | "database"
+  | "settings"
+  | "home-alt"
+  | "audit"
+  | "activity"
+  | "pulse";
 
 type IconProps = {
   name: IconName;
@@ -106,6 +116,26 @@ export function Icon({ name, size = 16, stroke = 1.5 }: IconProps) {
       return (<svg {...props}><path d="M6 9l6 6 6-6" /></svg>);
     case "palette":
       return (<svg {...props}><path d="M12 3a9 9 0 1 0 0 18c1.5 0 2-1 2-2s-1-1-1-2 1-2 2-2h2a4 4 0 0 0 4-4 9 9 0 0 0-9-8z" /><circle cx="7.5" cy="11" r="1" /><circle cx="10" cy="7" r="1" /><circle cx="14" cy="7" r="1" /><circle cx="16.5" cy="10" r="1" /></svg>);
+    case "edit":
+      return (<svg {...props}><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>);
+    case "trash":
+      return (<svg {...props}><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6" /></svg>);
+    case "inbox":
+      return (<svg {...props}><path d="M22 12h-6l-2 3h-4l-2-3H2" /><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" /></svg>);
+    case "users":
+      return (<svg {...props}><circle cx="9" cy="9" r="3.5" /><path d="M3 21a6 6 0 0 1 12 0" /><circle cx="17" cy="8" r="3" /><path d="M14 21a6 6 0 0 1 9-5" /></svg>);
+    case "database":
+      return (<svg {...props}><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" /></svg>);
+    case "settings":
+      return (<svg {...props}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" /></svg>);
+    case "home-alt":
+      return (<svg {...props}><path d="M3 12l9-9 9 9M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10" /></svg>);
+    case "audit":
+      return (<svg {...props}><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" /><path d="M14 3v5h5M9 13l2 2 4-4" /></svg>);
+    case "activity":
+      return (<svg {...props}><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>);
+    case "pulse":
+      return (<svg {...props}><path d="M22 12h-5l-2 5-4-12-2 7H2" /></svg>);
     default:
       return null;
   }

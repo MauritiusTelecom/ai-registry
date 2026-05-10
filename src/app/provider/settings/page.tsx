@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { getConfig } from "@/lib/config";
 import { ProviderOrganisationForm } from "@/components/portals/ProviderOrganisationForm";
-import { StubPanel } from "@/components/portals/StubPanel";
+import { ProviderNotificationsForm } from "@/components/portals/ProviderNotificationsForm";
 
 export const metadata = { title: "Provider · Settings" };
 export const dynamic = "force-dynamic";
@@ -18,7 +18,11 @@ export default async function ProviderSettingsPage() {
   const [provider, providerTypes, jurisdictions] = await Promise.all([
     prisma.provider.findUnique({
       where: { id: providerId },
-      include: { type: { select: { code: true } }, homeJurisdiction: { select: { code: true } } }
+      include: { type: { select: { code: true } }, homeJurisdiction: { select: { code: true } } },
+      // Selecting via include omits scalars unless we list them — Prisma's
+      // include-with-default returns every scalar by default, so the new
+      // notification fields surface automatically. Kept the include shape so
+      // the form below picks them up without a second query.
     }),
     prisma.providerTypeRef.findMany({
       where: { active: true },
@@ -69,10 +73,17 @@ export default async function ProviderSettingsPage() {
         />
 
         <div style={{ maxWidth: 560 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Notifications</h2>
-          <StubPanel
-            area="Notification preferences"
-            specHref="ai-registry-specs/modules/provider/settings/product.md"
+          <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Notifications</h2>
+          <p style={{ fontSize: 12.5, color: "var(--text-3)", marginTop: 0, marginBottom: 14 }}>
+            Where the registry pages your team during incidents and renewals. All three fields are
+            optional.
+          </p>
+          <ProviderNotificationsForm
+            initial={{
+              incidentChannel: provider.incidentChannel,
+              oncallEmail: provider.oncallEmail,
+              webhookUrl: provider.webhookUrl
+            }}
           />
         </div>
       </div>

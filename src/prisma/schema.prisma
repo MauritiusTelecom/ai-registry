@@ -536,6 +536,12 @@ model Provider {
   published          Boolean  @default(true)
   adminSuspended     Boolean  @default(false)
   srcId              String
+  // Provider notification preferences (modules/provider/settings/product.md §
+  // Notifications card). Free-form so the operator can use any chat handle
+  // (Slack, Teams, Matrix). Webhook is optional outbound for incident events.
+  incidentChannel    String?
+  oncallEmail        String?
+  webhookUrl         String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 

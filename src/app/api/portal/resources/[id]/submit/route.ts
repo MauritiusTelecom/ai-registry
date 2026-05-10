@@ -4,12 +4,16 @@ import { prisma } from "@/lib/prisma";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { authoringGateForbiddenResponse } from "@/lib/portal/authoring-gate-response";
 import { writeAudit } from "@/lib/audit/write-audit";
+import { getConfig } from "@/lib/config";
+import { emailTemplates } from "@/lib/email";
+import { uniqueValidEmails } from "@/lib/email/recipients";
+import { sendTransactionalEmailAll } from "@/lib/email/transactional-send";
 
 /**
  * POST /api/portal/resources/:id/submit — draft|needs_update → submitted + open review.
  */
 
-export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (user.role.code !== "provider") {
@@ -31,7 +35,10 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
 
   const resource = await prisma.resource.findFirst({
     where: { id, providerId },
-    include: { lifecycleStatus: { select: { code: true } } }
+    include: {
+      lifecycleStatus: { select: { code: true } },
+      provider: { select: { contactEmail: true, legalContactEmail: true } }
+    }
   });
   if (!resource) {
     return NextResponse.json({ error: "Resource not found" }, { status: 404 });
@@ -73,6 +80,28 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     action: "resource.submitted_for_review",
     newValue: { reviewId: review.review.id, lifecycle: "submitted" }
   });
+
+  const cfg = getConfig();
+  const origin = new URL(req.url).origin;
+  const recipients = uniqueValidEmails([
+    user.email,
+    resource.provider.contactEmail,
+    resource.provider.legalContactEmail
+  ]);
+  if (recipients.length > 0) {
+    const tmpl = emailTemplates.resourceSubmittedForReview({
+      registryName: cfg.registryName,
+      resourceTitle: resource.title,
+      reviewId: review.review.id,
+      portalResourcesUrl: `${origin}/provider/resources`,
+      portalReviewsUrl: `${origin}/provider/reviews`
+    });
+    sendTransactionalEmailAll("resource_submitted", recipients, (to) => ({
+      to,
+      subject: tmpl.subject,
+      text: tmpl.text
+    }));
+  }
 
   return NextResponse.json({
     ok: true,

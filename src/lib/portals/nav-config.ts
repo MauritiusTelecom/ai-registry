@@ -64,9 +64,9 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         id: "governance",
         label: "Governance",
         items: [
-          { id: "reviews", label: "Reviews", href: "/admin/reviews", icon: "check", stub: true },
-          { id: "flags", label: "Flags", href: "/admin/flags", icon: "flag", stub: true },
-          { id: "policies", label: "Policies", href: "/admin/policies", icon: "doc", stub: true }
+          { id: "reviews", label: "Reviews", href: "/admin/reviews", icon: "check" },
+          { id: "flags", label: "Flags", href: "/admin/flags", icon: "flag" },
+          { id: "policies", label: "Policies", href: "/admin/policies", icon: "doc" }
         ]
       },
       {
@@ -74,8 +74,8 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         label: "Operations",
         items: [
           { id: "users", label: "Users & roles", href: "/admin/users", icon: "user" },
-          { id: "integrations", label: "Integrations", href: "/admin/integrations", icon: "flow", stub: true },
-          { id: "settings", label: "Settings", href: "/admin/settings", icon: "settings", stub: true }
+          { id: "integrations", label: "Integrations", href: "/admin/integrations", icon: "flow" },
+          { id: "settings", label: "Settings", href: "/admin/settings", icon: "settings" }
         ]
       },
       {
@@ -139,8 +139,8 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         id: "account",
         label: "Account",
         items: [
-          { id: "analytics", label: "Analytics", href: "/provider/analytics", icon: "activity", stub: true },
-          { id: "settings", label: "Settings", href: "/provider/settings", icon: "settings", stub: true }
+          { id: "analytics", label: "Analytics", href: "/provider/analytics", icon: "activity" },
+          { id: "settings", label: "Settings", href: "/provider/settings", icon: "settings" }
         ]
       }
     ]
@@ -163,24 +163,24 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         label: "Review",
         items: [
           { id: "queue", label: "Queue", href: "/verifier/queue", icon: "inbox" },
-          { id: "decided", label: "Decided", href: "/verifier/decided", icon: "check", stub: true }
+          { id: "decided", label: "Decided", href: "/verifier/decided", icon: "check" }
         ]
       },
       {
         id: "evidence",
         label: "Evidence",
         items: [
-          { id: "runs", label: "Eval runs", href: "/verifier/runs", icon: "pulse", stub: true },
-          { id: "benchmarks", label: "Benchmarks", href: "/verifier/benchmarks", icon: "activity", stub: true },
-          { id: "redteam", label: "Red team", href: "/verifier/redteam", icon: "shield", stub: true }
+          { id: "runs", label: "Eval runs", href: "/verifier/runs", icon: "pulse" },
+          { id: "benchmarks", label: "Benchmarks", href: "/verifier/benchmarks", icon: "activity" },
+          { id: "redteam", label: "Red team", href: "/verifier/redteam", icon: "shield" }
         ]
       },
       {
         id: "outputs",
         label: "Outputs",
         items: [
-          { id: "reports", label: "Reports", href: "/verifier/reports", icon: "doc", stub: true },
-          { id: "settings", label: "Settings", href: "/verifier/settings", icon: "settings", stub: true }
+          { id: "reports", label: "Reports", href: "/verifier/reports", icon: "doc" },
+          { id: "settings", label: "Settings", href: "/verifier/settings", icon: "settings" }
         ]
       }
     ]
@@ -203,26 +203,26 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         label: "Ecosystem",
         items: [
           { id: "catalog", label: "National catalogue", href: "/sovereign/catalog", icon: "layers" },
-          { id: "topology", label: "Topology", href: "/sovereign/topology", icon: "flow", stub: true },
-          { id: "sectors", label: "Sectors", href: "/sovereign/sectors", icon: "database", stub: true },
-          { id: "partners", label: "Partners", href: "/sovereign/partners", icon: "users", stub: true }
+          { id: "topology", label: "Topology", href: "/sovereign/topology", icon: "flow" },
+          { id: "sectors", label: "Sectors", href: "/sovereign/sectors", icon: "database" },
+          { id: "partners", label: "Partners", href: "/sovereign/partners", icon: "users" }
         ]
       },
       {
         id: "governance",
         label: "Governance",
         items: [
-          { id: "risk", label: "Risk", href: "/sovereign/risk", icon: "shield", stub: true },
-          { id: "policies", label: "Policies", href: "/sovereign/policies", icon: "doc", stub: true },
-          { id: "incidents", label: "Incidents", href: "/sovereign/incidents", icon: "flag", stub: true }
+          { id: "risk", label: "Risk", href: "/sovereign/risk", icon: "shield" },
+          { id: "policies", label: "Policies", href: "/sovereign/policies", icon: "doc" },
+          { id: "incidents", label: "Incidents", href: "/sovereign/incidents", icon: "flag" }
         ]
       },
       {
         id: "outputs",
         label: "Outputs",
         items: [
-          { id: "reports", label: "Reports", href: "/sovereign/reports", icon: "doc", stub: true },
-          { id: "settings", label: "Settings", href: "/sovereign/settings", icon: "settings", stub: true }
+          { id: "reports", label: "Reports", href: "/sovereign/reports", icon: "doc" },
+          { id: "settings", label: "Settings", href: "/sovereign/settings", icon: "settings" }
         ]
       }
     ]

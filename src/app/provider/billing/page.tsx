@@ -1,15 +1,9 @@
-import { StubPanel } from "@/components/portals/StubPanel";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "Provider · Billing" };
-
-export default function ProviderBillingPage() {
-  return (
-    <div className="p-content">
-      <div className="p-page-header">
-        <h1 className="p-title">Billing</h1>
-        <p className="p-subtitle">Statements and invoices (sovereign tiers are non-billed).</p>
-      </div>
-      <StubPanel area="Provider billing" specHref="ai-registry-specs/modules/provider/billing/product.md" />
-    </div>
-  );
+// Removed from the provider sidebar — billing is out of MVP scope. Kept as a
+// redirect so any bookmarked links land on the provider dashboard instead of
+// 404'ing. If billing returns to the spec, replace this file with the real
+// page and re-add the nav entry in `src/lib/portals/nav-config.ts`.
+export default function ProviderBillingDeprecated() {
+  redirect("/provider");
 }
