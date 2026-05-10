@@ -68,6 +68,11 @@ export type RegistryConfig = {
    * Override with CONTACT_FORM_REPLY_MESSAGE in .env for operator-specific copy.
    */
   contactFormReplyMessage: string;
+  /**
+   * Optional inbox for operator alerts (e.g. new public complaints).
+   * When unset, complaint notifications to staff are skipped.
+   */
+  operatorInboxEmail: string | null;
 };
 
 const REQUIRED_KEYS = [
@@ -238,6 +243,12 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
       "If you later create an account with the same email address, verified messages will appear in your provider portal."
     ].join(" ");
 
+  const operatorInboxRaw = (env.OPERATOR_INBOX_EMAIL ?? "").trim();
+  const operatorInboxEmail =
+    operatorInboxRaw !== "" && /^\S+@\S+\.\S+$/.test(operatorInboxRaw)
+      ? operatorInboxRaw.toLowerCase()
+      : null;
+
   return {
     databaseUrl,
     registryName,
@@ -261,7 +272,8 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
       smtpUser,
       smtpPass
     },
-    contactFormReplyMessage
+    contactFormReplyMessage,
+    operatorInboxEmail
   };
 }
 

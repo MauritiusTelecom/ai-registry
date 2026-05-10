@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
 import { hashToken } from "@/lib/auth/tokens";
+import { getConfig } from "@/lib/config";
+import { emailTemplates } from "@/lib/email";
+import { sendTransactionalEmail } from "@/lib/email/transactional-send";
 
 /**
  * POST /api/auth/reset-password
@@ -15,6 +18,7 @@ import { hashToken } from "@/lib/auth/tokens";
 type ResetPayload = { token?: unknown; password?: unknown };
 
 export async function POST(req: Request) {
+  const origin = new URL(req.url).origin;
   let body: ResetPayload;
   try {
     body = (await req.json()) as ResetPayload;
@@ -59,6 +63,19 @@ export async function POST(req: Request) {
       entityId: user.id,
       action: "user.password_reset"
     }
+  });
+
+  const cfg = getConfig();
+  const firstName = user.name.trim().split(/\s+/)[0] || user.name;
+  const tmpl = emailTemplates.passwordChanged({
+    name: firstName,
+    registryName: cfg.registryName,
+    loginUrl: `${origin}/login`
+  });
+  sendTransactionalEmail("password_changed", {
+    to: user.email,
+    subject: tmpl.subject,
+    text: tmpl.text
   });
 
   return NextResponse.json({ ok: true });

@@ -139,5 +139,122 @@ export const emailTemplates = {
         `The link expires in 24 hours. If you did not use the contact form on ${opts.registryName}, you can ignore this email.\n\n` +
         `— ${opts.operatorName} · ${opts.registryName}`
     };
+  },
+  passwordChanged(opts: { name: string; registryName: string; loginUrl: string }): {
+    subject: string;
+    text: string;
+  } {
+    return {
+      subject: `Your ${opts.registryName} password was changed`,
+      text:
+        `Hi ${opts.name},\n\n` +
+        `The password for your ${opts.registryName} account was just changed.\n\n` +
+        `If this was you, no action is needed. Sign in anytime:\n\n` +
+        `  ${opts.loginUrl}\n\n` +
+        `If you did not change your password, reset it immediately from the sign-in page.\n\n` +
+        `— ${opts.registryName}`
+    };
+  },
+  resourceSubmittedForReview(opts: {
+    registryName: string;
+    resourceTitle: string;
+    reviewId: string;
+    portalResourcesUrl: string;
+    portalReviewsUrl: string;
+  }): { subject: string; text: string } {
+    return {
+      subject: `Submitted for review — ${opts.resourceTitle}`,
+      text:
+        `${opts.registryName}: a resource was submitted for sovereignty review.\n\n` +
+        `Resource: ${opts.resourceTitle}\n` +
+        `Review id: ${opts.reviewId}\n\n` +
+        `View resources:\n  ${opts.portalResourcesUrl}\n\n` +
+        `Track reviews:\n  ${opts.portalReviewsUrl}\n\n` +
+        `— ${opts.registryName}`
+    };
+  },
+  reviewDecision(opts: {
+    registryName: string;
+    providerDisplayName: string;
+    resourceTitle: string;
+    decisionLabel: string;
+    decisionSummary: string;
+    portalReviewsUrl: string;
+    publicCatalogUrl?: string;
+  }): { subject: string; text: string } {
+    const listed =
+      opts.publicCatalogUrl !== undefined
+        ? `\nPublic catalog entry:\n  ${opts.publicCatalogUrl}\n`
+        : "";
+    return {
+      subject: `Review update — ${opts.resourceTitle}`,
+      text:
+        `Hello ${opts.providerDisplayName},\n\n` +
+        `${opts.registryName} has updated the sovereignty review for "${opts.resourceTitle}".\n\n` +
+        `Outcome: ${opts.decisionLabel}\n\n` +
+        `Summary:\n${opts.decisionSummary}\n\n` +
+        `Open your provider reviews:\n  ${opts.portalReviewsUrl}\n` +
+        listed +
+        `\n— ${opts.registryName}`
+    };
+  },
+  providerVerificationUpdate(opts: {
+    registryName: string;
+    providerDisplayName: string;
+    statusLabel: string;
+    summary: string;
+    publicNote: string | null;
+    portalSettingsUrl: string;
+  }): { subject: string; text: string } {
+    const note =
+      opts.publicNote !== null && opts.publicNote.trim() !== ""
+        ? `\nNote from the operator:\n${opts.publicNote}\n`
+        : "";
+    return {
+      subject: `Provider verification update — ${opts.registryName}`,
+      text:
+        `Hello ${opts.providerDisplayName},\n\n` +
+        `Your organisation's verification status on ${opts.registryName} is now: ${opts.statusLabel}.\n\n` +
+        `Summary:\n${opts.summary}\n` +
+        note +
+        `\nProvider settings:\n  ${opts.portalSettingsUrl}\n\n` +
+        `— ${opts.registryName}`
+    };
+  },
+  complaintReceivedComplainant(opts: {
+    registryName: string;
+    operatorName: string;
+    complaintId: string;
+    contactUrl: string;
+  }): { subject: string; text: string } {
+    return {
+      subject: `Complaint received — ${opts.registryName}`,
+      text:
+        `Thank you for contacting ${opts.registryName}.\n\n` +
+        `We recorded your complaint (reference: ${opts.complaintId}). ` +
+        `${opts.operatorName} will handle it according to our process.\n\n` +
+        `You can reach us again via:\n  ${opts.contactUrl}\n\n` +
+        `— ${opts.operatorName} · ${opts.registryName}`
+    };
+  },
+  complaintReceivedOperator(opts: {
+    registryName: string;
+    complaintId: string;
+    complaintType: string;
+    severity: string;
+    targetSummary: string;
+    adminHomeUrl: string;
+  }): { subject: string; text: string } {
+    return {
+      subject: `[${opts.registryName}] New complaint ${opts.complaintId}`,
+      text:
+        `A new public complaint was filed.\n\n` +
+        `Id: ${opts.complaintId}\n` +
+        `Type: ${opts.complaintType}\n` +
+        `Severity: ${opts.severity}\n` +
+        `Target: ${opts.targetSummary}\n\n` +
+        `Open the admin console:\n  ${opts.adminHomeUrl}\n\n` +
+        `— ${opts.registryName} (automated)`
+    };
   }
 };

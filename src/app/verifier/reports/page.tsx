@@ -1,15 +1,119 @@
-import { StubPanel } from "@/components/portals/StubPanel";
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Verifier · Reports" };
+export const dynamic = "force-dynamic";
 
-export default function VerifierReportsPage() {
+/**
+ * Verifier · Reports — surface aggregate review activity. The signed
+ * verification-report artefact (PDF / signed JSON) is post-MVP; this page
+ * renders the rolling stats that would seed each report so reviewers can
+ * see what would be published.
+ *
+ * Module spec: `modules/verifier/reports/product.md`.
+ */
+export default async function VerifierReportsPage() {
+  const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const since90d = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+
+  const [open, decided30, decided90, withdrawn90, byType] = await Promise.all([
+    prisma.review.count({ where: { status: { code: { in: ["open", "in_review"] } } } }),
+    prisma.review.count({
+      where: { status: { code: "decided" }, completedAt: { gte: since30d } }
+    }),
+    prisma.review.count({
+      where: { status: { code: "decided" }, completedAt: { gte: since90d } }
+    }),
+    prisma.review.count({
+      where: { status: { code: "withdrawn" }, completedAt: { gte: since90d } }
+    }),
+    prisma.review.groupBy({
+      by: ["reviewTypeId"],
+      where: { status: { code: "decided" }, completedAt: { gte: since90d } },
+      _count: { _all: true }
+    })
+  ]);
+
+  const types = await prisma.reviewType.findMany({ select: { id: true, name: true } });
+  const nameById = new Map(types.map((t) => [t.id, t.name]));
+
   return (
     <div className="p-content">
       <div className="p-page-header">
         <h1 className="p-title">Reports</h1>
-        <p className="p-subtitle">Signed verification reports published to providers and admin.</p>
+        <p className="p-subtitle">
+          Aggregate review activity. Signed verification artefacts (PDF / signed JSON) generate
+          here once the report template ships; the snapshot below always reflects current data.
+        </p>
       </div>
-      <StubPanel area="Verifier reports" specHref="ai-registry-specs/modules/verifier/reports/product.md" />
+
+      <div className="p-stat-grid">
+        <Stat label="Queue" value={open} hint="open + in review" />
+        <Stat label="Decided (30d)" value={decided30} hint="approved or routed back" />
+        <Stat label="Decided (90d)" value={decided90} hint="rolling quarter" />
+        <Stat label="Withdrawn (90d)" value={withdrawn90} hint="closed without decision" />
+      </div>
+
+      <section className="glass" style={{ padding: 20, borderRadius: 12, marginTop: 8 }}>
+        <h2 style={{ fontSize: 14, marginBottom: 12, fontWeight: 500 }}>By review type (90d)</h2>
+        {byType.length === 0 ? (
+          <p style={{ fontSize: 13, color: "var(--text-3)", margin: 0 }}>
+            No decided reviews in the last 90 days.
+          </p>
+        ) : (
+          <ul
+            style={{
+              display: "grid",
+              gap: 8,
+              fontSize: 13,
+              padding: 0,
+              listStyle: "none",
+              margin: 0
+            }}
+          >
+            {byType.map((g) => (
+              <li
+                key={g.reviewTypeId}
+                style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12 }}
+              >
+                <span style={{ color: "var(--text)" }}>
+                  {nameById.get(g.reviewTypeId) ?? "—"}
+                </span>
+                <span
+                  style={{ fontFamily: "IBM Plex Mono, monospace", color: "var(--text-2)" }}
+                >
+                  {g._count._all}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p style={{ fontSize: 12, color: "var(--text-3)", marginTop: 14 }}>
+          Cross-links:{" "}
+          <Link href="/verifier/queue" className="p-footer-link">
+            Queue
+          </Link>{" "}
+          ·{" "}
+          <Link href="/verifier/decided" className="p-footer-link">
+            Decided
+          </Link>{" "}
+          ·{" "}
+          <Link href="/admin/audit" className="p-footer-link">
+            Audit log
+          </Link>
+          .
+        </p>
+      </section>
+    </div>
+  );
+}
+
+function Stat({ label, value, hint }: { label: string; value: number; hint: string }) {
+  return (
+    <div className="p-stat-card">
+      <div className="p-stat-label">{label}</div>
+      <div className="p-stat-value">{value}</div>
+      <div className="p-stat-hint">{hint}</div>
     </div>
   );
 }

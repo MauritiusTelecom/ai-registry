@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { getConfig } from "@/lib/config";
 import { assertCanReview, SeparationOfDutiesError } from "@/lib/auth/separation-of-duties";
 import { writeAudit } from "@/lib/audit/write-audit";
+import { emailTemplates } from "@/lib/email";
+import { uniqueValidEmails } from "@/lib/email/recipients";
+import { sendTransactionalEmailAll } from "@/lib/email/transactional-send";
 import {
   SOVEREIGNTY_CHECKLIST_ITEMS,
   type ChecklistAnswerCode
@@ -60,7 +63,15 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       status: true,
       resource: {
         include: {
-          provider: true,
+          provider: {
+            select: {
+              id: true,
+              slug: true,
+              displayName: true,
+              contactEmail: true,
+              legalContactEmail: true
+            }
+          },
           lifecycleStatus: true,
           resourceType: true
         }
@@ -200,6 +211,36 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       decisionSummary: summary
     }
   });
+
+  const origin = new URL(req.url).origin;
+  const recipients = uniqueValidEmails([
+    resource.provider.contactEmail,
+    resource.provider.legalContactEmail
+  ]);
+  if (recipients.length > 0) {
+    const decisionLabel =
+      decision === "approve"
+        ? "Approved and listed"
+        : decision === "reject"
+          ? "Not approved"
+          : "Changes requested";
+    const publicCatalogUrl =
+      decision === "approve" ? `${origin}/registry/${resource.slug}` : undefined;
+    const tmpl = emailTemplates.reviewDecision({
+      registryName: cfg.registryName,
+      providerDisplayName: resource.provider.displayName,
+      resourceTitle: resource.title,
+      decisionLabel,
+      decisionSummary: summary,
+      portalReviewsUrl: `${origin}/provider/reviews`,
+      publicCatalogUrl
+    });
+    sendTransactionalEmailAll("review_decision", recipients, (to) => ({
+      to,
+      subject: tmpl.subject,
+      text: tmpl.text
+    }));
+  }
 
   return NextResponse.json({
     ok: true,
