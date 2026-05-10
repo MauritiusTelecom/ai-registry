@@ -56,6 +56,7 @@ npm run dev                       # http://localhost:3002
 | `npm run db:seed` | Seed the database with reference taxonomies, an exemplar provider, and one resource per type (see `src/prisma/seed.ts`). |
 | `npm run db:reset` | Drop the `registry` schema, re-push, and re-seed (development only — destructive). |
 | `npm run config:validate` | Load and validate the deployment configuration without booting Next.js. |
+| `npm run smoke` | Hit the Phase 5 adapter surface (`/api/health`, `/.well-known/ai-registry`, `/api/resources`, `/api/resolve`, `/api/mcp`) against the running app. Set `BASE=http://host:port` to point elsewhere. |
 
 ## Configuration
 
@@ -98,8 +99,14 @@ Phased delivery is tracked in [`../ai-registry-specs/.speckit/implementation_pla
 - **Phase 1 — Foundations and data model.** _In progress / mostly complete._ This README, the Prisma schema, the config layer, the seed script, and `docker-compose.yml` constitute the Phase 1 deliverables.
 - **Phase 2 — Authentication and provider identity.** OIDC/OAuth-class sign-in; provider/admin/verifier/sovereign role separation; session linkage to `provider_id`.
 - **Phase 3 — Public discovery (portal + REST).** REST list/detail/resolve/discover, `.well-known`, full localisation.
-- **Phase 4 — Provider submission and governance workflows.** Draft → submit pipeline, §11 reviewer checklist, lifecycle transitions, audit instrumentation.
-- **Phase 5 — Adapters, conformance, hardening.** MCP adapter, conformance tests, production image, CI.
+- **Phase 4 — Provider submission and governance workflows.** _Delivered (May 2026)._ Draft → submit pipeline gated by `canAuthorResources`, §11 reviewer checklist, lifecycle transitions, provider verification (`/api/admin/providers/{id}/verify`, T035), official-resource elevation (`/api/admin/resources/{id}/elevate`, T036), and audit instrumentation across every governance mutation.
+- **Phase 5 — Adapters, conformance, hardening.** _Delivered (May 2026)._ Health probe (`/api/health`), MCP Streamable HTTP at `/api/mcp` exposing `registry.list / get / resolve / discover / well_known`, OpenAPI 3.0 document at `/api/openapi`, hardened validators in `src/lib/validators.ts`, and the smoke runner via `npm run smoke`.
+
+### Operations
+
+- **Health probes.** Point your load balancer / orchestrator readiness check at `GET /api/health`. The route returns `200 { status: "ok", db: "ok" }` on success and `503` when the DB is unreachable.
+- **MCP integration.** Clients should `POST /api/mcp` with a JSON-RPC 2.0 message. Tools mirror the public REST surface; call `tools/list` to enumerate them. Streamable HTTP SSE streaming is reserved (the current handler returns `405` for `GET`).
+- **Reverse proxy.** Set `API_BASE_URL` to the public scheme + host + base path (e.g. `https://airegistry.mu/api`). The well-known document, OpenAPI document, and MCP `registry.well_known` tool all use this value to advertise endpoint templates. A proxy may also alias `/api/v1` → `/api` to satisfy AIR-SPEC §13's versioned base.
 
 ## Repository conventions
 

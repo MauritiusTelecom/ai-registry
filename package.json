@@ -15,7 +15,8 @@
     "db:push": "prisma db push",
     "db:seed": "tsx src/prisma/seed.ts",
     "db:reset": "prisma db push --force-reset && npm run db:seed",
-    "config:validate": "tsx scripts/validate-config.ts"
+    "config:validate": "tsx scripts/validate-config.ts",
+    "smoke": "tsx scripts/smoke-public.ts"
   },
   "prisma": {
     "schema": "src/prisma/schema.prisma",

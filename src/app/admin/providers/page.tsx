@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 import { StatusPill } from "@/components/portals/StatusPill";
@@ -53,18 +54,23 @@ export default async function AdminProvidersPage() {
       key: "name",
       label: "Provider",
       render: (row) => (
-        <div>
-          <div style={{ color: "var(--text)" }}>{row.displayName}</div>
-          <div
-            style={{
-              fontSize: 11.5,
-              color: "var(--text-3)",
-              fontFamily: "IBM Plex Mono, monospace"
-            }}
-          >
-            {row.slug}
+        <Link
+          href={`/admin/providers/${row.id}`}
+          style={{ color: "var(--text)", textDecoration: "none" }}
+        >
+          <div>
+            <div style={{ color: "var(--text)" }}>{row.displayName}</div>
+            <div
+              style={{
+                fontSize: 11.5,
+                color: "var(--text-3)",
+                fontFamily: "IBM Plex Mono, monospace"
+              }}
+            >
+              {row.slug}
+            </div>
           </div>
-        </div>
+        </Link>
       )
     },
     { key: "kind", label: "Type", render: (row) => <span className="tag">{row.kind}</span> },
