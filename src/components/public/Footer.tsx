@@ -12,43 +12,45 @@ function isProviderPortalFooterItem(link: FooterColumnLink): link is FooterProvi
   return "kind" in link && link.kind === "provider-portal";
 }
 
+const REPO_URL = "https://github.com/MauritiusTelecom/ai-registry";
+
 const PRODUCT_LINKS: FooterLink[] = [
   { label: "Registry", href: "/registry" },
+  { label: "Providers", href: "/providers" },
   { label: "Ecosystem", href: "/ecosystem" },
   { label: "Governance", href: "/governance" },
-  { label: "AIR-SPEC 0.4", href: "/docs" },
-  { label: "Status", href: "#" }
+  { label: "AIR-SPEC 0.4", href: "/docs" }
 ];
 
 const RESOURCES_LINKS: FooterLink[] = [
   { label: "Documentation", href: "/docs" },
-  { label: "Whitepaper", href: "#" },
-  { label: "Open data", href: "#" },
-  { label: "Reference impl", href: "#" },
-  { label: "Audit log", href: "#" }
+  { label: "Whitepaper", href: "/whitepaper" },
+  { label: "Open data", href: "/open-data" },
+  { label: "Reference impl", href: REPO_URL, external: true },
+  { label: "Audit log", href: "/audit-log" }
 ];
 
 const PROVIDER_LINKS: FooterColumnLink[] = [
   { label: "Submit a resource", href: "/contact" },
   { kind: "provider-portal" },
-  { label: "Sovereignty rubric", href: "#" },
-  { label: "Verification proofs", href: "#" },
-  { label: "Pricing (free)", href: "#" }
+  { label: "Sovereignty rubric", href: "/sovereignty-rubric" },
+  { label: "Verification proofs", href: "/verification" },
+  { label: "Pricing (free)", href: "/pricing" }
 ];
 
 const GOVERNANCE_LINKS: FooterLink[] = [
-  { label: "Charter", href: "#" },
-  { label: "Review board", href: "#" },
-  { label: "Appeals", href: "#" },
-  { label: "Disclosure", href: "#" },
-  { label: "Public log", href: "#" }
+  { label: "Charter", href: "/governance#charter" },
+  { label: "Review board", href: "/governance#review-board" },
+  { label: "Appeals", href: "/governance#appeals" },
+  { label: "Disclosure", href: "/governance#disclosure" },
+  { label: "Public log", href: "/audit-log" }
 ];
 
 const LEGAL_LINKS: FooterLink[] = [
-  { label: "Terms of use", href: "#" },
-  { label: "Privacy", href: "#" },
-  { label: "Acceptable use", href: "#" },
-  { label: "License (Apache-2.0)", href: "#" },
+  { label: "Terms of use", href: "/terms" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Acceptable use", href: "/acceptable-use" },
+  { label: "License (Apache-2.0)", href: `${REPO_URL}/blob/main/LICENSE`, external: true },
   { label: "Contact", href: "/contact" }
 ];
 
@@ -75,7 +77,13 @@ function FooterColumn({
               {link.href.startsWith("/") ? (
                 <Link href={link.href}>{link.label}</Link>
               ) : (
-                <a href={link.href}>{link.label}</a>
+                <a
+                  href={link.href}
+                  target={link.external ? "_blank" : undefined}
+                  rel={link.external ? "noopener noreferrer" : undefined}
+                >
+                  {link.label}
+                </a>
               )}
             </li>
           )
