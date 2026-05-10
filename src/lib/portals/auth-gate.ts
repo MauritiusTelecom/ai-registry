@@ -45,23 +45,11 @@ export function portalForRole(roleCode: string | null | undefined): string {
   }
 }
 
-/** Path prefixes that count as "inside a portal" — used by root layout to
- * skip the public site chrome (TopNav / Footer) when the user is in their
- * authenticated workspace. */
-export const PORTAL_PATH_PREFIXES = [
-  "/portal",
-  "/admin",
-  "/provider",
-  "/verifier",
-  "/sovereign"
-] as const;
-
-export function isPortalPath(pathname: string | null | undefined): boolean {
-  if (!pathname) return false;
-  return PORTAL_PATH_PREFIXES.some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`)
-  );
-}
+// Path-prefix helpers re-exported from `./path` so existing callers keep
+// working. The pure-string helpers live in `./path` because client
+// components (e.g. ChromeSwitch) need them without dragging the
+// server-only `current-user` import that lives in this file.
+export { PORTAL_PATH_PREFIXES, isPortalPath } from "./path";
 
 const ROLE_ALIASES: Record<PortalRole, string[]> = {
   admin: ["admin"],

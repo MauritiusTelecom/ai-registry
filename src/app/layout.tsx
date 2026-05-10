@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { getConfig } from "@/lib/config";
-import { isPortalPath } from "@/lib/portals/auth-gate";
 import { SAR_THEME_KEY, themeFromCookie } from "@/lib/theme-cookie";
 import { SiteShell } from "@/components/public/SiteShell";
 import { ThemeProvider } from "@/components/public/ThemeProvider";
+import { ChromeSwitch } from "@/components/public/ChromeSwitch";
 
 // Title is sourced from the deployment configuration (REGISTRY_NAME) so the
 // codebase ships no jurisdiction-specific default.
@@ -28,14 +28,9 @@ export default async function RootLayout({
   const theme = themeFromCookie(jar.get(SAR_THEME_KEY)?.value);
 
   // Portal routes (/admin /provider /verifier /sovereign /portal) render
-  // their own chrome (sidebar + per-portal header). The public TopNav +
-  // Footer would double up on top of that, so we skip the SiteShell when
-  // we're inside a portal. The middleware stamps `x-pathname` on every
-  // request — see src/middleware.ts.
-  const headerList = await headers();
-  const pathname = headerList.get("x-pathname") ?? "";
-  const inPortal = isPortalPath(pathname);
-
+  // their own chrome. ChromeSwitch is a client component that decides
+  // public vs portal off `usePathname()` so client-side navigation (e.g.
+  // "Public site" → "/") flips the chrome without a full reload.
   return (
     <html lang="en" suppressHydrationWarning data-theme={theme}>
       <head>
@@ -45,7 +40,10 @@ export default async function RootLayout({
       </head>
       <body>
         <ThemeProvider initialTheme={theme}>
-          {inPortal ? children : <SiteShell>{children}</SiteShell>}
+          <ChromeSwitch
+            portal={<main>{children}</main>}
+            publicSite={<SiteShell>{children}</SiteShell>}
+          />
         </ThemeProvider>
       </body>
     </html>
