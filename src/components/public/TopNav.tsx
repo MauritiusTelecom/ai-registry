@@ -142,14 +142,68 @@ function UserMenu() {
   );
 }
 
+function MobileMenu({ pathname }: { pathname: string }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false);
+    };
+    const onEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="nav-menu-mobile">
+      <button
+        type="button"
+        className="theme-toggle"
+        aria-label={open ? "Close menu" : "Open menu"}
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <Icon name={open ? "x" : "menu"} size={15} />
+      </button>
+      {open && (
+        <div className="dropdown" role="menu" style={{ minWidth: 220 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                role="menuitem"
+                className={`dropdown-item ${
+                  isActive(pathname, item.href) ? "active" : ""
+                }`}
+                onClick={() => setOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function TopNav({ registryName }: { registryName: string }) {
   const pathname = usePathname() ?? "/";
   return (
     <nav className="nav">
       <div className="nav-inner">
-        <Link href="/" className="nav-logo">
+        <Link href="/" className="nav-logo" aria-label={registryName}>
           <span className="nav-logo-mark" />
-          <span>{registryName}</span>
+          <span className="nav-logo-text">{registryName}</span>
         </Link>
         <div className="nav-links">
           {NAV_ITEMS.map((item) => (
@@ -165,6 +219,7 @@ export function TopNav({ registryName }: { registryName: string }) {
         <div className="nav-actions">
           <ThemeToggle />
           <UserMenu />
+          <MobileMenu pathname={pathname} />
         </div>
       </div>
     </nav>
