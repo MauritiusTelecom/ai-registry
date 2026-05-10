@@ -1355,6 +1355,29 @@ p { color: var(--text-2); margin: 0; }
   color: var(--text-3);
   padding: 14px 12px 6px;
 }
+/* Collapsible group header — same typography as a static divider but
+ * activatable. The chevron sits on the right and rotates when open. */
+button.p-nav-divider-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+button.p-nav-divider-toggle:hover { color: var(--text-2); }
+.p-nav-chevron {
+  display: inline-flex;
+  align-items: center;
+  transform: rotate(-90deg);
+  transition: transform 160ms ease;
+  color: var(--text-3);
+}
+.p-nav-chevron.open { transform: rotate(0deg); }
 .p-nav-item {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 12px;

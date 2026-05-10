@@ -27,6 +27,14 @@ export type NavGroup = {
   id: string;
   label: string;
   items: NavItem[];
+  /** When true the group's header acts as a toggle that hides / reveals the
+   *  items beneath it. Useful for long, infrequently-used groups (e.g. the
+   *  ~30-row Reference Tables list). */
+  collapsible?: boolean;
+  /** Initial state when the user has no persisted choice. Only meaningful
+   *  alongside `collapsible: true`. The sidebar always auto-expands when the
+   *  active route is one of the group's items, regardless of this default. */
+  defaultCollapsed?: boolean;
 };
 
 export type PortalConfig = {
@@ -87,6 +95,13 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         // view/edit/delete row icons + Add new top-right). Adding a new
         // reference table is a one-line change in
         // src/lib/admin/reference-tables.ts and it shows up here automatically.
+        //
+        // The group is collapsible and starts collapsed by default — there
+        // are ~30 rows here and most admins reach this surface only when
+        // tweaking taxonomies. The PortalSidebar auto-expands when the
+        // active route is `/admin/ref/...`.
+        collapsible: true,
+        defaultCollapsed: true,
         items: [
           { id: "ref-index", label: "All tables", href: "/admin/ref", icon: "database" },
           ...REF_TABLES.map((t) => ({
