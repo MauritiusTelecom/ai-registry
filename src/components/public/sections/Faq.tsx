@@ -50,7 +50,7 @@ export function Faq() {
       <div className="faq">
         {FAQS.map((item, idx) => (
           <Reveal key={item.q} delay={idx * 40}>
-            <div className={`faq-item ${open === idx ? "open" : ""}`}>
+            <div className={`faq-item feature-card ${open === idx ? "open" : ""}`}>
               <button
                 type="button"
                 className="faq-q"
