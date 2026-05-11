@@ -874,85 +874,60 @@ p { color: var(--text-2); margin: 0; }
   flex-direction: column;
 }
 
-/* Orchestration — tab strip + content panel */
-.orch-tabs {
+/* Orchestration — six stages rendered as a horizontal strip of cards */
+.orch-stages {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 6px;
-  margin-bottom: 16px;
-}
-@media (max-width: 1024px) { .orch-tabs { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 600px)  { .orch-tabs { grid-template-columns: repeat(2, 1fr); } }
-
-.orch-tab {
+  gap: 0;
   position: relative;
-  text-align: left;
-  padding: 14px 16px;
-  background: var(--panel);
+}
+@media (max-width: 1024px) { .orch-stages { grid-template-columns: repeat(3, 1fr); row-gap: 16px; } }
+@media (max-width: 600px)  { .orch-stages { grid-template-columns: repeat(2, 1fr); } }
+
+.orch-stage {
+  position: relative;
+  padding: 22px 18px 64px;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  cursor: pointer;
-  color: var(--text-2);
-  transition: border-color 160ms, background-color 160ms, color 160ms;
-  display: flex; flex-direction: column; gap: 4px;
+  border-right: none;
+  background: var(--panel);
+  min-height: 200px;
 }
-.orch-tab:hover { color: var(--text); border-color: var(--border-strong); }
-.orch-tab.active {
-  color: var(--text);
-  border-color: rgba(var(--primary-rgb), 0.55);
-  background: rgba(var(--primary-rgb), 0.06);
-  box-shadow: 0 0 14px -6px rgba(var(--primary-rgb), 0.45);
+.orch-stage:first-child { border-radius: 12px 0 0 12px; }
+.orch-stage:last-child  { border-right: 1px solid var(--border); border-radius: 0 12px 12px 0; }
+@media (max-width: 1024px) {
+  .orch-stage { border-right: 1px solid var(--border); border-radius: 12px !important; }
 }
-.orch-tab-num {
+
+.orch-num {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10.5px;
-  letter-spacing: 0.1em;
-  color: var(--secondary);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--primary);
 }
-.orch-tab.active .orch-tab-num { color: var(--primary); }
-.orch-tab-title {
-  font-size: 13.5px;
-  font-weight: 500;
+.orch-title {
+  font-size: 17px;
+  margin-top: 10px;
   letter-spacing: -0.01em;
+  color: var(--text);
+  font-weight: 500;
 }
-
-.orch-panel {
-  padding: 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.orch-desc {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.55;
 }
-.orch-panel-head {
-  display: flex; align-items: center; gap: 14px;
-}
-.orch-panel-icon {
-  width: 36px; height: 36px;
+.orch-icon {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  width: 32px; height: 32px;
   border-radius: 8px;
   display: grid; place-items: center;
   background: rgba(var(--primary-rgb), 0.1);
-  border: 1px solid rgba(var(--primary-rgb), 0.3);
+  border: 1px solid rgba(var(--primary-rgb), 0.35);
   color: var(--primary);
-  flex-shrink: 0;
-}
-.orch-panel-num {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-.orch-panel-title {
-  font-size: 18px;
-  letter-spacing: -0.01em;
-  color: var(--text);
-  font-weight: 500;
-  margin-top: 2px;
-}
-.orch-panel-desc {
-  font-size: 15px;
-  color: var(--text-2);
-  line-height: 1.65;
-  margin: 0;
 }
 
 /* Promo */
