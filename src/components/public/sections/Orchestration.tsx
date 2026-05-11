@@ -58,8 +58,8 @@ export function Orchestration() {
           <span className="gradient-text">exposes the boundaries</span>.
         </h2>
         <p>
-          Step 5 — actually using the resource — happens directly between consumer and provider.
-          The registry is never on the runtime path.
+          Every resource walks the same six steps. The registry points; the provider
+          operates; the hosting environment secures.
         </p>
       </Reveal>
       <Reveal>
