@@ -80,13 +80,13 @@ export function ContactContent() {
   return (
     <div>
       <PageHero
-        crumb="Contact · Talk to the operator"
+        crumb="Contact · Talk to Mauritius Telecom"
         title={
           <>
             Get in <span className="gradient-text">touch</span>.
           </>
         }
-        subtitle="Submit a resource, request review, report an issue, or talk to the team about standing up a registry in your jurisdiction."
+        subtitle="Submit a resource, request review, report an issue, or talk to the Mauritius Telecom team about standing up a registry in your jurisdiction."
       />
       <section className="section" style={{ paddingTop: 40 }}>
         <div className="contact-grid">
@@ -106,7 +106,7 @@ export function ContactContent() {
                   <Icon name="phone" size={16} />
                 </div>
                 <div>
-                  <div className="contact-info-label">Operator desk</div>
+                  <div className="contact-info-label">Mauritius Telecom desk</div>
                   <div className="contact-info-value">+230 460 0400</div>
                 </div>
               </div>
@@ -117,16 +117,18 @@ export function ContactContent() {
                 <div>
                   <div className="contact-info-label">Office</div>
                   <div className="contact-info-value">
-                    Cyber City, Ebène
+                    Mauritius Telecom
                     <br />
-                    Republic of Mauritius
+                    Telecom Tower, Edith Cavell Street
+                    <br />
+                    Port Louis, Republic of Mauritius
                   </div>
                 </div>
               </div>
               <div style={{ paddingTop: 8, borderTop: "1px dashed var(--border)" }}>
                 <div className="contact-info-label">Hours</div>
                 <div style={{ fontSize: 13.5, color: "var(--text-2)", marginTop: 6 }}>
-                  Mon–Fri · 09:00–17:30 · GMT+4
+                  Mon-Fri · 09:00-17:30 · GMT+4
                 </div>
               </div>
               <div style={{ paddingTop: 8 }}>
@@ -154,7 +156,7 @@ export function ContactContent() {
                     <Icon name="check" size={16} />
                     <span>
                       Message received. We respond within 2 working days. Check your inbox for a
-                      confirmation email and click the link there to verify your address — then, if
+                      confirmation email and click the link there to verify your address - then, if
                       you register with the same email, your verified messages appear in your portal.
                     </span>
                   </div>
