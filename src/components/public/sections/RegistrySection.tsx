@@ -5,7 +5,6 @@ import Link from "next/link";
 import type { PublicRegistryListResponse, RegistryCard } from "@/lib/discovery/types";
 import { Icon, type IconName } from "../Icon";
 import { Reveal } from "../Reveal";
-import { useReport } from "../ReportContext";
 import { withBase } from "@/lib/with-base";
 
 export type Resource = {
@@ -97,13 +96,7 @@ function resourcesListQuery(opts: {
   return withBase(q ? `/api/resources?${q}` : "/api/resources");
 }
 
-function FeatureResourceCard({
-  resource,
-  onReport
-}: {
-  resource: Resource;
-  onReport: () => void;
-}) {
+function FeatureResourceCard({ resource }: { resource: Resource }) {
   const detailHref = resource.slug ? `/registry/${resource.slug}` : null;
   return (
     <div className="r-card feature-card">
@@ -145,29 +138,13 @@ function FeatureResourceCard({
       <div className="r-card-actions">
         {detailHref ? (
           <Link href={detailHref} className="r-card-action-link">
-            <Icon name="eye" size={12} /> View
+            <Icon name="eye" size={12} /> View details
           </Link>
         ) : (
           <button type="button">
-            <Icon name="eye" size={12} /> View
+            <Icon name="eye" size={12} /> View details
           </button>
         )}
-        {detailHref && resource.airId?.trim() ? (
-          <Link
-            href={detailHref}
-            className="r-card-action-link"
-            title={resource.airId.trim()}
-          >
-            <Icon name="doc" size={12} /> AIR-ID
-          </Link>
-        ) : (
-          <button type="button" disabled title="No AIR-ID yet">
-            <Icon name="doc" size={12} /> AIR-ID
-          </button>
-        )}
-        <button type="button" className="btn-report" onClick={onReport}>
-          <Icon name="flag" size={12} /> Report
-        </button>
       </div>
     </div>
   );
@@ -192,7 +169,6 @@ export function RegistrySection({
   /** When set (e.g. from `/registry?provider=`), all list requests include `provider` query. */
   initialProviderSlug?: string | null;
 }) {
-  const { open } = useReport();
   const [activeKind, setActiveKind] = useState<(typeof KINDS)[number]["id"]>("all");
   const [activeStatus, setActiveStatus] = useState<Resource["status"] | null>(null);
   const [search, setSearch] = useState("");
@@ -372,37 +348,8 @@ export function RegistrySection({
         </div>
       </Reveal>
 
-      <Reveal>
-        <div className="filter-chips">
-          <span
-            style={{
-              fontFamily: "IBM Plex Mono, monospace",
-              fontSize: 11,
-              color: "var(--text-3)",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              marginRight: 8
-            }}
-          >
-            Status
-          </span>
-          {STATUS_FILTERS.map((status) => (
-            <button
-              key={status}
-              type="button"
-              className={`chip ${activeStatus === status ? "active" : ""}`}
-              onClick={() => setActiveStatus(activeStatus === status ? null : status)}
-            >
-              {status}
-            </button>
-          ))}
-          {(activeStatus || search) && (
-            <button type="button" className="chip" onClick={clearFilters}>
-              Clear filters
-            </button>
-          )}
-        </div>
-      </Reveal>
+      {/* Status chips hidden while the catalogue has a single provider —
+          every listing carries the same status, so filtering is moot. */}
 
       {error ? (
         <p
@@ -435,16 +382,7 @@ export function RegistrySection({
       <div className="registry-grid" style={{ opacity: dataSource === "api" && loading ? 0.4 : 1 }}>
         {filtered.map((resource, index) => (
           <Reveal key={resource.id} delay={index * 35}>
-            <FeatureResourceCard
-              resource={resource}
-              onReport={() =>
-                open({
-                  id: resource.id,
-                  title: resource.title,
-                  provider: resource.provider
-                })
-              }
-            />
+            <FeatureResourceCard resource={resource} />
           </Reveal>
         ))}
         {!loading && filtered.length === 0 && (

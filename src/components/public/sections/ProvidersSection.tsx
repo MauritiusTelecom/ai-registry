@@ -296,37 +296,8 @@ export function ProvidersSection({
         </div>
       </Reveal>
 
-      <Reveal>
-        <div className="filter-chips">
-          <span
-            style={{
-              fontFamily: "IBM Plex Mono, monospace",
-              fontSize: 11,
-              color: "var(--text-3)",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              marginRight: 8
-            }}
-          >
-            Status
-          </span>
-          {STATUS_FILTERS.map((status) => (
-            <button
-              key={status}
-              type="button"
-              className={`chip ${activeStatus === status ? "active" : ""}`}
-              onClick={() => setActiveStatus(activeStatus === status ? null : status)}
-            >
-              {status}
-            </button>
-          ))}
-          {(activeStatus || search) && (
-            <button type="button" className="chip" onClick={clearFilters}>
-              Clear filters
-            </button>
-          )}
-        </div>
-      </Reveal>
+      {/* Status chips hidden while the catalogue has a single provider —
+          all rows carry the same status, so the filter would do nothing. */}
 
       {error ? (
         <p

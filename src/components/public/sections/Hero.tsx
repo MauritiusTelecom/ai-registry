@@ -87,11 +87,11 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
 
         <div className="hero-cta-row">
           <Link href="/registry" className="btn btn-primary">
-            Launch Registry
+            Explore Registry
             <Icon name="arrow-right" size={14} />
           </Link>
           <Link href="/ecosystem" className="btn btn-secondary">
-            Explore Ecosystem
+            Discover Ecosystem
           </Link>
         </div>
 
