@@ -57,6 +57,12 @@ const STATUS_FILTERS: Resource["status"][] = [
 
 const KIND_SET = new Set<string>(["model", "agent", "skill", "tool"]);
 
+function hasMetaValue(value: string | null | undefined): boolean {
+  if (!value) return false;
+  const trimmed = value.trim();
+  return trimmed !== "" && trimmed !== "-";
+}
+
 function cardToResource(card: RegistryCard): Resource {
   const kind = KIND_SET.has(card.kind) ? (card.kind as Resource["kind"]) : "tool";
   return {
@@ -113,22 +119,30 @@ function FeatureResourceCard({ resource }: { resource: Resource }) {
       </div>
       <div className="r-desc">{resource.desc}</div>
       <div className="r-meta">
-        <div className="r-meta-row">
-          <span className="r-meta-label">Context</span>
-          <span className="r-meta-value">{resource.context}</span>
-        </div>
-        <div className="r-meta-row">
-          <span className="r-meta-label">Latency</span>
-          <span className="r-meta-value">{resource.latency}</span>
-        </div>
-        <div className="r-meta-row">
-          <span className="r-meta-label">Region</span>
-          <span className="r-meta-value">{resource.region}</span>
-        </div>
-        <div className="r-meta-row">
-          <span className="r-meta-label">License</span>
-          <span className="r-meta-value">{resource.license}</span>
-        </div>
+        {hasMetaValue(resource.context) && (
+          <div className="r-meta-row">
+            <span className="r-meta-label">Context</span>
+            <span className="r-meta-value">{resource.context}</span>
+          </div>
+        )}
+        {hasMetaValue(resource.latency) && (
+          <div className="r-meta-row">
+            <span className="r-meta-label">Latency</span>
+            <span className="r-meta-value">{resource.latency}</span>
+          </div>
+        )}
+        {hasMetaValue(resource.region) && (
+          <div className="r-meta-row">
+            <span className="r-meta-label">Region</span>
+            <span className="r-meta-value">{resource.region}</span>
+          </div>
+        )}
+        {hasMetaValue(resource.license) && (
+          <div className="r-meta-row">
+            <span className="r-meta-label">License</span>
+            <span className="r-meta-value">{resource.license}</span>
+          </div>
+        )}
       </div>
       <div className="r-tags">
         {resource.tags.map((tag) => (

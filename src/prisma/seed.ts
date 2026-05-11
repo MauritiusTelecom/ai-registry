@@ -485,6 +485,7 @@ async function main() {
       shortDescription: string;
       longDescription: string;
       sovereigntyBasis: SovereigntyBasisCode;
+      license: string;
     };
 
     const resourceSeeds: ResourceSeed[] = [
@@ -496,7 +497,8 @@ async function main() {
           "Powerful AI models that understand and generate human-like text for a wide range of tasks.",
         longDescription:
           "LLM (Large Language Models) are advanced AI systems trained on vast amounts of text data to understand, generate, and respond in natural language. They can power chatbots, content creation, coding assistance, summarization, and more. These models adapt to different use cases, making them a flexible foundation for building intelligent applications.",
-        sovereigntyBasis: "local_data"
+        sovereigntyBasis: "local_data",
+        license: "Commercial"
       },
       {
         slug: "ai-workflows",
@@ -506,7 +508,8 @@ async function main() {
           "Automate complex tasks by connecting multiple AI steps into seamless workflows.",
         longDescription:
           "AI Workflows allow you to chain together different AI capabilities - like data processing, decision-making, and content generation - into a single automated process. This helps streamline repetitive or multi-step tasks, improving efficiency and consistency. Workflows can be customised to fit business processes, from customer support to data analysis pipelines.",
-        sovereigntyBasis: "local_system"
+        sovereigntyBasis: "local_system",
+        license: "Commercial"
       },
       {
         slug: "conversational-ai",
@@ -516,7 +519,8 @@ async function main() {
           "Natural voice and text interactions, with experimental support for Kreol Morisien.",
         longDescription:
           "Conversational AI combines speech recognition (speech-to-text) and voice generation (text-to-speech) with intelligent dialogue systems. It allows users to talk to applications and receive spoken or written responses in real time. This is ideal for virtual assistants, call centres, and hands-free user experiences across devices.",
-        sovereigntyBasis: "local_language_culture"
+        sovereigntyBasis: "local_language_culture",
+        license: "Commercial"
       },
       {
         slug: "automl",
@@ -526,7 +530,8 @@ async function main() {
           "Build and deploy machine learning models without needing deep technical expertise.",
         longDescription:
           "AutoML (Automated Machine Learning) simplifies the process of creating AI models by automating tasks like data preparation, model selection, and tuning. Build machine learning solutions on raw data in a few lines of code. State-of-the-art techniques for tabular data, time series and multimodal. This accelerates innovation and makes AI more accessible across organisations.",
-        sovereigntyBasis: "local_system"
+        sovereigntyBasis: "local_system",
+        license: "Commercial"
       },
       {
         slug: "document-ai",
@@ -536,7 +541,8 @@ async function main() {
           "Automatically read and extract key data from documents like PDFs, forms, and invoices.",
         longDescription:
           "Document AI uses machine learning and OCR (optical character recognition) to understand and process structured and unstructured documents. It can identify fields, extract important data, and organise information into usable formats. This reduces manual data entry and improves accuracy in workflows like finance, legal, and operations.",
-        sovereigntyBasis: "local_data"
+        sovereigntyBasis: "local_data",
+        license: "Commercial"
       },
       {
         slug: "mytgpt-enterprise",
@@ -545,7 +551,8 @@ async function main() {
         shortDescription: "A secure, enterprise-ready chat platform powered by advanced AI.",
         longDescription:
           "MytGPT Enterprise provides a user-friendly chat interface that allows teams to interact with AI for tasks like answering questions, generating content, and analysing data. It's designed for business use, with features like data privacy, customisation, and integration with internal systems. Users can easily upload documents and ask questions, making it easy to bring AI into everyday workflows across an organisation.",
-        sovereigntyBasis: "local_system"
+        sovereigntyBasis: "local_system",
+        license: "Commercial"
       },
       {
         slug: "vision-models",
@@ -554,7 +561,8 @@ async function main() {
         shortDescription: "AI that can see and understand images and visual content.",
         longDescription:
           "Vision Models analyse images and videos to detect objects, read text, recognise patterns, and interpret visual information. They can be used for applications like quality inspection, facial recognition, medical imaging, and content moderation. By turning visual data into actionable insights, they unlock new possibilities for automation and decision-making.",
-        sovereigntyBasis: "local_data"
+        sovereigntyBasis: "local_data",
+        license: "Commercial"
       }
     ];
 
@@ -574,6 +582,7 @@ async function main() {
         lifecycleStatusId: lifecycleStatusIds.get("listed")!,
         riskLevelId: riskLevelIds.get("low")!,
         publicVisibility: true,
+        license: seed.license,
         airId: `air://${process.env.IDENTITY_DOMAIN ?? "air.local"}/${seed.typeCode}/${provider.slug}/${seed.slug}`
       };
       const resource = existing
