@@ -272,7 +272,29 @@ export default async function ResourceDetailPage({
           ) : null}
 
           {/* Report listing — opens the same ReportModal as before */}
-          <div style={{ marginTop: 8 }}>
+          <div
+            style={{
+              marginTop: 8,
+              padding: "18px 22px",
+              borderRadius: 10,
+              border: "1px solid var(--hairline)",
+              background: "var(--panel)",
+              display: "flex",
+              gap: 18,
+              alignItems: "center",
+              flexWrap: "wrap"
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 240 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: "var(--text)" }}>
+                See something off about this listing?
+              </div>
+              <div style={{ fontSize: 13, color: "var(--text-3)", marginTop: 4 }}>
+                Flag impersonation, broken endpoints, missing sovereignty evidence,
+                or anything else that doesn&rsquo;t match the registry&rsquo;s rules.
+                The operator reviews every report.
+              </div>
+            </div>
             <ResourceReportButton
               target={{
                 id: row.id,
