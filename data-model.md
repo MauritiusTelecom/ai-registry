@@ -1,4 +1,4 @@
-# AI Registry — Data model
+# AI Registry - Data model
 
 This document extracts **entities**, **fields**, and **relationships** for the AI Registry. It aligns the **normative conceptual model** ([`.speckit/specification.md`](.speckit/specification.md), AIR-SPEC 0.4) with the **reference relational implementation** in [`ai-registry/src/prisma/schema.prisma`](../ai-registry/src/prisma/schema.prisma) (PostgreSQL schema `registry`).
 
@@ -133,7 +133,7 @@ Each reference table follows the pattern: `id`, `code` (unique), `name`, `descri
 | `SubmissionSourceType` | `Provider` | How the provider record was created. |
 | `SovereigntyBasis` | `ResourceSovereigntyBasis`, `SovereigntyEvidence` | Four canonical bases (local law, data, system, language/culture). |
 
-#### 3.1.1 National AI Registry (`nat-ai-registry`) — enum vocabulary as `Lookup*` tables
+#### 3.1.1 National AI Registry (`nat-ai-registry`) - enum vocabulary as `Lookup*` tables
 
 The NAR app ships **physical reference tables** in schema `registry` that mirror every Prisma `enum` still used on entity columns. Each table uses the shared pattern (`id`, `code`, `name`, `description`, `sortOrder`, `active`, timestamps) and is populated by `src/prisma/seeds/enum-lookups.ts` (idempotent upserts). **Entity FK migration:** application models may still read/write Prisma enums until a follow-up change replaces those columns with `…Id` foreign keys pointing at these lookups; the tables are the canonical row-level vocabulary for admin UIs, reporting, and future migrations without PostgreSQL enum type churn.
 
@@ -153,7 +153,7 @@ The NAR app ships **physical reference tables** in schema `registry` that mirror
 | `PartnerStatus` | `LookupPartnerStatus` | `lookup_partner_statuses` |
 | `ApiStyle` | `LookupApiStyle` | `lookup_api_styles` |
 
-**Already reference-style (not Prisma enums):** `Industry`, `Capability`, `ComplianceFramework`, `SolutionKind`, `AccessChannel`, `InteractionMode` — these are first-class reference tables with M:N joins to `AISolution`, separate from the enum list above.
+**Already reference-style (not Prisma enums):** `Industry`, `Capability`, `ComplianceFramework`, `SolutionKind`, `AccessChannel`, `InteractionMode` - these are first-class reference tables with M:N joins to `AISolution`, separate from the enum list above.
 
 ---
 
@@ -262,12 +262,12 @@ Legal and commercial identity of the party responsible for resources.
 
 **Relationships:**
 
-- **Home jurisdiction:** Mandatory FK to **`Jurisdiction`** — anchors sovereignty and policy context for the organisation.
+- **Home jurisdiction:** Mandatory FK to **`Jurisdiction`** - anchors sovereignty and policy context for the organisation.
 - **Resources:** **`Resource.providerId`** implements AIR-SPEC `provider_id`; **1:N** cascade governs listing ownership.
-- **Users:** Provider team **`User`** rows share **`providerId`** — enables separation-of-duties (same user cannot approve own provider’s sovereignty signal).
-- **Trust signals targeting provider:** **`TrustSignal.targetProviderId`** — models provider-level verification posture (maps to AIR-SPEC `provider_verification_status` in aggregate/API).
-- **Reviews / complaints:** Optional **`Review.providerId`**, **`Complaint.targetProviderId`** — governance and moderation touchpoints.
-- **Enforcement:** **`EnforcementAction.targetProviderId`** — operator actions at provider scope.
+- **Users:** Provider team **`User`** rows share **`providerId`** - enables separation-of-duties (same user cannot approve own provider’s sovereignty signal).
+- **Trust signals targeting provider:** **`TrustSignal.targetProviderId`** - models provider-level verification posture (maps to AIR-SPEC `provider_verification_status` in aggregate/API).
+- **Reviews / complaints:** Optional **`Review.providerId`**, **`Complaint.targetProviderId`** - governance and moderation touchpoints.
+- **Enforcement:** **`EnforcementAction.targetProviderId`** - operator actions at provider scope.
 
 ---
 
@@ -310,9 +310,9 @@ Central registry row for a model, agent, tool, or skill.
 - **Federation (N:1 optional):** `sourceRegistryId` + `sourceAirId` preserve **origin**; public copy should not imply local trust without policy.
 - **Sovereignty M:N:** **`ResourceSovereigntyBasis`** enumerates cited bases.
 - **Evidence 1:N:** **`SovereigntyEvidence`** carries structured citations (**AIR-SPEC** `sovereignty_evidence[]`).
-- **Endpoints 1:N:** **`ResourceEndpoint`** — AIR-SPEC endpoint list; registry never proxies these URLs.
-- **Discovery facets M:N:** **`ResourceLanguage`**, **`ResourceSector`**, **`ResourceTag`** — search filters and multilingual hints (complement eventual JSON localisation tables if added).
-- **Trust signals 1:N:** Rows with **`targetResourceId`** — resource-scoped badges (sovereignty reviewed, official resource, etc.).
+- **Endpoints 1:N:** **`ResourceEndpoint`** - AIR-SPEC endpoint list; registry never proxies these URLs.
+- **Discovery facets M:N:** **`ResourceLanguage`**, **`ResourceSector`**, **`ResourceTag`** - search filters and multilingual hints (complement eventual JSON localisation tables if added).
+- **Trust signals 1:N:** Rows with **`targetResourceId`** - resource-scoped badges (sovereignty reviewed, official resource, etc.).
 - **Reviews 1:N:** Sovereignty/completeness workflows with **`ReviewChecklistItem`** children.
 - **Official path 1:N:** **`OfficialResourceAuthorisation`** links **`OfficialAuthority`** to resource.
 - **Complaints / enforcement:** **`Complaint`**, **`EnforcementAction`** optional FKs target the resource row under dispute or action.
@@ -331,9 +331,9 @@ Facet dimensions for UX and `/discover`-style queries.
 
 **Join tables:**
 
-- **`ResourceSector`** — PK (`resourceId`, `sectorId`); both FKs cascade on delete of parent row.
-- **`ResourceLanguage`** — PK (`resourceId`, `languageId`).
-- **`ResourceTag`** — PK (`resourceId`, `tagId`).
+- **`ResourceSector`** - PK (`resourceId`, `sectorId`); both FKs cascade on delete of parent row.
+- **`ResourceLanguage`** - PK (`resourceId`, `languageId`).
+- **`ResourceTag`** - PK (`resourceId`, `tagId`).
 
 **Relationship narrative:** These are **orthogonal taxonomies** attached to **`Resource`** for filtering. They do not imply trust; trust remains in **`TrustSignal`** / **`OfficialResourceAuthorisation`**.
 
@@ -396,7 +396,7 @@ Concrete citations backing sovereignty claims.
 
 ### 3.12 `TrustSignal`
 
-Implements **separable** trust metadata (provider verification, sovereignty reviewed, official resource) as first-class rows with validity window — closer to legal evidence than a single JSON blob.
+Implements **separable** trust metadata (provider verification, sovereignty reviewed, official resource) as first-class rows with validity window - closer to legal evidence than a single JSON blob.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -414,7 +414,7 @@ Implements **separable** trust metadata (provider verification, sovereignty revi
 | `nextReviewDueAt` | DateTime? | |
 | `createdAt`, `updatedAt` | DateTime | |
 
-**Relationship (polymorphic target):** Exactly one of **`targetProviderId`** or **`targetResourceId`** should be set for a given signal **kind** in normal operation — provider-level verification vs resource-level badges. Maps to AIR-SPEC **`provider_verification_status`** (when provider-scoped) and resource governance fields when combined with lifecycle and **`OfficialResourceAuthorisation`**.
+**Relationship (polymorphic target):** Exactly one of **`targetProviderId`** or **`targetResourceId`** should be set for a given signal **kind** in normal operation - provider-level verification vs resource-level badges. Maps to AIR-SPEC **`provider_verification_status`** (when provider-scoped) and resource governance fields when combined with lifecycle and **`OfficialResourceAuthorisation`**.
 
 ---
 
@@ -450,7 +450,7 @@ Structured review processes (completeness, sovereignty rubric, etc.).
 | `comment` | String? | |
 | `createdAt`, `updatedAt` | DateTime | |
 
-**Relationships:** **`Review`** is **polymorphic** like complaints — can hang off **resource** and/or **provider** depending on type. **Checklist items** realise AIR-SPEC **§11** reviewer questions. **`User.reviewerId`** must respect separation-of-duties at the application layer.
+**Relationships:** **`Review`** is **polymorphic** like complaints - can hang off **resource** and/or **provider** depending on type. **Checklist items** realise AIR-SPEC **§11** reviewer questions. **`User.reviewerId`** must respect separation-of-duties at the application layer.
 
 ---
 
@@ -485,7 +485,7 @@ Structured review processes (completeness, sovereignty rubric, etc.).
 | `decidedAt` | DateTime? | |
 | `createdAt`, `updatedAt` | DateTime | |
 
-**Relationship narrative:** **`OfficialAuthority`** is a **directory of competent bodies** per jurisdiction. **`OfficialResourceAuthorisation`** is the **many-to-many realisation** between **Resource** and **Authority** with its own status and evidence URLs — this backs **official-resource** elevation **together with** provider verification rules in the spec.
+**Relationship narrative:** **`OfficialAuthority`** is a **directory of competent bodies** per jurisdiction. **`OfficialResourceAuthorisation`** is the **many-to-many realisation** between **Resource** and **Authority** with its own status and evidence URLs - this backs **official-resource** elevation **together with** provider verification rules in the spec.
 
 ---
 
@@ -542,7 +542,7 @@ Append-oriented governance telemetry (AIR-SPEC §18.1 alignment).
 | `ipAddress`, `userAgent` | String? | Request context. |
 | `createdAt` | DateTime | Immutable timestamp. |
 
-**Relationship:** **Loosely coupled** — no FK to every entity by design (polymorphic `entityType` + `entityId`). **`User`** optional for system jobs. Indexes support (`entityType`, `entityId`) and time-range queries for auditors.
+**Relationship:** **Loosely coupled** - no FK to every entity by design (polymorphic `entityType` + `entityId`). **`User`** optional for system jobs. Indexes support (`entityType`, `entityId`) and time-range queries for auditors.
 
 ---
 
@@ -561,7 +561,7 @@ Optional future use: correlate **`Resource`** with non-registry identity strings
 | `status` | String | Default `ACTIVE`. |
 | `createdAt`, `updatedAt` | DateTime | |
 
-**Relationship:** **1:N from Resource** — hosting providers may mirror bindings; registry does **not** operate SPIRE.
+**Relationship:** **1:N from Resource** - hosting providers may mirror bindings; registry does **not** operate SPIRE.
 
 ---
 
@@ -602,7 +602,7 @@ Schema hooks for bilateral federation (non-MVP workflows).
 
 Unique (`sourceRegistryId`, `sourceAirId`).
 
-**Relationships:** **`Resource.sourceRegistryId`** links a **full local row** mirrored from a peer. **`FederatedResourceReference`** supports **lazy** or **display-only** links without a complete local resource. **`sourceTrustLabels`** stored as **`Json`** keeps peer badges **explicitly sourced** — satisfies “federated listings do not automatically inherit local trust” from the constitution.
+**Relationships:** **`Resource.sourceRegistryId`** links a **full local row** mirrored from a peer. **`FederatedResourceReference`** supports **lazy** or **display-only** links without a complete local resource. **`sourceTrustLabels`** stored as **`Json`** keeps peer badges **explicitly sourced** - satisfies “federated listings do not automatically inherit local trust” from the constitution.
 
 ---
 
@@ -619,7 +619,7 @@ Unique (`sourceRegistryId`, `sourceAirId`).
 | `governance.provider_verification_status` | Provider-scoped **`TrustSignal`** (+ `Provider.statusId`) |
 | `governance.sovereignty_review_status` | Resource reviews + checklist + sovereignty **`TrustSignal`** / API projection |
 | `governance.official_resource` semantics | **`OfficialResourceAuthorisation`** + resource lifecycle + official **`TrustSignal`** |
-| `name_localized` / `description_localized` | Not a separate table in current schema — may be implemented as JSON columns or related localisation rows in a future revision |
+| `name_localized` / `description_localized` | Not a separate table in current schema - may be implemented as JSON columns or related localisation rows in a future revision |
 | `origin_registry` | `Resource.sourceRegistryId` / `SourceAirId` / `ListingOrigin` |
 
 ---

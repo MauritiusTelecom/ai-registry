@@ -99,7 +99,7 @@ export default async function SovereignPartnersPage() {
             {row.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
           </Link>
         ) : (
-          <span style={{ color: "var(--text-3)" }}>—</span>
+          <span style={{ color: "var(--text-3)" }}>-</span>
         )
     },
     { key: "joined", label: "Joined", render: (row) => row.joined, mono: true }

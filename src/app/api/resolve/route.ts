@@ -9,9 +9,9 @@ import type { Problem } from "@/lib/discovery/types";
  * AIR-SPEC §13 normative resolve. Maps an `air://` URI to the registry's
  * public-safe record. The semantics are:
  *
- *   - 200 + RegistryCardDetail            — found and publicly listable
- *   - 404                                  — never existed under this AIR-ID
- *   - 410                                  — once existed, now removed
+ *   - 200 + RegistryCardDetail            - found and publicly listable
+ *   - 404                                  - never existed under this AIR-ID
+ *   - 410                                  - once existed, now removed
  *
  * The body of a 410 includes the last known title/provider so consumers can
  * surface a deprecation message without a second lookup.

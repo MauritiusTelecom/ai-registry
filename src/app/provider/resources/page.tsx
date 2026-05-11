@@ -86,7 +86,7 @@ export default async function ProviderResourcesPage() {
               fontFamily: "IBM Plex Mono, monospace"
             }}
           >
-            {row.airId ?? "(no AIR-ID — pre-listing)"}
+            {row.airId ?? "(no AIR-ID - pre-listing)"}
           </div>
         </div>
       )
@@ -108,7 +108,7 @@ export default async function ProviderResourcesPage() {
             Public
           </Link>
         ) : (
-          <span style={{ color: "var(--text-3)", fontSize: 12 }}>—</span>
+          <span style={{ color: "var(--text-3)", fontSize: 12 }}>-</span>
         )
     }
   ];

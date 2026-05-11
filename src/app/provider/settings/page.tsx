@@ -57,7 +57,7 @@ export default async function ProviderSettingsPage() {
     prisma.provider.findUnique({
       where: { id: providerId },
       include: { type: { select: { code: true } }, homeJurisdiction: { select: { code: true } } },
-      // Selecting via include omits scalars unless we list them — Prisma's
+      // Selecting via include omits scalars unless we list them - Prisma's
       // include-with-default returns every scalar by default, so the new
       // notification fields surface automatically. Kept the include shape so
       // the form below picks them up without a second query.

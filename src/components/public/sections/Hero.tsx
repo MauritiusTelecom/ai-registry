@@ -81,7 +81,7 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
 
         <p className="hero-subtitle">
           Govern, orchestrate, and monitor trusted AI agents, models, and MCP infrastructure from a
-          unified sovereign platform — built for nations, regulators, and the enterprises they
+          unified sovereign platform - built for nations, regulators, and the enterprises they
           depend on.
         </p>
 

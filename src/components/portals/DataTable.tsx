@@ -9,7 +9,7 @@ export type Column<T> = {
 };
 
 /**
- * Server-rendered data table for the portal list pages. Pure layout — the
+ * Server-rendered data table for the portal list pages. Pure layout - the
  * caller passes already-projected rows. Empty state is rendered when `rows`
  * is empty.
  */

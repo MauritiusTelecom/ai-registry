@@ -28,7 +28,7 @@ export default async function SovereignIncidentsPage() {
   const cfg = getConfig();
 
   // Pull every enforcement action whose target (resource or provider) sits in
-  // the configured sovereign jurisdiction. Sovereign view is jurisdictional —
+  // the configured sovereign jurisdiction. Sovereign view is jurisdictional -
   // operators outside the deployment's jurisdiction don't surface here.
   const rows = await prisma.enforcementAction.findMany({
     where: {
@@ -58,7 +58,7 @@ export default async function SovereignIncidentsPage() {
       ? `${e.targetResource.title} · ${e.targetResource.provider.displayName}`
       : e.targetProvider
         ? e.targetProvider.displayName
-        : "—";
+        : "-";
     return {
       id: e.id,
       actionType: e.actionType.name,
@@ -67,7 +67,7 @@ export default async function SovereignIncidentsPage() {
       target,
       targetSlug: e.targetResource?.slug ?? null,
       performedAt: e.performedAt.toISOString().slice(0, 16).replace("T", " "),
-      performedBy: e.performedBy?.name ?? e.performedBy?.email ?? "—"
+      performedBy: e.performedBy?.name ?? e.performedBy?.email ?? "-"
     };
   });
 
@@ -122,7 +122,7 @@ export default async function SovereignIncidentsPage() {
             ? row.publicNote.length > 80
               ? `${row.publicNote.slice(0, 80)}…`
               : row.publicNote
-            : "—"}
+            : "-"}
         </span>
       )
     },

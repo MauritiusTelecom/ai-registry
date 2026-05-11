@@ -2,15 +2,15 @@
  * Session tokens.
  *
  * The session cookie carries an HMAC-signed JSON payload. We avoid pulling in
- * a JWT library because the only consumer is this app — there is no need for
+ * a JWT library because the only consumer is this app - there is no need for
  * a third-party-readable token format. Compact, opaque-to-clients, signed.
  *
  *   Cookie value: <payloadBase64Url>.<hmacBase64Url>
  *
  * Payload fields:
- *   - userId  — UUID of the User row
- *   - iat     — issued-at (unix seconds)
- *   - exp     — expires-at (unix seconds)
+ *   - userId  - UUID of the User row
+ *   - iat     - issued-at (unix seconds)
+ *   - exp     - expires-at (unix seconds)
  *
  * The cookie is HTTP-only, SameSite=Lax, Path=/, Secure when NODE_ENV=production.
  */

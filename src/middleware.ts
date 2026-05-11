@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 /**
  * Phase 2 middleware: gate the authenticated portal surface.
  *
- * The middleware runs on the Edge runtime by default — Prisma cannot run
+ * The middleware runs on the Edge runtime by default - Prisma cannot run
  * here. The check is therefore signature-only: we verify the session
  * cookie's HMAC and expiry. The server component / route handler that
  * receives the request then performs the canonical user lookup against the

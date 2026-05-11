@@ -43,11 +43,11 @@ export default async function VerifierDecidedPage() {
     id: r.id,
     resourceTitle: r.resource?.title ?? "(provider-scoped review)",
     resourceSlug: r.resource?.slug ?? null,
-    provider: r.resource?.provider.displayName ?? r.provider?.displayName ?? "—",
+    provider: r.resource?.provider.displayName ?? r.provider?.displayName ?? "-",
     reviewType: r.reviewType.name,
     decision: DECISION_DISPLAY[r.status.code] ?? "active",
-    decisionSummary: r.decisionSummary?.trim() || "—",
-    reviewer: r.reviewer?.name ?? r.reviewer?.email ?? "—",
+    decisionSummary: r.decisionSummary?.trim() || "-",
+    reviewer: r.reviewer?.name ?? r.reviewer?.email ?? "-",
     completedAt: r.completedAt ? r.completedAt.toISOString().slice(0, 10) : null
   }));
 
@@ -93,7 +93,7 @@ export default async function VerifierDecidedPage() {
     {
       key: "completed",
       label: "Decided",
-      render: (row) => row.completedAt ?? "—",
+      render: (row) => row.completedAt ?? "-",
       mono: true
     }
   ];
@@ -103,7 +103,7 @@ export default async function VerifierDecidedPage() {
       <div className="p-page-header">
         <h1 className="p-title">Decided reviews</h1>
         <p className="p-subtitle">
-          {projected.length} review{projected.length === 1 ? "" : "s"} closed (latest 200) — every
+          {projected.length} review{projected.length === 1 ? "" : "s"} closed (latest 200) - every
           row is append-only and mirrors the audit trail.
         </p>
       </div>

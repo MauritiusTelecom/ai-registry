@@ -10,8 +10,8 @@ import type { Prisma } from "@/generated/prisma";
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
 /**
- * GET /api/admin/users — list users with q + role + status + verified filters.
- * POST /api/admin/users — create user (admins manually invite people who
+ * GET /api/admin/users - list users with q + role + status + verified filters.
+ * POST /api/admin/users - create user (admins manually invite people who
  *   cannot self-register, e.g. reviewers / sovereign operators).
  *
  * See `ai-registry-specs/shared/admin-crud.md` §5.3.

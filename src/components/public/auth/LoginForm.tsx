@@ -6,7 +6,7 @@ import { withBase } from "@/lib/with-base";
 /**
  * `redirect` carries the URL the user should land on if they were deep-linked
  * to /login (via `?next=…`). When the page didn't supply one, we let the
- * server pick — the login API returns `redirectTo` based on the user's role,
+ * server pick - the login API returns `redirectTo` based on the user's role,
  * so a provider lands on `/provider`, an admin on `/admin`, etc. (`null`
  * means "no explicit deep-link; defer to the server").
  */

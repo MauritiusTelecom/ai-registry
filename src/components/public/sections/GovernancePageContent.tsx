@@ -169,8 +169,8 @@ export function GovernancePageContent() {
         <h2 style={headingStyle}>Public log</h2>
         <div className="glass" style={panelStyle}>
           <p>
-            Every state-changing action — AIR-ID issuance, sovereignty review,
-            official-resource endorsement, lifecycle transition — is recorded in an
+            Every state-changing action - AIR-ID issuance, sovereignty review,
+            official-resource endorsement, lifecycle transition - is recorded in an
             append-only{" "}
             <Link href="/audit-log" style={{ color: "var(--text-2)" }}>
               audit log

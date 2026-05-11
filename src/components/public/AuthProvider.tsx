@@ -20,7 +20,7 @@ import { withBase } from "@/lib/with-base";
  * - Exposes a `login(email, password)` that hits POST `/api/auth/login`.
  *
  * The shape (`firstName`, `email`, `roles`) is preserved so the existing
- * TopNav UserMenu — which renders role-shortcut buttons gated by `roles` —
+ * TopNav UserMenu - which renders role-shortcut buttons gated by `roles` -
  * keeps working. `roles` now contains the canonical role codes
  * (`admin` | `provider` | `verifier` | `sovereign` | …) returned by the
  * `/api/auth/me` envelope.
@@ -29,7 +29,7 @@ import { withBase } from "@/lib/with-base";
 export type Role = "admin" | "provider" | "verifier" | "sovereign";
 
 export type AuthUser = {
-  /** First word of the display name — kept for parity with the prior mock. */
+  /** First word of the display name - kept for parity with the prior mock. */
   firstName: string;
   email: string;
   /** Effective role codes the user holds. */

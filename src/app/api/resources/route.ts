@@ -19,7 +19,7 @@ import type { ResourceKind } from "@/lib/discovery/types";
  *   cursor                 resource id of last row from previous page
  *
  * Response: PublicRegistryListResponse with rows, total, counts (per kind),
- * page envelope, and generatedAt. Cache is short — public visitors should
+ * page envelope, and generatedAt. Cache is short - public visitors should
  * see status changes within a minute or two.
  *
  * Rate-limit headers are placeholders (T022); a real limiter ships in Phase 5.

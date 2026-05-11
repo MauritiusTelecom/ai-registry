@@ -37,7 +37,7 @@ function applyDensity(d: Density) {
 }
 
 /**
- * Dev-only design tools — palette / motion / density.
+ * Dev-only design tools - palette / motion / density.
  * Mirrors `tweaks-panel.jsx` from the prototype but only mounts in development.
  */
 export function TweaksPanel() {

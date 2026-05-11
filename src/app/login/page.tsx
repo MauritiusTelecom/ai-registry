@@ -17,7 +17,7 @@ export default async function LoginPage({
 
   const user = await getCurrentUser();
   if (user) {
-    // Already signed in — honour the deep-link if present, otherwise route
+    // Already signed in - honour the deep-link if present, otherwise route
     // to the user's role-specific portal.
     redirect(sanitized ?? portalForRole(user.role.code));
   }

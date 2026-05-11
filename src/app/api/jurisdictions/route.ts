@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
  * GET /api/jurisdictions
  *
  * Public read-only listing of the active jurisdictions seeded into this
- * deployment. Integrators populate filter UIs from this endpoint — see the
+ * deployment. Integrators populate filter UIs from this endpoint - see the
  * Phase 1 seed for the canonical entries.
  */
 export async function GET() {

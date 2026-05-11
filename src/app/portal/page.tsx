@@ -74,7 +74,7 @@ export default async function PortalPage() {
                 style={{ background: "#f59e0b", boxShadow: "0 0 8px #f59e0b" }}
               />
               <div style={{ flex: 1, fontSize: 14 }}>
-                <strong>Verify your email</strong> — a verification link was sent to{" "}
+                <strong>Verify your email</strong> - a verification link was sent to{" "}
                 <span style={{ color: "var(--text-2)" }}>{user.email}</span>. Open it to
                 activate the account fully (check the dev console for the link if SMTP is
                 not configured).

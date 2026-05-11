@@ -22,7 +22,7 @@ export async function GET() {
   let error: string | undefined;
 
   try {
-    // Cheap round-trip — counts the resource_type reference table which the
+    // Cheap round-trip - counts the resource_type reference table which the
     // seed always populates. If the schema is missing the count call throws
     // and we surface a 503.
     resourceTypes = await prisma.resourceType.count();

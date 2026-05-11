@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-/** GET /api/languages — BCP-47 codes the deployment supports. */
+/** GET /api/languages - BCP-47 codes the deployment supports. */
 export async function GET() {
   const rows = await prisma.language.findMany({
     where: { active: true },

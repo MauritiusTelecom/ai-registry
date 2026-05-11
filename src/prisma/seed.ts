@@ -21,12 +21,12 @@
  *   override the exemplar provider so re-deployments aren't tied to the
  *   reference operator name.
  *
- *   SEED_ADMIN_PASSWORD — when set, creates or updates a bootstrap operator
+ *   SEED_ADMIN_PASSWORD - when set, creates or updates a bootstrap operator
  *   admin (email SEED_ADMIN_EMAIL, default admin@registry.com) with that
  *   password, role admin, status active, email verified. Omit in CI; set
  *   locally or in a secure deploy pipeline only.
  *
- *   SEED_PROVIDER_PASSWORD — when set, creates or updates a bootstrap portal
+ *   SEED_PROVIDER_PASSWORD - when set, creates or updates a bootstrap portal
  *   user for the exemplar provider (email SEED_PROVIDER_EMAIL, default
  *   provider@registry.com), role provider, linked to the seeded Provider row.
  *   Any legacy row at provider@example.com is renamed to that email first.
@@ -454,7 +454,7 @@ async function main() {
       console.log(`\n  ✓ bootstrap provider portal user: ${providerUserEmail}`);
     } else {
       console.log(
-        "\n  (bootstrap provider portal user skipped — set SEED_PROVIDER_PASSWORD to create or refresh)"
+        "\n  (bootstrap provider portal user skipped - set SEED_PROVIDER_PASSWORD to create or refresh)"
       );
     }
 
@@ -505,7 +505,7 @@ async function main() {
         shortDescription:
           "Automate complex tasks by connecting multiple AI steps into seamless workflows.",
         longDescription:
-          "AI Workflows allow you to chain together different AI capabilities — like data processing, decision-making, and content generation — into a single automated process. This helps streamline repetitive or multi-step tasks, improving efficiency and consistency. Workflows can be customised to fit business processes, from customer support to data analysis pipelines.",
+          "AI Workflows allow you to chain together different AI capabilities - like data processing, decision-making, and content generation - into a single automated process. This helps streamline repetitive or multi-step tasks, improving efficiency and consistency. Workflows can be customised to fit business processes, from customer support to data analysis pipelines.",
         sovereigntyBasis: "local_system"
       },
       {
@@ -596,7 +596,7 @@ async function main() {
           update: {}
         });
 
-        const evidenceTitle = `${seed.title} — sovereignty evidence (stub)`;
+        const evidenceTitle = `${seed.title} - sovereignty evidence (stub)`;
         const evidence = await prisma.sovereigntyEvidence.findFirst({
           where: { resourceId: resource.id, title: evidenceTitle }
         });
@@ -688,7 +688,7 @@ async function main() {
       }
     } else {
       console.log(
-        "\n  (bootstrap admin skipped — set SEED_ADMIN_PASSWORD to create or refresh operator admin)"
+        "\n  (bootstrap admin skipped - set SEED_ADMIN_PASSWORD to create or refresh operator admin)"
       );
     }
 

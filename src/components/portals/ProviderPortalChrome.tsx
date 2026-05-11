@@ -11,7 +11,7 @@ import { ProviderRegistrationBanner } from "./ProviderRegistrationBanner";
  * banner on top of the shared `PortalHeader`.
  *
  * The header is identical to the one used by admin / verifier / sovereign
- * (search, palette, theme toggle, notifications, user dropdown) — only the
+ * (search, palette, theme toggle, notifications, user dropdown) - only the
  * sub-crumb (provider display name) and the inline registration banner are
  * provider-specific. See `ai-registry-specs/shared/portal-chrome.md` for
  * the normative description.

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Icon } from "@/components/public/Icon";
 
 /**
- * Search button — opens a command palette on click or when ⌘K / Ctrl-K is
+ * Search button - opens a command palette on click or when ⌘K / Ctrl-K is
  * pressed anywhere in the portal. The palette itself is a Phase 4 polish; for
  * now we surface a centred input modal so the keyboard shortcut + the visible
  * affordance both work.
@@ -54,7 +54,7 @@ export function PortalSearch({ placeholder = "Search resources, providers…" }:
             </div>
             <div className="p-cmd-empty">
               {query
-                ? `Search results land here — Phase 4 wires command-palette search.`
+                ? `Search results land here - Phase 4 wires command-palette search.`
                 : `Type to search across resources, providers, and pages. Phase 4 wires the index.`}
             </div>
           </div>

@@ -79,7 +79,7 @@ export default async function SovereignCatalogPage() {
             ))}
           </div>
         ) : (
-          "—"
+          "-"
         )
     },
     { key: "lifecycle", label: "Lifecycle", render: (row) => row.lifecycle },

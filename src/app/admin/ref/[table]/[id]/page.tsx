@@ -103,7 +103,7 @@ function Row({ label, value }: { label: string; value: unknown }) {
 }
 
 function format(v: unknown): string {
-  if (v === null || v === undefined || v === "") return "—";
+  if (v === null || v === undefined || v === "") return "-";
   if (typeof v === "boolean") return v ? "Active" : "Inactive";
   if (v instanceof Date) return v.toISOString();
   return String(v);

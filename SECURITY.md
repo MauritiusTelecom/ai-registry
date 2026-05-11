@@ -29,7 +29,7 @@ In scope:
 
 Out of scope (per [`GOVERNANCE.md`](GOVERNANCE.md) §3):
 
-- Vulnerabilities in **provider-operated** AI workloads, hosting partners, or runtime identity issuers — those are not operated by the registry.
+- Vulnerabilities in **provider-operated** AI workloads, hosting partners, or runtime identity issuers - those are not operated by the registry.
 - Issues in third-party services the registry merely links to (provider websites, documentation URLs).
 - Self-XSS that requires the user to paste malicious content into their own browser console.
 - Denial-of-service via expensive but well-formed queries against the public REST API; rate limits are per `specification.md` §13. We treat unreasonable resource consumption as a tuning issue, not a vulnerability.

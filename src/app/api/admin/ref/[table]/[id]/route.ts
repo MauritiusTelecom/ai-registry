@@ -8,9 +8,9 @@ import { prisma } from "@/lib/prisma";
 import { prismaErrorResponse, projectRow } from "../route";
 
 /**
- * GET    /api/admin/ref/[table]/[id]   — single row.
- * PATCH  /api/admin/ref/[table]/[id]   — partial update.
- * DELETE /api/admin/ref/[table]/[id]   — hard delete (409 when row is in use).
+ * GET    /api/admin/ref/[table]/[id]   - single row.
+ * PATCH  /api/admin/ref/[table]/[id]   - partial update.
+ * DELETE /api/admin/ref/[table]/[id]   - hard delete (409 when row is in use).
  */
 
 export async function GET(

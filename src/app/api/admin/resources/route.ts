@@ -6,8 +6,8 @@ import { isSlug } from "@/lib/validators";
 import type { Prisma } from "@/generated/prisma";
 
 /**
- * GET /api/admin/resources — list with q + kind + lifecycle + provider filters.
- * POST /api/admin/resources — create operator-added draft. Goes through the
+ * GET /api/admin/resources - list with q + kind + lifecycle + provider filters.
+ * POST /api/admin/resources - create operator-added draft. Goes through the
  *   normal review pipeline before listing.
  *
  * See `ai-registry-specs/shared/admin-crud.md` §5.1.

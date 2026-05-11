@@ -8,8 +8,8 @@ import { isSlug, isHttpUrl } from "@/lib/validators";
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
 /**
- * GET /api/admin/providers — list with q + type + status + jurisdiction filters.
- * POST /api/admin/providers — create operator-added provider.
+ * GET /api/admin/providers - list with q + type + status + jurisdiction filters.
+ * POST /api/admin/providers - create operator-added provider.
  *
  * See `ai-registry-specs/shared/admin-crud.md` §5.2.
  */

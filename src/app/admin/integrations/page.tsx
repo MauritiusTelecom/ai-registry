@@ -13,11 +13,11 @@ type Integration = {
 };
 
 /**
- * Admin · Integrations — read-only view of every external integration the
+ * Admin · Integrations - read-only view of every external integration the
  * deployment carries: SMTP, MCP adapter, OIDC slot, federation, observability.
  *
  * Each row reflects boot-time configuration sourced from `src/lib/config.ts`
- * + env. There is no admin-toggle for these — wiring them up is a deploy
+ * + env. There is no admin-toggle for these - wiring them up is a deploy
  * operation. Module spec: `modules/admin/integrations/product.md`.
  */
 export default async function AdminIntegrationsPage() {
@@ -35,7 +35,7 @@ export default async function AdminIntegrationsPage() {
       status: smtpConfigured ? "configured" : "unconfigured",
       detail: smtpConfigured
         ? `Host ${cfg.mail.smtpHost}:${cfg.mail.smtpPort}, from ${cfg.mail.from}`
-        : `No SMTP host set — verification, password reset, and contact replies log to console (dev mode). From: ${cfg.mail.from}`,
+        : `No SMTP host set - verification, password reset, and contact replies log to console (dev mode). From: ${cfg.mail.from}`,
       spec: "ai-registry-specs/shared/email-notifications.md"
     },
     {
@@ -84,7 +84,7 @@ export default async function AdminIntegrationsPage() {
       label: "Federation peers",
       status: "reserved",
       detail:
-        "Cross-registry mirror is schema-only in MVP — Resource.sourceRegistryId / sourceAirId are populated via worker once federation lands (post-Phase 5)."
+        "Cross-registry mirror is schema-only in MVP - Resource.sourceRegistryId / sourceAirId are populated via worker once federation lands (post-Phase 5)."
     },
     {
       id: "observability",

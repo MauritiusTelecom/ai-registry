@@ -12,7 +12,7 @@ import { PortalHeader } from "./PortalHeader";
  * (search, palette, theme toggle, notifications, user dropdown) once for
  * the entire portal subtree; per-page content lands inside `<main>`.
  *
- * The shared header is normative across all four role portals — see
+ * The shared header is normative across all four role portals - see
  * `ai-registry-specs/shared/portal-chrome.md`.
  */
 export function PortalLayoutChrome({

@@ -10,7 +10,7 @@ const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /**
  * GET /api/portal/resources?lifecycle=draft
- * POST /api/portal/resources — create draft resource (provider workspace).
+ * POST /api/portal/resources - create draft resource (provider workspace).
  */
 
 export async function GET(req: Request) {

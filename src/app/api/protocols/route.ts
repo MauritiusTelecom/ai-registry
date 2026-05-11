@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-/** GET /api/protocols — endpoint protocol vocabulary (REST/MCP/A2A/gRPC). */
+/** GET /api/protocols - endpoint protocol vocabulary (REST/MCP/A2A/gRPC). */
 export async function GET() {
   const rows = await prisma.protocol.findMany({
     where: { active: true },

@@ -64,7 +64,7 @@ export default async function ResourceDetailPage({
                 style={{ background: "#f59e0b", boxShadow: "0 0 8px #f59e0b" }}
               />
               <div style={{ flex: 1, fontSize: 14 }}>
-                <strong>Deprecated</strong> — this resource is still publicly listed for
+                <strong>Deprecated</strong> - this resource is still publicly listed for
                 continuity, but its provider has marked it for retirement. New integrations
                 should look for a replacement.
               </div>
@@ -120,8 +120,8 @@ export default async function ResourceDetailPage({
             <Row label="Declaration" value={detail.governance.declarationStatus.replace(/_/g, " ")} />
             <Row label="Sovereignty review" value={detail.governance.sovereigntyReviewStatus.replace(/_/g, " ")} />
             <Row label="Provider verification" value={detail.governance.providerVerificationStatus.replace(/_/g, " ")} />
-            <Row label="Last reviewed" value={detail.governance.lastReviewed ? formatDate(detail.governance.lastReviewed) : "—"} />
-            <Row label="Next review due" value={detail.governance.nextReviewDue ? formatDate(detail.governance.nextReviewDue) : "—"} />
+            <Row label="Last reviewed" value={detail.governance.lastReviewed ? formatDate(detail.governance.lastReviewed) : "-"} />
+            <Row label="Next review due" value={detail.governance.nextReviewDue ? formatDate(detail.governance.nextReviewDue) : "-"} />
             <Row label="Lifecycle" value={detail.lifecycle.name} />
             {detail.lifecycle.listedAt ? (
               <Row label="Listed at" value={formatDate(detail.lifecycle.listedAt)} />
@@ -271,7 +271,7 @@ export default async function ResourceDetailPage({
             </div>
           ) : null}
 
-          {/* Report listing — opens the same ReportModal as before */}
+          {/* Report listing - opens the same ReportModal as before */}
           <div
             style={{
               marginTop: 8,
@@ -316,7 +316,7 @@ export default async function ResourceDetailPage({
           >
             Listing is not endorsement. The registry points; the provider operates; the
             hosting environment secures. Sovereignty review and official-resource
-            authorisation are independent governance signals — see the{" "}
+            authorisation are independent governance signals - see the{" "}
             <Link href="/governance" style={{ color: "var(--text-2)" }}>
               governance charter
             </Link>

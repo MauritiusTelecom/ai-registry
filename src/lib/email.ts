@@ -1,5 +1,5 @@
 /**
- * Outbound email — the Phase 2 envelope.
+ * Outbound email - the Phase 2 envelope.
  *
  * The Phase 2 deliverable does NOT mandate a real SMTP integration; the dev
  * fallback writes the message body (including any verification or reset
@@ -8,7 +8,7 @@
  *
  * If `SMTP_HOST` and `SMTP_PORT` are configured, the helper attempts to
  * dynamic-import `nodemailer` and send. The dependency is loaded lazily so
- * the module remains optional — operators who never configure SMTP do not
+ * the module remains optional - operators who never configure SMTP do not
  * need `nodemailer` installed.
  */
 
@@ -42,7 +42,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   );
 
   if (smtpHost === null || smtpPort === null) {
-    // Dev fallback — log the body so the developer can copy any verification
+    // Dev fallback - log the body so the developer can copy any verification
     // / reset URL it contains.
     console.info("─── EMAIL (console fallback) ───");
     console.info(`From:    ${from}`);
@@ -102,7 +102,7 @@ export const emailTemplates = {
         `Welcome to ${opts.registryName}. Confirm your email address by opening this link:\n\n` +
         `  ${opts.verifyUrl}\n\n` +
         `The link expires in 24 hours. If you didn't request this, you can ignore this email.\n\n` +
-        `— ${opts.registryName}`
+        `- ${opts.registryName}`
     };
   },
   passwordReset(opts: { name: string; resetUrl: string; registryName: string }): {
@@ -116,7 +116,7 @@ export const emailTemplates = {
         `We received a request to reset your ${opts.registryName} password. Open this link to set a new one:\n\n` +
         `  ${opts.resetUrl}\n\n` +
         `The link expires in 1 hour. If you didn't request this, ignore this email and your password will stay the same.\n\n` +
-        `— ${opts.registryName}`
+        `- ${opts.registryName}`
     };
   },
   /** Auto-reply after POST /api/public/contact; includes email-ownership verification link. */
@@ -129,7 +129,7 @@ export const emailTemplates = {
     verifyUrl: string;
   }): { subject: string; text: string } {
     return {
-      subject: `We received your message — ${opts.registryName}`,
+      subject: `We received your message - ${opts.registryName}`,
       text:
         `Hi ${opts.senderName},\n\n` +
         `${opts.replyIntro}\n\n` +
@@ -137,7 +137,7 @@ export const emailTemplates = {
         `Confirm this email address (required before we treat the thread as verified):\n\n` +
         `  ${opts.verifyUrl}\n\n` +
         `The link expires in 24 hours. If you did not use the contact form on ${opts.registryName}, you can ignore this email.\n\n` +
-        `— ${opts.operatorName} · ${opts.registryName}`
+        `- ${opts.operatorName} · ${opts.registryName}`
     };
   },
   passwordChanged(opts: { name: string; registryName: string; loginUrl: string }): {
@@ -152,7 +152,7 @@ export const emailTemplates = {
         `If this was you, no action is needed. Sign in anytime:\n\n` +
         `  ${opts.loginUrl}\n\n` +
         `If you did not change your password, reset it immediately from the sign-in page.\n\n` +
-        `— ${opts.registryName}`
+        `- ${opts.registryName}`
     };
   },
   resourceSubmittedForReview(opts: {
@@ -163,14 +163,14 @@ export const emailTemplates = {
     portalReviewsUrl: string;
   }): { subject: string; text: string } {
     return {
-      subject: `Submitted for review — ${opts.resourceTitle}`,
+      subject: `Submitted for review - ${opts.resourceTitle}`,
       text:
         `${opts.registryName}: a resource was submitted for sovereignty review.\n\n` +
         `Resource: ${opts.resourceTitle}\n` +
         `Review id: ${opts.reviewId}\n\n` +
         `View resources:\n  ${opts.portalResourcesUrl}\n\n` +
         `Track reviews:\n  ${opts.portalReviewsUrl}\n\n` +
-        `— ${opts.registryName}`
+        `- ${opts.registryName}`
     };
   },
   reviewDecision(opts: {
@@ -187,7 +187,7 @@ export const emailTemplates = {
         ? `\nPublic catalog entry:\n  ${opts.publicCatalogUrl}\n`
         : "";
     return {
-      subject: `Review update — ${opts.resourceTitle}`,
+      subject: `Review update - ${opts.resourceTitle}`,
       text:
         `Hello ${opts.providerDisplayName},\n\n` +
         `${opts.registryName} has updated the sovereignty review for "${opts.resourceTitle}".\n\n` +
@@ -195,7 +195,7 @@ export const emailTemplates = {
         `Summary:\n${opts.decisionSummary}\n\n` +
         `Open your provider reviews:\n  ${opts.portalReviewsUrl}\n` +
         listed +
-        `\n— ${opts.registryName}`
+        `\n- ${opts.registryName}`
     };
   },
   providerVerificationUpdate(opts: {
@@ -211,14 +211,14 @@ export const emailTemplates = {
         ? `\nNote from the operator:\n${opts.publicNote}\n`
         : "";
     return {
-      subject: `Provider verification update — ${opts.registryName}`,
+      subject: `Provider verification update - ${opts.registryName}`,
       text:
         `Hello ${opts.providerDisplayName},\n\n` +
         `Your organisation's verification status on ${opts.registryName} is now: ${opts.statusLabel}.\n\n` +
         `Summary:\n${opts.summary}\n` +
         note +
         `\nProvider settings:\n  ${opts.portalSettingsUrl}\n\n` +
-        `— ${opts.registryName}`
+        `- ${opts.registryName}`
     };
   },
   complaintReceivedComplainant(opts: {
@@ -228,13 +228,13 @@ export const emailTemplates = {
     contactUrl: string;
   }): { subject: string; text: string } {
     return {
-      subject: `Complaint received — ${opts.registryName}`,
+      subject: `Complaint received - ${opts.registryName}`,
       text:
         `Thank you for contacting ${opts.registryName}.\n\n` +
         `We recorded your complaint (reference: ${opts.complaintId}). ` +
         `${opts.operatorName} will handle it according to our process.\n\n` +
         `You can reach us again via:\n  ${opts.contactUrl}\n\n` +
-        `— ${opts.operatorName} · ${opts.registryName}`
+        `- ${opts.operatorName} · ${opts.registryName}`
     };
   },
   complaintReceivedOperator(opts: {
@@ -254,7 +254,7 @@ export const emailTemplates = {
         `Severity: ${opts.severity}\n` +
         `Target: ${opts.targetSummary}\n\n` +
         `Open the admin console:\n  ${opts.adminHomeUrl}\n\n` +
-        `— ${opts.registryName} (automated)`
+        `- ${opts.registryName} (automated)`
     };
   }
 };

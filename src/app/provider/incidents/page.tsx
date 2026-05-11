@@ -69,7 +69,7 @@ export default async function ProviderIncidentsPage() {
       ? a.targetResource.title
       : a.targetProvider
         ? `Provider · ${a.targetProvider.displayName}`
-        : "—",
+        : "-",
     targetSlug: a.targetResource?.slug ?? null,
     reason: a.reason,
     publicNote: a.publicNote
@@ -101,7 +101,7 @@ export default async function ProviderIncidentsPage() {
     {
       key: "note",
       label: "Public note",
-      render: (row) => (row.publicNote ? <span style={{ color: "var(--text-2)" }}>{row.publicNote}</span> : "—")
+      render: (row) => (row.publicNote ? <span style={{ color: "var(--text-2)" }}>{row.publicNote}</span> : "-")
     }
   ];
 
@@ -129,7 +129,7 @@ export default async function ProviderIncidentsPage() {
           fontFamily: "IBM Plex Mono, monospace"
         }}
       >
-        Internal operator notes are never surfaced here — only the public note attached
+        Internal operator notes are never surfaced here - only the public note attached
         to each action.
       </p>
     </div>

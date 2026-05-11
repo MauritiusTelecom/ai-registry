@@ -22,7 +22,7 @@ export async function GET() {
   const doc = {
     openapi: "3.0.3",
     info: {
-      title: `${cfg.registryName} — Public REST`,
+      title: `${cfg.registryName} - Public REST`,
       version: "0.4.0",
       description:
         "AIR-SPEC §13 public discovery surface and authenticated provider/admin subsets implemented by this deployment.",
@@ -252,7 +252,7 @@ export async function GET() {
       "/mcp": {
         post: {
           tags: ["Discovery"],
-          summary: "MCP Streamable HTTP — JSON-RPC 2.0",
+          summary: "MCP Streamable HTTP - JSON-RPC 2.0",
           description:
             "Implements `initialize`, `tools/list`, `tools/call`. Tools mirror the public REST surface (registry.list / get / resolve / discover / well_known).",
           responses: { "200": { description: "JSON-RPC response" } }

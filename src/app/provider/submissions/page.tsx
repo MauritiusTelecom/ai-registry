@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Submissions = my resources whose lifecycle is one of
- * { draft, submitted, in_review, needs_update } — i.e. anything that hasn't
+ * { draft, submitted, in_review, needs_update } - i.e. anything that hasn't
  * yet reached `listed`. This is the provider's view of "what's still in
  * flight".
  */
@@ -95,7 +95,7 @@ export default async function ProviderSubmissionsPage() {
     { key: "kind", label: "Kind", render: (row) => <span className="tag">{row.kind}</span> },
     { key: "lifecycle", label: "Lifecycle", render: (row) => row.lifecycle },
     { key: "status", label: "Visual status", render: (row) => <StatusPill status={row.status} /> },
-    { key: "submitted", label: "Submitted", render: (row) => row.submittedAt ?? "—", mono: true },
+    { key: "submitted", label: "Submitted", render: (row) => row.submittedAt ?? "-", mono: true },
     { key: "updated", label: "Updated", render: (row) => row.updatedAt, mono: true },
     {
       key: "actions",
@@ -110,7 +110,7 @@ export default async function ProviderSubmissionsPage() {
             Public
           </Link>
         ) : (
-          <span style={{ color: "var(--text-3)", fontSize: 12 }}>—</span>
+          <span style={{ color: "var(--text-3)", fontSize: 12 }}>-</span>
         )
     }
   ];
@@ -120,7 +120,7 @@ export default async function ProviderSubmissionsPage() {
       <div className="p-page-header">
         <h1 className="p-title">Submissions</h1>
         <p className="p-subtitle">
-          {projected.length} resource{projected.length === 1 ? "" : "s"} not yet listed —
+          {projected.length} resource{projected.length === 1 ? "" : "s"} not yet listed -
           drafts, in-review, or needs-update.
         </p>
         <div className="p-actions">
@@ -132,7 +132,7 @@ export default async function ProviderSubmissionsPage() {
       <DataTable
         rows={projected}
         columns={columns}
-        emptyState="No in-flight submissions — all your resources are either listed or removed."
+        emptyState="No in-flight submissions - all your resources are either listed or removed."
         keyOf={(r) => r.id}
       />
     </div>

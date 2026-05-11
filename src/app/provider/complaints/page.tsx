@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Complaints **directed at** this provider's resources or the provider record
- * itself. Scoping invariant — this page MUST never surface a complaint
+ * itself. Scoping invariant - this page MUST never surface a complaint
  * targeting a different provider:
  *
  *   targetProviderId === user.provider.id
@@ -87,7 +87,7 @@ export default async function ProviderComplaintsPage() {
       ? c.targetResource.title
       : c.targetProvider
         ? `Provider · ${c.targetProvider.displayName}`
-        : "—",
+        : "-",
     targetSlug: c.targetResource?.slug ?? null,
     type: c.complaintType.name,
     severity: SEVERITY_DISPLAY[c.severity.code] ?? "active",

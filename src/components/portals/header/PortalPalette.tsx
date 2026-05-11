@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/public/Icon";
 
 /**
- * Accent-palette switcher — mirrors the prototype's 4-palette dropdown. The
+ * Accent-palette switcher - mirrors the prototype's 4-palette dropdown. The
  * selection mutates the `--primary-rgb`, `--secondary-rgb`, `--tertiary-rgb`
  * (and matching `--primary` / `--secondary` / `--tertiary`) CSS variables on
  * `<html>` and persists the index in localStorage so the choice survives a
- * reload. Production deploys can lock this UI behind a flag — but for the
+ * reload. Production deploys can lock this UI behind a flag - but for the
  * provider portal we keep it open since every operator may want their own
  * palette.
  */
@@ -54,7 +54,7 @@ export function PortalPalette() {
       setIdx(safe);
       applyPalette(PALETTES[safe]);
     } catch {
-      // private mode — silently ignore.
+      // private mode - silently ignore.
     }
   }, []);
 

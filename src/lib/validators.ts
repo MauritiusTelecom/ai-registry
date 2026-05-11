@@ -5,7 +5,7 @@
  * MCP adapter import from here so the same rules apply on every surface.
  *
  * Design notes:
- *  - The patterns are deliberately narrower than RFC 3986 — registry inputs
+ *  - The patterns are deliberately narrower than RFC 3986 - registry inputs
  *    are operator-curated and we prefer to reject ambiguous values early.
  *  - Tests for these helpers live alongside the smoke script under `scripts/`.
  */

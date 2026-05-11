@@ -6,9 +6,9 @@ import { writeAudit } from "@/lib/audit/write-audit";
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
 /**
- * PATCH /api/admin/users/:id — edit a user (name / email / role / status /
+ * PATCH /api/admin/users/:id - edit a user (name / email / role / status /
  *   provider linkage). Email change clears emailVerified + onboardingComplete.
- * DELETE /api/admin/users/:id — hard delete. Refused for the actor's own
+ * DELETE /api/admin/users/:id - hard delete. Refused for the actor's own
  *   account or for the last admin.
  *
  * See `ai-registry-specs/shared/admin-crud.md` §5.3.
@@ -182,7 +182,7 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
     }
   }
 
-  // Detach audit references rather than block deletion — preserves history.
+  // Detach audit references rather than block deletion - preserves history.
   await prisma.auditLog.updateMany({
     where: { actorUserId: id },
     data: { actorUserId: null }
@@ -194,7 +194,7 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
     return NextResponse.json(
       {
         error:
-          "Delete failed — referencing rows still exist. Suspend the account instead.",
+          "Delete failed - referencing rows still exist. Suspend the account instead.",
         detail: e instanceof Error ? e.message : String(e)
       },
       { status: 409 }

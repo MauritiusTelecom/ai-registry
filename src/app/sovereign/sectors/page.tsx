@@ -66,7 +66,7 @@ export default async function SovereignSectorsPage() {
       id: s.id,
       code: s.code,
       name: s.name,
-      description: s.description ?? "—",
+      description: s.description ?? "-",
       total: b.total,
       listed: b.listed,
       models: b.models,

@@ -6,7 +6,7 @@ export const metadata = { title: "Sovereign · Settings" };
 export const dynamic = "force-dynamic";
 
 /**
- * Sovereign · Settings — read-only view of jurisdiction-specific deployment
+ * Sovereign · Settings - read-only view of jurisdiction-specific deployment
  * configuration plus reference data scoped to this jurisdiction. Editing
  * jurisdiction defaults is an operator (admin) operation; this page surfaces
  * what IS in effect so the sovereign operator can audit the deployment
@@ -58,8 +58,8 @@ export default async function SovereignSettingsPage() {
           <Row label="Code" mono>
             {cfg.jurisdiction}
           </Row>
-          <Row label="Display name">{jurisdiction?.name ?? "—"}</Row>
-          <Row label="Type">{jurisdiction?.type.name ?? "—"}</Row>
+          <Row label="Display name">{jurisdiction?.name ?? "-"}</Row>
+          <Row label="Type">{jurisdiction?.type.name ?? "-"}</Row>
           <Row label="Identity domain" mono>
             {cfg.identityDomain}
           </Row>

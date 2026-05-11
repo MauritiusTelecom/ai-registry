@@ -6,7 +6,7 @@ export const metadata = { title: "Admin · Settings" };
 export const dynamic = "force-dynamic";
 
 /**
- * Admin · Settings — read-only mirror of the deployment configuration plus a
+ * Admin · Settings - read-only mirror of the deployment configuration plus a
  * jump-off to the editable surfaces. Every value below flows through
  * `src/lib/config.ts` and `.env`; changing them requires a redeploy. The
  * controlled-vocabulary CRUD lives at `/admin/ref/[table]`.
@@ -30,7 +30,7 @@ export default async function AdminSettingsPage() {
         <h1 className="p-title">Settings</h1>
         <p className="p-subtitle">
           Deployment configuration. These values are sourced from{" "}
-          <code>src/lib/config.ts</code> at boot — change them in <code>.env</code> then redeploy.
+          <code>src/lib/config.ts</code> at boot - change them in <code>.env</code> then redeploy.
           Reference taxonomies are editable through the{" "}
           <Link href="/admin/ref" className="p-footer-link">
             Reference Tables
@@ -78,10 +78,10 @@ export default async function AdminSettingsPage() {
         <Card title="Outbound mail">
           <Row label="From">{cfg.mail.from}</Row>
           <Row label="SMTP host" mono>
-            {cfg.mail.smtpHost ?? "— (console fallback)"}
+            {cfg.mail.smtpHost ?? "- (console fallback)"}
           </Row>
           <Row label="SMTP port" mono>
-            {cfg.mail.smtpPort ?? "—"}
+            {cfg.mail.smtpPort ?? "-"}
           </Row>
           <Row label="SMTP auth" mono>
             {cfg.mail.smtpUser ? "configured" : "anonymous / unset"}

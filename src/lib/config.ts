@@ -3,7 +3,7 @@
  *
  * Reads required environment variables at boot, validates them, and exposes a
  * typed object the rest of the application can consume. Keeping these values
- * in one module is what lets the codebase remain jurisdiction-agnostic — there
+ * in one module is what lets the codebase remain jurisdiction-agnostic - there
  * is no Mauritius-specific literal anywhere in `src/`; the reference operator
  * supplies the strings via `.env`.
  *
@@ -54,7 +54,7 @@ export type RegistryConfig = {
     /** Session lifetime in seconds. */
     sessionTtlSeconds: number;
   };
-  /** Outbound mail (Phase 2). All SMTP fields optional — when unset the email
+  /** Outbound mail (Phase 2). All SMTP fields optional - when unset the email
    * helper logs links to the console (dev fallback). */
   mail: {
     from: string;

@@ -63,7 +63,7 @@ export default async function AdminReviewsPage() {
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: 600 }}>{r.resource?.title ?? "—"}</div>
+                    <div style={{ fontWeight: 600 }}>{r.resource?.title ?? "-"}</div>
                     <div style={{ fontSize: 13, color: "var(--text-2)" }}>
                       {r.resource?.resourceType.code} · {r.resource?.provider.displayName} · lifecycle:{" "}
                       {r.resource?.lifecycleStatus.code}

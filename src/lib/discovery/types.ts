@@ -6,7 +6,7 @@
  * card shapes used by the public portal pages so the UI can consume the API
  * response unmodified.
  *
- * The shapes are intentionally **lossy** versus the Prisma models — only
+ * The shapes are intentionally **lossy** versus the Prisma models - only
  * fields safe to surface on the unauthenticated public site appear here.
  * Anything in the schema marked internal (e.g. `internalNote`,
  * `passwordHash`, `verificationToken`) MUST NOT cross this boundary.
@@ -56,7 +56,7 @@ export type RegistryCardDetail = RegistryCard & {
     nextReviewDue: string | null;
   };
   lifecycle: {
-    /** Schema lifecycle code — draft / submitted / in_review / listed / needs_update / suspended / deprecated / removed. */
+    /** Schema lifecycle code - draft / submitted / in_review / listed / needs_update / suspended / deprecated / removed. */
     code: string;
     /** Display name. */
     name: string;

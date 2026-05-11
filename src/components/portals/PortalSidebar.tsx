@@ -10,7 +10,7 @@ import type { PortalConfig } from "@/lib/portals/nav-config";
  * Sidebar (client component for active-link highlighting).
  *
  * Mirrors the prototype's `Sidebar` shape but uses Next.js routing instead
- * of the hash router. The collapse toggle on the chrome itself was removed —
+ * of the hash router. The collapse toggle on the chrome itself was removed -
  * the sidebar is the primary navigation surface and shouldn't be hideable.
  *
  * Group-level collapse: when a `NavGroup` carries `collapsible: true`, the
@@ -146,7 +146,7 @@ function CollapsibleGroup({
       if (raw === "open") setCollapsed(false);
       else if (raw === "closed") setCollapsed(true);
     } catch {
-      // localStorage may be unavailable (private mode, etc.) — keep the default.
+      // localStorage may be unavailable (private mode, etc.) - keep the default.
     }
   }, [storageKey]);
 

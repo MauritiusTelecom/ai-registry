@@ -69,7 +69,7 @@ export default async function ProviderDashboardPage() {
     <div className="p-content">
       <div className="p-page-header">
         <h1 className="p-title">
-          {user?.provider?.displayName ?? user?.name} — Provider portal
+          {user?.provider?.displayName ?? user?.name} - Provider portal
         </h1>
         <p className="p-subtitle">
           {providerId
@@ -131,7 +131,7 @@ export default async function ProviderDashboardPage() {
         <ActionCard
           title="Submissions"
           href="/provider/submissions"
-          body="Resources still in flight — drafts, in-review, or needs-update."
+          body="Resources still in flight - drafts, in-review, or needs-update."
         />
         <ActionCard
           title="Complaints"

@@ -131,7 +131,7 @@ export async function POST(req: Request) {
     const code = prismaErrorCode(error);
     if (code === "P1000" || error instanceof Prisma.PrismaClientInitializationError) {
       message =
-        "Database authentication failed (P1000). Fix DATABASE_URL in ai-registry/.env — use a real PostgreSQL user and password (not the USER/PASSWORD placeholders), then restart `npm run dev`.";
+        "Database authentication failed (P1000). Fix DATABASE_URL in ai-registry/.env - use a real PostgreSQL user and password (not the USER/PASSWORD placeholders), then restart `npm run dev`.";
     } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (
         error.code === "P2021" ||

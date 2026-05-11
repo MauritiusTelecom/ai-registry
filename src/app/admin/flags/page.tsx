@@ -24,7 +24,7 @@ const SEVERITY_COLOUR: Record<string, string> = {
 };
 
 /**
- * Admin · Flags — operator-raised flags against resources and providers.
+ * Admin · Flags - operator-raised flags against resources and providers.
  *
  * The MVP schema does not carry a dedicated `Flag` model; instead public
  * complaints (`Complaint` rows whose status is open / investigating) ARE the
@@ -53,7 +53,7 @@ export default async function AdminFlagsPage() {
       ? `${c.targetResource.title} · ${c.targetResource.provider.displayName}`
       : c.targetProvider
         ? c.targetProvider.displayName
-        : "—";
+        : "-";
     return {
       id: c.id,
       type: c.complaintType.name,
@@ -62,7 +62,7 @@ export default async function AdminFlagsPage() {
       target,
       targetSlug: c.targetResource?.slug ?? null,
       description: c.description,
-      // Public-safe projection — name/email never surface here.
+      // Public-safe projection - name/email never surface here.
       reportedBy: c.complainantName ? "(named)" : "(anonymous)",
       receivedAt: c.createdAt.toISOString().slice(0, 10)
     };
@@ -120,7 +120,7 @@ export default async function AdminFlagsPage() {
       <div className="p-page-header">
         <h1 className="p-title">Flags</h1>
         <p className="p-subtitle">
-          {projected.length} open flag{projected.length === 1 ? "" : "s"} — public complaints in
+          {projected.length} open flag{projected.length === 1 ? "" : "s"} - public complaints in
           state <code>open</code> or <code>investigating</code>. Resolution lands on the audit log
           and may escalate to an enforcement action.
         </p>

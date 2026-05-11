@@ -23,7 +23,7 @@ import type { PortalRole } from "./nav-config";
  * primary role → single portal) so the post-login redirect is predictable.
  *
  * Users with multiple roles still see all the portals they can reach via the
- * user-menu's role-switcher inside the portal — but on first sign-in we route
+ * user-menu's role-switcher inside the portal - but on first sign-in we route
  * them to the portal that matches their primary role.
  */
 export function portalForRole(roleCode: string | null | undefined): string {
@@ -38,7 +38,7 @@ export function portalForRole(roleCode: string | null | undefined): string {
     case "sovereign":
       return "/sovereign";
     default:
-      // auditor, viewer, or any unknown role — fall back to the generic
+      // auditor, viewer, or any unknown role - fall back to the generic
       // /portal landing which shows the user's profile envelope and links
       // them onward.
       return "/portal";

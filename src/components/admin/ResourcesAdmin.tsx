@@ -340,7 +340,7 @@ function ResourceRowActions({
             <h3 style={{ margin: 0, marginBottom: 8 }}>Delete resource?</h3>
             <p style={{ color: "var(--text-2)", fontSize: 14, marginBottom: 18 }}>
               <strong>{row.title}</strong> will be deleted permanently. Delete is refused once
-              an AIR-ID has been minted or any review / trust-signal exists — use{" "}
+              an AIR-ID has been minted or any review / trust-signal exists - use{" "}
               <strong>Remove</strong> instead to tombstone the row.
             </p>
             {error ? (

@@ -20,27 +20,27 @@ export default function OpenDataPage() {
           <span className="gradient-text">a public dataset</span>.
         </>
       }
-      subtitle="Every public listing — including its provider, governance signals, sovereignty claims and endpoints — is exposed through a stable JSON API and can be read without authentication."
+      subtitle="Every public listing - including its provider, governance signals, sovereignty claims and endpoints - is exposed through a stable JSON API and can be read without authentication."
     >
       <DocPanel title="Public discovery endpoints">
         <p>All endpoints return JSON over HTTPS. Authentication is only required for write operations.</p>
         <ul style={{ paddingLeft: 22, marginTop: 14, display: "grid", gap: 10 }}>
           <li>
-            <code>GET /apiV1/resources</code> — paginated list, filterable by{" "}
+            <code>GET /apiV1/resources</code> - paginated list, filterable by{" "}
             <code>type</code>, <code>jurisdiction</code>, <code>sovereigntyBasis</code>,
             <code>sovereigntyStatus</code>, <code>official</code>,{" "}
             <code>providerVerified</code>, <code>q</code>.
           </li>
           <li>
-            <code>GET /apiV1/resources/{`{airId}`}</code> — single canonical resource
+            <code>GET /apiV1/resources/{`{airId}`}</code> - single canonical resource
             document.
           </li>
           <li>
-            <code>GET /apiV1/resolve?id=air://...</code> — dereference an AIR-ID. Returns
+            <code>GET /apiV1/resolve?id=air://...</code> - dereference an AIR-ID. Returns
             the resource document or a tombstone for removed resources.
           </li>
           <li>
-            <code>GET /.well-known/ai-registry</code> — capability advertisement: identity
+            <code>GET /.well-known/ai-registry</code> - capability advertisement: identity
             domain, supported types, rubric URL, schema version, discovery endpoints.
           </li>
         </ul>
@@ -51,7 +51,7 @@ export default function OpenDataPage() {
           AIR-IDs (<code>air://&lt;identity_domain&gt;/&lt;type&gt;/&lt;provider&gt;/&lt;resource&gt;</code>)
           are immutable. They survive provider rebrands, endpoint changes and version
           bumps. If a resource is removed, the AIR-ID resolves to a tombstone explaining
-          why — never silently disappears.
+          why - never silently disappears.
         </p>
       </DocPanel>
 
@@ -76,7 +76,7 @@ export default function OpenDataPage() {
         <p>
           Full normative API contract:{" "}
           <Link href="/docs" style={{ color: "var(--text-2)" }}>
-            AIR-SPEC 0.4 §6 — Discovery APIs
+            AIR-SPEC 0.4 §6 - Discovery APIs
           </Link>
           .
         </p>

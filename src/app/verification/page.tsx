@@ -20,7 +20,7 @@ export default function VerificationPage() {
           <span className="gradient-text">Never collapsed into one.</span>
         </>
       }
-      subtitle="Every public resource carries three orthogonal signals. They are displayed as independent badges. They are never combined into a single tier number — that conflation is the most common failure mode of public registries."
+      subtitle="Every public resource carries three orthogonal signals. They are displayed as independent badges. They are never combined into a single tier number - that conflation is the most common failure mode of public registries."
     >
       <DocPanel title="Provider verification">
         <p>

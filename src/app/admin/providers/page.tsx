@@ -7,7 +7,7 @@ export const metadata = { title: "Admin · Providers" };
 export const dynamic = "force-dynamic";
 
 /**
- * Admin · Providers — bespoke CRUD grid backed by `/api/admin/providers`.
+ * Admin · Providers - bespoke CRUD grid backed by `/api/admin/providers`.
  * Add new opens a modal that creates an `operator_added` provider in
  * `unverified` status; per-row Verify routes to the existing
  * `/admin/providers/[id]` page (which holds the verification form).
@@ -42,7 +42,7 @@ export default async function AdminProvidersPage() {
         <h1 className="p-title">Providers</h1>
         <p className="p-subtitle">
           Sovereign, regional, private, and external operators. Add new starts an{" "}
-          <code>operator_added</code> record in <code>unverified</code> status — verification
+          <code>operator_added</code> record in <code>unverified</code> status - verification
           remains a separate decision (per-row Verify).
         </p>
       </div>

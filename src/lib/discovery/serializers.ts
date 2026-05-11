@@ -84,7 +84,7 @@ type ResourceWithLifecycleAndSignals = Resource & {
 /**
  * Derive the public-facing badge from the lifecycle status and any
  * `passed` trust signals. The spec's five values map to the schema as
- * follows (Phase 3 v0.4 — refined in later phases as more trust signal
+ * follows (Phase 3 v0.4 - refined in later phases as more trust signal
  * machinery lands):
  *
  *   - lifecycle = removed                         → not surfaced (filtered out)
@@ -109,7 +109,7 @@ export function deriveDisplayStatus(resource: ResourceWithLifecycleAndSignals): 
     }
     return "active";
   }
-  // Fallback for unexpected codes — treat as experimental rather than crash.
+  // Fallback for unexpected codes - treat as experimental rather than crash.
   return "experimental";
 }
 
@@ -137,7 +137,7 @@ function pickContext(r: ResourceForCard): string {
   if (r.versionLabel && r.versionLabel.trim() !== "") return r.versionLabel.trim();
   const primary = r.endpoints?.find((e) => e.primary) ?? r.endpoints?.[0];
   if (primary) return primary.protocol.name;
-  return "—";
+  return "-";
 }
 
 export function toRegistryCard(r: ResourceForCard): RegistryCard {
@@ -152,9 +152,9 @@ export function toRegistryCard(r: ResourceForCard): RegistryCard {
     status: deriveDisplayStatus(r),
     desc: r.shortDescription,
     context: pickContext(r),
-    latency: "—",
+    latency: "-",
     region: r.primaryJurisdiction.code,
-    license: r.license ?? "—",
+    license: r.license ?? "-",
     tags: (r.resourceTags ?? []).map((rt) => rt.tag.name)
   };
 }

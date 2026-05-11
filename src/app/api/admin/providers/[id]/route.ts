@@ -7,9 +7,9 @@ import { isHttpUrl } from "@/lib/validators";
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
 /**
- * PATCH /api/admin/providers/:id — edit profile fields. Slug + statusId are
+ * PATCH /api/admin/providers/:id - edit profile fields. Slug + statusId are
  *   immutable via this route (use `/verify` for status, slug is hard-pinned).
- * DELETE /api/admin/providers/:id — hard delete; refused when the provider
+ * DELETE /api/admin/providers/:id - hard delete; refused when the provider
  *   has any resources, users, audit references, or trust signals attached.
  *
  * See `ai-registry-specs/shared/admin-crud.md` §5.2.

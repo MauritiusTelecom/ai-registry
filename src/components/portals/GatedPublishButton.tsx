@@ -6,7 +6,7 @@ import { useAuth } from "@/components/public/AuthProvider";
 import { REGISTRATION_MSG } from "@/lib/portal/authoring-messages";
 
 type Props = {
-  /** When true, server already knows user can author — skip client gate for first paint. */
+  /** When true, server already knows user can author - skip client gate for first paint. */
   href: string;
   canAuthorResources: boolean;
   className?: string;

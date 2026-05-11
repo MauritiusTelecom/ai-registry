@@ -36,7 +36,7 @@ const RESOURCES: Resource[] = [
   { id: "mcp-treasury", kind: "skill", glyph: "MCP", title: "mcp/treasury-ledger", provider: "Ministry of Finance", status: "trusted", desc: "Read-only MCP skill exposing public treasury ledgers under the Public Finance Act.", context: "MCP 2025-06", latency: "600ms", region: "MU", license: "Open data", tags: ["mcp", "open-data", "finance"] },
   { id: "mcp-cadastre", kind: "skill", glyph: "MCP", title: "mcp/cadastre-search", provider: "Land Information & Mapping", status: "verified", desc: "Boundary, ownership and zoning lookups against the national cadastre.", context: "MCP 2025-06", latency: "450ms", region: "MU", license: "Public records", tags: ["mcp", "cadastre", "official"] },
   { id: "tool-translate", kind: "tool", glyph: "TL", title: "kreol-translate-api", provider: "University of Mauritius", status: "verified", desc: "Translation API for Kreol Morisien ↔ EN/FR with culturally-aware glossary support.", context: "REST", latency: "180ms", region: "MU", license: "CC-BY-SA", tags: ["language", "api"] },
-  { id: "tool-sanctions", kind: "tool", glyph: "TL", title: "sanctions-screen-mu", provider: "Financial Intelligence Unit", status: "isolated", desc: "Restricted sanctions screening — accessible only through accredited integrators.", context: "gRPC", latency: "320ms", region: "MU", license: "Restricted", tags: ["restricted", "aml", "compliance"] }
+  { id: "tool-sanctions", kind: "tool", glyph: "TL", title: "sanctions-screen-mu", provider: "Financial Intelligence Unit", status: "isolated", desc: "Restricted sanctions screening - accessible only through accredited integrators.", context: "gRPC", latency: "320ms", region: "MU", license: "Restricted", tags: ["restricted", "aml", "compliance"] }
 ];
 
 const KINDS: { id: "all" | Resource["kind"]; label: string; icon: IconName }[] = [
@@ -159,8 +159,8 @@ export function RegistrySection({
 }: {
   withHeader?: boolean;
   /**
-   * `api` — search, kind tabs, status chips, and pagination call `GET /api/resources` (server + DB).
-   * `mock` — inline demo corpus with client-only filtering (offline / Storybook).
+   * `api` - search, kind tabs, status chips, and pagination call `GET /api/resources` (server + DB).
+   * `mock` - inline demo corpus with client-only filtering (offline / Storybook).
    */
   dataSource?: "api" | "mock";
   pageSize?: number;
@@ -307,7 +307,7 @@ export function RegistrySection({
             Discover what Mauritius can <span className="gradient-text">trust and integrate</span>.
           </h2>
           <p>
-            The registry points to locally-relevant AI resources — never hosts them. Each listing
+            The registry points to locally-relevant AI resources - never hosts them. Each listing
             carries a verifiable provider, a sovereignty review, and a stable AIR-ID under{" "}
             <span className="mono" style={{ color: "var(--text-2)" }}>air://</span>.
           </p>
@@ -348,7 +348,7 @@ export function RegistrySection({
         </div>
       </Reveal>
 
-      {/* Status chips hidden while the catalogue has a single provider —
+      {/* Status chips hidden while the catalogue has a single provider -
           every listing carries the same status, so filtering is moot. */}
 
       {error ? (

@@ -17,7 +17,7 @@ export default function RefTablesIndexPage() {
         <h1 className="p-title">Reference tables</h1>
         <p className="p-subtitle">
           Controlled vocabularies that drive every dropdown, status badge, and lifecycle
-          transition in the registry. Edit with care — most rows are referenced by live
+          transition in the registry. Edit with care - most rows are referenced by live
           data and cannot be deleted while in use.
         </p>
       </div>

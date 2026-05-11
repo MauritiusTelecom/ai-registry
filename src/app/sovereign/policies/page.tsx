@@ -6,12 +6,12 @@ export const metadata = { title: "Sovereign · Policies" };
 export const dynamic = "force-dynamic";
 
 /**
- * Sovereign · Policies — jurisdiction-scoped view of the operator policy
+ * Sovereign · Policies - jurisdiction-scoped view of the operator policy
  * surfaces that affect locally-anchored providers and resources.
  *
  * The substantive policy ladder (lifecycle, trust signals, sovereignty bases)
  * is deployment-wide and editable only by admins (see /admin/policies). This
- * page surfaces the **subset that matters for this jurisdiction** — which
+ * page surfaces the **subset that matters for this jurisdiction** - which
  * sovereignty bases are actually in use locally, how many evidence rows back
  * each, and which official authorities can authorise resources here.
  *
@@ -74,7 +74,7 @@ export default async function SovereignPoliciesPage() {
             marginBottom: 12
           }}
         >
-          Sovereignty bases — local usage
+          Sovereignty bases - local usage
         </h2>
         <div
           style={{

@@ -21,7 +21,7 @@ const MOCK_PROVIDERS: PublicProviderCard[] = [
   { id: "edb", slug: "edb", glyph: "ED", name: "EDB Mauritius", kind: "sovereign", status: "experimental", desc: "Pilots agentic screening of incoming grant applications against published eligibility rubrics.", jurisdiction: "MU", listings: 1, since: "2026-01", license: "Pilot", tags: ["pilot", "public-sector"], websiteUrl: null },
   { id: "mof", slug: "mof", glyph: "MF", name: "Ministry of Finance", kind: "sovereign", status: "trusted", desc: "Read-only MCP skill exposing public treasury ledgers under the Public Finance Act.", jurisdiction: "MU", listings: 1, since: "2025-11", license: "Open data", tags: ["mcp", "open-data", "finance"], websiteUrl: null },
   { id: "lim", slug: "lim", glyph: "LI", name: "Land Information & Mapping", kind: "sovereign", status: "verified", desc: "Boundary, ownership and zoning lookups against the national cadastre via MCP.", jurisdiction: "MU", listings: 1, since: "2025-12", license: "Public records", tags: ["mcp", "cadastre", "official"], websiteUrl: null },
-  { id: "fiu", slug: "fiu", glyph: "FI", name: "Financial Intelligence Unit", kind: "sovereign", status: "isolated", desc: "Restricted sanctions screening — accessible only through accredited integrators.", jurisdiction: "MU", listings: 1, since: "2026-02", license: "Restricted", tags: ["restricted", "aml", "compliance"], websiteUrl: null },
+  { id: "fiu", slug: "fiu", glyph: "FI", name: "Financial Intelligence Unit", kind: "sovereign", status: "isolated", desc: "Restricted sanctions screening - accessible only through accredited integrators.", jurisdiction: "MU", listings: 1, since: "2026-02", license: "Restricted", tags: ["restricted", "aml", "compliance"], websiteUrl: null },
   { id: "bom", slug: "bom", glyph: "BM", name: "Bank of Mauritius", kind: "sovereign", status: "verified", desc: "Monetary policy and financial supervision data; future home of regulated AI guidance.", jurisdiction: "MU", listings: 0, since: "2026-03", license: "Public records", tags: ["gov", "finance", "regulator"], websiteUrl: null },
   { id: "sov-cloud-mu", slug: "sov-cloud-mu", glyph: "SC", name: "Sovereign Cloud MU", kind: "hosting", status: "verified", desc: "Local hosting partner: GPU and inference capacity inside MU jurisdiction with SPIFFE/SPIRE federation.", jurisdiction: "MU", listings: 0, since: "2025-10", license: "Hosting agreement", tags: ["hosting", "gpu", "sovereign"], websiteUrl: null },
   { id: "public-gpu-coop", slug: "public-gpu-coop", glyph: "PG", name: "Public GPU Co-op", kind: "hosting", status: "trusted", desc: "Shared GPU pool for public-sector tenants; metered access governed by the Public Finance Act.", jurisdiction: "MU", listings: 0, since: "2026-01", license: "Co-op", tags: ["hosting", "public-sector"], websiteUrl: null },
@@ -256,7 +256,7 @@ export function ProvidersSection({
           </h2>
           <p>
             Every listing in the registry traces back to a verifiable provider. Browse who hosts,
-            operates, and stands behind the AI resources you can integrate locally — sovereign
+            operates, and stands behind the AI resources you can integrate locally - sovereign
             operators, model labs, hosting partners, and accredited integrators.
           </p>
           {dataSource === "api" && !loading && !error ? (
@@ -268,9 +268,9 @@ export function ProvidersSection({
       )}
 
       {/* Filter toolbar hidden while the catalogue carries only a handful
-          of providers — kind tabs and the search would just sit empty. */}
+          of providers - kind tabs and the search would just sit empty. */}
 
-      {/* Status chips hidden while the catalogue has a single provider —
+      {/* Status chips hidden while the catalogue has a single provider -
           all rows carry the same status, so the filter would do nothing. */}
 
       {error ? (

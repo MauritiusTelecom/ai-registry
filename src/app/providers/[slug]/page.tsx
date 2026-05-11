@@ -242,7 +242,7 @@ export default async function ProviderDetailPage({
           >
             Listing is not endorsement. The registry points; the provider operates; the
             hosting environment secures. Sovereignty review and official-resource
-            authorisation are independent governance signals — see the{" "}
+            authorisation are independent governance signals - see the{" "}
             <Link href="/governance" style={{ color: "var(--text-2)" }}>
               governance charter
             </Link>

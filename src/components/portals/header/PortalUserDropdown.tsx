@@ -6,7 +6,7 @@ import { Icon } from "@/components/public/Icon";
 import { withBase } from "@/lib/with-base";
 
 /**
- * User dropdown — avatar + name + role badge that reveals a panel with:
+ * User dropdown - avatar + name + role badge that reveals a panel with:
  *
  *   - Identity (name + email)
  *   - Switch role (only the portals the user can actually reach are listed)

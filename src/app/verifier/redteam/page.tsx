@@ -23,11 +23,11 @@ const SEVERITY_COLOUR: Record<string, string> = {
 };
 
 /**
- * Verifier · Red team — adversarial findings against listed resources.
+ * Verifier · Red team - adversarial findings against listed resources.
  *
  * The MVP schema does not yet model red-team campaigns as their own entity.
  * The closest existing signal is **public complaints filed against listed
- * resources with `type=safety`** — these are the user-driven adversarial
+ * resources with `type=safety`** - these are the user-driven adversarial
  * findings the verifier acts on. This page surfaces those rows, prioritised
  * by severity, until a dedicated `RedTeamCampaign` / `Finding` model lands.
  *
@@ -64,7 +64,7 @@ export default async function VerifierRedteamPage() {
     status: c.status.name,
     target: c.targetResource
       ? `${c.targetResource.title} · ${c.targetResource.provider.displayName}`
-      : "—",
+      : "-",
     targetSlug: c.targetResource?.slug ?? null,
     description: c.description,
     receivedAt: c.createdAt.toISOString().slice(0, 10)

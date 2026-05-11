@@ -9,16 +9,16 @@ import { PortalSidebar } from "./PortalSidebar";
  * Server-rendered shell for the role-specific portals.
  *
  * Composes:
- *   - PortalSidebar (client) — sidebar with active-link highlighting.
- *   - Top bar — breadcrumb + page title + user envelope + sign-out.
- *   - Main column — children (the route-specific page content).
+ *   - PortalSidebar (client) - sidebar with active-link highlighting.
+ *   - Top bar - breadcrumb + page title + user envelope + sign-out.
+ *   - Main column - children (the route-specific page content).
  *
  * Each per-portal layout (admin / provider / verifier / sovereign) calls
  * `requireRole()` first and then renders this shell.
  */
 
 export type PageHeader = {
-  /** Crumbs above the title — e.g. ["Admin", "Operations", "Users"]. */
+  /** Crumbs above the title - e.g. ["Admin", "Operations", "Users"]. */
   breadcrumb: string[];
   title: string;
   subtitle?: string;

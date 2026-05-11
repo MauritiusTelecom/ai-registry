@@ -6,10 +6,10 @@ export const metadata = { title: "Verifier · Benchmarks" };
 export const dynamic = "force-dynamic";
 
 /**
- * Verifier · Benchmarks — the sovereign benchmark corpus reviewers use to
+ * Verifier · Benchmarks - the sovereign benchmark corpus reviewers use to
  * verify listed resources. The MVP schema does not yet model `Benchmark` as
  * a first-class entity; the current proxy is "tags marked as canonical
- * capabilities" — i.e. tags that appear on > N resources, surfacing the
+ * capabilities" - i.e. tags that appear on > N resources, surfacing the
  * implicit corpus the catalogue tests against.
  *
  * Module spec: `modules/verifier/benchmarks/product.md`.
@@ -39,7 +39,7 @@ export default async function VerifierBenchmarksPage() {
   const corpus = tagUsage
     .map((g) => ({
       tagId: g.tagId,
-      tag: nameById.get(g.tagId) ?? "—",
+      tag: nameById.get(g.tagId) ?? "-",
       coverage: g._count._all
     }))
     .filter((row) => row.coverage >= 2)
@@ -51,7 +51,7 @@ export default async function VerifierBenchmarksPage() {
       <div className="p-page-header">
         <h1 className="p-title">Benchmarks</h1>
         <p className="p-subtitle">
-          Implicit benchmark corpus for <strong>{cfg.jurisdiction}</strong> — capability tags
+          Implicit benchmark corpus for <strong>{cfg.jurisdiction}</strong> - capability tags
           shared by 2+ listed resources. A first-class <code>Benchmark</code> model lands once the
           spec adds harness metadata and reference inputs.
         </p>
