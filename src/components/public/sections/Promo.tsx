@@ -22,9 +22,6 @@ export function Promo() {
             <Link href="/contact" className="btn btn-primary">
               Submit a Resource <Icon name="arrow-right" size={14} />
             </Link>
-            <Link href="/docs" className="btn btn-secondary">
-              Read AIR-SPEC 0.4
-            </Link>
           </div>
         </div>
       </Reveal>
