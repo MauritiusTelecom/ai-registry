@@ -152,17 +152,19 @@ function FeatureResourceCard({
             <Icon name="eye" size={12} /> View
           </button>
         )}
-        <button
-          type="button"
-          onClick={() => {
-            const id = resource.airId?.trim();
-            if (id) void navigator.clipboard.writeText(id);
-          }}
-          disabled={!resource.airId?.trim()}
-          title={resource.airId?.trim() ?? "No AIR-ID"}
-        >
-          <Icon name="doc" size={12} /> AIR-ID
-        </button>
+        {detailHref && resource.airId?.trim() ? (
+          <Link
+            href={detailHref}
+            className="r-card-action-link"
+            title={resource.airId.trim()}
+          >
+            <Icon name="doc" size={12} /> AIR-ID
+          </Link>
+        ) : (
+          <button type="button" disabled title="No AIR-ID yet">
+            <Icon name="doc" size={12} /> AIR-ID
+          </button>
+        )}
         <button type="button" className="btn-report" onClick={onReport}>
           <Icon name="flag" size={12} /> Report
         </button>
