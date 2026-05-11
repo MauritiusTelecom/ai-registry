@@ -974,9 +974,32 @@ p { color: var(--text-2); margin: 0; }
 @media (max-width: 640px)  { .how-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 420px)  { .how-steps { grid-template-columns: 1fr; } }
 
+/*
+ * How-it-works step cards.
+ *
+ * They carry .feature-card, so the shared primary→tertiary gradient-ring
+ * hover effect (defined further down) applies automatically. We just lift
+ * the card on hover, matching the .pillar pattern in the other sections.
+ *
+ * The highlighted step (.how-step--hi) overrides the gradient ring with
+ * the pink → light-pink → purple palette used elsewhere on that card.
+ */
 .how-step:hover {
   transform: translateY(-2px);
-  border-color: var(--primary) !important;
+}
+.how-step:not(.how-step--hi):hover {
+  border-color: var(--border-strong) !important;
+}
+.how-step--hi.feature-card::before {
+  background: linear-gradient(
+    13deg,
+    rgb(236, 72, 153) 0%,
+    rgb(244, 114, 182) 50%,
+    rgb(168, 85, 247) 100%
+  );
+  filter:
+    drop-shadow(0 0 6px rgba(236, 72, 153, 0.55))
+    drop-shadow(0 0 14px rgba(168, 85, 247, 0.35));
 }
 
 /* Promo */

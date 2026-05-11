@@ -71,7 +71,7 @@ export function HowItWorks() {
             return (
               <div
                 key={s.num}
-                className="how-step"
+                className={`how-step feature-card${isHi ? " how-step--hi" : ""}`}
                 style={{
                   position: "relative",
                   padding: "22px 18px",
@@ -82,7 +82,6 @@ export function HowItWorks() {
                   background: isHi
                     ? `linear-gradient(160deg, rgba(${HI_PRIMARY_RGB}, 0.10), var(--panel))`
                     : "var(--panel)",
-                  overflow: "hidden",
                   transition:
                     "border-color 220ms, transform 220ms cubic-bezier(.2,.8,.2,1)"
                 }}
