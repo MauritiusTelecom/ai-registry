@@ -643,6 +643,7 @@ model Resource {
   license               String?
   versionLabel          String?
   versionNumber         String?
+  latencyTier           String?
   lifecycleStatusId     String
   riskLevelId           String
   publicVisibility      Boolean   @default(true)

@@ -486,6 +486,8 @@ async function main() {
       longDescription: string;
       sovereigntyBasis: SovereigntyBasisCode;
       license: string;
+      versionLabel: string;
+      latencyTier: string;
     };
 
     const resourceSeeds: ResourceSeed[] = [
@@ -498,7 +500,9 @@ async function main() {
         longDescription:
           "LLM (Large Language Models) are advanced AI systems trained on vast amounts of text data to understand, generate, and respond in natural language. They can power chatbots, content creation, coding assistance, summarization, and more. These models adapt to different use cases, making them a flexible foundation for building intelligent applications.",
         sovereigntyBasis: "local_data",
-        license: "Commercial"
+        license: "Commercial",
+        versionLabel: "200k tokens",
+        latencyTier: "1.2s"
       },
       {
         slug: "ai-workflows",
@@ -509,7 +513,9 @@ async function main() {
         longDescription:
           "AI Workflows allow you to chain together different AI capabilities - like data processing, decision-making, and content generation - into a single automated process. This helps streamline repetitive or multi-step tasks, improving efficiency and consistency. Workflows can be customised to fit business processes, from customer support to data analysis pipelines.",
         sovereigntyBasis: "local_system",
-        license: "Commercial"
+        license: "Commercial",
+        versionLabel: "Multi-step",
+        latencyTier: "2-5s"
       },
       {
         slug: "conversational-ai",
@@ -520,7 +526,9 @@ async function main() {
         longDescription:
           "Conversational AI combines speech recognition (speech-to-text) and voice generation (text-to-speech) with intelligent dialogue systems. It allows users to talk to applications and receive spoken or written responses in real time. This is ideal for virtual assistants, call centres, and hands-free user experiences across devices.",
         sovereigntyBasis: "local_language_culture",
-        license: "Commercial"
+        license: "Commercial",
+        versionLabel: "Multi-turn",
+        latencyTier: "0.8s"
       },
       {
         slug: "automl",
@@ -531,7 +539,9 @@ async function main() {
         longDescription:
           "AutoML (Automated Machine Learning) simplifies the process of creating AI models by automating tasks like data preparation, model selection, and tuning. Build machine learning solutions on raw data in a few lines of code. State-of-the-art techniques for tabular data, time series and multimodal. This accelerates innovation and makes AI more accessible across organisations.",
         sovereigntyBasis: "local_system",
-        license: "Commercial"
+        license: "Commercial",
+        versionLabel: "Tabular + time-series",
+        latencyTier: "Async (job)"
       },
       {
         slug: "document-ai",
@@ -542,7 +552,9 @@ async function main() {
         longDescription:
           "Document AI uses machine learning and OCR (optical character recognition) to understand and process structured and unstructured documents. It can identify fields, extract important data, and organise information into usable formats. This reduces manual data entry and improves accuracy in workflows like finance, legal, and operations.",
         sovereigntyBasis: "local_data",
-        license: "Commercial"
+        license: "Commercial",
+        versionLabel: "OCR + NER",
+        latencyTier: "1.5s"
       },
       {
         slug: "mytgpt-enterprise",
@@ -552,7 +564,9 @@ async function main() {
         longDescription:
           "MytGPT Enterprise provides a user-friendly chat interface that allows teams to interact with AI for tasks like answering questions, generating content, and analysing data. It's designed for business use, with features like data privacy, customisation, and integration with internal systems. Users can easily upload documents and ask questions, making it easy to bring AI into everyday workflows across an organisation.",
         sovereigntyBasis: "local_system",
-        license: "Commercial"
+        license: "Commercial",
+        versionLabel: "200k tokens",
+        latencyTier: "1.1s"
       },
       {
         slug: "vision-models",
@@ -562,7 +576,9 @@ async function main() {
         longDescription:
           "Vision Models analyse images and videos to detect objects, read text, recognise patterns, and interpret visual information. They can be used for applications like quality inspection, facial recognition, medical imaging, and content moderation. By turning visual data into actionable insights, they unlock new possibilities for automation and decision-making.",
         sovereigntyBasis: "local_data",
-        license: "Commercial"
+        license: "Commercial",
+        versionLabel: "Image + Video",
+        latencyTier: "0.9s"
       }
     ];
 
@@ -583,6 +599,8 @@ async function main() {
         riskLevelId: riskLevelIds.get("low")!,
         publicVisibility: true,
         license: seed.license,
+        versionLabel: seed.versionLabel,
+        latencyTier: seed.latencyTier,
         airId: `air://${process.env.IDENTITY_DOMAIN ?? "air.local"}/${seed.typeCode}/${provider.slug}/${seed.slug}`
       };
       const resource = existing
