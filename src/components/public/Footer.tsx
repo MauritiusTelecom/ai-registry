@@ -26,8 +26,7 @@ const RESOURCES_LINKS: FooterLink[] = [
   { label: "Documentation", href: "/docs" },
   { label: "Whitepaper", href: "/whitepaper" },
   { label: "Open data", href: "/open-data" },
-  { label: "Reference impl", href: REPO_URL, external: true },
-  { label: "Audit log", href: "/audit-log" }
+  { label: "Reference impl", href: REPO_URL, external: true }
 ];
 
 const PROVIDER_LINKS: FooterColumnLink[] = [
@@ -41,9 +40,7 @@ const PROVIDER_LINKS: FooterColumnLink[] = [
 const GOVERNANCE_LINKS: FooterLink[] = [
   { label: "Charter", href: "/governance#charter" },
   { label: "Review board", href: "/governance#review-board" },
-  { label: "Appeals", href: "/governance#appeals" },
-  { label: "Disclosure", href: "/governance#disclosure" },
-  { label: "Public log", href: "/audit-log" }
+  { label: "Appeals", href: "/governance#appeals" }
 ];
 
 const LEGAL_LINKS: FooterLink[] = [
