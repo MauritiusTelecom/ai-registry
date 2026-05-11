@@ -12,7 +12,7 @@ export function ResourceReportButton({ target }: { target: ReportTarget }) {
   return (
     <button
       type="button"
-      className="btn btn-secondary"
+      className="btn btn-secondary btn-report-listing"
       onClick={() => open(target)}
     >
       <Icon name="flag" size={14} /> Report this listing

@@ -830,6 +830,18 @@ p { color: var(--text-2); margin: 0; }
 .r-card-actions button:hover { color: var(--text); border-color: var(--border-strong); background: var(--hover-bg); }
 .r-card-actions .btn-report:hover { color: #ef4444; border-color: rgba(239, 68, 68, 0.4); }
 
+/*
+ * Red hover for the standalone "Report this listing" button on the resource
+ * detail page. Matches the in-card .btn-report treatment: text turns red and
+ * the border softens to a translucent red.
+ */
+.btn-report-listing:hover {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.08);
+}
+.btn-report-listing:hover svg { color: #ef4444; }
+
 /* Sovereignty / Governance */
 .gov-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px; align-items: stretch; }
 @media (max-width: 1024px) { .gov-grid { grid-template-columns: 1fr; } }
@@ -1165,6 +1177,16 @@ p { color: var(--text-2); margin: 0; }
   box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.16);
 }
 .field textarea { min-height: 110px; resize: vertical; }
+/*
+ * Browser-rendered <option> elements don't inherit the parent's transparent
+ * background, so in dark mode they fall back to white-on-white. Force a
+ * solid panel background and the page text color so the options stay
+ * legible in both themes.
+ */
+.field select option {
+  background-color: var(--panel-solid);
+  color: var(--text);
+}
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 540px) { .field-row { grid-template-columns: 1fr; } }
 .field.error input, .field.error textarea { border-color: rgba(239, 68, 68, 0.6); }
