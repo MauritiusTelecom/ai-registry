@@ -4,6 +4,7 @@ import { findResourceForDetail } from "@/lib/discovery/queries";
 import { toRegistryCardDetail } from "@/lib/discovery/serializers";
 import { PageHero } from "@/components/public/sections/PageHero";
 import { AirIdCopy } from "@/components/public/sections/AirIdCopy";
+import { ResourceReportButton } from "@/components/public/ResourceReportButton";
 
 export const metadata = { title: "Resource detail" };
 export const dynamic = "force-dynamic";
@@ -269,6 +270,17 @@ export default async function ResourceDetailPage({
               ))}
             </div>
           ) : null}
+
+          {/* Report listing — opens the same ReportModal as before */}
+          <div style={{ marginTop: 8 }}>
+            <ResourceReportButton
+              target={{
+                id: row.id,
+                title: detail.title,
+                provider: detail.provider
+              }}
+            />
+          </div>
 
           {/* Footer disclaimer */}
           <div
