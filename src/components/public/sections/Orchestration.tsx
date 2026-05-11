@@ -1,10 +1,16 @@
+"use client";
+
+import { useState } from "react";
 import { Icon, type IconName } from "../Icon";
 import { Reveal } from "../Reveal";
 
-// Bundle B (the composition the prototype's home page uses): six numbered stages
-// from Submit -> Maintain.
+// Bundle B (the composition the prototype's home page uses): six numbered
+// stages from Submit -> Maintain, now surfaced as a horizontal tab strip
+// with a single content panel beneath. Clicking a tab swaps the panel.
 
-const STAGES: { num: string; title: string; desc: string; icon: IconName }[] = [
+type Stage = { num: string; title: string; desc: string; icon: IconName };
+
+const STAGES: Stage[] = [
   {
     num: "01",
     icon: "doc",
@@ -44,6 +50,9 @@ const STAGES: { num: string; title: string; desc: string; icon: IconName }[] = [
 ];
 
 export function Orchestration() {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const active = STAGES[activeIdx];
+
   return (
     <section className="section">
       <Reveal className="section-header">
@@ -60,18 +69,44 @@ export function Orchestration() {
           The registry is never on the runtime path.
         </p>
       </Reveal>
+
       <Reveal>
-        <div className="orch-stages">
-          {STAGES.map((stage) => (
-            <div className="orch-stage" key={stage.num}>
-              <div className="orch-num">{stage.num}</div>
-              <div className="orch-title">{stage.title}</div>
-              <div className="orch-desc">{stage.desc}</div>
-              <div className="orch-icon">
-                <Icon name={stage.icon} size={14} />
-              </div>
+        <div
+          className="orch-tabs"
+          role="tablist"
+          aria-label="Resource journey stages"
+        >
+          {STAGES.map((stage, i) => {
+            const isActive = i === activeIdx;
+            return (
+              <button
+                key={stage.num}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                className={`orch-tab ${isActive ? "active" : ""}`}
+                onClick={() => setActiveIdx(i)}
+              >
+                <span className="orch-tab-num">{stage.num}</span>
+                <span className="orch-tab-title">{stage.title}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Reveal>
+
+      <Reveal>
+        <div className="orch-panel glass" role="tabpanel">
+          <div className="orch-panel-head">
+            <div className="orch-panel-icon">
+              <Icon name={active.icon} size={18} />
             </div>
-          ))}
+            <div>
+              <div className="orch-panel-num">{active.num}</div>
+              <div className="orch-panel-title">{active.title}</div>
+            </div>
+          </div>
+          <p className="orch-panel-desc">{active.desc}</p>
         </div>
       </Reveal>
     </section>
