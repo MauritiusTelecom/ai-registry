@@ -10,10 +10,10 @@ type Metric = {
 };
 
 const METRICS: Metric[] = [
-  { label: "Listed Resources", target: 247, suffix: "", trend: "+12 this month" },
-  { label: "Verified Providers", target: 89, suffix: "", trend: "+4 this week" },
+  { label: "Listed Resources", target: 7, suffix: "", trend: "live catalogue" },
+  { label: "Verified Providers", target: 1, suffix: "", trend: "Mauritius Telecom" },
   { label: "Uptime", target: 99.97, suffix: "%", trend: "90-day SLO" },
-  { label: "Jurisdictions", target: 12, suffix: "", trend: "national rollout" }
+  { label: "Jurisdictions", target: 1, suffix: "", trend: "MU" }
 ];
 
 function MetricCell({ label, target, suffix, trend }: Metric) {
