@@ -576,14 +576,14 @@ p { color: var(--text-2); margin: 0; }
   backdrop-filter: blur(8px);
 }
 .metrics-grid {
-  max-width: 1440px;
+  max-width: 960px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   padding: 0 32px;
 }
 .metric-cell {
-  padding: 28px 20px;
+  padding: 22px 18px;
   border-right: 1px solid var(--border);
   position: relative;
 }
@@ -618,8 +618,8 @@ p { color: var(--text-2); margin: 0; }
   color: var(--text-3);
 }
 .metric-value {
-  margin-top: 8px;
-  font-size: 32px;
+  margin-top: 6px;
+  font-size: 26px;
   font-weight: 400;
   letter-spacing: -0.025em;
   color: var(--text);
