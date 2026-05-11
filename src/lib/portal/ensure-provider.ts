@@ -69,6 +69,7 @@ export async function ensureUserProviderLinked(userId: string): Promise<string> 
         contactEmail: user.email,
         statusId: status.id,
         srcId: src.id,
+        published: false,
         description: `Self-registered provider workspace for ${user.email}.`
       }
     });
