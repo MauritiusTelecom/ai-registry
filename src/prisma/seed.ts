@@ -387,6 +387,14 @@ async function main() {
       }
     }
 
+    const providerWebsite =
+      process.env.SEED_PROVIDER_WEBSITE?.trim() || "https://www.telecom.mu";
+    const providerContactEmail =
+      process.env.SEED_PROVIDER_CONTACT_EMAIL?.trim() || "hello@airegistry.mu";
+    const providerDescription =
+      process.env.SEED_PROVIDER_DESCRIPTION?.trim() ||
+      "Mauritius Telecom is the principal telecommunications operator of the Republic of Mauritius and the reference operator of the Mauritius AI Registry. This profile lists the production-grade models, agents and tools curated by MT's Special Projects unit for use across government, enterprise and research.";
+
     const provider = await prisma.provider.upsert({
       where: { slug: providerSlug },
       create: {
@@ -395,16 +403,18 @@ async function main() {
         legalName: providerName,
         typeId: providerTypeIds.get("sovereign")!,
         homeJurisdictionId: jurisdiction.id,
-        websiteUrl: `https://${providerSlug}.example`,
-        contactEmail: `contact@${providerSlug}.example`,
+        websiteUrl: providerWebsite,
+        contactEmail: providerContactEmail,
         statusId: providerStatusIds.get("verified")!,
         srcId: submissionSourceIds.get("operator_added")!,
-        description:
-          "Phase 1 exemplar provider seeded by src/prisma/seed.ts. Replace with production data."
+        description: providerDescription
       },
       update: {
         displayName: providerName,
-        legalName: providerName
+        legalName: providerName,
+        websiteUrl: providerWebsite,
+        contactEmail: providerContactEmail,
+        description: providerDescription
       }
     });
     console.log(`Provider seeded: ${provider.displayName} (slug=${provider.slug})`);
