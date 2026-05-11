@@ -24,6 +24,8 @@ type Body = {
   registrationNumber?: unknown | null;
   websiteUrl?: unknown | null;
   description?: unknown | null;
+  published?: unknown;
+  adminSuspended?: unknown;
 };
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -110,6 +112,13 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       return NextResponse.json({ error: "websiteUrl must be http(s)" }, { status: 400 });
     }
     data.websiteUrl = websiteUrl;
+  }
+
+  if (typeof body.published === "boolean") {
+    data.published = body.published;
+  }
+  if (typeof body.adminSuspended === "boolean") {
+    data.adminSuspended = body.adminSuspended;
   }
 
   if (Object.keys(data).length === 0) {

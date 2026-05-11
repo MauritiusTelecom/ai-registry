@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { ProviderVerifyForm } from "@/components/admin/ProviderVerifyForm";
+import { ProviderVisibilityPanel } from "@/components/admin/ProviderVisibilityPanel";
 
 export const metadata = { title: "Admin · Provider" };
 export const dynamic = "force-dynamic";
@@ -136,23 +137,41 @@ export default async function AdminProviderDetailPage({
           )}
         </div>
 
-        <div className="glass" style={{ padding: 24 }}>
-          <h2 style={{ fontSize: 14, marginBottom: 12 }}>Set verification status</h2>
-          <p style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 16 }}>
-            Current: <strong>{STATUS_NAMES[provider.status.code] ?? provider.status.code}</strong>.
-            Each change writes one append-only audit row plus a TrustSignal of kind{" "}
-            <code>provider_verification</code>.
-          </p>
-          {isSelfProvider ? (
-            <p style={{ fontSize: 13, color: "var(--text-3)" }}>
-              You cannot verify your own provider record (separation of duties, §11).
+        <div style={{ display: "grid", gap: 16 }}>
+          <div className="glass" style={{ padding: 24 }}>
+            <h2 style={{ fontSize: 14, marginTop: 0, marginBottom: 8 }}>
+              Set verification status
+            </h2>
+            <p style={{ fontSize: 12, color: "var(--text-3)", marginTop: 0, marginBottom: 18 }}>
+              Current:{" "}
+              <strong>{STATUS_NAMES[provider.status.code] ?? provider.status.code}</strong>.
+              Each change writes one append-only audit row plus a TrustSignal of kind{" "}
+              <code>provider_verification</code>.
             </p>
-          ) : (
-            <ProviderVerifyForm
+            {isSelfProvider ? (
+              <p style={{ fontSize: 13, color: "var(--text-3)", margin: 0 }}>
+                You cannot verify your own provider record (separation of duties, §11).
+              </p>
+            ) : (
+              <ProviderVerifyForm
+                providerId={provider.id}
+                currentStatus={provider.status.code}
+              />
+            )}
+          </div>
+
+          <div className="glass" style={{ padding: 24 }}>
+            <h2 style={{ fontSize: 14, marginTop: 0, marginBottom: 8 }}>Visibility</h2>
+            <p style={{ fontSize: 12, color: "var(--text-3)", marginTop: 0, marginBottom: 18 }}>
+              Controls whether this provider appears on the public registry. Audit log
+              still records every change.
+            </p>
+            <ProviderVisibilityPanel
               providerId={provider.id}
-              currentStatus={provider.status.code}
+              initialPublished={provider.published}
+              initialAdminSuspended={provider.adminSuspended}
             />
-          )}
+          </div>
         </div>
       </div>
     </div>

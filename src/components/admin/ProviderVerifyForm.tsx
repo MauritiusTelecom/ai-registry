@@ -59,15 +59,30 @@ export function ProviderVerifyForm({
     }
   }
 
+  const fieldLabel: React.CSSProperties = {
+    fontSize: 11,
+    color: "var(--text-3)",
+    letterSpacing: "0.08em",
+    textTransform: "uppercase"
+  };
+  const controlBase: React.CSSProperties = {
+    padding: "10px 12px",
+    borderRadius: 8,
+    background: "var(--input-bg)",
+    border: "1px solid var(--border)",
+    color: "var(--text)",
+    fontFamily: "inherit",
+    fontSize: 13,
+    width: "100%",
+    boxSizing: "border-box"
+  };
+
   return (
-    <div style={{ display: "grid", gap: 14, fontSize: 13 }}>
-      <label style={{ display: "grid", gap: 6 }}>
-        <span style={{ fontSize: 11, color: "var(--text-3)", letterSpacing: "0.08em" }}>
-          NEW STATUS
-        </span>
+    <div style={{ display: "grid", gap: 16, fontSize: 13 }}>
+      <label style={{ display: "grid", gap: 8 }}>
+        <span style={fieldLabel}>New status</span>
         <select
-          className="glass"
-          style={{ padding: 8, borderRadius: 8 }}
+          style={controlBase}
           value={status}
           onChange={(e) => setStatus(e.target.value)}
         >
@@ -78,49 +93,42 @@ export function ProviderVerifyForm({
           ))}
         </select>
       </label>
-      <label style={{ display: "grid", gap: 6 }}>
-        <span style={{ fontSize: 11, color: "var(--text-3)", letterSpacing: "0.08em" }}>
-          DECISION SUMMARY
-        </span>
+      <label style={{ display: "grid", gap: 8 }}>
+        <span style={fieldLabel}>Decision summary</span>
         <textarea
-          className="glass"
-          style={{ padding: 10, borderRadius: 8, minHeight: 70, fontFamily: "inherit" }}
+          style={{ ...controlBase, minHeight: 90, resize: "vertical" }}
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
           placeholder="What changed and why? Recorded on the audit log."
         />
       </label>
-      <label style={{ display: "grid", gap: 6 }}>
-        <span style={{ fontSize: 11, color: "var(--text-3)", letterSpacing: "0.08em" }}>
-          PUBLIC NOTE (optional)
-        </span>
+      <label style={{ display: "grid", gap: 8 }}>
+        <span style={fieldLabel}>Public note (optional)</span>
         <input
-          className="glass"
-          style={{ padding: 8, borderRadius: 8 }}
+          style={controlBase}
           value={publicNote}
           onChange={(e) => setPublicNote(e.target.value)}
+          placeholder="Visible on the provider's public trust panel."
         />
       </label>
-      <label style={{ display: "grid", gap: 6 }}>
-        <span style={{ fontSize: 11, color: "var(--text-3)", letterSpacing: "0.08em" }}>
-          INTERNAL NOTE (optional)
-        </span>
+      <label style={{ display: "grid", gap: 8 }}>
+        <span style={fieldLabel}>Internal note (optional)</span>
         <input
-          className="glass"
-          style={{ padding: 8, borderRadius: 8 }}
+          style={controlBase}
           value={internalNote}
           onChange={(e) => setInternalNote(e.target.value)}
+          placeholder="Admins only - never shown publicly."
         />
       </label>
       {error ? (
-        <p style={{ color: "#d33", fontSize: 12 }}>{error}</p>
+        <p style={{ color: "#d33", fontSize: 12, margin: 0 }}>{error}</p>
       ) : null}
       <button
         type="button"
-        className="btn-primary"
+        className="btn btn-primary"
         disabled={busy || summary.trim().length < 4}
         onClick={submit}
-        style={{ alignSelf: "start" }}
+        style={{ justifySelf: "start" }}
       >
         {busy ? "Saving…" : "Record decision"}
       </button>

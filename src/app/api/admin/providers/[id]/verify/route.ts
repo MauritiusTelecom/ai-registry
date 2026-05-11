@@ -127,10 +127,21 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
   const before = { status: provider.status.code };
 
+  // Suspended status hides the provider from the public registry by also
+  // flipping adminSuspended. Reverting to a non-suspended status clears it.
+  const providerData: { statusId: string; adminSuspended?: boolean } = {
+    statusId: target.id
+  };
+  if (status === "suspended") {
+    providerData.adminSuspended = true;
+  } else if (provider.status.code === "suspended") {
+    providerData.adminSuspended = false;
+  }
+
   await prisma.$transaction(async (tx) => {
     await tx.provider.update({
       where: { id: provider.id },
-      data: { statusId: target.id }
+      data: providerData
     });
 
     await tx.trustSignal.create({
