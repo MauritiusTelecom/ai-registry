@@ -21,7 +21,7 @@ export default async function RegistryPage({
             <span className="gradient-text">trust and integrate</span>.
           </>
         }
-        subtitle="Browse models, agents, MCP skills and tools. Filter by status, kind or jurisdiction. Listings carry verifiable providers and stable AIR-IDs."
+        subtitle="Browse models, agents, Skills and tools. Filter by status, kind or jurisdiction. Listings carry verifiable providers and stable AIR-IDs."
       />
       <RegistrySection withHeader={false} initialProviderSlug={provider} />
     </div>
