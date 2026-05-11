@@ -113,22 +113,22 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
 
           <HeroFloatCard
             style={{ top: "4%", left: "-6%" }}
-            title="claude-sonnet-4.5"
-            subtitle="Verified · Anthropic · 12ms"
+            title="MytGPT Enterprise"
+            subtitle="Verified · Mauritius Telecom · Chat"
             dot="#10b981"
             delay={0}
           />
           <HeroFloatCard
             style={{ top: "32%", right: "-4%" }}
-            title="mcp/treasury-ledger"
-            subtitle="Trusted · Gov · air-gapped"
+            title="Conversational AI"
+            subtitle="Verified · Mauritius Telecom · Kreol Morisien"
             dot="#a855f7"
             delay={1.2}
           />
           <HeroFloatCard
             style={{ bottom: "6%", left: "4%" }}
-            title="agent.compliance-watch"
-            subtitle="Active · Internal · 0 incidents"
+            title="Document AI"
+            subtitle="Verified · Mauritius Telecom · OCR"
             dot="#22d3ee"
             delay={2.4}
           />
