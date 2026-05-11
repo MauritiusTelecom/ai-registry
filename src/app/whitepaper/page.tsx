@@ -26,7 +26,7 @@ export default function WhitepaperPage() {
         <p>
           AI is moving from chat interfaces to connected systems. Models, agents, tools and
           skills that understand local law, language, data and institutions are becoming
-          part of national digital infrastructure — but they are scattered, hard to find,
+          part of national digital infrastructure - but they are scattered, hard to find,
           and invisible to the AI systems that should use them.
         </p>
         <p style={{ marginTop: 14 }}>
@@ -61,8 +61,8 @@ export default function WhitepaperPage() {
 
       <DocPanel title="What gets listed">
         <p>
-          Four resource types — <strong>model</strong>, <strong>agent</strong>,{" "}
-          <strong>tool</strong>, <strong>skill</strong> — and only resources that meet a{" "}
+          Four resource types - <strong>model</strong>, <strong>agent</strong>,{" "}
+          <strong>tool</strong>, <strong>skill</strong> - and only resources that meet a{" "}
           <Link href="/sovereignty-rubric" style={{ color: "var(--text-2)" }}>
             sovereignty test
           </Link>

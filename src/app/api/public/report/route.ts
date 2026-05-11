@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: errors.join("; ") }, { status: 400 });
   }
 
-  // Structured log line — replace with audit/db once available.
+  // Structured log line - replace with audit/db once available.
   console.info(
     JSON.stringify({
       event: "public.report.received",

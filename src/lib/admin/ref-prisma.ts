@@ -1,5 +1,5 @@
 /**
- * Runtime adapter — resolves a reference-table config to its Prisma model
+ * Runtime adapter - resolves a reference-table config to its Prisma model
  * proxy. Pure string lookup; the `RefTableConfig.modelKey` is the source of
  * truth.
  *
@@ -34,9 +34,9 @@ export function modelFor(config: RefTableConfig): ModelLike {
 }
 
 export const PrismaErrorCode = {
-  /** Foreign-key constraint failed — typically thrown on DELETE when rows reference this one. */
+  /** Foreign-key constraint failed - typically thrown on DELETE when rows reference this one. */
   FK_CONSTRAINT: "P2003",
-  /** Unique constraint failed — `code` collisions on create / update. */
+  /** Unique constraint failed - `code` collisions on create / update. */
   UNIQUE_VIOLATION: "P2002",
   /** Record not found. */
   NOT_FOUND: "P2025"

@@ -16,7 +16,7 @@ export function AirIdCopy({ airId }: { airId: string }) {
       setTimeout(() => setCopied(false), 1800);
     } catch {
       // Clipboard may be unavailable (e.g. insecure context); fall back to
-      // a no-op — the visible AIR-ID can still be selected manually.
+      // a no-op - the visible AIR-ID can still be selected manually.
     }
   }
   return (

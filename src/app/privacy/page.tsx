@@ -23,12 +23,12 @@ export default function PrivacyPage() {
         </p>
         <ul style={{ paddingLeft: 22, marginTop: 10, display: "grid", gap: 8 }}>
           <li>
-            <strong>Public listing metadata</strong> — providers, resources, governance
+            <strong>Public listing metadata</strong> - providers, resources, governance
             signals, sovereignty claims, endpoints. This is intentionally public and
             available through the discovery API.
           </li>
           <li>
-            <strong>Account data</strong> — name, email, organisation and role for
+            <strong>Account data</strong> - name, email, organisation and role for
             registered providers, reviewers and operators. Used only to authenticate, route
             review work and contact you about the registry.
           </li>
@@ -48,7 +48,7 @@ export default function PrivacyPage() {
         <p>
           We do not sell account data. We do not share it with third parties for
           marketing. We do not host or proxy calls to the AI resources we list, so we do
-          not see end-user prompts or responses — those go directly between consumer and
+          not see end-user prompts or responses - those go directly between consumer and
           provider.
         </p>
       </DocPanel>
@@ -61,7 +61,7 @@ export default function PrivacyPage() {
             the contact form
           </Link>
           . If your resource has been publicly listed, the AIR-ID and the underlying
-          audit log persist (append-only) — the resource record can be tombstoned, but the
+          audit log persist (append-only) - the resource record can be tombstoned, but the
           governance trail behind a previously public listing is itself a public record.
         </p>
       </DocPanel>

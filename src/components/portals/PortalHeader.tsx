@@ -9,7 +9,7 @@ import { PortalUserDropdown } from "./header/PortalUserDropdown";
  * Shared role-portal header.
  *
  * Implements the chrome described in
- * `ai-registry-specs/shared/portal-chrome.md` §2 — breadcrumb on the left,
+ * `ai-registry-specs/shared/portal-chrome.md` §2 - breadcrumb on the left,
  * the icon row (search, palette, theme toggle, notifications) plus the user
  * dropdown on the right. Used by every per-portal wrapper:
  *
@@ -23,7 +23,7 @@ import { PortalUserDropdown } from "./header/PortalUserDropdown";
 export type PortalHeaderProps = {
   /** Active portal label, e.g. "Admin", "Verifier". */
   label: string;
-  /** Currently active portal id — drives the "current" tag in the dropdown. */
+  /** Currently active portal id - drives the "current" tag in the dropdown. */
   currentRole: "admin" | "provider" | "verifier" | "sovereign";
   /** Optional secondary crumb (e.g. provider display name). */
   subCrumb?: string | null;

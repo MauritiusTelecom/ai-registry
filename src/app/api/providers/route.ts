@@ -8,7 +8,7 @@ const KIND_TABS = new Set(["sovereign", "model", "hosting", "integrator"]);
  *
  * Public providers listing for `/providers`. Query: `q`, `kind` (tab),
  * `status` (display badge), `limit` (1–100, default 20), `cursor` (provider id).
- * Response: `PublicProvidersListResponse` — rows, total, counts, page, generatedAt.
+ * Response: `PublicProvidersListResponse` - rows, total, counts, page, generatedAt.
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);

@@ -283,7 +283,7 @@ export function RefTableGrid({ config }: { config: RefTableConfig }) {
             <h3 style={{ margin: 0, marginBottom: 8 }}>Delete row?</h3>
             <p style={{ color: "var(--text-2)", fontSize: 14, marginBottom: 18 }}>
               This permanently removes the entry from <code>{config.label}</code>. If
-              other rows reference it, deletion is blocked — toggle <code>active</code>
+              other rows reference it, deletion is blocked - toggle <code>active</code>
               to false instead.
             </p>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
@@ -312,7 +312,7 @@ export function RefTableGrid({ config }: { config: RefTableConfig }) {
 }
 
 function renderCell(value: unknown) {
-  if (value === null || value === undefined || value === "") return <span style={{ color: "var(--text-3)" }}>—</span>;
+  if (value === null || value === undefined || value === "") return <span style={{ color: "var(--text-3)" }}>-</span>;
   if (typeof value === "boolean")
     return value ? (
       <span className="tag" style={{ color: "#10b981" }}>active</span>

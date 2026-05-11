@@ -37,7 +37,7 @@ export default function PricingPage() {
           The registry is not a marketplace, billing platform or payment processor. It
           does not take a commission on transactions, host AI workloads, or charge
           providers for verification or endorsement. Commercial agreements between
-          consumers and providers happen directly between those parties — outside the
+          consumers and providers happen directly between those parties - outside the
           registry.
         </p>
       </DocPanel>

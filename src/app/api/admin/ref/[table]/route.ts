@@ -17,7 +17,7 @@ import { prisma } from "@/lib/prisma";
  *   sort       field name (default = config.defaultSort.field)
  *   dir        "asc" | "desc"
  *
- * POST /api/admin/ref/[table] — create.
+ * POST /api/admin/ref/[table] - create.
  */
 
 export async function GET(
@@ -127,7 +127,7 @@ export async function POST(
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
 async function ensureAdmin(): Promise<Response | null> {
-  // requireRole calls notFound() on missing role — but route handlers return
+  // requireRole calls notFound() on missing role - but route handlers return
   // a Response; we bypass by doing the lookup ourselves.
   try {
     await requireRole("admin", { redirectTo: "/admin" });

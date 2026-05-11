@@ -5,7 +5,7 @@ export const metadata = { title: "Verifier · Reports" };
 export const dynamic = "force-dynamic";
 
 /**
- * Verifier · Reports — surface aggregate review activity. The signed
+ * Verifier · Reports - surface aggregate review activity. The signed
  * verification-report artefact (PDF / signed JSON) is post-MVP; this page
  * renders the rolling stats that would seed each report so reviewers can
  * see what would be published.
@@ -77,7 +77,7 @@ export default async function VerifierReportsPage() {
                 style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12 }}
               >
                 <span style={{ color: "var(--text)" }}>
-                  {nameById.get(g.reviewTypeId) ?? "—"}
+                  {nameById.get(g.reviewTypeId) ?? "-"}
                 </span>
                 <span
                   style={{ fontFamily: "IBM Plex Mono, monospace", color: "var(--text-2)" }}

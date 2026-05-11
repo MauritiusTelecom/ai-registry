@@ -1,5 +1,5 @@
 /**
- * §11 sovereignty review checklist — six yes/no (+ n/a) items stored as
+ * §11 sovereignty review checklist - six yes/no (+ n/a) items stored as
  * ReviewChecklistItem rows keyed by `itemCode`.
  */
 export const SOVEREIGNTY_CHECKLIST_ITEMS: { itemCode: string; question: string }[] = [

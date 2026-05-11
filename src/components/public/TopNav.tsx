@@ -9,7 +9,7 @@ import { useAuth } from "./AuthProvider";
 import { withBase } from "@/lib/with-base";
 
 // Top-nav links. Ecosystem / Governance / Documentation moved out of the
-// top nav — they remain reachable from the footer columns (see Footer in
+// top nav - they remain reachable from the footer columns (see Footer in
 // components/public/Footer.tsx) so this primary navigation stays focused on
 // the four core surfaces: Home, Registry, Providers, Contact.
 const NAV_ITEMS = [

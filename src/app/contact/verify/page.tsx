@@ -45,7 +45,7 @@ export default async function ContactVerifyPage({
         eyebrow="Email confirmed"
         title={
           <>
-            Thank you — your address is <span className="gradient-text">verified</span>.
+            Thank you - your address is <span className="gradient-text">verified</span>.
           </>
         }
         subtitle={`We have marked your enquiry as verified for ${result.email}.`}

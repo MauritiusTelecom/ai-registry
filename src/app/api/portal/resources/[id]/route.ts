@@ -7,7 +7,7 @@ import { writeAudit } from "@/lib/audit/write-audit";
 const EDITABLE = new Set(["draft", "needs_update"]);
 
 /**
- * PATCH /api/portal/resources/:id — update draft / needs_update fields only.
+ * PATCH /api/portal/resources/:id - update draft / needs_update fields only.
  */
 
 type PatchBody = {

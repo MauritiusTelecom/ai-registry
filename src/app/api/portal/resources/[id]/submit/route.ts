@@ -10,7 +10,7 @@ import { uniqueValidEmails } from "@/lib/email/recipients";
 import { sendTransactionalEmailAll } from "@/lib/email/transactional-send";
 
 /**
- * POST /api/portal/resources/:id/submit — draft|needs_update → submitted + open review.
+ * POST /api/portal/resources/:id/submit - draft|needs_update → submitted + open review.
  */
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {

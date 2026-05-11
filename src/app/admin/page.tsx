@@ -71,7 +71,7 @@ export default async function AdminDashboardPage() {
         <QueueCard
           title="Sovereignty review queue"
           href="/admin/reviews"
-          body="Open reviews for submitted resources — apply the §11 checklist, approve, reject, or request changes."
+          body="Open reviews for submitted resources - apply the §11 checklist, approve, reject, or request changes."
         />
         <QueueCard
           title="Audit log"
@@ -81,7 +81,7 @@ export default async function AdminDashboardPage() {
         <QueueCard
           title="Resources"
           href="/admin/resources"
-          body="Catalogue management — search, filter, and lifecycle-action every listed resource across all providers."
+          body="Catalogue management - search, filter, and lifecycle-action every listed resource across all providers."
         />
         <QueueCard
           title="Providers"

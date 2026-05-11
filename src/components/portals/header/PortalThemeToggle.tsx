@@ -5,7 +5,7 @@ import { useTheme } from "@/components/public/ThemeProvider";
 
 /**
  * Sun / moon theme toggle. Integrates with the existing root-level
- * ThemeProvider so toggling here also flips the public portal — the
+ * ThemeProvider so toggling here also flips the public portal - the
  * `data-theme` attribute lives on `<html>` and is shared across the whole
  * app.
  */

@@ -10,7 +10,7 @@ import type { ResourceKind, WellKnownDocument } from "@/lib/discovery/types";
 import { isAirId, parseAirId } from "@/lib/validators";
 
 /**
- * POST /api/mcp — Streamable HTTP MCP adapter (Phase 5 / T052).
+ * POST /api/mcp - Streamable HTTP MCP adapter (Phase 5 / T052).
  *
  * Implements the JSON-RPC 2.0 surface MCP clients expect over the Streamable
  * HTTP transport: `initialize`, `tools/list`, and `tools/call`. Tools mirror

@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: errors.join("; ") }, { status: 400 });
   }
 
-  // Resolve target — at most one of resource / provider.
+  // Resolve target - at most one of resource / provider.
   let targetResourceId: string | null = null;
   let targetProviderId: string | null = null;
   if (typeof body.targetAirId === "string") {
@@ -155,7 +155,7 @@ export async function POST(req: Request) {
   const cfg = getConfig();
   const origin = new URL(req.url).origin;
 
-  let targetSummary = "—";
+  let targetSummary = "-";
   if (targetResourceId) {
     const r = await prisma.resource.findUnique({
       where: { id: targetResourceId },

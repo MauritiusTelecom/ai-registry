@@ -28,7 +28,7 @@ If your edits touch the schema, run `npm run prisma:format && npm run prisma:val
    - `npm run prisma:validate` passes (if schema touched);
    - `npm run config:validate` passes (if `.env.example` or `src/lib/config.ts` touched);
    - `npm run db:seed` runs to completion against a fresh database (if `src/prisma/seed.ts` touched).
-5. **Reviewers** — at least one approval for routine changes; two for schema changes. See [`GOVERNANCE.md`](GOVERNANCE.md) §5 for the full matrix.
+5. **Reviewers** - at least one approval for routine changes; two for schema changes. See [`GOVERNANCE.md`](GOVERNANCE.md) §5 for the full matrix.
 
 ## Code conventions
 
@@ -37,18 +37,18 @@ If your edits touch the schema, run `npm run prisma:format && npm run prisma:val
 - **Listing ≠ endorsement.** Public-facing copy must distinguish provider-declared, sovereignty-reviewed, and official-resource states. Don't blur the labels.
 - **TypeScript strict mode is on.** `tsconfig.json` `"strict": true`; `any` is allowed only with a justification comment.
 - **No new gradients or hex literals in the public UI.** Use the design tokens defined in `src/components/public/styles.css` (and the prototype). See `ai-registry-specs/.speckit/design.md` §3.
-- **Prisma reference tables.** Controlled vocabularies are tables (id / code / name / description / active / sortOrder), not Postgres enums — see `src/prisma/schema.prisma` headers.
+- **Prisma reference tables.** Controlled vocabularies are tables (id / code / name / description / active / sortOrder), not Postgres enums - see `src/prisma/schema.prisma` headers.
 
 ## Spec changes
 
-If a contribution requires an AIR-SPEC or module spec change, open the spec PR in [`../ai-registry-specs/`](../ai-registry-specs/) **first**, then reference it from the code PR. The reverse order — implementation drives spec — is acceptable only when fixing a clearly-stated bug in the spec.
+If a contribution requires an AIR-SPEC or module spec change, open the spec PR in [`../ai-registry-specs/`](../ai-registry-specs/) **first**, then reference it from the code PR. The reverse order - implementation drives spec - is acceptable only when fixing a clearly-stated bug in the spec.
 
 ## Tests
 
 - Unit tests sit next to the file they cover (`foo.test.ts` next to `foo.ts`).
 - Integration tests for routes / API live under `src/app/__tests__/`.
 - E2E tests (when introduced in Phase 5 / T055) will live under `e2e/`.
-- The current test runner is Vitest (configured in Phase 5 — until then, `npm run lint` and `npm run prisma:validate` are the gating checks).
+- The current test runner is Vitest (configured in Phase 5 - until then, `npm run lint` and `npm run prisma:validate` are the gating checks).
 
 ## Code of conduct
 

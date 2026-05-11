@@ -1,8 +1,8 @@
 # ai-registry
 
-**Reference implementation** of the [AIR-SPEC 0.4](../ai-registry-specs/.speckit/specification.md) Mauritius AI Registry — a Next.js public portal, Provider/Admin/Verifier/Sovereign workspaces, and the PostgreSQL `registry` schema. Discovery is exposed via REST under `/api/...`; an MCP Streamable HTTP adapter at `/api/mcp` is on the Phase 5 roadmap.
+**Reference implementation** of the [AIR-SPEC 0.4](../ai-registry-specs/.speckit/specification.md) Mauritius AI Registry - a Next.js public portal, Provider/Admin/Verifier/Sovereign workspaces, and the PostgreSQL `registry` schema. Discovery is exposed via REST under `/api/...`; an MCP Streamable HTTP adapter at `/api/mcp` is on the Phase 5 roadmap.
 
-The reference deployment is `airegistry.mu` (Mauritius Telecom as first reference operator). The codebase carries **no jurisdiction-specific defaults** — every deployment supplies its own `registry_name`, `jurisdiction`, `identity_domain`, `operator_name`, `default_language`, and resource-type set via configuration (see "Configuration" below).
+The reference deployment is `airegistry.mu` (Mauritius Telecom as first reference operator). The codebase carries **no jurisdiction-specific defaults** - every deployment supplies its own `registry_name`, `jurisdiction`, `identity_domain`, `operator_name`, `default_language`, and resource-type set via configuration (see "Configuration" below).
 
 > **Listing ≠ endorsement.** The registry points; the provider operates; the hosting environment secures. Public surfaces reflect this separation in copy, status labels, and footer disclaimer.
 
@@ -20,9 +20,9 @@ npm install
 
 # 2. Copy and edit environment
 cp .env.example .env
-# edit DATABASE_URL and the deployment-config block — see "Configuration"
+# edit DATABASE_URL and the deployment-config block - see "Configuration"
 
-# 3. Bring up the database (optional — only if you don't already have Postgres)
+# 3. Bring up the database (optional - only if you don't already have Postgres)
 docker compose up -d postgres
 
 # 4. Generate the Prisma client and apply migrations
@@ -51,10 +51,10 @@ npm run dev                       # http://localhost:3002
 | `npm run prisma:generate` | Regenerate the Prisma client into `src/generated/prisma/`. |
 | `npm run prisma:validate` | Validate `src/prisma/schema.prisma`. |
 | `npm run prisma:format` | Format the schema file. |
-| `npm run prisma:migrate` | `prisma migrate deploy` — apply committed migrations to the configured database. |
-| `npm run db:push` | `prisma db push` — first-time bootstrap, no migration files. |
+| `npm run prisma:migrate` | `prisma migrate deploy` - apply committed migrations to the configured database. |
+| `npm run db:push` | `prisma db push` - first-time bootstrap, no migration files. |
 | `npm run db:seed` | Seed the database with reference taxonomies, an exemplar provider, and one resource per type (see `src/prisma/seed.ts`). |
-| `npm run db:reset` | Drop the `registry` schema, re-push, and re-seed (development only — destructive). |
+| `npm run db:reset` | Drop the `registry` schema, re-push, and re-seed (development only - destructive). |
 | `npm run config:validate` | Load and validate the deployment configuration without booting Next.js. |
 | `npm run smoke` | Hit the Phase 5 adapter surface (`/api/health`, `/.well-known/ai-registry`, `/api/resources`, `/api/resolve`, `/api/mcp`) against the running app. Set `BASE=http://host:port` to point elsewhere. |
 
@@ -96,11 +96,11 @@ Run `npm run config:validate` after editing `.env` to confirm the config layer c
 
 Phased delivery is tracked in [`../ai-registry-specs/.speckit/implementation_plan.md`](../ai-registry-specs/.speckit/implementation_plan.md):
 
-- **Phase 1 — Foundations and data model.** _In progress / mostly complete._ This README, the Prisma schema, the config layer, the seed script, and `docker-compose.yml` constitute the Phase 1 deliverables.
-- **Phase 2 — Authentication and provider identity.** OIDC/OAuth-class sign-in; provider/admin/verifier/sovereign role separation; session linkage to `provider_id`.
-- **Phase 3 — Public discovery (portal + REST).** REST list/detail/resolve/discover, `.well-known`, full localisation.
-- **Phase 4 — Provider submission and governance workflows.** _Delivered (May 2026)._ Draft → submit pipeline gated by `canAuthorResources`, §11 reviewer checklist, lifecycle transitions, provider verification (`/api/admin/providers/{id}/verify`, T035), official-resource elevation (`/api/admin/resources/{id}/elevate`, T036), and audit instrumentation across every governance mutation.
-- **Phase 5 — Adapters, conformance, hardening.** _Delivered (May 2026)._ Health probe (`/api/health`), MCP Streamable HTTP at `/api/mcp` exposing `registry.list / get / resolve / discover / well_known`, OpenAPI 3.0 document at `/api/openapi`, hardened validators in `src/lib/validators.ts`, and the smoke runner via `npm run smoke`.
+- **Phase 1 - Foundations and data model.** _In progress / mostly complete._ This README, the Prisma schema, the config layer, the seed script, and `docker-compose.yml` constitute the Phase 1 deliverables.
+- **Phase 2 - Authentication and provider identity.** OIDC/OAuth-class sign-in; provider/admin/verifier/sovereign role separation; session linkage to `provider_id`.
+- **Phase 3 - Public discovery (portal + REST).** REST list/detail/resolve/discover, `.well-known`, full localisation.
+- **Phase 4 - Provider submission and governance workflows.** _Delivered (May 2026)._ Draft → submit pipeline gated by `canAuthorResources`, §11 reviewer checklist, lifecycle transitions, provider verification (`/api/admin/providers/{id}/verify`, T035), official-resource elevation (`/api/admin/resources/{id}/elevate`, T036), and audit instrumentation across every governance mutation.
+- **Phase 5 - Adapters, conformance, hardening.** _Delivered (May 2026)._ Health probe (`/api/health`), MCP Streamable HTTP at `/api/mcp` exposing `registry.list / get / resolve / discover / well_known`, OpenAPI 3.0 document at `/api/openapi`, hardened validators in `src/lib/validators.ts`, and the smoke runner via `npm run smoke`.
 
 ### Operations
 
@@ -119,4 +119,4 @@ Phased delivery is tracked in [`../ai-registry-specs/.speckit/implementation_pla
 
 ## License
 
-Apache License 2.0 — see [`LICENSE`](LICENSE).
+Apache License 2.0 - see [`LICENSE`](LICENSE).

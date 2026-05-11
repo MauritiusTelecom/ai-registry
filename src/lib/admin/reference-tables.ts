@@ -3,13 +3,13 @@
  *
  * Every controlled vocabulary in the schema is described here exactly once.
  * The generic CRUD API at `/api/admin/ref/[table]/...` and the generic UI at
- * `/admin/ref/[table]/...` both read this registry — there is no per-table
+ * `/admin/ref/[table]/...` both read this registry - there is no per-table
  * route or per-table page. Adding a new reference table is a one-line entry
  * here plus a Prisma model on the schema; the rest is automatic.
  *
  * The runtime adapter in `src/lib/admin/ref-prisma.ts` resolves a config's
  * `modelKey` to the actual Prisma model proxy. We deliberately avoid
- * statically typing the model accessors at this layer — the pure-string
+ * statically typing the model accessors at this layer - the pure-string
  * lookup is what lets the API and pages stay generic.
  */
 
@@ -22,7 +22,7 @@ export type RefFieldDef = {
   required?: boolean;
   /** Field is included in the search OR clause (case-insensitive contains). */
   searchable?: boolean;
-  /** Field is unique — surfaces 409 on collision. */
+  /** Field is unique - surfaces 409 on collision. */
   unique?: boolean;
   /** Default value when creating. */
   default?: string | number | boolean;
@@ -31,7 +31,7 @@ export type RefFieldDef = {
 };
 
 export type RefTableConfig = {
-  /** URL slug — `/admin/ref/[id]`. */
+  /** URL slug - `/admin/ref/[id]`. */
   id: string;
   /** Sidebar label. */
   label: string;
@@ -47,7 +47,7 @@ export type RefTableConfig = {
     | "trust"
     | "authority"
     | "complaints";
-  /** Camel-case Prisma model accessor — `userRoleType` → `prisma.userRoleType`. */
+  /** Camel-case Prisma model accessor - `userRoleType` → `prisma.userRoleType`. */
   modelKey: string;
   /** Field definitions, in form-render order. The `id` PK is implicit. */
   fields: RefFieldDef[];
@@ -188,10 +188,10 @@ export const REF_TABLES: RefTableConfig[] = [
   std("trust-signal-status-type", "Trust signal statuses", "pending / passed / failed / withdrawn.", "trust", "trustSignalStatusType"),
   std("review-type", "Review types", "provider_verification / sovereignty_review / incident_review.", "trust", "reviewType"),
   std("review-status-type", "Review statuses", "open / in_review / decided / withdrawn.", "trust", "reviewStatusType"),
-  std("checklist-result-type", "Checklist results", "yes / no / n_a — the §11 reviewer checklist outcomes.", "trust", "checklistResultType"),
+  std("checklist-result-type", "Checklist results", "yes / no / n_a - the §11 reviewer checklist outcomes.", "trust", "checklistResultType"),
 
   // Authorities
-  std("official-authority-type", "Official authority types", "government / regulator / professional_body — entities that can authorise official-resource posture.", "authority", "officialAuthorityType"),
+  std("official-authority-type", "Official authority types", "government / regulator / professional_body - entities that can authorise official-resource posture.", "authority", "officialAuthorityType"),
   std("official-authorisation-status-type", "Official authorisation statuses", "pending / authorised / withdrawn.", "authority", "officialAuthorisationStatusType"),
 
   // Complaints

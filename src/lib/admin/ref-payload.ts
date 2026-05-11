@@ -15,7 +15,7 @@ const TYPE_BY_KIND: Record<RefFieldDef["kind"], "string" | "number" | "boolean">
 
 /**
  * Validates an incoming POST/PATCH body against the table's field defs.
- * Returns `{ data, errors }` — when `errors` is non-empty the caller should
+ * Returns `{ data, errors }` - when `errors` is non-empty the caller should
  * return 400.
  */
 export function projectInputs(
@@ -79,10 +79,10 @@ export function selectClauseFor(config: RefTableConfig): Record<string, true> {
   for (const f of config.fields) sel[f.key] = true;
   // Include createdAt/updatedAt when present for the detail page; absent
   // schema fields are silently ignored by Prisma's TS layer in the runtime
-  // proxy (we'll project these only if the table actually has them — handled
+  // proxy (we'll project these only if the table actually has them - handled
   // by the page mapper, not by Prisma).
   sel.createdAt = true;
-  // updatedAt may not exist on Tag / SovereigntyBasis — Prisma will throw if
+  // updatedAt may not exist on Tag / SovereigntyBasis - Prisma will throw if
   // we ask for a non-existent column, so we omit it from the generic select.
   return sel;
 }

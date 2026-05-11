@@ -8,7 +8,7 @@ import { ReportModal } from "./ReportModal";
 import { TweaksPanel } from "./TweaksPanel";
 
 /**
- * Public site shell — providers + nav + footer + modal + (dev) tweaks panel.
+ * Public site shell - providers + nav + footer + modal + (dev) tweaks panel.
  * Server component shell; the React-context providers below are all `"use client"`.
  *
  * Brand strings (registry name) flow from `src/lib/config.ts` (driven by

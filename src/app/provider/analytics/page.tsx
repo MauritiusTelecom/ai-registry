@@ -7,10 +7,10 @@ export const metadata = { title: "Provider · Analytics" };
 export const dynamic = "force-dynamic";
 
 /**
- * Provider · Analytics — surface counts that are actually persisted today
+ * Provider · Analytics - surface counts that are actually persisted today
  * (catalogue mix, lifecycle bucketing, recent decisions, recent complaints).
  * Discovery-call telemetry, latency, and regional spread require an
- * out-of-process analytics sink; those land once `T201 — structured logging`
+ * out-of-process analytics sink; those land once `T201 - structured logging`
  * forwards request log lines to a hosted store.
  *
  * Module spec: `modules/provider/analytics/product.md`.
@@ -120,7 +120,7 @@ export default async function ProviderAnalyticsPage() {
                     key={g.resourceTypeId}
                     style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12 }}
                   >
-                    <span style={{ color: "var(--text)" }}>{t?.name ?? "—"}</span>
+                    <span style={{ color: "var(--text)" }}>{t?.name ?? "-"}</span>
                     <span style={{ fontFamily: "IBM Plex Mono, monospace", color: "var(--text-2)" }}>
                       {g._count._all}
                     </span>

@@ -7,7 +7,7 @@ function canGovern(roles: string[]) {
 }
 
 /**
- * GET /api/admin/reviews — sovereignty review queue (open / in_review).
+ * GET /api/admin/reviews - sovereignty review queue (open / in_review).
  */
 
 export async function GET() {

@@ -28,7 +28,7 @@ export type ReviewTarget = {
  *
  * - `actor.provider.id` is the provider linkage the actor carries (admins
  *   without a provider linkage have `provider === null` and pass).
- * - `target.providerId` is the provider id of the review's target — for
+ * - `target.providerId` is the provider id of the review's target - for
  *   provider-scoped reviews this is the provider itself; for resource-scoped
  *   reviews it's the resource's provider.
  */

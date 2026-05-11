@@ -1,5 +1,5 @@
 /**
- * Status pill — colour-coded badge for portal tables.
+ * Status pill - colour-coded badge for portal tables.
  * Reuses the public-portal `.r-status` palette so badges feel consistent.
  */
 export function StatusPill({

@@ -59,7 +59,7 @@ export function ThemeProvider({
     try {
       window.localStorage.setItem(SAR_THEME_KEY, theme);
     } catch {
-      // Storage may be blocked (private mode) — non-fatal.
+      // Storage may be blocked (private mode) - non-fatal.
     }
   }, [theme]);
 

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 /**
- * Headline metric tile — used on the portal dashboards. Mirrors the
+ * Headline metric tile - used on the portal dashboards. Mirrors the
  * prototype's `StatCard` visual: large number, label, optional delta.
  */
 export function StatCard({

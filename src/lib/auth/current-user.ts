@@ -26,7 +26,7 @@ export type SessionUser = {
   role: { code: string; name: string };
   status: { code: string; name: string };
   provider: { id: string; slug: string; displayName: string } | null;
-  /** Effective role codes — primary role plus extra UserRoleAssignment codes. */
+  /** Effective role codes - primary role plus extra UserRoleAssignment codes. */
   roles: string[];
 };
 

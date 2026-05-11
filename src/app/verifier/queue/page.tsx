@@ -40,7 +40,7 @@ export default async function VerifierQueuePage() {
     id: r.id,
     resourceTitle: r.resource?.title ?? "(provider-scoped review)",
     resourceSlug: r.resource?.slug ?? null,
-    provider: r.resource?.provider.displayName ?? r.provider?.displayName ?? "—",
+    provider: r.resource?.provider.displayName ?? r.provider?.displayName ?? "-",
     reviewType: r.reviewType.name,
     status: STATUS_DISPLAY[r.status.code] ?? "active",
     startedAt: r.startedAt ? r.startedAt.toISOString().slice(0, 10) : null,
@@ -63,7 +63,7 @@ export default async function VerifierQueuePage() {
     { key: "provider", label: "Provider", render: (row) => row.provider },
     { key: "type", label: "Review type", render: (row) => <span className="tag">{row.reviewType}</span> },
     { key: "status", label: "Status", render: (row) => <StatusPill status={row.status} /> },
-    { key: "started", label: "Started", render: (row) => row.startedAt ?? "—", mono: true },
+    { key: "started", label: "Started", render: (row) => row.startedAt ?? "-", mono: true },
     { key: "created", label: "Queued", render: (row) => row.createdAt, mono: true }
   ];
 
@@ -78,7 +78,7 @@ export default async function VerifierQueuePage() {
       <DataTable
         rows={projected}
         columns={columns}
-        emptyState="The queue is empty — every review has been decided or withdrawn."
+        emptyState="The queue is empty - every review has been decided or withdrawn."
         keyOf={(r) => r.id}
       />
     </div>

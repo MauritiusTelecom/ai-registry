@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-/** GET /api/sovereignty-bases — AIR-SPEC §7 sovereignty basis vocabulary. */
+/** GET /api/sovereignty-bases - AIR-SPEC §7 sovereignty basis vocabulary. */
 export async function GET() {
   const rows = await prisma.sovereigntyBasis.findMany({
     where: { active: true },

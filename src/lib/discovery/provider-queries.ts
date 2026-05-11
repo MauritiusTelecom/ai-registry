@@ -1,5 +1,5 @@
 /**
- * Public provider browse — Prisma queries for GET /api/providers.
+ * Public provider browse - Prisma queries for GET /api/providers.
  */
 
 import type { Prisma } from "../../generated/prisma";

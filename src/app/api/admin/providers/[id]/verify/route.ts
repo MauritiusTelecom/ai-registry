@@ -11,7 +11,7 @@ import { sendTransactionalEmailAll } from "@/lib/email/transactional-send";
 /**
  * POST /api/admin/providers/:id/verify
  *
- * AIR-SPEC §11 / §18 — provider verification workflow (T035).
+ * AIR-SPEC §11 / §18 - provider verification workflow (T035).
  *
  * Body: { status: "verified" | "official_provider" | "unverified" | "suspended",
  *         summary: string, publicNote?: string, internalNote?: string }

@@ -4,7 +4,7 @@ import { REF_TABLES } from "@/lib/admin/reference-tables";
  * Sidebar navigation configuration per portal role.
  *
  * Each entry maps a role to its sidebar items. Items reference Next.js routes
- * directly (no hash routing — the portals are server-rendered Next pages).
+ * directly (no hash routing - the portals are server-rendered Next pages).
  *
  * The set mirrors `ai-registry-prototype/claudedesign/portals/<role>-app.jsx`
  * so the implementation stays close to the prototype's information
@@ -19,7 +19,7 @@ export type NavItem = {
   label: string;
   href: string;
   icon: string;
-  /** Phase 4 stub flag — surfaces a "Coming in Phase 4" note when true. */
+  /** Phase 4 stub flag - surfaces a "Coming in Phase 4" note when true. */
   stub?: boolean;
 };
 
@@ -89,14 +89,14 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
       {
         id: "ref-tables",
         label: "Reference Tables",
-        // The full registry — one row per controlled vocabulary the schema
+        // The full registry - one row per controlled vocabulary the schema
         // ships. Every entry routes to /admin/ref/[id] and renders the same
         // generic CRUD grid (search, active filter, server-side pagination,
         // view/edit/delete row icons + Add new top-right). Adding a new
         // reference table is a one-line change in
         // src/lib/admin/reference-tables.ts and it shows up here automatically.
         //
-        // The group is collapsible and starts collapsed by default — there
+        // The group is collapsible and starts collapsed by default - there
         // are ~30 rows here and most admins reach this surface only when
         // tweaking taxonomies. The PortalSidebar auto-expands when the
         // active route is `/admin/ref/...`.
@@ -121,7 +121,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
     icon: "layers",
     // Mirrors the Verifier portal's 4-group structure (Overview / <work> /
     // Inbox / Account). The Inbox group surfaces everything *directed at*
-    // this provider — complaints, contact requests, reviews, incidents —
+    // this provider - complaints, contact requests, reviews, incidents -
     // so the provider has a single landing for "the public is talking to me".
     groups: [
       {

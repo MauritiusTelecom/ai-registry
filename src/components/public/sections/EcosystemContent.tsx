@@ -47,7 +47,7 @@ export function EcosystemContent() {
             An ecosystem, <span className="gradient-text">not a platform</span>.
           </>
         }
-        subtitle="Five layers of independent operators — registry, providers, hosting, identity and integrators — held together only by open standards and stable identifiers."
+        subtitle="Five layers of independent operators - registry, providers, hosting, identity and integrators - held together only by open standards and stable identifiers."
       />
       <section className="section">
         <div style={{ display: "grid", gap: 32 }}>

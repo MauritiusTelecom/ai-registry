@@ -5,7 +5,7 @@ import { sessionCookieAttributes } from "@/lib/auth/session";
 /**
  * POST /api/auth/logout
  *
- * Clears the session cookie. Idempotent — calling without an active session
+ * Clears the session cookie. Idempotent - calling without an active session
  * still returns 200.
  */
 export async function POST() {

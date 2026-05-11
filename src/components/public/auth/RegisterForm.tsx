@@ -33,7 +33,7 @@ export function RegisterForm() {
         return;
       }
       if (data.verifyUrl) setDevVerifyUrl(data.verifyUrl);
-      // Server picks the role-appropriate landing — provider self-registration
+      // Server picks the role-appropriate landing - provider self-registration
       // lands on /provider, admin-seeded accounts will land elsewhere when
       // self-registration is enabled for them. Fallback to /portal.
       window.location.assign(withBase(data.redirectTo ?? "/portal"));

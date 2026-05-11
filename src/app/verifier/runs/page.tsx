@@ -5,7 +5,7 @@ export const metadata = { title: "Verifier · Eval runs" };
 export const dynamic = "force-dynamic";
 
 /**
- * Verifier · Eval runs — historical record of evaluation runs against listed
+ * Verifier · Eval runs - historical record of evaluation runs against listed
  * resources. The MVP schema does not carry an `EvalRun` model; runs are
  * external (the verifier plugs in its own harness) and the registry only
  * stores the **declaration** (free-form text) on each Review row's
@@ -120,8 +120,8 @@ export default async function VerifierRunsPage() {
                     marginBottom: 8
                   }}
                 >
-                  {r.reviewType.name} · {r.resource?.provider.displayName ?? "—"} ·{" "}
-                  {r.reviewer?.name ?? r.reviewer?.email ?? "—"}
+                  {r.reviewType.name} · {r.resource?.provider.displayName ?? "-"} ·{" "}
+                  {r.reviewer?.name ?? r.reviewer?.email ?? "-"}
                 </div>
                 <p
                   style={{

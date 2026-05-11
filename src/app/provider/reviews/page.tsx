@@ -102,8 +102,8 @@ export default async function ProviderReviewsPage() {
     },
     { key: "type", label: "Type", render: (row) => <span className="tag">{row.type}</span> },
     { key: "status", label: "Status", render: (row) => <StatusPill status={row.status} /> },
-    { key: "started", label: "Started", render: (row) => row.startedAt ?? "—", mono: true },
-    { key: "completed", label: "Completed", render: (row) => row.completedAt ?? "—", mono: true },
+    { key: "started", label: "Started", render: (row) => row.startedAt ?? "-", mono: true },
+    { key: "completed", label: "Completed", render: (row) => row.completedAt ?? "-", mono: true },
     {
       key: "summary",
       label: "Decision",
@@ -111,7 +111,7 @@ export default async function ProviderReviewsPage() {
         row.decisionSummary ? (
           <span style={{ color: "var(--text-2)" }}>{row.decisionSummary}</span>
         ) : (
-          "—"
+          "-"
         )
     }
   ];

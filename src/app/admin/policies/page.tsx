@@ -6,14 +6,14 @@ export const metadata = { title: "Admin · Policies" };
 export const dynamic = "force-dynamic";
 
 /**
- * Admin · Policies — read-only summary of the operator-curated policy
+ * Admin · Policies - read-only summary of the operator-curated policy
  * surfaces driving the registry. Every value here is either:
  *
- *   - taxonomy-driven (lifecycle, trust signal kinds, sovereignty bases) —
+ *   - taxonomy-driven (lifecycle, trust signal kinds, sovereignty bases) -
  *     editable through `/admin/ref/[table]`;
  *   - constitution-derived (separation-of-duties, listing≠endorsement,
- *     audit retention) — code-enforced;
- *   - checklist-derived (sovereignty review §11) — sourced from
+ *     audit retention) - code-enforced;
+ *   - checklist-derived (sovereignty review §11) - sourced from
  *     `src/lib/governance/sovereignty-checklist.ts`.
  *
  * Module spec: `modules/admin/policies/product.md`.
@@ -98,7 +98,7 @@ export default async function AdminPoliciesPage() {
           </Grid>
           <p style={{ fontSize: 12.5, color: "var(--text-3)", marginTop: 10 }}>
             Operators set provider status via{" "}
-            <code>POST /api/admin/providers/&#123;id&#125;/verify</code> (T035) — every change
+            <code>POST /api/admin/providers/&#123;id&#125;/verify</code> (T035) - every change
             writes a paired <code>provider_verification</code> trust signal.
           </p>
         </Section>
@@ -136,7 +136,7 @@ export default async function AdminPoliciesPage() {
           <ol style={{ display: "grid", gap: 8, paddingLeft: 18, margin: 0 }}>
             {SOVEREIGNTY_CHECKLIST_ITEMS.map((c) => (
               <li key={c.itemCode} style={{ fontSize: 13, color: "var(--text-2)" }}>
-                <code style={{ color: "var(--text-3)" }}>{c.itemCode}</code> — {c.question}
+                <code style={{ color: "var(--text-3)" }}>{c.itemCode}</code> - {c.question}
               </li>
             ))}
           </ol>

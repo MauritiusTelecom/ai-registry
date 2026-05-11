@@ -72,7 +72,7 @@ export async function POST(req: Request) {
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    // Don't leak the registration state — but do let the user try to log in.
+    // Don't leak the registration state - but do let the user try to log in.
     return NextResponse.json(
       { error: "An account with this email already exists. Try logging in." },
       { status: 409 }

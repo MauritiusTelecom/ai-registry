@@ -1,6 +1,6 @@
 # Governance
 
-This document describes how the **`ai-registry`** reference implementation is governed: who maintains it, how decisions are made, what is in scope, and — critically — what is **explicitly out of scope** so that contributors can spot scope creep early.
+This document describes how the **`ai-registry`** reference implementation is governed: who maintains it, how decisions are made, what is in scope, and - critically - what is **explicitly out of scope** so that contributors can spot scope creep early.
 
 It is grounded in [AIR-SPEC 0.4 §3 and §16](../ai-registry-specs/.speckit/specification.md) and the [constitution](../ai-registry-specs/.speckit/constitution.md). Where this document and the constitution disagree, the constitution wins.
 
@@ -10,7 +10,7 @@ The AI Registry is a **discovery and governance metadata layer**:
 
 > The registry points. The provider operates. The hosting environment secures.
 
-A small, credible catalogue is preferable to a large generic one. Every architectural and product decision in this repository must serve discovery, sovereignty review, and audit transparency — not hosting, not enforcement, not commerce.
+A small, credible catalogue is preferable to a large generic one. Every architectural and product decision in this repository must serve discovery, sovereignty review, and audit transparency - not hosting, not enforcement, not commerce.
 
 ## 2. Scope
 
@@ -39,13 +39,13 @@ The following are **permanently out of scope** for AIR-Core. Pull requests, RFCs
 | 6 | Acting as arbiter of provider liability | The provider is liable; the registry records governance metadata. |
 | 7 | A2A adapter, federation sync workers, automated TAIP posture trees | Not part of the MVP scope; reserved for explicit later RFC. |
 
-When reviewing a contribution, maintainers must ask: *Does this change move us closer to "the registry points," or closer to one of the seven items above?* If the latter — even when packaged as a "small helpful enhancement" — the change must be refused.
+When reviewing a contribution, maintainers must ask: *Does this change move us closer to "the registry points," or closer to one of the seven items above?* If the latter - even when packaged as a "small helpful enhancement" - the change must be refused.
 
 ## 4. Roles
 
-- **Maintainers** — merge PRs, cut releases, and own the `main` branch. Listed in `MAINTAINERS.md` (file to be added when the maintainer set stabilises beyond the founding contributors).
-- **Reviewers** — code review for any non-trivial PR. Maintainers may also act as reviewers.
-- **Contributors** — anyone opening a PR or issue per [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- **Maintainers** - merge PRs, cut releases, and own the `main` branch. Listed in `MAINTAINERS.md` (file to be added when the maintainer set stabilises beyond the founding contributors).
+- **Reviewers** - code review for any non-trivial PR. Maintainers may also act as reviewers.
+- **Contributors** - anyone opening a PR or issue per [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## 5. Decision process
 
@@ -60,7 +60,7 @@ When reviewing a contribution, maintainers must ask: *Does this change move us c
 
 ## 6. Conformance
 
-The `ai-registry` reference implementation tracks AIR-SPEC 0.4. The §22 conformance checklist lives in `ai-registry-specs/` and is validated in CI as part of Phase 5 (T102). Any merge that breaks conformance must restore it within the same PR series — `main` should always be conformant.
+The `ai-registry` reference implementation tracks AIR-SPEC 0.4. The §22 conformance checklist lives in `ai-registry-specs/` and is validated in CI as part of Phase 5 (T102). Any merge that breaks conformance must restore it within the same PR series - `main` should always be conformant.
 
 ## 7. Versioning
 
@@ -73,8 +73,8 @@ Vulnerability disclosure follows [`SECURITY.md`](SECURITY.md). Embargoed fixes m
 
 ## 9. Audit
 
-Every governance mutation in code MUST go through the `writeAudit()` primitive (Phase 4 — T037). The audit table is append-only with retention of at least 24 months per AIR-SPEC §18. Any code change that bypasses `writeAudit()` for a governance write MUST be rejected.
+Every governance mutation in code MUST go through the `writeAudit()` primitive (Phase 4 - T037). The audit table is append-only with retention of at least 24 months per AIR-SPEC §18. Any code change that bypasses `writeAudit()` for a governance write MUST be rejected.
 
 ## 10. Changes to this document
 
-Changes to this `GOVERNANCE.md` require maintainer consensus and a 7-day comment window on the PR. The constitution at `../ai-registry-specs/.speckit/constitution.md` is the parent authority — this document refines it for the reference codebase but cannot override it.
+Changes to this `GOVERNANCE.md` require maintainer consensus and a 7-day comment window on the PR. The constitution at `../ai-registry-specs/.speckit/constitution.md` is the parent authority - this document refines it for the reference codebase but cannot override it.

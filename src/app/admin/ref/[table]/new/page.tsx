@@ -53,7 +53,7 @@ export default async function NewRefRowPage({
 }
 
 function singular(label: string): string {
-  // Naive de-pluralisation for the page title — "User roles" → "user role".
+  // Naive de-pluralisation for the page title - "User roles" → "user role".
   if (label.endsWith("ies")) return label.slice(0, -3).toLowerCase() + "y";
   if (label.endsWith("ses")) return label.slice(0, -2).toLowerCase();
   if (label.endsWith("s")) return label.slice(0, -1).toLowerCase();

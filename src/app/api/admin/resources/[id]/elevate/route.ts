@@ -8,7 +8,7 @@ import { isHttpUrl } from "@/lib/validators";
 /**
  * POST /api/admin/resources/:id/elevate
  *
- * AIR-SPEC §11/§14 — official-resource elevation (T036).
+ * AIR-SPEC §11/§14 - official-resource elevation (T036).
  *
  * Attaches an `OfficialResourceAuthorisation` row from a registry-managed
  * `OfficialAuthority` to a publicly-listed resource and writes a paired

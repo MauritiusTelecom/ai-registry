@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  *
  *   linkedUser.providerId === user.provider.id  AND  emailVerified === true
  *
- * Verified messages only — pre-verification rows live in the operator's
+ * Verified messages only - pre-verification rows live in the operator's
  * inbox until the sender confirms their address.
  */
 

@@ -5,10 +5,10 @@ import { writeAudit } from "@/lib/audit/write-audit";
 import { isHttpUrl } from "@/lib/validators";
 
 /**
- * PATCH /api/admin/resources/:id — edit metadata fields. Lifecycle changes
+ * PATCH /api/admin/resources/:id - edit metadata fields. Lifecycle changes
  *   live on the dedicated `/transition` action route. Slug + provider are
  *   immutable post-create.
- * DELETE /api/admin/resources/:id — only when the resource has zero
+ * DELETE /api/admin/resources/:id - only when the resource has zero
  *   governance footprint (no AIR-ID issued, no review history). Use the
  *   `remove` transition for a graceful tombstone.
  *

@@ -81,7 +81,7 @@ export function UsersAdmin({
     {
       key: "provider",
       label: "Provider",
-      render: (row) => row.providerName ?? "—"
+      render: (row) => row.providerName ?? "-"
     },
     {
       key: "verified",
@@ -441,7 +441,7 @@ function UserForm({
           value={providerSlug}
           onChange={(e) => setProviderSlug(e.target.value)}
         >
-          <option value="">— none —</option>
+          <option value="">- none -</option>
           {providers.map((p) => (
             <option key={p.slug} value={p.slug}>
               {p.displayName}

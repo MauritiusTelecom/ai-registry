@@ -9,7 +9,7 @@
  *   `scrypt$N=16384,r=8,p=1$<saltBase64>$<keyBase64>`
  *
  * Forward-compat: the algorithm/params prefix lets us migrate to argon2 or
- * bump scrypt parameters later without invalidating existing hashes — the
+ * bump scrypt parameters later without invalidating existing hashes - the
  * verifier reads the prefix and dispatches.
  */
 

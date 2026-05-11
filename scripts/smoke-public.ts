@@ -2,15 +2,15 @@
 /**
  * scripts/smoke-public.ts
  *
- * Phase 5 / T055 — minimal smoke for the public discovery + adapters surface.
+ * Phase 5 / T055 - minimal smoke for the public discovery + adapters surface.
  * Exercises:
  *
- *   GET /api/health                 — DB readiness
- *   GET /.well-known/ai-registry    — capability document
- *   GET /api/resources              — list (paginated)
- *   GET /api/resources/[type]/[slug] — first row's detail (when a row exists)
- *   GET /api/resolve?identity=...   — AIR-ID resolve, if a listed AIR-ID exists
- *   POST /api/mcp                   — JSON-RPC initialize + tools/list
+ *   GET /api/health                 - DB readiness
+ *   GET /.well-known/ai-registry    - capability document
+ *   GET /api/resources              - list (paginated)
+ *   GET /api/resources/[type]/[slug] - first row's detail (when a row exists)
+ *   GET /api/resolve?identity=...   - AIR-ID resolve, if a listed AIR-ID exists
+ *   POST /api/mcp                   - JSON-RPC initialize + tools/list
  *
  * Usage:
  *
@@ -147,7 +147,7 @@ async function main() {
   const failed = checks.filter((c) => !c.ok);
   for (const c of checks) {
     const tag = c.ok ? "PASS" : "FAIL";
-    process.stdout.write(`${tag}  ${c.name} — ${c.detail}\n`);
+    process.stdout.write(`${tag}  ${c.name} - ${c.detail}\n`);
   }
   process.stdout.write(
     `\n${checks.length - failed.length}/${checks.length} checks passed\n`

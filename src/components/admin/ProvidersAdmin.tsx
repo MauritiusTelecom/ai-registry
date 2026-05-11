@@ -259,7 +259,7 @@ function ProviderRowActions({
             <h3 style={{ margin: 0, marginBottom: 8 }}>Delete provider?</h3>
             <p style={{ color: "var(--text-2)", fontSize: 14, marginBottom: 18 }}>
               <strong>{row.displayName}</strong> ({row.slug}) will be deleted permanently.
-              Delete is refused when any resource, user, or audit reference exists — suspend
+              Delete is refused when any resource, user, or audit reference exists - suspend
               the provider instead.
             </p>
             {error ? (

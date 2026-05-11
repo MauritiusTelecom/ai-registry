@@ -17,7 +17,7 @@ export function StubPanel({
     <div className="p-stub">
       <div className="p-stub-eyebrow">Stub</div>
       <div className="p-stub-title">
-        {area} — full implementation scheduled
+        {area} - full implementation scheduled
       </div>
       <p className="p-stub-body">
         The portal scaffold, role gating, and navigation are live. The route

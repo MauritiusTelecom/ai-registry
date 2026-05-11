@@ -10,12 +10,12 @@ const PILLARS: { icon: IconName; title: string; desc: string }[] = [
   {
     icon: "flag",
     title: "Sovereignty Review",
-    desc: "Each resource cites local law, data, systems, language or culture — and is reviewed against a published rubric."
+    desc: "Each resource cites local law, data, systems, language or culture - and is reviewed against a published rubric."
   },
   {
     icon: "lock",
     title: "Runtime Identity",
-    desc: "Optional SPIFFE/SPIRE SVIDs from the hosting environment — issued by the operator, never the registry."
+    desc: "Optional SPIFFE/SPIRE SVIDs from the hosting environment - issued by the operator, never the registry."
   },
   {
     icon: "doc",
@@ -94,7 +94,7 @@ export function GovernanceSection() {
             <h3 style={{ marginTop: 12 }}>Specific, not aspirational.</h3>
             <p style={{ marginTop: 10, fontSize: 14 }}>
               To qualify, a submission must cite at least one sovereignty basis with concrete
-              evidence — a referenced law, dataset, institution, language asset or cultural
+              evidence - a referenced law, dataset, institution, language asset or cultural
               artefact.
             </p>
 

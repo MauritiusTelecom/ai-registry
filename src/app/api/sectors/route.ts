@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-/** GET /api/sectors — public read-only sector taxonomy. */
+/** GET /api/sectors - public read-only sector taxonomy. */
 export async function GET() {
   const rows = await prisma.sector.findMany({
     where: { active: true },

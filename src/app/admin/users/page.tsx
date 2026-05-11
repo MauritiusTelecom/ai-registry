@@ -7,7 +7,7 @@ export const metadata = { title: "Admin · Users & roles" };
 export const dynamic = "force-dynamic";
 
 /**
- * Admin · Users — bespoke CRUD grid backed by `/api/admin/users`. Add new
+ * Admin · Users - bespoke CRUD grid backed by `/api/admin/users`. Add new
  * opens a modal that issues an invite email; per-row edit / suspend / delete
  * are inline. See `ai-registry-specs/shared/admin-crud.md` §5.3.
  */

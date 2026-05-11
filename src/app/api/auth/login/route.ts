@@ -12,7 +12,7 @@ import { portalForRole } from "@/lib/portals/auth-gate";
  * Body: { email, password }
  *
  * On success, sets the session cookie and returns the user envelope.
- * On failure, returns 401 with a generic message — never reveals whether
+ * On failure, returns 401 with a generic message - never reveals whether
  * the email exists.
  */
 
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
         role: user.role.code,
         status: user.status.code
       },
-      // Role-based default landing — clients use this when no `next=` query
+      // Role-based default landing - clients use this when no `next=` query
       // param was set on the /login page.
       redirectTo: portalForRole(user.role.code)
     },

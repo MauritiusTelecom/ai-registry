@@ -40,7 +40,7 @@ type PoolNode = {
   kind: "sov" | "edge" | "gov";
 };
 
-// Global node pool — sovereign / edge / gov network nodes that cycle on the globe.
+// Global node pool - sovereign / edge / gov network nodes that cycle on the globe.
 // Coordinates are radians (lat ~[-π/2..π/2], lon ~[-π..π]) approximating each
 // country's capital. Indices 0..AFRICAN_END-1 are African (anchors first); the rest
 // of the world follows. air.mu (index 0) and air.rw (index 1) are pinned anchors
@@ -84,7 +84,7 @@ const NODE_POOL: PoolNode[] = [
   { lat: 0.065, lon: 0.153, label: "air.gq", kind: "edge" },  // Equatorial Guinea
   { lat: 0.007, lon: 0.165, label: "air.ga", kind: "edge" },  // Gabon
   { lat: 0.006, lon: 0.117, label: "air.st", kind: "edge" },  // São Tomé & Príncipe
-  // East Africa (Rwanda excluded — pinned at index 1)
+  // East Africa (Rwanda excluded - pinned at index 1)
   { lat: -0.060, lon: 0.522, label: "air.bi", kind: "edge" }, // Burundi
   { lat: -0.204, lon: 0.755, label: "air.km", kind: "edge" }, // Comoros
   { lat: 0.202, lon: 0.753, label: "air.dj", kind: "edge" },  // Djibouti
@@ -244,8 +244,8 @@ const NODE_POOL: PoolNode[] = [
   { lat: -0.310, lon: 2.938, label: "air.vu", kind: "edge" }   // Vanuatu
 ];
 
-const MU_INDEX = 0; // air.mu — permanent home anchor
-const RW_INDEX = 1; // air.rw — permanent secondary anchor
+const MU_INDEX = 0; // air.mu - permanent home anchor
+const RW_INDEX = 1; // air.rw - permanent secondary anchor
 const AFRICAN_END = 54; // indices 0..53 are African; pickIdx biases toward this range
 const PINNED = new Set<number>([MU_INDEX, RW_INDEX]);
 const AFRICAN_BIAS = 0.6; // probability that a random pick comes from the African range
@@ -262,13 +262,13 @@ type Slot = {
   delayMs: number;
 };
 
-/** Fixed pool indices — deterministic so SSR matches first client hydrate (no
+/** Fixed pool indices - deterministic so SSR matches first client hydrate (no
  *  random/performance in useState init). Both pinned slots (MU, RW) take indices 0
  *  and 1; the remaining (ACTIVE_COUNT - 2 = 5) slots are seeded from this list,
  *  spanning North/West/Central/East/Southern Africa for a balanced opening view. */
 const INITIAL_SLOT_INDICES = [3, 13, 25, 37, 53] as const; // EG, GH, CF, KE, ZA
 
-/** Minimum projected z-depth for a node to be considered "well visible" — i.e.
+/** Minimum projected z-depth for a node to be considered "well visible" - i.e.
  *  comfortably on the front hemisphere with rotation buffer before it hides.
  *  At rotation speed ~0.31 rad/s, z=0.35 gives ~3s of visibility before the
  *  z=-0.05 hide threshold, which covers most of a slot's fade-in + hold. */
@@ -406,7 +406,7 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
 
   // ---- Active fading network slots -------------------------------------------------
   // 7 slots are active at any moment. Each slot picks a node from NODE_POOL, fades in,
-  // holds, fades out, and is replaced with a fresh random node — independent of all
+  // holds, fades out, and is replaced with a fresh random node - independent of all
   // other slots, so the globe surface always shows ~7 named nodes that turn over.
   const slotKeyRef = useRef(ACTIVE_COUNT);
   const [slots, setSlots] = useState<Slot[]>(deterministicInitialSlots);
@@ -437,7 +437,7 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
         const used = new Set(prev.map((s) => s.nodeIdx));
         let changed = false;
         const next = prev.map((s) => {
-          // air.mu and air.rw are permanent anchors — skip expiry.
+          // air.mu and air.rw are permanent anchors - skip expiry.
           if (PINNED.has(s.nodeIdx)) return s;
           // Compute current visibility of this slot's node.
           const node = NODE_POOL[s.nodeIdx];
@@ -448,7 +448,7 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
           if (now - s.bornAt < s.lifetime && !rotatedOut) return s;
           used.delete(s.nodeIdx);
           const idx = pickRandomIdx(used, currentRot);
-          if (idx < 0) return s; // pool exhausted — keep the existing slot
+          if (idx < 0) return s; // pool exhausted - keep the existing slot
           used.add(idx);
           changed = true;
           return {
@@ -528,7 +528,7 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
           <stop offset="50%" stopColor="rgba(var(--secondary-rgb),0.95)" />
           <stop offset="100%" stopColor="rgba(var(--tertiary-rgb),0)" />
         </linearGradient>
-        {/* Rwanda flag — sky blue / yellow / green, used as a glow border around air.rw */}
+        {/* Rwanda flag - sky blue / yellow / green, used as a glow border around air.rw */}
         <linearGradient id="rwanda-flag-grad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#00A1DE" />
           <stop offset="50%" stopColor="#00A1DE" />
@@ -625,9 +625,9 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
         })}
       </g>
 
-      {/* Active fading network nodes — 7 named slots, each fades in/holds/fades out
+      {/* Active fading network nodes - 7 named slots, each fades in/holds/fades out
           on its own independent timeline. air.mu (cyan) and air.rw (amber) are the
-          permanent anchor nodes — they never fade and are rendered with a glowing
+          permanent anchor nodes - they never fade and are rendered with a glowing
           colored halo to mark them as pinned. */}
       <g transform={`translate(${cx} ${cy})`}>
         {slots.map((slot) => {
@@ -636,7 +636,7 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
           const isPinned = PINNED.has(slot.nodeIdx);
           const isHome = slot.nodeIdx === MU_INDEX;
           const isRwanda = slot.nodeIdx === RW_INDEX;
-          // Anchor accents — cyan for the home node, Rwanda flag yellow for air.rw
+          // Anchor accents - cyan for the home node, Rwanda flag yellow for air.rw
           // (the Rwanda halo border itself uses the full flag gradient).
           const accent = isHome ? "34,211,238" : "250,210,1"; // rgb triplets
           const accentSolid = `rgb(${accent})`;
@@ -673,7 +673,7 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
             >
               {isPinned && (
                 <>
-                  {/* Outer pulsing accent glow — flag gradient for Rwanda, accent
+                  {/* Outer pulsing accent glow - flag gradient for Rwanda, accent
                       rgba for Mauritius. */}
                   <circle
                     cx={p.x}
@@ -697,7 +697,7 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
                       repeatCount="indefinite"
                     />
                   </circle>
-                  {/* Solid halo ring — Rwanda uses the flag gradient as a glow
+                  {/* Solid halo ring - Rwanda uses the flag gradient as a glow
                       border (sky blue / yellow / green stripes). */}
                   <circle
                     cx={p.x}

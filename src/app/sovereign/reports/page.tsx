@@ -6,7 +6,7 @@ export const metadata = { title: "Sovereign · Reports" };
 export const dynamic = "force-dynamic";
 
 /**
- * Sovereign · Reports — quarterly summary surface for the operator and
+ * Sovereign · Reports - quarterly summary surface for the operator and
  * government stakeholders. The schema does not yet carry a `Report` model
  * (generation lands once the operator approves the canonical template); this
  * page renders a live "current quarter" snapshot from existing data so the
@@ -127,7 +127,7 @@ export default async function SovereignReportsPage() {
         <h2 style={{ fontSize: 14, marginBottom: 12, fontWeight: 500 }}>Generated reports</h2>
         <p style={{ fontSize: 13.5, color: "var(--text-2)", margin: 0, lineHeight: 1.55 }}>
           No persisted quarterly reports yet. The first generation lands once the operator
-          confirms the canonical template (sections, signatories, distribution list) — see the
+          confirms the canonical template (sections, signatories, distribution list) - see the
           module spec at{" "}
           <code>ai-registry-specs/modules/sovereign/reports/product.md</code>. Until then, the
           snapshot above always reflects the current 90-day window.

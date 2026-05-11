@@ -252,7 +252,7 @@ export async function listPublicResources(
   };
 }
 
-/** Per-kind totals for the kind tabs — same filters as `filters` except `kind` (search + status + …). */
+/** Per-kind totals for the kind tabs - same filters as `filters` except `kind` (search + status + …). */
 async function countsByKindForFilters(filters: ListFilters): Promise<CountsByKind> {
   const withoutKind: ListFilters = { ...filters, kind: null };
   const where = await buildResourceWhere(withoutKind);
@@ -300,7 +300,7 @@ export async function findResourceForDetail(args: {
     });
   }
   if (args.slug) {
-    // Look up by the (provider, slug) compound — but the public detail route
+    // Look up by the (provider, slug) compound - but the public detail route
     // uses `slug` only. Match the first publicly-visible row with this slug.
     return prisma.resource.findFirst({
       where: {

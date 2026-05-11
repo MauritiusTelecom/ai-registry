@@ -37,7 +37,7 @@ export default async function SovereignDashboardPage() {
       <div className="p-page-header">
         <h1 className="p-title">Sovereign operations</h1>
         <p className="p-subtitle">
-          National view of the registry — {cfg.jurisdiction} · operated by {cfg.operatorName}.
+          National view of the registry - {cfg.jurisdiction} · operated by {cfg.operatorName}.
         </p>
       </div>
 

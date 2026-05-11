@@ -10,7 +10,7 @@ const SECTIONS = [
   {
     id: "air-id",
     label: "AIR-ID format",
-    body: "air://<jurisdiction>/<kind>/<provider>/<name>@<version> — stable, resolvable, and human-readable."
+    body: "air://<jurisdiction>/<kind>/<provider>/<name>@<version> - stable, resolvable, and human-readable."
   },
   {
     id: "metadata",

@@ -7,7 +7,7 @@ export const metadata = { title: "Admin · Resources" };
 export const dynamic = "force-dynamic";
 
 /**
- * Admin · Resources — bespoke CRUD grid backed by `/api/admin/resources`.
+ * Admin · Resources - bespoke CRUD grid backed by `/api/admin/resources`.
  * Add new opens a modal that creates a draft; per-row Approve / Reject /
  * Suspend / Restore / Deprecate / Remove route through
  * `/api/admin/resources/:id/transition`. The §11 sovereignty checklist

@@ -6,7 +6,7 @@ export const metadata = { title: "Verifier · Settings" };
 export const dynamic = "force-dynamic";
 
 /**
- * Verifier · Settings — read-only profile + reviewer preferences.
+ * Verifier · Settings - read-only profile + reviewer preferences.
  *
  * The schema does not yet carry per-reviewer preferences (queue filters,
  * default review type, etc.); this page surfaces what IS persisted (the
@@ -48,7 +48,7 @@ export default async function VerifierSettingsPage() {
         <h1 className="p-title">Settings</h1>
         <p className="p-subtitle">
           Reviewer profile, queue scope, and account links. Per-reviewer queue preferences are not
-          yet persisted in schema — this page reflects what IS stored.
+          yet persisted in schema - this page reflects what IS stored.
         </p>
       </div>
 
@@ -69,10 +69,10 @@ export default async function VerifierSettingsPage() {
             {user.roles.join(", ")}
           </Row>
           <Row label="Email verified">
-            {user.emailVerified ? "yes" : "no — check inbox"}
+            {user.emailVerified ? "yes" : "no - check inbox"}
           </Row>
           <Row label="Provider linkage" mono>
-            {user.provider ? `${user.provider.displayName} (${user.provider.slug})` : "—"}
+            {user.provider ? `${user.provider.displayName} (${user.provider.slug})` : "-"}
           </Row>
         </Card>
 
@@ -97,7 +97,7 @@ export default async function VerifierSettingsPage() {
             }}
           >
             Reviews against your own provider record are blocked by{" "}
-            <code>assertCanReview()</code> — they appear in the queue count but cannot be approved
+            <code>assertCanReview()</code> - they appear in the queue count but cannot be approved
             by you.
           </p>
         </Card>

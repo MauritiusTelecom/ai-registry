@@ -11,7 +11,7 @@ const FAQS = [
   },
   {
     q: "How is sovereignty defined?",
-    a: "A submission must cite at least one of: local law, local data, local systems, or local language and culture — with concrete evidence such as a referenced statute, dataset, or institutional integration."
+    a: "A submission must cite at least one of: local law, local data, local systems, or local language and culture - with concrete evidence such as a referenced statute, dataset, or institutional integration."
   },
   {
     q: "What does “verified” mean?",
