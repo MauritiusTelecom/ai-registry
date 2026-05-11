@@ -252,7 +252,7 @@ export function ProvidersSection({
             <span>Providers</span>
           </div>
           <h2>
-            Meet the organisations <span className="gradient-text">your nation already trusts</span>.
+            Meet the organisations <span className="gradient-text">Mauritius already trusts</span>.
           </h2>
           <p>
             Every listing in the registry traces back to a verifiable provider. Browse who hosts,

@@ -367,8 +367,25 @@ async function main() {
 
     // ─── Exemplar provider ─────────────────────────────────────────────────
 
-    const providerSlug = process.env.SEED_PROVIDER_SLUG ?? "exemplar-provider";
-    const providerName = process.env.SEED_PROVIDER_NAME ?? "Exemplar Provider";
+    const providerSlug = process.env.SEED_PROVIDER_SLUG ?? "mauritius-telecom";
+    const providerName = process.env.SEED_PROVIDER_NAME ?? "Mauritius Telecom";
+
+    // One-time rename: if a legacy "exemplar-provider" row exists and the
+    // new seed slug is different, migrate the row instead of creating a
+    // duplicate. Preserves the providerId so existing resource links keep
+    // pointing at the right row.
+    if (providerSlug !== "exemplar-provider") {
+      const legacy = await prisma.provider.findUnique({
+        where: { slug: "exemplar-provider" }
+      });
+      if (legacy) {
+        await prisma.provider.update({
+          where: { id: legacy.id },
+          data: { slug: providerSlug, displayName: providerName, legalName: providerName }
+        });
+        console.log(`  ✓ renamed legacy provider exemplar-provider → ${providerSlug}`);
+      }
+    }
 
     const provider = await prisma.provider.upsert({
       where: { slug: providerSlug },

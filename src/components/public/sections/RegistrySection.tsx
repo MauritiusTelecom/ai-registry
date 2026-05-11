@@ -328,7 +328,7 @@ export function RegistrySection({
             <span>The Registry</span>
           </div>
           <h2>
-            Discover what your nation can <span className="gradient-text">trust and integrate</span>.
+            Discover what Mauritius can <span className="gradient-text">trust and integrate</span>.
           </h2>
           <p>
             The registry points to locally-relevant AI resources — never hosts them. Each listing

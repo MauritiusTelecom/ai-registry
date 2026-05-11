@@ -17,7 +17,7 @@ export default async function RegistryPage({
         crumb="Registry · Discover sovereign AI"
         title={
           <>
-            Discover what your nation can{" "}
+            Discover what Mauritius can{" "}
             <span className="gradient-text">trust and integrate</span>.
           </>
         }

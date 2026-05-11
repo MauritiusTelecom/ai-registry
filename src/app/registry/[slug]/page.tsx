@@ -37,10 +37,8 @@ export default async function ResourceDetailPage({
         }
         title={
           <>
-            {detail.title}{" "}
-            <span style={{ color: "var(--text-3)", fontWeight: 400 }}>
-              by {detail.provider}
-            </span>
+            {detail.title} by{" "}
+            <span className="gradient-text">{detail.provider}</span>
           </>
         }
         subtitle={detail.desc}
