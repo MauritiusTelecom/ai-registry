@@ -152,7 +152,7 @@ export function toRegistryCard(r: ResourceForCard): RegistryCard {
     status: deriveDisplayStatus(r),
     desc: r.shortDescription,
     context: pickContext(r),
-    latency: "-",
+    latency: r.latencyTier && r.latencyTier.trim() !== "" ? r.latencyTier : "-",
     region: r.primaryJurisdiction.code,
     license: r.license ?? "-",
     tags: (r.resourceTags ?? []).map((rt) => rt.tag.name)
