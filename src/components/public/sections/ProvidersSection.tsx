@@ -267,34 +267,8 @@ export function ProvidersSection({
         </Reveal>
       )}
 
-      <Reveal>
-        <div className="registry-toolbar">
-          <div className="search-input">
-            <Icon name="search" size={15} />
-            <input
-              placeholder="Search providers, jurisdictions, capabilities…"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              aria-busy={dataSource === "api" && loading}
-            />
-            <kbd>⌘K</kbd>
-          </div>
-          <div className="tabs">
-            {KINDS.map((kind) => (
-              <button
-                key={kind.id}
-                type="button"
-                className={`tab ${activeKind === kind.id ? "active" : ""}`}
-                onClick={() => setActiveKind(kind.id)}
-              >
-                <Icon name={kind.icon} size={13} />
-                {kind.label}
-                <span className="tab-count">{counts[kind.id] ?? 0}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </Reveal>
+      {/* Filter toolbar hidden while the catalogue carries only a handful
+          of providers — kind tabs and the search would just sit empty. */}
 
       {/* Status chips hidden while the catalogue has a single provider —
           all rows carry the same status, so the filter would do nothing. */}
