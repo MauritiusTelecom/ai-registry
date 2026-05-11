@@ -62,9 +62,11 @@ function UserMenu() {
 
   // Pre-hydration: render the same Log-In affordance the server would have
   // emitted, so the layout doesn't shift once `/api/auth/me` resolves.
+  // .hide-on-mobile so the mobile chrome can surface Log-In inside the
+  // hamburger instead.
   if (loading || !user) {
     return (
-      <Link href="/login" className="nav-cta">
+      <Link href="/login" className="nav-cta hide-on-mobile">
         Log In
         <Icon name="arrow-up-right" size={12} />
       </Link>
@@ -143,6 +145,7 @@ function UserMenu() {
 }
 
 function MobileMenu({ pathname }: { pathname: string }) {
+  const { user, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -161,6 +164,8 @@ function MobileMenu({ pathname }: { pathname: string }) {
       document.removeEventListener("keydown", onEsc);
     };
   }, [open]);
+
+  const showLogin = !loading && !user;
 
   return (
     <div ref={ref} className="nav-menu-mobile">
@@ -189,6 +194,24 @@ function MobileMenu({ pathname }: { pathname: string }) {
                 {item.label}
               </Link>
             ))}
+            {showLogin ? (
+              <>
+                <div
+                  style={{
+                    borderTop: "1px solid var(--hairline)",
+                    margin: "6px 0"
+                  }}
+                />
+                <Link
+                  href="/login"
+                  role="menuitem"
+                  className="dropdown-item"
+                  onClick={() => setOpen(false)}
+                >
+                  <Icon name="arrow-up-right" size={14} /> Log In
+                </Link>
+              </>
+            ) : null}
           </div>
         </div>
       )}

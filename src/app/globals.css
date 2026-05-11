@@ -411,6 +411,7 @@ p { color: var(--text-2); margin: 0; }
   .nav-logo { font-size: 13px; gap: 8px; }
   .nav-logo-mark { width: 20px; height: 20px; }
   .nav-cta { padding: 6px 10px; font-size: 12.5px; }
+  .hide-on-mobile { display: none !important; }
 }
 
 @media (max-width: 380px) {

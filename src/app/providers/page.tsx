@@ -13,7 +13,7 @@ export default function ProvidersPage() {
         title={
           <>
             Meet the organisations{" "}
-            <span className="gradient-text">your nation already trusts</span>.
+            <span className="gradient-text">Mauritius already trusts</span>.
           </>
         }
         subtitle="Browse the sovereign operators, model labs, hosting partners and accredited integrators behind every listing in the registry. Each provider carries a verifiable status and a public profile."
