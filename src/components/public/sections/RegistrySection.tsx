@@ -313,7 +313,7 @@ export function RegistrySection({
           </p>
           {dataSource === "api" && !loading && !error ? (
             <p style={{ fontSize: 13, color: "var(--text-3)", marginTop: 8 }}>
-              Showing {filtered.length} of {apiTotal} public listing{apiTotal === 1 ? "" : "s"} (server-filtered).
+              Showing {filtered.length} of {apiTotal} public listing{apiTotal === 1 ? "" : "s"}.
             </p>
           ) : null}
         </Reveal>

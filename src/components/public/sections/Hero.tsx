@@ -94,17 +94,6 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
             Discover Ecosystem
           </Link>
         </div>
-
-        <div className="hero-meta">
-          <div className="hero-meta-item">
-            <span className="status-dot" />
-            All systems nominal
-          </div>
-          <div className="hero-meta-item" style={{ color: "var(--secondary)" }}>
-            SOC 2 · ISO 27001 · FedRAMP High
-          </div>
-          <div className="hero-meta-item">build 2026.05.07-r3</div>
-        </div>
       </div>
 
       <div className="hero-visual">
