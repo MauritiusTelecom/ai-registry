@@ -12,8 +12,6 @@ type Metric = {
 const METRICS: Metric[] = [
   { label: "Listed Resources", target: 247, suffix: "", trend: "+12 this month" },
   { label: "Verified Providers", target: 89, suffix: "", trend: "+4 this week" },
-  { label: "Sovereignty Reviews", target: 1842, suffix: "", trend: "rolling 90d" },
-  { label: "Daily Discovery Calls", target: 56400, suffix: "", trend: "+8.2% MoM" },
   { label: "Uptime", target: 99.97, suffix: "%", trend: "90-day SLO" },
   { label: "Jurisdictions", target: 12, suffix: "", trend: "national rollout" }
 ];
