@@ -44,7 +44,7 @@ const KINDS: { id: "all" | Resource["kind"]; label: string; icon: IconName }[] =
   { id: "all", label: "All resources", icon: "layers" },
   { id: "model", label: "Models", icon: "cpu" },
   { id: "agent", label: "Agents", icon: "agent" },
-  { id: "skill", label: "MCP skills", icon: "zap" },
+  { id: "skill", label: "Skills", icon: "zap" },
   { id: "tool", label: "Tools", icon: "flow" }
 ];
 
