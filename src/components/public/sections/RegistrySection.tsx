@@ -57,6 +57,13 @@ const STATUS_FILTERS: Resource["status"][] = [
 
 const KIND_SET = new Set<string>(["model", "agent", "skill", "tool"]);
 
+const KIND_LABEL: Record<Resource["kind"], string> = {
+  model: "Model",
+  agent: "Agent",
+  skill: "Skill",
+  tool: "Tool"
+};
+
 function cardToResource(card: RegistryCard): Resource {
   const kind = KIND_SET.has(card.kind) ? (card.kind as Resource["kind"]) : "tool";
   return {
@@ -108,7 +115,7 @@ function FeatureResourceCard({ resource }: { resource: Resource }) {
         </div>
         <div className={`r-status ${resource.status}`}>
           <span className="status-dot" />
-          {resource.status}
+          {KIND_LABEL[resource.kind]}
         </div>
       </div>
       <div className="r-desc">{resource.desc}</div>
