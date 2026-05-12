@@ -70,7 +70,6 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
             <rect x="0" y="20" width="60" height="10" fill="#FFD500" />
             <rect x="0" y="30" width="60" height="10" fill="#00A04D" />
           </svg>
-          <span>v0.4 · airegistry.mu</span>
         </div>
 
         <h1 className="hero-title">

@@ -1,16 +1,16 @@
 /**
- * Phase 1 seed.
+ * Registry seed.
  *
  * Loads reference taxonomies (every controlled vocabulary that lives in its
  * own table per the schema's "no SQL enums" convention), the deployment's
- * jurisdiction, languages, sectors, sovereignty bases, plus one exemplar
- * provider with one resource per AIR-SPEC §7 resource type and a sovereignty
- * evidence stub for each.
+ * jurisdiction, languages, sectors, sovereignty bases, the reference
+ * provider and its production catalogue (one resource per resource type the
+ * operator publishes), plus per-resource sovereignty evidence with real
+ * regulatory and infrastructure references.
  *
- * Idempotent: every row is inserted via `upsert` keyed on its natural unique
- * (`code` for reference rows, slug-style identifiers for domain rows). Re-
- * running the script after a successful seed is a no-op for existing rows
- * and only fills new gaps.
+ * Idempotent and self-healing: reference rows upsert by their natural code,
+ * domain rows upsert by slug, and sovereignty evidence is rewritten on every
+ * run so historical stub rows can never survive a re-seed.
  *
  * Run with:
  *
