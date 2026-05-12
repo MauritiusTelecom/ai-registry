@@ -1,6 +1,17 @@
 node_modules/
 .env
 .env.local
+.env.production
+.env.production.local
 src/generated/
 .next/
 out/
+
+# Local-only deploy machine config (host, user, paths). Real values live here.
+deploy/deploy.config.sh
+# Never commit anything dropped into deploy/secrets/. It is consumed by
+# deploy.sh and rsync'd to the server, but the contents are sensitive.
+deploy/secrets/
+# Release artefacts produced by `npm run deploy:build`.
+deploy/build/
+deploy/release-*.tar.gz

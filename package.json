@@ -19,7 +19,10 @@
     "deploy:v2": "bash scripts/deploy.sh v2",
     "deploy:legacy": "bash scripts/deploy.sh legacy",
     "config:validate": "tsx scripts/validate-config.ts",
-    "smoke": "tsx scripts/smoke-public.ts"
+    "smoke": "tsx scripts/smoke-public.ts",
+    "deploy": "bash deploy/deploy.sh",
+    "deploy:dry": "DRY_RUN=1 bash deploy/deploy.sh",
+    "deploy:db:remote": "bash deploy/deploy-db.sh"
   },
   "prisma": {
     "schema": "src/prisma/schema.prisma",
