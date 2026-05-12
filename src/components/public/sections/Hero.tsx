@@ -109,14 +109,14 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
           />
           <HeroFloatCard
             style={{ top: "32%", right: "-4%" }}
-            title="Conversational AI"
+            title="my.t Conversational AI"
             subtitle="Verified · Mauritius Telecom · Kreol Morisien"
             dot="#a855f7"
             delay={1.2}
           />
           <HeroFloatCard
             style={{ bottom: "6%", left: "4%" }}
-            title="Document AI"
+            title="my.t Document AI"
             subtitle="Verified · Mauritius Telecom · OCR"
             dot="#22d3ee"
             delay={2.4}
