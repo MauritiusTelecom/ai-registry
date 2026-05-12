@@ -73,6 +73,34 @@ export type RegistryConfig = {
    * When unset, complaint notifications to staff are skipped.
    */
   operatorInboxEmail: string | null;
+  /**
+   * Public-facing contact URL surfaced in transactional emails (e.g. the
+   * report acknowledgement). Defaults to `https://{portalDomain}/contact`
+   * when PUBLIC_CONTACT_URL is not set.
+   */
+  publicContactUrl: string;
+  /**
+   * Admin console URL surfaced in operator-notification emails (e.g. the
+   * inbox alert for a new public report). Defaults to
+   * `https://{portalDomain}/admin` when ADMIN_HOME_URL is not set.
+   */
+  adminHomeUrl: string;
+  /**
+   * Email templates for the "Report this listing" flow. Each field is a
+   * template string that can reference any of the placeholders:
+   *   {registryName} {operatorName} {complaintId} {reason}
+   *   {complaintType} {severity} {targetSummary} {contactUrl} {adminHomeUrl}
+   *
+   * Set via .env to keep operator-specific wording out of the source tree.
+   * Defaults fall back to a built-in English copy that uses REGISTRY_NAME /
+   * OPERATOR_NAME so a fresh deployment still produces sensible mail.
+   */
+  publicReportEmail: {
+    ackSubject: string;
+    ackBody: string;
+    operatorSubject: string;
+    operatorBody: string;
+  };
 };
 
 const REQUIRED_KEYS = [
@@ -249,6 +277,47 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
       ? operatorInboxRaw.toLowerCase()
       : null;
 
+  // ── Public URLs and report-email templates ────────────────────────────
+  // Allow operators to override the contact / admin URLs surfaced in
+  // transactional emails. Useful when the public portal and the API base
+  // are served from different hostnames.
+  const publicContactUrl =
+    (env.PUBLIC_CONTACT_URL ?? "").trim() || `https://${portalDomain}/contact`;
+  const adminHomeUrl =
+    (env.ADMIN_HOME_URL ?? "").trim() || `https://${portalDomain}/admin`;
+
+  // Email templates for the public listing-report flow. Each value is a
+  // template; placeholders are wrapped in `{braces}`. Escaped newlines
+  // (\n) in the env value are converted to real newlines so operators can
+  // keep the value on a single line in .env.
+  const unescape = (raw: string): string =>
+    raw.replace(/\\n/g, "\n").replace(/\\r/g, "\r").replace(/\\t/g, "\t");
+
+  const defaultAckSubject = `Report received - {registryName}`;
+  const defaultAckBody =
+    `Thank you for contacting {registryName}.\n\n` +
+    `We recorded your report (reference: {complaintId}). ` +
+    `{operatorName} will review it according to our process and may follow up at this email if more information is needed.\n\n` +
+    `You can reach us again via:\n  {contactUrl}\n\n` +
+    `- {operatorName} · {registryName}`;
+  const defaultOperatorSubject = `[{registryName}] New listing report {complaintId}`;
+  const defaultOperatorBody =
+    `A new public listing report was filed.\n\n` +
+    `Id: {complaintId}\n` +
+    `Reason: {reason}\n` +
+    `Mapped type: {complaintType}\n` +
+    `Severity: {severity}\n` +
+    `Target: {targetSummary}\n\n` +
+    `Open the admin console:\n  {adminHomeUrl}\n\n` +
+    `- {registryName} (automated)`;
+
+  const ackSubject = unescape((env.PUBLIC_REPORT_ACK_SUBJECT ?? "").trim()) || defaultAckSubject;
+  const ackBody = unescape((env.PUBLIC_REPORT_ACK_BODY ?? "").trim()) || defaultAckBody;
+  const operatorSubject =
+    unescape((env.PUBLIC_REPORT_OPERATOR_SUBJECT ?? "").trim()) || defaultOperatorSubject;
+  const operatorBody =
+    unescape((env.PUBLIC_REPORT_OPERATOR_BODY ?? "").trim()) || defaultOperatorBody;
+
   return {
     databaseUrl,
     registryName,
@@ -273,7 +342,15 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
       smtpPass
     },
     contactFormReplyMessage,
-    operatorInboxEmail
+    operatorInboxEmail,
+    publicContactUrl,
+    adminHomeUrl,
+    publicReportEmail: {
+      ackSubject,
+      ackBody,
+      operatorSubject,
+      operatorBody
+    }
   };
 }
 

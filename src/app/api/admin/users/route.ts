@@ -68,8 +68,8 @@ export async function GET(req: Request) {
       { email: { contains: q, mode: "insensitive" } }
     ];
   }
-  if (role) where.role = { code: role };
-  if (status) where.status = { code: status };
+  if (role) where.role = { code: role.toLowerCase() };
+  if (status) where.status = { code: status.toLowerCase() };
   if (verified === "true") where.emailVerified = true;
   else if (verified === "false") where.emailVerified = false;
 

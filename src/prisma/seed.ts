@@ -261,10 +261,11 @@ async function seedRef<T extends { code: string }>(
   const result = new Map<string, string>();
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
+    const code = row.code.trim().toLowerCase();
     const upserted = (await table.upsert({
-      where: { code: row.code },
+      where: { code },
       create: {
-        code: row.code,
+        code,
         name: row.name,
         description: row.description ?? null,
         sortOrder: row.sortOrder ?? i + 1
@@ -275,7 +276,7 @@ async function seedRef<T extends { code: string }>(
         sortOrder: row.sortOrder ?? i + 1
       }
     })) as { id: string };
-    result.set(row.code, upserted.id);
+    result.set(code, upserted.id);
   }
   console.log(`  ✓ ${label.padEnd(36)} (${rows.length})`);
   return result;
@@ -516,6 +517,10 @@ async function main() {
         referenceIdentifier?: string;
         issuingBody?: string;
       };
+      /** Language codes to link (e.g. en) — must exist in Language table. */
+      languageCodes?: string[];
+      /** Sector codes to link (e.g. telecom) — must exist in Sector table. */
+      sectorCodes?: string[];
     };
 
     const resourceSeeds: ResourceSeed[] = [
@@ -695,7 +700,9 @@ async function main() {
           referenceUrl: "https://www.icta.mu",
           referenceIdentifier: "ICTA mobile number-range allocation",
           issuingBody: "ICT Authority, Republic of Mauritius"
-        }
+        },
+        languageCodes: ["en"],
+        sectorCodes: ["telecom"]
       }
     ];
 
@@ -780,6 +787,7 @@ async function main() {
             resourceId: resource.id,
             protocolId: protocolIds.get("rest")!,
             endpointUrl: `https://${providerSlug}.example/api/${seed.slug}`,
+            documentationUrl: seed.documentationUrl ?? null,
             authMethodId: authMethodIds.get("api_key")!,
             accessModelId: accessModelIds.get("registered")!,
             primary: true,
@@ -787,6 +795,33 @@ async function main() {
             lastCheckStatusId: endpointHealthIds.get("unknown")!
           }
         });
+      }
+
+      if (seed.languageCodes?.length) {
+        for (const code of seed.languageCodes) {
+          const lang = await prisma.language.findUnique({ where: { code } });
+          if (lang) {
+            await prisma.resourceLanguage.upsert({
+              where: {
+                resourceId_languageId: { resourceId: resource.id, languageId: lang.id }
+              },
+              create: { resourceId: resource.id, languageId: lang.id },
+              update: {}
+            });
+          }
+        }
+      }
+      if (seed.sectorCodes?.length) {
+        for (const code of seed.sectorCodes) {
+          const sector = await prisma.sector.findUnique({ where: { code } });
+          if (sector) {
+            await prisma.resourceSector.upsert({
+              where: { resourceId_sectorId: { resourceId: resource.id, sectorId: sector.id } },
+              create: { resourceId: resource.id, sectorId: sector.id },
+              update: {}
+            });
+          }
+        }
       }
 
       console.log(`  ✓ resource seeded: ${resource.title} (slug=${resource.slug})`);

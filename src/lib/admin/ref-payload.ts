@@ -54,7 +54,10 @@ export function projectInputs(
     if (expected === "string") {
       if (typeof raw !== "string") errors.push(`${field.key} must be a string`);
       else {
-        const trimmed = raw.trim();
+        let trimmed = raw.trim();
+        // Reference vocab `code` is always lowercase snake_case (see seed + F_CODE help).
+        // Without this, "ADMIN" and "admin" become two rows; Prisma unique is case-sensitive.
+        if (field.key === "code") trimmed = trimmed.toLowerCase();
         if (field.required && trimmed === "") errors.push(`${field.key} is required`);
         else data[field.key] = trimmed;
       }
