@@ -114,7 +114,6 @@ function FeatureResourceCard({ resource }: { resource: Resource }) {
           <div className="r-provider">{resource.provider}</div>
         </div>
         <div className={`r-status ${resource.status}`}>
-          <span className="status-dot" />
           {KIND_LABEL[resource.kind]}
         </div>
       </div>
