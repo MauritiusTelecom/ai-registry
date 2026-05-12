@@ -11,6 +11,8 @@
  *   - Calls `notFound()` when the session is valid but the user lacks the
  *     role (we prefer 404 over 403 here so the existence of role-specific
  *     portals isn't disclosed to unauthorised users).
+ *   - Redirects to /login?verify=1 when the session user has not yet
+ *     verified their email (admins exempt — see comment inside).
  */
 
 import { notFound, redirect } from "next/navigation";
@@ -71,6 +73,13 @@ export async function requireRole(
   const allowed = ROLE_ALIASES[role];
   if (!user.roles.some((r) => allowed.includes(r))) {
     notFound();
+  }
+  // Defence-in-depth: even if a session somehow exists for an unverified
+  // user (the /api/auth/login route now blocks this, but other code paths
+  // may exist in future), the portal stays closed until the email is
+  // verified. Admins are exempt so an operator can recover broken accounts.
+  if (!user.emailVerified && !user.roles.includes("admin")) {
+    redirect("/login?verify=1");
   }
   return user;
 }

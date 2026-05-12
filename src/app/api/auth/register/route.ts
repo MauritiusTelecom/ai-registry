@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { getConfig } from "@/lib/config";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
-import { issueSessionToken, sessionCookieAttributes } from "@/lib/auth/session";
 import { generateRawToken, hashToken, verificationExpiry } from "@/lib/auth/tokens";
 import { emailTemplates, sendEmail } from "@/lib/email";
 import { linkContactsToUser } from "@/lib/contacts/link-to-user";
-import { portalForRole } from "@/lib/portals/auth-gate";
 
 /**
  * POST /api/auth/register
@@ -15,9 +12,9 @@ import { portalForRole } from "@/lib/portals/auth-gate";
  * Body: { email, password, name, organisationName? }
  *
  * Creates a User row with role=`provider`, status=`invited`, emailVerified=false,
- * a verification token, and immediately starts a session so the user lands on
- * the protected onboarding page. The verification email is sent (or logged in
- * dev). 409 on duplicate email.
+ * and a verification token, then emails a verification link. No session is
+ * issued — the new account cannot access the provider portal until the
+ * email is verified and the user signs in. 409 on duplicate email.
  */
 
 type RegisterPayload = {
@@ -135,25 +132,14 @@ export async function POST(req: Request) {
   });
   await sendEmail({ to: email, subject: tmpl.subject, text: tmpl.text });
 
-  // Issue session immediately so the new user lands on /portal.
-  const token = issueSessionToken(user.id);
-  const attrs = sessionCookieAttributes();
-  const jar = await cookies();
-  jar.set(attrs.name, token, {
-    httpOnly: attrs.httpOnly,
-    secure: attrs.secure,
-    sameSite: attrs.sameSite,
-    path: attrs.path,
-    maxAge: attrs.maxAge
-  });
-
+  // No session is issued. The user must open the verification link from their
+  // inbox and then sign in. The frontend should route them to
+  // /login?registered=1 which renders a "check your email" confirmation.
   return NextResponse.json(
     {
       ok: true,
       user: { id: user.id, email: user.email, name: user.name, emailVerified: false },
-      // New providers land on /provider; future support for self-registering
-      // other roles plugs in here via portalForRole().
-      redirectTo: portalForRole(providerRole.code),
+      redirectTo: "/login?registered=1",
       verifyUrl: process.env.NODE_ENV !== "production" ? verifyUrl : undefined
     },
     { status: 201 }
