@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Icon, type IconName } from "../Icon";
 import { Reveal } from "../Reveal";
 import { PageHero } from "./PageHero";
@@ -967,12 +968,14 @@ function GetInvolved() {
         >
           {TRACKS.map((t) => {
             const isExternal = t.href.startsWith("http");
+            const LinkEl: React.ElementType = isExternal ? "a" : Link;
             return (
-              <a
+              <LinkEl
                 key={t.num}
                 href={t.href}
-                target={isExternal ? "_blank" : undefined}
-                rel={isExternal ? "noopener noreferrer" : undefined}
+                {...(isExternal
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : {})}
                 className="feature-card"
                 style={{
                   position: "relative",
@@ -1043,7 +1046,7 @@ function GetInvolved() {
                   {t.cta}
                   <span aria-hidden>&rarr;</span>
                 </div>
-              </a>
+              </LinkEl>
             );
           })}
         </div>
@@ -1124,7 +1127,7 @@ function ClosingCta() {
               Open the live registry
               <span aria-hidden>&rarr;</span>
             </a>
-            <a
+            <Link
               href="/contact"
               className="btn"
               style={{
@@ -1142,7 +1145,7 @@ function ClosingCta() {
               }}
             >
               Talk to the team
-            </a>
+            </Link>
           </div>
         </div>
       </Reveal>
