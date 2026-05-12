@@ -498,6 +498,10 @@ async function main() {
       license: string;
       versionLabel: string;
       latencyTier: string;
+      versionNumber?: string;
+      accessUrl?: string;
+      sourceCodeUrl?: string;
+      documentationUrl?: string;
     };
 
     const resourceSeeds: ResourceSeed[] = [
@@ -589,6 +593,24 @@ async function main() {
         license: "Commercial",
         versionLabel: "Image + Video",
         latencyTier: "0.9s"
+      },
+      {
+        slug: "mauritius-mobile-operator",
+        title: "mauritius-mobile-operator",
+        typeCode: "skill",
+        shortDescription:
+          "Identify the Mauritian mobile operator (Emtel, my.t mobile, or Chili) for a Mauritian phone number, based on the ICTA-assigned number-range allocation table.",
+        longDescription:
+          "Python skill that resolves any Mauritian mobile number to its assigned operator using the ICTA number-range allocation table. Useful for routing, billing reconciliation, fraud screening, and any workflow that needs to know which mobile network a subscriber sits on. The allocation table ships with the package and is kept in sync with the public ICTA publications.",
+        sovereigntyBasis: "local_data",
+        license: "Proprietary - Mauritius Telecom",
+        versionLabel: "Python 3.9+",
+        latencyTier: "<10ms",
+        versionNumber: "0.1.0",
+        accessUrl: "https://github.com/MauritiusTelecom/mauritius-mobile-operator",
+        sourceCodeUrl: "https://github.com/MauritiusTelecom/mauritius-mobile-operator",
+        documentationUrl:
+          "https://github.com/MauritiusTelecom/mauritius-mobile-operator#readme"
       }
     ];
 
@@ -610,7 +632,11 @@ async function main() {
         publicVisibility: true,
         license: seed.license,
         versionLabel: seed.versionLabel,
+        versionNumber: seed.versionNumber ?? null,
         latencyTier: seed.latencyTier,
+        accessUrl: seed.accessUrl ?? null,
+        sourceCodeUrl: seed.sourceCodeUrl ?? null,
+        documentationUrl: seed.documentationUrl ?? null,
         airId: `air://${process.env.IDENTITY_DOMAIN ?? "air.local"}/${seed.typeCode}/${provider.slug}/${seed.slug}`
       };
       const resource = existing
