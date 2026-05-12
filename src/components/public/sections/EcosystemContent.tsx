@@ -141,7 +141,7 @@ const TRACKS: { num: string; title: string; desc: string; cta: string; href: str
     title: "Adopt",
     desc: "Stand up a national or municipal AI Registry using the open-source AIR-Core platform with your own configuration.",
     cta: "Deploy AIR-Core",
-    href: "https://github.com/",
+    href: "https://github.com/MauritiusTelecom/ai-registry",
     featured: true
   },
   {
@@ -149,7 +149,7 @@ const TRACKS: { num: string; title: string; desc: string; cta: string; href: str
     title: "Contribute",
     desc: "Improve the open-source codebase, propose schema changes, share country-specific configuration or sovereignty rubrics.",
     cta: "Open a PR",
-    href: "https://github.com/",
+    href: "https://github.com/MauritiusTelecom/ai-registry/pulls",
     featured: false
   },
   {
@@ -414,9 +414,24 @@ function WhoRunsIt() {
               borderRadius: 14,
               border: "1px solid var(--border-strong)",
               background:
-                "radial-gradient(300px 200px at 0% 0%, rgba(var(--primary-rgb),0.10), transparent 60%), var(--panel)"
+                "radial-gradient(300px 200px at 0% 0%, rgba(var(--secondary-rgb),0.10), transparent 60%), var(--panel)"
             }}
           >
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 10,
+                display: "grid",
+                placeItems: "center",
+                background: "rgba(var(--secondary-rgb), 0.12)",
+                color: "var(--secondary)",
+                border: "1px solid rgba(var(--secondary-rgb), 0.30)",
+                marginBottom: 12
+              }}
+            >
+              <Icon name="check" size={18} stroke={1.8} />
+            </div>
             <h4 style={{ margin: "0 0 14px", fontSize: 17, fontWeight: 500 }}>
               What makes a DPI enabler
             </h4>
@@ -447,6 +462,21 @@ function WhoRunsIt() {
               background: "var(--panel)"
             }}
           >
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 10,
+                display: "grid",
+                placeItems: "center",
+                background: "rgba(16, 185, 129, 0.12)",
+                color: "#10b981",
+                border: "1px solid rgba(16, 185, 129, 0.30)",
+                marginBottom: 12
+              }}
+            >
+              <Icon name="users" size={18} stroke={1.8} />
+            </div>
             <h4 style={{ margin: "0 0 6px", fontSize: 17, fontWeight: 500 }}>
               Natural operator profiles
             </h4>
@@ -572,13 +602,13 @@ function Integrators() {
           <span>Integration partners</span>
         </div>
         <h2>
-          The connective tissue <span className="gradient-text">Integrators.</span>
+          The connective tissue - <span className="gradient-text">Integrators.</span>
         </h2>
         <p>
           Registry, providers, hosting and identity are the operating layers. Integrators
           are the connective tissue - the system integrators, advisories, reviewer pools
           and specialists who help providers publish, jurisdictions deploy and ecosystems
-          mature. Independent by design, never on the runtime path.
+          mature.
         </p>
       </Reveal>
 
@@ -1131,7 +1161,7 @@ export function EcosystemContent() {
         crumb="Ecosystem · Partners & Operators"
         title={
           <>
-            An ecosystem, <span className="gradient-text">not a platform</span>.
+            An ecosystem of <span className="gradient-text">independent operators</span>.
           </>
         }
         subtitle="The AI Registry, the operators who run it, the integrators who connect it, the audiences it serves, and the path to federation - independent parties held together only by open standards and stable identifiers."
