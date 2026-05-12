@@ -267,8 +267,22 @@ export function ProvidersSection({
         </Reveal>
       )}
 
-      {/* Filter toolbar hidden while the catalogue carries only a handful
-          of providers - kind tabs and the search would just sit empty. */}
+      <Reveal>
+        <div className="registry-toolbar">
+          <div className="search-input">
+            <Icon name="search" size={15} />
+            <input
+              placeholder="Search providers, jurisdictions, capabilities…"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              aria-busy={dataSource === "api" && loading}
+            />
+            <kbd>⌘K</kbd>
+          </div>
+          {/* Kind tabs hidden while the catalogue carries only a handful of
+              providers - the tab counts would mostly read zero. */}
+        </div>
+      </Reveal>
 
       {/* Status chips hidden while the catalogue has a single provider -
           all rows carry the same status, so the filter would do nothing. */}
