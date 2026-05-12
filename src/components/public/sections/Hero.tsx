@@ -109,8 +109,8 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
           />
           <HeroFloatCard
             style={{ top: "32%", right: "-4%" }}
-            title="my.t Conversational AI"
-            subtitle="Verified · Mauritius Telecom · Kreol Morisien"
+            title="my.t Vision AI"
+            subtitle="Verified · Mauritius Telecom · Vision"
             dot="#a855f7"
             delay={1.2}
           />
