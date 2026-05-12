@@ -30,7 +30,7 @@ export default async function PortalNewResourcePage() {
           </>
         }
         title="New resource (draft)"
-        subtitle="Creates a draft with a default sovereignty basis link and placeholder endpoint; refine before submit."
+        subtitle="Creates a draft pre-linked to a sovereignty basis and a REST endpoint. Fill in the rest, then submit for review."
       />
       <section className="section" style={{ paddingTop: 24, paddingBottom: 80 }}>
         <div className="glass" style={{ maxWidth: 560, margin: "0 auto", padding: 28 }}>

@@ -60,8 +60,8 @@ export default async function ProviderPublishPage() {
             New draft
           </h2>
           <p style={{ fontSize: 13, color: "var(--text-2)", marginTop: 0, marginBottom: 20 }}>
-            A default sovereignty basis and placeholder endpoint are attached automatically. Edit the draft
-            next, then submit for review.
+            A sovereignty basis link and a REST endpoint stub are attached automatically so you can
+            edit a complete record. Fill in the rest, then submit for review.
           </p>
           <NewResourceForm
             allowedTypes={cfg.resourceTypes as string[]}
