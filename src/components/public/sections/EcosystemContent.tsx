@@ -1105,10 +1105,8 @@ function ClosingCta() {
               justifyContent: "center"
             }}
           >
-            <a
-              href="https://airegistry.mu"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/contact"
               className="btn btn-primary"
               style={{
                 display: "inline-flex",
@@ -1124,27 +1122,8 @@ function ClosingCta() {
                 border: "1px solid rgba(var(--primary-rgb), 0.40)"
               }}
             >
-              Open the live registry
-              <span aria-hidden>&rarr;</span>
-            </a>
-            <Link
-              href="/contact"
-              className="btn"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "10px 18px",
-                borderRadius: 10,
-                background: "transparent",
-                color: "var(--text)",
-                fontWeight: 500,
-                fontSize: 14,
-                textDecoration: "none",
-                border: "1px solid var(--border-strong)"
-              }}
-            >
               Talk to the team
+              <span aria-hidden>&rarr;</span>
             </Link>
           </div>
         </div>

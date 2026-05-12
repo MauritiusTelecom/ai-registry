@@ -269,7 +269,12 @@ export function ProvidersSection({
 
       <Reveal>
         <div className="registry-toolbar">
-          <div className="search-input">
+          {/* maxWidth is set inline because .search-input has flex:1 in the
+              shared toolbar CSS - which is right on /registry where tabs and
+              status chips share the row, but on /providers the tabs and chips
+              are hidden (too few rows to be meaningful), so without a cap the
+              search would stretch the full page width. */}
+          <div className="search-input" style={{ maxWidth: 520 }}>
             <Icon name="search" size={15} />
             <input
               placeholder="Search providers, jurisdictions, capabilities…"
