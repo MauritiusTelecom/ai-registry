@@ -1144,7 +1144,7 @@ export function EcosystemContent() {
         crumb="Ecosystem · Partners & Operators"
         title={
           <>
-            An ecosystem of <span className="gradient-text">independent operators</span>.
+            An ecosystem of <span className="gradient-text">independent stakeholders</span>.
           </>
         }
         subtitle="The AI Registry, the operators who run it, the integrators who connect it, the audiences it serves, and the path to federation - independent parties held together only by open standards and stable identifiers."
