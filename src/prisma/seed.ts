@@ -391,7 +391,7 @@ async function main() {
     const providerWebsite =
       process.env.SEED_PROVIDER_WEBSITE?.trim() || "https://www.telecom.mu";
     const providerContactEmail =
-      process.env.SEED_PROVIDER_CONTACT_EMAIL?.trim() || "hello@airegistry.mu";
+      process.env.SEED_PROVIDER_CONTACT_EMAIL?.trim() || "airegistry@intnet.mu";
     const providerDescription =
       process.env.SEED_PROVIDER_DESCRIPTION?.trim() ||
       "Mauritius Telecom is the principal telecommunications operator of the Republic of Mauritius and the reference operator of the Mauritius AI Registry. This profile lists the production-grade models, agents and tools curated by MT's Special Projects unit for use across government, enterprise and research.";
