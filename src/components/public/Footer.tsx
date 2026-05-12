@@ -17,9 +17,7 @@ const REPO_URL = "https://github.com/MauritiusTelecom/ai-registry";
 const PRODUCT_LINKS: FooterLink[] = [
   { label: "Registry", href: "/registry" },
   { label: "Providers", href: "/providers" },
-  { label: "Ecosystem", href: "/ecosystem" },
-  { label: "Governance", href: "/governance" },
-  { label: "AIR-SPEC 0.4", href: "/docs" }
+  { label: "Ecosystem", href: "/ecosystem" }
 ];
 
 const RESOURCES_LINKS: FooterLink[] = [
@@ -30,7 +28,6 @@ const RESOURCES_LINKS: FooterLink[] = [
 ];
 
 const PROVIDER_LINKS: FooterColumnLink[] = [
-  { label: "Submit a resource", href: "/contact" },
   { kind: "provider-portal" },
   { label: "Sovereignty rubric", href: "/sovereignty-rubric" },
   { label: "Verification proofs", href: "/verification" },
@@ -108,7 +105,6 @@ export function Footer({ registryName }: { registryName: string }) {
             <span className="tag" style={{ color: "#10b981" }}>
               <span className="status-dot" style={{ background: "#10b981" }} /> Operational
             </span>
-            <span className="tag">v0.4 · MVP</span>
           </div>
         </div>
 
@@ -121,7 +117,7 @@ export function Footer({ registryName }: { registryName: string }) {
 
       <div className="footer-bottom">
         <span>© 2026 Mauritius AI Registry · airegistry.mu</span>
-        <span>BUILD 2026.05.07-r3 · TZ:GMT+4 · v0.4-mvp</span>
+        <span>BUILD 2026.05.07-r3 · TZ:GMT+4</span>
       </div>
     </footer>
   );
