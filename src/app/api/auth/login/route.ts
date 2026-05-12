@@ -13,7 +13,9 @@ import { portalForRole } from "@/lib/portals/auth-gate";
  *
  * On success, sets the session cookie and returns the user envelope.
  * On failure, returns 401 with a generic message - never reveals whether
- * the email exists.
+ * the email exists. When credentials are correct but the email has not yet
+ * been verified, returns 403 with `code: "email_not_verified"` so the UI
+ * can render a tailored message + a "Resend verification" button.
  */
 
 type LoginPayload = { email?: unknown; password?: unknown };
@@ -45,6 +47,20 @@ export async function POST(req: Request) {
 
   if (!user || !ok || user.status.code === "deactivated" || user.status.code === "suspended") {
     return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
+  }
+
+  // Credentials are valid - but if the email has not been verified yet we
+  // refuse to issue a session. The frontend renders a tailored message and
+  // a "Resend verification email" affordance keyed off `code`.
+  if (!user.emailVerified) {
+    return NextResponse.json(
+      {
+        error: "Please verify your email address to sign in.",
+        code: "email_not_verified",
+        email: user.email
+      },
+      { status: 403 }
+    );
   }
 
   const token = issueSessionToken(user.id);

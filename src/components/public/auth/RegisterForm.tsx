@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { withBase } from "@/lib/with-base";
 
 export function RegisterForm() {
@@ -11,6 +12,7 @@ export function RegisterForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [devVerifyUrl, setDevVerifyUrl] = useState<string | null>(null);
+  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -33,15 +35,49 @@ export function RegisterForm() {
         return;
       }
       if (data.verifyUrl) setDevVerifyUrl(data.verifyUrl);
-      // Server picks the role-appropriate landing - provider self-registration
-      // lands on /provider, admin-seeded accounts will land elsewhere when
-      // self-registration is enabled for them. Fallback to /portal.
-      window.location.assign(withBase(data.redirectTo ?? "/portal"));
+      // No session is issued at registration. Show a "check your email"
+      // confirmation; the user must verify before they can sign in.
+      setSubmittedEmail(email);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
+  }
+
+  if (submittedEmail) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <p style={{ color: "var(--text-2)", lineHeight: 1.5 }}>
+          We sent a verification link to <strong>{submittedEmail}</strong>. Open it within 24
+          hours to activate your account, then sign in to access the provider portal.
+        </p>
+        {devVerifyUrl ? (
+          <div
+            style={{
+              fontFamily: "IBM Plex Mono, monospace",
+              fontSize: 12,
+              background: "var(--panel)",
+              border: "1px solid var(--border)",
+              borderRadius: 8,
+              padding: 12,
+              color: "var(--text-2)",
+              wordBreak: "break-all"
+            }}
+          >
+            Dev: open this verification link → {devVerifyUrl}
+          </div>
+        ) : null}
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <Link href="/login?registered=1" className="btn btn-primary">
+            Go to sign in
+          </Link>
+          <Link href="/auth/verify" className="btn" style={{ color: "var(--text-2)" }}>
+            Resend verification email
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -94,22 +130,6 @@ export function RegisterForm() {
       {error ? (
         <div className="field-error" role="alert">
           {error}
-        </div>
-      ) : null}
-      {devVerifyUrl ? (
-        <div
-          style={{
-            fontFamily: "IBM Plex Mono, monospace",
-            fontSize: 12,
-            background: "var(--panel)",
-            border: "1px solid var(--border)",
-            borderRadius: 8,
-            padding: 12,
-            color: "var(--text-2)",
-            wordBreak: "break-all"
-          }}
-        >
-          Dev: open this verification link → {devVerifyUrl}
         </div>
       ) : null}
       <button
