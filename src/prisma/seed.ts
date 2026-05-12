@@ -570,7 +570,7 @@ async function main() {
       },
       {
         slug: "conversational-ai",
-        title: "Conversational AI (Text-To-Speech & Speech-to-Text)",
+        title: "my.t Conversational AI (Text-To-Speech & Speech-to-Text)",
         typeCode: "tool",
         shortDescription:
           "Enable natural voice and text interactions between users and texts, with experimental support for Kreol Morisien.",
