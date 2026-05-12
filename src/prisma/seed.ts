@@ -613,7 +613,7 @@ async function main() {
       },
       {
         slug: "document-ai",
-        title: "Document AI - Extract Information from Documents",
+        title: "my.t Document AI - Extract Information from Documents",
         typeCode: "tool",
         shortDescription:
           "Automatically read and extract key data from documents like PDFs, forms, and invoices.",
