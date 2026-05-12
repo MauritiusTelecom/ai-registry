@@ -89,6 +89,19 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   }
 }
 
+/**
+ * Lightweight `{placeholder}` substitution for env-driven email templates.
+ *
+ * Operators set subjects / bodies in .env (e.g. PUBLIC_REPORT_ACK_BODY) using
+ * `{registryName}`, `{complaintId}`, etc. — this helper replaces each
+ * occurrence with the matching value. Unknown placeholders render as empty
+ * strings so a typo in .env doesn't leak the placeholder name into a sent
+ * email.
+ */
+export function renderTemplate(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? "");
+}
+
 /** Templates: keeping these inline so no separate templating engine is needed. */
 export const emailTemplates = {
   verification(opts: { name: string; verifyUrl: string; registryName: string }): {

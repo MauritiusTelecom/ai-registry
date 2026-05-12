@@ -79,7 +79,7 @@ export function ReportModal() {
     <Modal
       open={!!target}
       onClose={handleClose}
-      title={submitted ? "Report received" : "Report this resource"}
+      title={submitted ? "Report received" : "Report this listing"}
       subtitle={submitted ? null : target ? `${target.title} · ${target.provider}` : ""}
     >
       {submitted ? (

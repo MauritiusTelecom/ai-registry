@@ -44,7 +44,7 @@ export function Faq() {
           <span>Common questions</span>
         </div>
         <h2 style={{ textAlign: "center" }}>
-          Questions that sovereign teams <span className="gradient-text">actually ask</span>.
+          <span className="gradient-text">Frequently Asked Questions</span>
         </h2>
       </Reveal>
       <div className="faq">
