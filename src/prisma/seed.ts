@@ -488,6 +488,12 @@ async function main() {
       | "local_system"
       | "local_language_culture";
 
+    type EvidenceTypeCode =
+      | "regulatory_reference"
+      | "data_locality"
+      | "system_topology"
+      | "language_artefact";
+
     type ResourceSeed = {
       slug: string;
       title: string;
@@ -502,6 +508,14 @@ async function main() {
       accessUrl?: string;
       sourceCodeUrl?: string;
       documentationUrl?: string;
+      evidence: {
+        typeCode: EvidenceTypeCode;
+        title: string;
+        description: string;
+        referenceUrl?: string;
+        referenceIdentifier?: string;
+        issuingBody?: string;
+      };
     };
 
     const resourceSeeds: ResourceSeed[] = [
@@ -516,7 +530,16 @@ async function main() {
         sovereigntyBasis: "local_data",
         license: "Commercial",
         versionLabel: "200k tokens",
-        latencyTier: "1.2s"
+        latencyTier: "1.2s",
+        evidence: {
+          typeCode: "regulatory_reference",
+          title: "Mauritius Data Protection Act 2017 compliance",
+          description:
+            "All prompts, completions and fine-tuning corpora are processed on Mauritius Telecom infrastructure within Mauritian territory. Cross-border transfer follows the Data Protection Act 2017; customer data does not leave the jurisdiction without explicit DPA-aligned consent.",
+          referenceUrl: "https://dataprotection.govmu.org",
+          referenceIdentifier: "DPA 2017",
+          issuingBody: "Data Protection Office, Republic of Mauritius"
+        }
       },
       {
         slug: "ai-workflows",
@@ -529,7 +552,16 @@ async function main() {
         sovereigntyBasis: "local_system",
         license: "Commercial",
         versionLabel: "Multi-step",
-        latencyTier: "2-5s"
+        latencyTier: "2-5s",
+        evidence: {
+          typeCode: "system_topology",
+          title: "Hosted on Mauritius Telecom sovereign cloud, Ebène",
+          description:
+            "Workflow orchestration, queues and state persistence run on MT-operated infrastructure in the Ebène data centre. The runtime stays inside the Mauritian network perimeter; SLA is underwritten by MT Special Projects.",
+          referenceUrl: "https://www.telecom.mu",
+          referenceIdentifier: "MT-CLOUD-EBN",
+          issuingBody: "Mauritius Telecom Ltd"
+        }
       },
       {
         slug: "conversational-ai",
@@ -542,7 +574,15 @@ async function main() {
         sovereigntyBasis: "local_language_culture",
         license: "Commercial",
         versionLabel: "Multi-turn",
-        latencyTier: "0.8s"
+        latencyTier: "0.8s",
+        evidence: {
+          typeCode: "language_artefact",
+          title: "Kreol Morisien support per Akademi Kreol Morisien orthography",
+          description:
+            "Speech and dialogue components support Kreol Morisien using the standard orthography. Coverage includes code-switching with French and English typical of Mauritian conversation, with cultural register tuned for service contexts.",
+          referenceIdentifier: "AKM standard orthography",
+          issuingBody: "Akademi Kreol Morisien"
+        }
       },
       {
         slug: "automl",
@@ -555,7 +595,16 @@ async function main() {
         sovereigntyBasis: "local_system",
         license: "Commercial",
         versionLabel: "Tabular + time-series",
-        latencyTier: "Async (job)"
+        latencyTier: "Async (job)",
+        evidence: {
+          typeCode: "system_topology",
+          title: "Isolated training pools on Mauritius Telecom sovereign cloud",
+          description:
+            "Training jobs run on isolated MT compute pools with no multi-tenancy outside Mauritius. Model artefacts persist to encrypted MT object storage; access is gated by MT-issued credentials and tenant-scoped IAM.",
+          referenceUrl: "https://www.telecom.mu",
+          referenceIdentifier: "MT-CLOUD-EBN",
+          issuingBody: "Mauritius Telecom Ltd"
+        }
       },
       {
         slug: "document-ai",
@@ -568,7 +617,16 @@ async function main() {
         sovereigntyBasis: "local_data",
         license: "Commercial",
         versionLabel: "OCR + NER",
-        latencyTier: "1.5s"
+        latencyTier: "1.5s",
+        evidence: {
+          typeCode: "data_locality",
+          title: "Document processing inside Mauritius jurisdiction",
+          description:
+            "Uploaded documents are scanned, OCR'd and indexed on MT infrastructure located in the Republic of Mauritius. No third-party OCR or NER service receives the document body; only customer-controlled redactions are exposed via the API.",
+          referenceUrl: "https://dataprotection.govmu.org",
+          referenceIdentifier: "DPA 2017",
+          issuingBody: "Data Protection Office, Republic of Mauritius"
+        }
       },
       {
         slug: "mytgpt-enterprise",
@@ -580,7 +638,16 @@ async function main() {
         sovereigntyBasis: "local_system",
         license: "Commercial",
         versionLabel: "200k tokens",
-        latencyTier: "1.1s"
+        latencyTier: "1.1s",
+        evidence: {
+          typeCode: "system_topology",
+          title: "MT-operated chat platform on the sovereign stack",
+          description:
+            "Front-end, model serving, conversation logs and identity all run on MT-managed infrastructure within Mauritius. Tenants are logically isolated; no conversation telemetry is forwarded to vendor clouds.",
+          referenceUrl: "https://www.telecom.mu",
+          referenceIdentifier: "MT-CLOUD-EBN",
+          issuingBody: "Mauritius Telecom Ltd"
+        }
       },
       {
         slug: "vision-models",
@@ -592,7 +659,16 @@ async function main() {
         sovereigntyBasis: "local_data",
         license: "Commercial",
         versionLabel: "Image + Video",
-        latencyTier: "0.9s"
+        latencyTier: "0.9s",
+        evidence: {
+          typeCode: "data_locality",
+          title: "Image data residency on Mauritius Telecom infrastructure",
+          description:
+            "Inference and any retained imagery remain inside the MT environment. The service is positioned for use cases that need national data residency: quality inspection, regulated content review, public-sector vision workflows.",
+          referenceUrl: "https://dataprotection.govmu.org",
+          referenceIdentifier: "DPA 2017",
+          issuingBody: "Data Protection Office, Republic of Mauritius"
+        }
       },
       {
         slug: "mauritius-mobile-operator",
@@ -610,7 +686,16 @@ async function main() {
         accessUrl: "https://github.com/MauritiusTelecom/mauritius-mobile-operator",
         sourceCodeUrl: "https://github.com/MauritiusTelecom/mauritius-mobile-operator",
         documentationUrl:
-          "https://github.com/MauritiusTelecom/mauritius-mobile-operator#readme"
+          "https://github.com/MauritiusTelecom/mauritius-mobile-operator#readme",
+        evidence: {
+          typeCode: "regulatory_reference",
+          title: "ICTA mobile number-range allocation",
+          description:
+            "Operator assignment is derived from the public ICTA mobile number-range allocations and is refreshed when ICTA publishes new ranges. The skill carries no PII and performs no third-party lookups - resolution runs against the locally-bundled allocation table.",
+          referenceUrl: "https://www.icta.mu",
+          referenceIdentifier: "ICTA mobile number-range allocation",
+          issuingBody: "ICT Authority, Republic of Mauritius"
+        }
       }
     ];
 
@@ -643,7 +728,9 @@ async function main() {
         ? await prisma.resource.update({ where: { id: existing.id }, data })
         : await prisma.resource.create({ data });
 
-      // Sovereignty basis link + evidence stub.
+      // Sovereignty basis link + per-resource evidence (real references,
+      // not a stub - the lookup keys on (resourceId, sovereigntyBasisId)
+      // so older stub rows get upgraded on re-seed).
       const basis = await prisma.sovereigntyBasis.findUnique({
         where: { code: seed.sovereigntyBasis }
       });
@@ -659,22 +746,27 @@ async function main() {
           update: {}
         });
 
-        const evidenceTitle = `${seed.title} - sovereignty evidence (stub)`;
-        const evidence = await prisma.sovereigntyEvidence.findFirst({
-          where: { resourceId: resource.id, title: evidenceTitle }
+        const evidenceData = {
+          resourceId: resource.id,
+          sovereigntyBasisId: basis.id,
+          evidenceTypeId: evidenceTypeIds.get(seed.evidence.typeCode)!,
+          title: seed.evidence.title,
+          description: seed.evidence.description,
+          referenceUrl: seed.evidence.referenceUrl ?? null,
+          referenceIdentifier: seed.evidence.referenceIdentifier ?? null,
+          issuingBody: seed.evidence.issuingBody ?? null,
+          publicVisibility: true
+        };
+        const existingEvidence = await prisma.sovereigntyEvidence.findFirst({
+          where: { resourceId: resource.id, sovereigntyBasisId: basis.id }
         });
-        if (!evidence) {
-          await prisma.sovereigntyEvidence.create({
-            data: {
-              resourceId: resource.id,
-              sovereigntyBasisId: basis.id,
-              evidenceTypeId: evidenceTypeIds.get("regulatory_reference")!,
-              title: evidenceTitle,
-              description:
-                "Phase 1 evidence stub. Production deployments must replace with real references.",
-              publicVisibility: true
-            }
+        if (existingEvidence) {
+          await prisma.sovereigntyEvidence.update({
+            where: { id: existingEvidence.id },
+            data: evidenceData
           });
+        } else {
+          await prisma.sovereigntyEvidence.create({ data: evidenceData });
         }
       }
 
