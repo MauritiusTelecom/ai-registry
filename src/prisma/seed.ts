@@ -656,7 +656,7 @@ async function main() {
       },
       {
         slug: "vision-models",
-        title: "Vision Models",
+        title: "my.t Vision AI",
         typeCode: "model",
         shortDescription: "AI that can see and understand images and visual content.",
         longDescription:
