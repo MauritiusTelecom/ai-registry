@@ -136,7 +136,7 @@ const FEDERATION_PRINCIPLES = [
   }
 ];
 
-const TRACKS: { num: string; title: string; desc: string; cta: string; href: string; featured: boolean }[] = [
+const TRACKS: { num: string; title: string; desc: string; cta?: string; href?: string; featured: boolean }[] = [
   {
     num: "Track 01",
     title: "Adopt",
@@ -165,8 +165,6 @@ const TRACKS: { num: string; title: string; desc: string; cta: string; href: str
     num: "Track 04",
     title: "Observe",
     desc: "Track airegistry.mu, study the operating model, and decide if and how to deploy in your context.",
-    cta: "Watch the reference",
-    href: "https://airegistry.mu",
     featured: false
   }
 ];
@@ -967,12 +965,13 @@ function GetInvolved() {
           }}
         >
           {TRACKS.map((t) => {
-            const isExternal = t.href.startsWith("http");
-            const LinkEl: React.ElementType = isExternal ? "a" : Link;
+            const hasHref = Boolean(t.href);
+            const isExternal = hasHref && t.href!.startsWith("http");
+            const LinkEl: React.ElementType = hasHref ? (isExternal ? "a" : Link) : "div";
             return (
               <LinkEl
                 key={t.num}
-                href={t.href}
+                {...(hasHref ? { href: t.href } : {})}
                 {...(isExternal
                   ? { target: "_blank", rel: "noopener noreferrer" }
                   : {})}
@@ -1033,19 +1032,21 @@ function GetInvolved() {
                 >
                   {t.desc}
                 </p>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: t.featured ? "var(--primary)" : "var(--text)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6
-                  }}
-                >
-                  {t.cta}
-                  <span aria-hidden>&rarr;</span>
-                </div>
+                {t.cta ? (
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: t.featured ? "var(--primary)" : "var(--text)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6
+                    }}
+                  >
+                    {t.cta}
+                    <span aria-hidden>&rarr;</span>
+                  </div>
+                ) : null}
               </LinkEl>
             );
           })}
