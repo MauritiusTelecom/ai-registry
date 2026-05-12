@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "@/components/public/Icon";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
@@ -159,22 +160,13 @@ export function ResourcesAdmin({
             providers={providers}
             jurisdictions={jurisdictions}
             riskLevels={riskLevels}
-            mode="create"
-            initial={null}
             onDone={close}
           />
         )
       }}
       emptyState="No resources match this filter."
       actions={(row, reload) => (
-        <ResourceRowActions
-          row={row}
-          kinds={kinds}
-          providers={providers}
-          jurisdictions={jurisdictions}
-          riskLevels={riskLevels}
-          reload={reload}
-        />
+        <ResourceRowActions row={row} reload={reload} />
       )}
     />
   );
@@ -182,20 +174,11 @@ export function ResourcesAdmin({
 
 function ResourceRowActions({
   row,
-  kinds,
-  providers,
-  jurisdictions,
-  riskLevels,
   reload
 }: {
   row: ResourceRow;
-  kinds: RefRow[];
-  providers: { slug: string; displayName: string }[];
-  jurisdictions: RefRow[];
-  riskLevels: RefRow[];
   reload: () => void;
 }) {
-  const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [actionFor, setActionFor] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -235,15 +218,13 @@ function ResourceRowActions({
           <Icon name="eye" size={12} /> View
         </Link>
       ) : null}
-      <button
-        type="button"
+      <Link
+        href={`/admin/resources/${row.id}/edit`}
         className="r-card-action-link"
-        onClick={() => setEditing(true)}
         title="Edit"
-        disabled={busy}
       >
         <Icon name="edit" size={12} /> Edit
-      </button>
+      </Link>
       {allowed.map((a) => (
         <button
           key={a}
@@ -271,49 +252,6 @@ function ResourceRowActions({
       {error ? (
         <div className="field-error" style={{ width: "100%", marginTop: 4 }} role="alert">
           {error}
-        </div>
-      ) : null}
-
-      {editing ? (
-        <div className="modal-backdrop" onClick={() => setEditing(false)}>
-          <div
-            className="glass"
-            style={{ maxWidth: 600, padding: 24, width: "100%" }}
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
-            <header
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "baseline",
-                marginBottom: 16
-              }}
-            >
-              <h3 style={{ margin: 0 }}>Edit resource</h3>
-              <button
-                type="button"
-                className="r-card-action-link"
-                onClick={() => setEditing(false)}
-                aria-label="Close"
-              >
-                <Icon name="x" size={12} /> Close
-              </button>
-            </header>
-            <ResourceForm
-              kinds={kinds}
-              providers={providers}
-              jurisdictions={jurisdictions}
-              riskLevels={riskLevels}
-              mode="edit"
-              initial={row}
-              onDone={() => {
-                setEditing(false);
-                reload();
-              }}
-            />
-          </div>
         </div>
       ) : null}
 
@@ -499,29 +437,22 @@ function ResourceForm({
   providers,
   jurisdictions,
   riskLevels,
-  mode,
-  initial,
   onDone
 }: {
   kinds: RefRow[];
   providers: { slug: string; displayName: string }[];
   jurisdictions: RefRow[];
   riskLevels: RefRow[];
-  mode: "create" | "edit";
-  initial: ResourceRow | null;
   onDone: () => void;
 }) {
-  const [title, setTitle] = useState(initial?.title ?? "");
-  const [slug, setSlug] = useState(initial?.slug ?? "");
+  const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [slug, setSlug] = useState("");
   const [shortDescription, setShortDescription] = useState("");
-  const [kind, setKind] = useState(initial?.kindCode ?? kinds[0]?.code ?? "");
-  const [providerSlug, setProviderSlug] = useState(
-    initial?.providerSlug ?? providers[0]?.slug ?? ""
-  );
-  const [jurisdictionCode, setJurisdictionCode] = useState(
-    jurisdictions[0]?.code ?? ""
-  );
-  const [riskCode, setRiskCode] = useState(initial?.riskCode ?? riskLevels[0]?.code ?? "low");
+  const [kind, setKind] = useState(kinds[0]?.code ?? "");
+  const [providerSlug, setProviderSlug] = useState(providers[0]?.slug ?? "");
+  const [jurisdictionCode, setJurisdictionCode] = useState(jurisdictions[0]?.code ?? "");
+  const [riskCode, setRiskCode] = useState(riskLevels[0]?.code ?? "low");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -529,37 +460,28 @@ function ResourceForm({
     setError(null);
     setBusy(true);
     try {
-      let res: Response;
-      if (mode === "create") {
-        res = await fetch(withBase("/api/admin/resources"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: title.trim(),
-            slug: slug.trim(),
-            shortDescription: shortDescription.trim(),
-            resourceTypeCode: kind,
-            providerSlug,
-            jurisdictionCode,
-            riskCode
-          })
-        });
-      } else {
-        res = await fetch(withBase(`/api/admin/resources/${initial!.id}`), {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: title.trim(),
-            riskCode
-          })
-        });
-      }
-      const data = (await res.json()) as { error?: string };
+      const res = await fetch(withBase("/api/admin/resources"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          slug: slug.trim(),
+          shortDescription: shortDescription.trim(),
+          resourceTypeCode: kind,
+          providerSlug,
+          jurisdictionCode,
+          riskCode
+        })
+      });
+      const data = (await res.json()) as { error?: string; id?: string };
       if (!res.ok) {
         setError(data.error ?? "Save failed");
         return;
       }
+      // Close the modal, then jump to the full edit page so the admin can
+      // fill in descriptions, URLs, sovereignty evidence, endpoints, tags.
       onDone();
+      if (data.id) router.push(`/admin/resources/${data.id}/edit`);
     } catch {
       setError("Network error");
     } finally {
@@ -569,13 +491,17 @@ function ResourceForm({
 
   return (
     <div style={{ display: "grid", gap: 12, fontSize: 13 }}>
+      <p style={{ color: "var(--text-2)", margin: 0, fontSize: 12 }}>
+        Creates a <code>draft</code>. After save you'll be sent to the full edit page
+        to capture descriptions, URLs, sovereignty evidence, endpoints, and tags.
+      </p>
       <Field label="Title">
         <input
           className="auth-input"
           value={title}
           onChange={(e) => {
             setTitle(e.target.value);
-            if (mode === "create" && !slug) {
+            if (!slug) {
               const s = e.target.value
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, "-")
@@ -586,81 +512,63 @@ function ResourceForm({
           }}
         />
       </Field>
-      {mode === "create" ? (
-        <>
-          <Field label="Slug">
-            <input
-              className="auth-input"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-            />
-          </Field>
-          <Field label="Short description">
-            <textarea
-              className="auth-input"
-              style={{ minHeight: 70, fontFamily: "inherit" }}
-              value={shortDescription}
-              onChange={(e) => setShortDescription(e.target.value)}
-            />
-          </Field>
-          <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
-            <Field label="Kind">
-              <select
-                className="auth-input"
-                value={kind}
-                onChange={(e) => setKind(e.target.value)}
-              >
-                {kinds.map((k) => (
-                  <option key={k.code} value={k.code}>
-                    {k.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Provider">
-              <select
-                className="auth-input"
-                value={providerSlug}
-                onChange={(e) => setProviderSlug(e.target.value)}
-              >
-                {providers.map((p) => (
-                  <option key={p.slug} value={p.slug}>
-                    {p.displayName}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </div>
-          <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
-            <Field label="Primary jurisdiction">
-              <select
-                className="auth-input"
-                value={jurisdictionCode}
-                onChange={(e) => setJurisdictionCode(e.target.value)}
-              >
-                {jurisdictions.map((j) => (
-                  <option key={j.code} value={j.code}>
-                    {j.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Risk">
-              <select
-                className="auth-input"
-                value={riskCode}
-                onChange={(e) => setRiskCode(e.target.value)}
-              >
-                {riskLevels.map((r) => (
-                  <option key={r.code} value={r.code}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </div>
-        </>
-      ) : (
+      <Field label="Slug">
+        <input
+          className="auth-input"
+          value={slug}
+          onChange={(e) => setSlug(e.target.value)}
+        />
+      </Field>
+      <Field label="Short description">
+        <textarea
+          className="auth-input"
+          style={{ minHeight: 70, fontFamily: "inherit" }}
+          value={shortDescription}
+          onChange={(e) => setShortDescription(e.target.value)}
+        />
+      </Field>
+      <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
+        <Field label="Kind">
+          <select
+            className="auth-input"
+            value={kind}
+            onChange={(e) => setKind(e.target.value)}
+          >
+            {kinds.map((k) => (
+              <option key={k.code} value={k.code}>
+                {k.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Provider">
+          <select
+            className="auth-input"
+            value={providerSlug}
+            onChange={(e) => setProviderSlug(e.target.value)}
+          >
+            {providers.map((p) => (
+              <option key={p.slug} value={p.slug}>
+                {p.displayName}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+      <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
+        <Field label="Primary jurisdiction">
+          <select
+            className="auth-input"
+            value={jurisdictionCode}
+            onChange={(e) => setJurisdictionCode(e.target.value)}
+          >
+            {jurisdictions.map((j) => (
+              <option key={j.code} value={j.code}>
+                {j.name}
+              </option>
+            ))}
+          </select>
+        </Field>
         <Field label="Risk">
           <select
             className="auth-input"
@@ -674,7 +582,7 @@ function ResourceForm({
             ))}
           </select>
         </Field>
-      )}
+      </div>
 
       {error ? (
         <div className="field-error" role="alert">
@@ -692,7 +600,7 @@ function ResourceForm({
           onClick={submit}
           disabled={busy}
         >
-          {busy ? "Saving…" : mode === "create" ? "Create resource" : "Save"}
+          {busy ? "Saving…" : "Create & open editor"}
         </button>
       </div>
     </div>
