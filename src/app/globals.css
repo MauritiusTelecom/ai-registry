@@ -25,6 +25,7 @@
 /* Dark theme (default) */
 [data-theme="dark"] {
   --bg: #07090d;
+  --bg-rgb: 7, 9, 13;
   --bg-2: #0a0d13;
   --bg-3: #0e131c;
   --panel: rgba(16, 21, 30, 0.6);
@@ -54,6 +55,7 @@
 /* Light theme */
 [data-theme="light"] {
   --bg: #f8fafc;
+  --bg-rgb: 248, 250, 252;
   --bg-2: #f2f5fa;
   --bg-3: #ebeff6;
   --panel: rgba(255, 255, 255, 0.78);
