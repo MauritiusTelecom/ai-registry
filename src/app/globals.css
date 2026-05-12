@@ -746,6 +746,7 @@ p { color: var(--text-2); margin: 0; }
 .registry-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
   gap: 16px;
 }
 @media (max-width: 1024px) { .registry-grid { grid-template-columns: repeat(2, 1fr); } }
