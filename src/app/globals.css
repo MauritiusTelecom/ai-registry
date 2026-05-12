@@ -748,9 +748,27 @@ p { color: var(--text-2); margin: 0; }
   grid-template-columns: repeat(3, 1fr);
   grid-auto-rows: 1fr;
   gap: 16px;
+  align-items: stretch;
 }
 @media (max-width: 1024px) { .registry-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 640px) { .registry-grid { grid-template-columns: 1fr; } }
+
+/*
+ * `Reveal` wraps each card in a <div class="reveal">; with grid-auto-rows:1fr
+ * the wrapper is given the row height, but it has to relay that to the
+ * .r-card child or short-description cards stay at their natural height and
+ * the grid looks ragged. Forcing the wrapper into a flex column and
+ * stretching .r-card to fill it makes every card in a row the same height.
+ */
+.registry-grid > .reveal {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.registry-grid > .reveal > .r-card {
+  flex: 1;
+  height: 100%;
+}
 
 .r-card {
   position: relative;
@@ -799,10 +817,25 @@ p { color: var(--text-2); margin: 0; }
 .r-status.isolated { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
 .r-status .status-dot { width: 5px; height: 5px; }
 
-.r-desc { font-size: 13px; color: var(--text-2); line-height: 1.5; flex: 1; }
+/*
+ * Clamp the description to 3 lines so cards stop being content-sized.
+ * `min-height: 4.5em` reserves the 3-line slot even when text is short, so
+ * the meta/tags/actions row aligns across cards in the same row.
+ */
+.r-desc {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 4.5em;
+}
 .r-meta {
   display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px;
   padding-top: 12px;
+  margin-top: auto;
   border-top: 1px dashed var(--border);
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
