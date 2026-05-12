@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
+import type {
+  PublicRegistryListResponse,
+  RegistryCard,
+  DisplayStatus
+} from "@/lib/discovery/types";
+import { withBase } from "@/lib/with-base";
 import { Icon } from "../Icon";
 import { Globe } from "./Globe";
 
@@ -41,7 +47,123 @@ function HeroFloatCard({
   );
 }
 
+// ----- Hero float-card data plumbing -----
+
+type FloatCardData = {
+  title: string;
+  subtitle: string;
+  dot: string;
+};
+
+// Three fixed slots on the globe-stage. Data rotates; positions stay stable.
+const CARD_SLOTS: CSSProperties[] = [
+  { top: "4%", left: "-6%" },
+  { top: "32%", right: "-4%" },
+  { bottom: "6%", left: "4%" }
+];
+
+// Fallback shown before the fetch resolves, or if the API errors / returns
+// zero rows. Keeps the existing Mauritius Telecom branding as a safe default.
+const FALLBACK_CARDS: FloatCardData[] = [
+  {
+    title: "MytGPT Enterprise",
+    subtitle: "Verified · Mauritius Telecom · Chat",
+    dot: "#10b981"
+  },
+  {
+    title: "my.t Conversational AI",
+    subtitle: "Verified · Mauritius Telecom · Kreol Morisien",
+    dot: "#a855f7"
+  },
+  {
+    title: "my.t Document AI",
+    subtitle: "Verified · Mauritius Telecom · OCR",
+    dot: "#22d3ee"
+  }
+];
+
+// Maps display-status badge -> dot colour. Mirrors the original hard-coded palette
+// so the visual rhythm stays consistent regardless of which resources land here.
+const STATUS_DOT: Record<DisplayStatus, string> = {
+  verified: "#10b981",
+  trusted: "#22d3ee",
+  active: "#a855f7",
+  experimental: "#f59e0b",
+  isolated: "#ef4444"
+};
+
+// Strictly "listed" (lifecycle) only. `/api/resources` actually returns four
+// public lifecycle codes - listed, needs_update, deprecated, suspended - so
+// we trim client-side. The three allowed display badges below all map onto
+// listed lifecycle:
+//   verified -> listed + trust signals
+//   trusted  -> listed + trust signals
+//   active   -> listed (no trust signals)
+//   experimental -> needs_update    (excluded)
+//   isolated     -> suspended/deprecated (excluded)
+const ALLOWED_STATUSES: DisplayStatus[] = ["verified", "trusted", "active"];
+
+function statusLabel(s: DisplayStatus): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function cardToFloat(card: RegistryCard): FloatCardData {
+  const status = card.status;
+  const tail = card.context?.trim() || card.kind || "AI resource";
+  return {
+    title: card.title,
+    subtitle: `${statusLabel(status)} · ${card.provider} · ${tail}`,
+    dot: STATUS_DOT[status] ?? "#22d3ee"
+  };
+}
+
+// Fisher-Yates shuffle on a copy.
+function shuffle<T>(arr: T[]): T[] {
+  const out = arr.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+function pickThree(rows: RegistryCard[]): FloatCardData[] {
+  const eligible = rows.filter((r) =>
+    ALLOWED_STATUSES.includes(r.status as DisplayStatus)
+  );
+  if (eligible.length === 0) return FALLBACK_CARDS;
+  const chosen = shuffle(eligible).slice(0, 3).map(cardToFloat);
+  // Pad with fallback entries if the registry has fewer than 3 eligible rows.
+  while (chosen.length < 3) chosen.push(FALLBACK_CARDS[chosen.length]);
+  return chosen;
+}
+
 export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
+  const [cards, setCards] = useState<FloatCardData[]>(FALLBACK_CARDS);
+
+  // Fetch once on mount. `cache: "no-store"` ensures every page load gets a
+  // fresh sample - we want the three cards to rotate across visits.
+  useEffect(() => {
+    const ac = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch(withBase("/api/resources?limit=20"), {
+          cache: "no-store",
+          signal: ac.signal
+        });
+        if (!res.ok) return; // silent fallback - hero never surfaces API errors
+        const data = (await res.json()) as PublicRegistryListResponse;
+        if (Array.isArray(data.rows) && data.rows.length > 0) {
+          setCards(pickThree(data.rows));
+        }
+      } catch (e) {
+        if ((e as Error)?.name === "AbortError") return;
+        // Swallow - fallback cards stay rendered.
+      }
+    })();
+    return () => ac.abort();
+  }, []);
+
   return (
     <section className="hero">
       <div className="hero-overlay">
@@ -100,27 +222,16 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
         <div className="globe-stage">
           <Globe motionIntensity={motionIntensity} />
 
-          <HeroFloatCard
-            style={{ top: "4%", left: "-6%" }}
-            title="MytGPT Enterprise"
-            subtitle="Verified · Mauritius Telecom · Chat"
-            dot="#10b981"
-            delay={0}
-          />
-          <HeroFloatCard
-            style={{ top: "32%", right: "-4%" }}
-            title="my.t Vision AI"
-            subtitle="Verified · Mauritius Telecom · Vision"
-            dot="#a855f7"
-            delay={1.2}
-          />
-          <HeroFloatCard
-            style={{ bottom: "6%", left: "4%" }}
-            title="my.t Document AI"
-            subtitle="Verified · Mauritius Telecom · OCR"
-            dot="#22d3ee"
-            delay={2.4}
-          />
+          {cards.map((c, i) => (
+            <HeroFloatCard
+              key={`${c.title}-${i}`}
+              style={CARD_SLOTS[i] ?? {}}
+              title={c.title}
+              subtitle={c.subtitle}
+              dot={c.dot}
+              delay={i * 1.2}
+            />
+          ))}
         </div>
       </div>
     </section>
