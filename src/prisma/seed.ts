@@ -706,6 +706,23 @@ async function main() {
       }
     ];
 
+    // Defensive cleanup: any historical "Phase 1 evidence stub" rows that
+    // earlier seed versions left behind, anywhere in the DB. Safe to run
+    // every seed - the new seed re-creates the per-resource rows below.
+    const legacyEvidenceDeleted = await prisma.sovereigntyEvidence.deleteMany({
+      where: {
+        OR: [
+          { description: { contains: "Phase 1 evidence stub" } },
+          { title: { endsWith: "sovereignty evidence (stub)" } }
+        ]
+      }
+    });
+    if (legacyEvidenceDeleted.count > 0) {
+      console.log(
+        `  ✓ removed ${legacyEvidenceDeleted.count} legacy stub evidence row(s)`
+      );
+    }
+
     for (const seed of resourceSeeds) {
       const existing = await prisma.resource.findUnique({
         where: { providerId_slug: { providerId: provider.id, slug: seed.slug } }
@@ -753,28 +770,26 @@ async function main() {
           update: {}
         });
 
-        const evidenceData = {
-          resourceId: resource.id,
-          sovereigntyBasisId: basis.id,
-          evidenceTypeId: evidenceTypeIds.get(seed.evidence.typeCode)!,
-          title: seed.evidence.title,
-          description: seed.evidence.description,
-          referenceUrl: seed.evidence.referenceUrl ?? null,
-          referenceIdentifier: seed.evidence.referenceIdentifier ?? null,
-          issuingBody: seed.evidence.issuingBody ?? null,
-          publicVisibility: true
-        };
-        const existingEvidence = await prisma.sovereigntyEvidence.findFirst({
+        // Bulletproof against historical duplicates: wipe every evidence
+        // row for this (resource, basis) pair, then create exactly one
+        // with the current content. Any orphan stub rows left over from
+        // earlier seed versions disappear in a single re-seed.
+        await prisma.sovereigntyEvidence.deleteMany({
           where: { resourceId: resource.id, sovereigntyBasisId: basis.id }
         });
-        if (existingEvidence) {
-          await prisma.sovereigntyEvidence.update({
-            where: { id: existingEvidence.id },
-            data: evidenceData
-          });
-        } else {
-          await prisma.sovereigntyEvidence.create({ data: evidenceData });
-        }
+        await prisma.sovereigntyEvidence.create({
+          data: {
+            resourceId: resource.id,
+            sovereigntyBasisId: basis.id,
+            evidenceTypeId: evidenceTypeIds.get(seed.evidence.typeCode)!,
+            title: seed.evidence.title,
+            description: seed.evidence.description,
+            referenceUrl: seed.evidence.referenceUrl ?? null,
+            referenceIdentifier: seed.evidence.referenceIdentifier ?? null,
+            issuingBody: seed.evidence.issuingBody ?? null,
+            publicVisibility: true
+          }
+        });
       }
 
       // One REST endpoint stub so the resource has at least one ResourceEndpoint.
