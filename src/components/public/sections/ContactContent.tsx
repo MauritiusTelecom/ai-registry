@@ -98,7 +98,7 @@ export function ContactContent() {
                 </div>
                 <div>
                   <div className="contact-info-label">Email</div>
-                  <div className="contact-info-value">hello@airegistry.mu</div>
+                  <div className="contact-info-value">airegistry@intnet.mu</div>
                 </div>
               </div>
               <div className="contact-info-row">
@@ -107,7 +107,7 @@ export function ContactContent() {
                 </div>
                 <div>
                   <div className="contact-info-label">Mauritius Telecom desk</div>
-                  <div className="contact-info-value">+230 460 0400</div>
+                  <div className="contact-info-value">+230 203 7000</div>
                 </div>
               </div>
               <div className="contact-info-row">

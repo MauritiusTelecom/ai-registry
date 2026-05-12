@@ -391,7 +391,7 @@ async function main() {
     const providerWebsite =
       process.env.SEED_PROVIDER_WEBSITE?.trim() || "https://www.telecom.mu";
     const providerContactEmail =
-      process.env.SEED_PROVIDER_CONTACT_EMAIL?.trim() || "hello@airegistry.mu";
+      process.env.SEED_PROVIDER_CONTACT_EMAIL?.trim() || "airegistry@intnet.mu";
     const providerDescription =
       process.env.SEED_PROVIDER_DESCRIPTION?.trim() ||
       "Mauritius Telecom is the principal telecommunications operator of the Republic of Mauritius and the reference operator of the Mauritius AI Registry. This profile lists the production-grade models, agents and tools curated by MT's Special Projects unit for use across government, enterprise and research.";
@@ -680,9 +680,9 @@ async function main() {
         title: "mauritius-mobile-operator",
         typeCode: "skill",
         shortDescription:
-          "Identify the Mauritian mobile operator (Emtel, my.t mobile, or Chili) for a Mauritian phone number, based on the ICTA-assigned number-range allocation table.",
+          "Determine which mobile operator a Mauritian phone number belongs to, using the ICTA (Information and Communication Technologies Authority of Mauritius) number-range allocation table.",
         longDescription:
-          "Python skill that resolves any Mauritian mobile number to its assigned operator using the ICTA number-range allocation table. Useful for routing, billing reconciliation, fraud screening, and any workflow that needs to know which mobile network a subscriber sits on. The allocation table ships with the package and is kept in sync with the public ICTA publications.",
+          "Identify the Mauritian mobile operator (Emtel, my.t mobile / Cellplus, or Chili / MTML) for a Mauritian phone number, based on ICTA-assigned number-range prefixes. Trigger whenever the user gives a phone number with the +230 country code, or any 8-digit Mauritian-looking mobile number starting with 5 or 7, and asks which operator, carrier, network, or SIM provider it belongs to. Also trigger for bulk operator lookups (e.g. \"tag each number in this list with its operator\"), for sorting/filtering contact lists by carrier, for checking whether a number was ported or which range it sits in, and for any question of the form \"is +230 5xxx xxxx Emtel or my.t?\" Use this skill instead of guessing - the lookup is deterministic and based on the official ICTA number-range allocation table.",
         sovereigntyBasis: "local_data",
         license: "Proprietary - Mauritius Telecom",
         versionLabel: "Python 3.9+",
