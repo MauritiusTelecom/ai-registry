@@ -15,6 +15,7 @@
     "db:push": "prisma db push",
     "db:seed": "tsx src/prisma/seed.ts",
     "db:reset": "prisma db push --force-reset && npm run db:seed",
+    "deploy:db": "npm run db:push && npm run db:seed",
     "config:validate": "tsx scripts/validate-config.ts",
     "smoke": "tsx scripts/smoke-public.ts"
   },
@@ -26,11 +27,12 @@
     "@prisma/client": "^6.19.3",
     "nodemailer": "^6.10.1",
     "next": "^16.0.1",
+    "prisma": "^6.19.3",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "tsx": "^4.19.2"
   },
   "devDependencies": {
-    "prisma": "^6.19.3",
     "@types/nodemailer": "^6.4.17",
     "@types/node": "^24.10.0",
     "@types/react": "^19.2.2",
@@ -38,7 +40,6 @@
     "dotenv": "^16.4.5",
     "eslint": "^9.39.1",
     "eslint-config-next": "^16.0.1",
-    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }
