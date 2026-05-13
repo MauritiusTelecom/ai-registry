@@ -33,20 +33,20 @@ const TYPES: {
     tone: "tertiary"
   },
   {
-    icon: "settings",
-    eyebrow: "Type · Tool",
-    title: "Tool",
-    desc: "Callable APIs, calculators and functions that AI systems can compose programmatically.",
-    sample: "tool/mu-tool/tax-calculator",
-    tone: "secondary"
-  },
-  {
     icon: "shield",
     eyebrow: "Type · Skill",
     title: "Skill",
     desc: "Packaged expertise - tax, legal, accounting workflows - ready to plug into agents.",
     sample: "skill/mu-skill/fiscaliste-mu",
     tone: "emerald"
+  },
+  {
+    icon: "settings",
+    eyebrow: "Type · Tool",
+    title: "Tool",
+    desc: "Callable APIs, calculators and functions that AI systems can compose programmatically.",
+    sample: "tool/mu-tool/tax-calculator",
+    tone: "secondary"
   }
 ];
 
