@@ -11,7 +11,7 @@ export type Resource = {
   id: string;
   slug?: string;
   airId?: string | null;
-  kind: "model" | "agent" | "skill" | "tool";
+  kind: "model" | "agent" | "skill";
   glyph: string;
   title: string;
   provider: string;
@@ -34,9 +34,7 @@ const RESOURCES: Resource[] = [
   { id: "agent-procurement", kind: "agent", glyph: "AG", title: "agent.procurement-watch", provider: "Internal · Procurement Office", status: "active", desc: "Monitors public procurement notices and alerts on conflicts of interest.", context: "Persistent", latency: "4s", region: "MU", license: "Internal", tags: ["internal", "compliance"] },
   { id: "agent-grant", kind: "agent", glyph: "AG", title: "agent.grant-screener", provider: "EDB Mauritius", status: "experimental", desc: "Screens incoming grant applications against published eligibility rubrics.", context: "Document-grounded", latency: "6s", region: "MU", license: "Pilot", tags: ["pilot", "public-sector"] },
   { id: "mcp-treasury", kind: "skill", glyph: "MCP", title: "mcp/treasury-ledger", provider: "Ministry of Finance", status: "trusted", desc: "Read-only MCP skill exposing public treasury ledgers under the Public Finance Act.", context: "MCP 2025-06", latency: "600ms", region: "MU", license: "Open data", tags: ["mcp", "open-data", "finance"] },
-  { id: "mcp-cadastre", kind: "skill", glyph: "MCP", title: "mcp/cadastre-search", provider: "Land Information & Mapping", status: "verified", desc: "Boundary, ownership and zoning lookups against the national cadastre.", context: "MCP 2025-06", latency: "450ms", region: "MU", license: "Public records", tags: ["mcp", "cadastre", "official"] },
-  { id: "tool-translate", kind: "tool", glyph: "TL", title: "kreol-translate-api", provider: "University of Mauritius", status: "verified", desc: "Translation API for Kreol Morisien ↔ EN/FR with culturally-aware glossary support.", context: "REST", latency: "180ms", region: "MU", license: "CC-BY-SA", tags: ["language", "api"] },
-  { id: "tool-sanctions", kind: "tool", glyph: "TL", title: "sanctions-screen-mu", provider: "Financial Intelligence Unit", status: "isolated", desc: "Restricted sanctions screening - accessible only through accredited integrators.", context: "gRPC", latency: "320ms", region: "MU", license: "Restricted", tags: ["restricted", "aml", "compliance"] }
+  { id: "mcp-cadastre", kind: "skill", glyph: "MCP", title: "mcp/cadastre-search", provider: "Land Information & Mapping", status: "verified", desc: "Boundary, ownership and zoning lookups against the national cadastre.", context: "MCP 2025-06", latency: "450ms", region: "MU", license: "Public records", tags: ["mcp", "cadastre", "official"] }
 ];
 
 const KINDS: { id: "all" | Resource["kind"]; label: string; icon: IconName }[] = [
@@ -54,17 +52,16 @@ const STATUS_FILTERS: Resource["status"][] = [
   "isolated"
 ];
 
-const KIND_SET = new Set<string>(["model", "agent", "skill", "tool"]);
+const KIND_SET = new Set<string>(["model", "agent", "skill"]);
 
 const KIND_LABEL: Record<Resource["kind"], string> = {
   model: "Model",
   agent: "Agent",
-  skill: "Skill",
-  tool: "Tool"
+  skill: "Skill"
 };
 
 function cardToResource(card: RegistryCard): Resource {
-  const kind = KIND_SET.has(card.kind) ? (card.kind as Resource["kind"]) : "tool";
+  const kind = KIND_SET.has(card.kind) ? (card.kind as Resource["kind"]) : "skill";
   return {
     id: card.id,
     slug: card.slug,
@@ -193,7 +190,7 @@ export function RegistrySection({
   const [providerSlug] = useState(() => (initialProviderSlug ?? "").trim());
 
   const [apiRows, setApiRows] = useState<Resource[]>([]);
-  const [apiCounts, setApiCounts] = useState<Record<string, number>>({ all: 0, model: 0, agent: 0, skill: 0, tool: 0 });
+  const [apiCounts, setApiCounts] = useState<Record<string, number>>({ all: 0, model: 0, agent: 0, skill: 0 });
   const [apiTotal, setApiTotal] = useState(0);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -222,20 +219,24 @@ export function RegistrySection({
         throw new Error(body.error ?? `HTTP ${res.status}`);
       }
       const data = (await res.json()) as PublicRegistryListResponse;
-      const mapped = data.rows.map(cardToResource);
+      // Filter out any "tool" resources at the client edge — the home page UI
+      // surfaces only models, agents, and skills.
+      const mapped = data.rows.filter((r) => KIND_SET.has(r.kind)).map(cardToResource);
       if (opts.append) {
         setApiRows((prev) => [...prev, ...mapped]);
       } else {
         setApiRows(mapped);
       }
+      // Subtract tool counts so the home-page tabs and totals reflect only
+      // models, agents, and skills (the public UI no longer exposes tools).
+      const toolCount = data.counts.tool ?? 0;
       setApiCounts({
-        all: data.counts.all,
+        all: Math.max(0, data.counts.all - toolCount),
         model: data.counts.model,
         agent: data.counts.agent,
-        skill: data.counts.skill,
-        tool: data.counts.tool
+        skill: data.counts.skill
       });
-      setApiTotal(data.total);
+      setApiTotal(Math.max(0, data.total - toolCount));
       setNextCursor(data.page.cursor);
       setHasMore(data.page.hasMore);
     },

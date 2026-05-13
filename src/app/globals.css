@@ -978,10 +978,10 @@ p { color: var(--text-2); margin: 0; }
   color: var(--primary);
 }
 
-/* What gets listed — 4-up grid of resource type cards */
+/* What gets listed — 3-up grid of resource type cards */
 .types-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
 }
 @media (max-width: 1024px) { .types-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
