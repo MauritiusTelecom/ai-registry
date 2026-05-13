@@ -20,10 +20,15 @@ type Body = {
   typeCode?: unknown;
   jurisdictionCode?: unknown;
   contactEmail?: unknown;
+  legalContactEmail?: unknown | null;
   legalName?: unknown | null;
   registrationNumber?: unknown | null;
   websiteUrl?: unknown | null;
+  documentationUrl?: unknown | null;
   description?: unknown | null;
+  incidentChannel?: unknown | null;
+  oncallEmail?: unknown | null;
+  webhookUrl?: unknown | null;
   published?: unknown;
   adminSuspended?: unknown;
 };
@@ -57,6 +62,15 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   const before = {
     displayName: target.displayName,
     contactEmail: target.contactEmail,
+    legalContactEmail: target.legalContactEmail,
+    legalName: target.legalName,
+    registrationNumber: target.registrationNumber,
+    websiteUrl: target.websiteUrl,
+    documentationUrl: target.documentationUrl,
+    description: target.description,
+    incidentChannel: target.incidentChannel,
+    oncallEmail: target.oncallEmail,
+    webhookUrl: target.webhookUrl,
     type: target.type.code,
     jurisdiction: target.homeJurisdiction.code
   };
@@ -106,12 +120,53 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (registrationNumber !== undefined) data.registrationNumber = registrationNumber;
   const description = nullable(body.description);
   if (description !== undefined) data.description = description;
+  const incidentChannel = nullable(body.incidentChannel);
+  if (incidentChannel !== undefined) data.incidentChannel = incidentChannel;
+
+  const legalContactEmail = nullable(body.legalContactEmail);
+  if (legalContactEmail !== undefined) {
+    if (legalContactEmail && !EMAIL_RE.test(legalContactEmail.toLowerCase())) {
+      return NextResponse.json(
+        { error: "legalContactEmail must be valid" },
+        { status: 400 }
+      );
+    }
+    data.legalContactEmail = legalContactEmail ? legalContactEmail.toLowerCase() : null;
+  }
+  const oncallEmail = nullable(body.oncallEmail);
+  if (oncallEmail !== undefined) {
+    if (oncallEmail && !EMAIL_RE.test(oncallEmail.toLowerCase())) {
+      return NextResponse.json(
+        { error: "oncallEmail must be valid" },
+        { status: 400 }
+      );
+    }
+    data.oncallEmail = oncallEmail ? oncallEmail.toLowerCase() : null;
+  }
+
   const websiteUrl = nullable(body.websiteUrl);
   if (websiteUrl !== undefined) {
     if (websiteUrl && !isHttpUrl(websiteUrl)) {
       return NextResponse.json({ error: "websiteUrl must be http(s)" }, { status: 400 });
     }
     data.websiteUrl = websiteUrl;
+  }
+  const documentationUrl = nullable(body.documentationUrl);
+  if (documentationUrl !== undefined) {
+    if (documentationUrl && !isHttpUrl(documentationUrl)) {
+      return NextResponse.json(
+        { error: "documentationUrl must be http(s)" },
+        { status: 400 }
+      );
+    }
+    data.documentationUrl = documentationUrl;
+  }
+  const webhookUrl = nullable(body.webhookUrl);
+  if (webhookUrl !== undefined) {
+    if (webhookUrl && !isHttpUrl(webhookUrl)) {
+      return NextResponse.json({ error: "webhookUrl must be http(s)" }, { status: 400 });
+    }
+    data.webhookUrl = webhookUrl;
   }
 
   if (typeof body.published === "boolean") {

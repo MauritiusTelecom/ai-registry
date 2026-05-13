@@ -46,6 +46,9 @@ type Body = {
   title?: unknown;
   shortDescription?: unknown;
   longDescription?: unknown | null;
+  kindCode?: unknown;
+  providerSlug?: unknown;
+  listingOriginCode?: unknown;
   riskCode?: unknown;
   versionLabel?: unknown | null;
   versionNumber?: unknown | null;
@@ -193,7 +196,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     where: { id },
     include: {
       riskLevel: { select: { code: true } },
-      primaryJurisdiction: { select: { code: true } }
+      primaryJurisdiction: { select: { code: true } },
+      resourceType: { select: { code: true } },
+      provider: { select: { slug: true } },
+      listingOrigin: { select: { code: true } }
     }
   });
   if (!target) {
@@ -245,6 +251,40 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       if (!j) return NextResponse.json({ error: "Unknown jurisdictionCode" }, { status: 400 });
       data.primaryJurisdictionId = j.id;
       before.jurisdiction = target.primaryJurisdiction.code;
+    }
+  }
+
+  if (typeof body.kindCode === "string" && body.kindCode.trim() !== "") {
+    const code = body.kindCode.trim().toLowerCase();
+    if (code !== target.resourceType.code) {
+      const rt = await prisma.resourceType.findUnique({ where: { code } });
+      if (!rt) return NextResponse.json({ error: "Unknown kindCode" }, { status: 400 });
+      data.resourceTypeId = rt.id;
+      before.kind = target.resourceType.code;
+    }
+  }
+
+  if (typeof body.providerSlug === "string" && body.providerSlug.trim() !== "") {
+    const slug = body.providerSlug.trim().toLowerCase();
+    if (slug !== target.provider.slug) {
+      const p = await prisma.provider.findUnique({ where: { slug } });
+      if (!p) {
+        return NextResponse.json({ error: "Unknown providerSlug" }, { status: 400 });
+      }
+      data.providerId = p.id;
+      before.provider = target.provider.slug;
+    }
+  }
+
+  if (typeof body.listingOriginCode === "string" && body.listingOriginCode.trim() !== "") {
+    const code = body.listingOriginCode.trim().toLowerCase();
+    if (code !== target.listingOrigin.code) {
+      const lo = await prisma.listingOrigin.findUnique({ where: { code } });
+      if (!lo) {
+        return NextResponse.json({ error: "Unknown listingOriginCode" }, { status: 400 });
+      }
+      data.listingOriginId = lo.id;
+      before.listingOrigin = target.listingOrigin.code;
     }
   }
 

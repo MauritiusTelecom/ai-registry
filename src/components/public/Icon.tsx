@@ -27,6 +27,7 @@ export type IconName =
   | "zap"
   | "layers"
   | "menu"
+  | "more-vertical"
   | "bell"
   | "chevron-down"
   | "palette"
@@ -110,6 +111,10 @@ export function Icon({ name, size = 16, stroke = 1.5 }: IconProps) {
       return (<svg {...props}><path d="M12 2l10 5-10 5L2 7l10-5zM2 12l10 5 10-5M2 17l10 5 10-5" /></svg>);
     case "menu":
       return (<svg {...props}><path d="M4 7h16M4 12h16M4 17h16" /></svg>);
+    case "more-vertical":
+      // Filled dots so they read at small sizes — the rest of the icon set is
+      // stroke-only line art, so we override fill locally here.
+      return (<svg {...props} fill="currentColor" stroke="none"><circle cx="12" cy="5" r="1.9" /><circle cx="12" cy="12" r="1.9" /><circle cx="12" cy="19" r="1.9" /></svg>);
     case "bell":
       return (<svg {...props}><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10 21a2 2 0 0 0 4 0" /></svg>);
     case "chevron-down":
