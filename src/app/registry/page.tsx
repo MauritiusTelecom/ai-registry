@@ -5,13 +5,12 @@ export const metadata = {
   title: "Registry · Mauritius AI Registry"
 };
 
-type RegistryKind = "all" | "model" | "agent" | "skill" | "tool";
+type RegistryKind = "all" | "model" | "agent" | "skill";
 const VALID_KINDS: ReadonlySet<RegistryKind> = new Set([
   "all",
   "model",
   "agent",
-  "skill",
-  "tool"
+  "skill"
 ]);
 
 function normalizeKind(raw: string | undefined): RegistryKind | undefined {

@@ -2,14 +2,14 @@ import Link from "next/link";
 import { Icon, type IconName } from "../Icon";
 import { Reveal } from "../Reveal";
 
-// "What gets listed" — four resource types listed on the registry.
-// Renders as a 4-column grid of feature cards that collapse to 2-up and
+// "What gets listed" — three resource types listed on the registry.
+// Renders as a 3-column grid of feature cards that collapse to 2-up and
 // 1-up on smaller viewports. Mirrors the cards in
 // uploads/AI_Registry_Decision_Makers_Guide.html (#features section).
 
-type Tone = "primary" | "tertiary" | "secondary" | "emerald";
+type Tone = "primary" | "tertiary" | "emerald";
 
-type ResourceKind = "model" | "agent" | "skill" | "tool";
+type ResourceKind = "model" | "agent" | "skill";
 
 const TYPES: {
   icon: IconName;
@@ -46,15 +46,6 @@ const TYPES: {
     sample: "skill/mu-skill/fiscaliste-mu",
     tone: "emerald",
     kind: "skill"
-  },
-  {
-    icon: "settings",
-    eyebrow: "Type · Tool",
-    title: "Tools",
-    desc: "Callable APIs, calculators and functions that AI systems can compose programmatically.",
-    sample: "tool/mu-tool/tax-calculator",
-    tone: "secondary",
-    kind: "tool"
   }
 ];
 
@@ -79,13 +70,6 @@ const TONE: Record<
       "linear-gradient(13deg, rgba(var(--tertiary-rgb),0.25), rgba(var(--primary-rgb),0.15))",
     sampleColor: "var(--secondary)"
   },
-  secondary: {
-    rgb: "var(--secondary-rgb)",
-    color: "var(--secondary)",
-    iconBg:
-      "linear-gradient(13deg, rgba(var(--secondary-rgb),0.25), rgba(var(--primary-rgb),0.15))",
-    sampleColor: "var(--secondary)"
-  },
   emerald: {
     rgb: "16, 185, 129",
     color: "#10b981",
@@ -104,11 +88,11 @@ export function WhatGetsListed() {
           <span>What gets listed</span>
         </div>
         <h2>
-          Four resource types.{" "}
+          Three resource types.{" "}
           <span className="gradient-text">Composable by AI.</span>
         </h2>
         <p>
-          The registry covers four kinds of sovereign AI resource - models, agents, tools
+          The registry covers three kinds of sovereign AI resource - models, agents
           and skills. Each has its own listing template and stable AIR-ID, so consumers
           and AI systems can find and combine them programmatically.
         </p>
