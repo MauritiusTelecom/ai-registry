@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Icon } from "@/components/public/Icon";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
+import { RowActionMenu, type RowMenuItem } from "./RowActionMenu";
 import { StatusPill } from "@/components/portals/StatusPill";
 import { withBase } from "@/lib/with-base";
 
@@ -21,6 +22,17 @@ export type UserRow = {
 };
 
 type RefRow = { code: string; name: string };
+
+// Compact icon-only style for the Edit inline button. Matches the height of
+// the kebab trigger so the pair aligns cleanly. `.r-card-action-link` defaults
+// to `--text-3` (muted) which is too dim for small icons — bump to `--text-2`
+// so the glyphs read clearly in both themes.
+const iconBtnStyle = {
+  padding: "4px 6px",
+  minWidth: 28,
+  justifyContent: "center",
+  color: "var(--text)"
+} as const;
 
 const STATUS_DISPLAY: Record<string, string> = {
   active: "active",
@@ -217,30 +229,33 @@ function UserRowActions({
         className="r-card-action-link"
         onClick={() => setEditing(true)}
         title="Edit"
+        aria-label="Edit"
         disabled={busy}
+        style={iconBtnStyle}
       >
-        <Icon name="edit" size={12} /> Edit
+        <Icon name="edit" size={14} />
       </button>
-      <button
-        type="button"
-        className="r-card-action-link"
-        title={isSuspended ? "Reactivate" : "Suspend"}
-        disabled={busy || isSelf}
-        onClick={() =>
-          patch({ statusCode: isSuspended ? "active" : "suspended" })
-        }
-      >
-        {isSuspended ? "Reactivate" : "Suspend"}
-      </button>
-      <button
-        type="button"
-        className="r-card-action-link"
-        title="Delete"
-        disabled={busy || isSelf}
-        onClick={() => setConfirmDelete(true)}
-      >
-        <Icon name="trash" size={12} /> Delete
-      </button>
+      <RowActionMenu
+        items={[
+          {
+            key: "toggleSuspend",
+            label: isSuspended ? "Reactivate" : "Suspend",
+            icon: isSuspended ? "check" : "lock",
+            tone: isSuspended ? "default" : "danger",
+            disabled: busy || isSelf,
+            onSelect: () =>
+              void patch({ statusCode: isSuspended ? "active" : "suspended" })
+          },
+          {
+            key: "delete",
+            label: "Delete",
+            icon: "trash",
+            tone: "danger",
+            disabled: busy || isSelf,
+            onSelect: () => setConfirmDelete(true)
+          }
+        ] satisfies RowMenuItem[]}
+      />
 
       {error ? (
         <div className="field-error" style={{ width: "100%", marginTop: 4 }} role="alert">

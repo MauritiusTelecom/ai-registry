@@ -42,6 +42,8 @@ export type ResourceEditInitial = {
   kindName: string;
   providerSlug: string;
   providerName: string;
+  listingOriginCode: string;
+  listingOriginName: string;
   jurisdictionCode: string;
   lifecycleCode: string;
   lifecycleName: string;
@@ -62,6 +64,8 @@ export type ResourceEditInitial = {
   endpoints: EndpointRow[];
 };
 
+export type ProviderOption = { slug: string; displayName: string };
+
 export function ResourceEditForm({
   initial,
   riskLevels,
@@ -72,7 +76,10 @@ export function ResourceEditForm({
   authMethods,
   accessModels,
   languages,
-  sectors
+  sectors,
+  resourceTypes,
+  providers,
+  listingOrigins
 }: {
   initial: ResourceEditInitial;
   riskLevels: RefRow[];
@@ -84,11 +91,17 @@ export function ResourceEditForm({
   accessModels: RefRow[];
   languages: RefRow[];
   sectors: RefRow[];
+  resourceTypes: RefRow[];
+  providers: ProviderOption[];
+  listingOrigins: RefRow[];
 }) {
   const router = useRouter();
 
   // ── Section 1: identity & classification ────────────────────────────────
   const [title, setTitle] = useState(initial.title);
+  const [kindCode, setKindCode] = useState(initial.kindCode);
+  const [providerSlug, setProviderSlug] = useState(initial.providerSlug);
+  const [listingOriginCode, setListingOriginCode] = useState(initial.listingOriginCode);
   const [riskCode, setRiskCode] = useState(initial.riskCode);
   const [jurisdictionCode, setJurisdictionCode] = useState(initial.jurisdictionCode);
   const [publicVisibility, setPublicVisibility] = useState(initial.publicVisibility);
@@ -193,6 +206,9 @@ export function ResourceEditForm({
         title: title.trim(),
         shortDescription: shortDescription.trim(),
         longDescription: longDescription.trim() === "" ? null : longDescription.trim(),
+        kindCode,
+        providerSlug,
+        listingOriginCode,
         riskCode,
         jurisdictionCode,
         publicVisibility,
@@ -267,19 +283,31 @@ export function ResourceEditForm({
           </Field>
         </Row>
         <Row>
-          <Field label="Kind (immutable)">
-            <input
+          <Field label="Kind / resource type">
+            <select
               className="auth-input"
-              value={`${initial.kindName} (${initial.kindCode})`}
-              disabled
-            />
+              value={kindCode}
+              onChange={(e) => setKindCode(e.target.value)}
+            >
+              {resourceTypes.map((rt) => (
+                <option key={rt.code} value={rt.code}>
+                  {rt.name} ({rt.code})
+                </option>
+              ))}
+            </select>
           </Field>
-          <Field label="Provider (immutable)">
-            <input
+          <Field label="Provider">
+            <select
               className="auth-input"
-              value={`${initial.providerName} (${initial.providerSlug})`}
-              disabled
-            />
+              value={providerSlug}
+              onChange={(e) => setProviderSlug(e.target.value)}
+            >
+              {providers.map((p) => (
+                <option key={p.slug} value={p.slug}>
+                  {p.displayName} ({p.slug})
+                </option>
+              ))}
+            </select>
           </Field>
         </Row>
         <Row>
@@ -308,6 +336,28 @@ export function ResourceEditForm({
                 </option>
               ))}
             </select>
+          </Field>
+        </Row>
+        <Row>
+          <Field label="Listing origin">
+            <select
+              className="auth-input"
+              value={listingOriginCode}
+              onChange={(e) => setListingOriginCode(e.target.value)}
+            >
+              {listingOrigins.map((lo) => (
+                <option key={lo.code} value={lo.code}>
+                  {lo.name} ({lo.code})
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Lifecycle status (use the sidebar to change)">
+            <input
+              className="auth-input"
+              value={`${initial.lifecycleName} (${initial.lifecycleCode})`}
+              disabled
+            />
           </Field>
         </Row>
         <Field label="Public visibility">

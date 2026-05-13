@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Icon } from "@/components/public/Icon";
+import { Icon, type IconName } from "@/components/public/Icon";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
+import { RowActionMenu, type RowMenuItem } from "./RowActionMenu";
 import { withBase } from "@/lib/with-base";
 
 export type ResourceRow = {
@@ -35,15 +36,44 @@ const LIFECYCLE_COLOUR: Record<string, string> = {
   removed: "var(--text-3)"
 };
 
+// Compact icon-only style for the View / Edit inline buttons. Matches the
+// height of the kebab trigger so the trio aligns cleanly. `.r-card-action-link`
+// defaults to `--text-3` (muted) which is too dim for small icons — bump to
+// `--text-2` so the glyphs read clearly in both themes.
+const iconBtnStyle = {
+  padding: "4px 6px",
+  minWidth: 28,
+  justifyContent: "center",
+  color: "var(--text)"
+} as const;
+
+const LIFECYCLE_ICON: Record<string, IconName | undefined> = {
+  approve: "check",
+  reject: "x",
+  suspend: "lock",
+  restore: "check",
+  deprecate: "flag",
+  remove: "trash"
+};
+
+const LIFECYCLE_TONE: Record<string, "default" | "danger"> = {
+  approve: "default",
+  reject: "default",
+  suspend: "danger",
+  restore: "default",
+  deprecate: "default",
+  remove: "danger"
+};
+
 const ACTION_FROM: Record<string, string[]> = {
-  draft: ["approve", "remove"],
-  submitted: ["approve", "reject", "remove"],
-  in_review: ["approve", "reject", "remove"],
-  needs_update: ["approve", "reject", "remove"],
+  draft: ["approve", "restore", "remove"],
+  submitted: ["approve", "reject", "restore", "remove"],
+  in_review: ["approve", "reject", "restore", "remove"],
+  needs_update: ["approve", "reject", "restore", "remove"],
   listed: ["reject", "suspend", "deprecate", "remove"],
   suspended: ["restore", "remove"],
   deprecated: ["restore", "remove"],
-  removed: []
+  removed: ["restore"]
 };
 
 export function ResourcesAdmin({
@@ -205,6 +235,30 @@ function ResourceRowActions({
     }
   }
 
+  // Inline: View (icon-only, when there is a public detail) + Edit (icon-only).
+  // Kebab: every other action (lifecycle transitions + Delete when applicable).
+  const menuItems: RowMenuItem[] = [];
+  for (const a of allowed) {
+    menuItems.push({
+      key: a,
+      label: a.charAt(0).toUpperCase() + a.slice(1),
+      icon: LIFECYCLE_ICON[a],
+      tone: LIFECYCLE_TONE[a],
+      disabled: busy,
+      onSelect: () => setActionFor(a)
+    });
+  }
+  if (!row.airId) {
+    menuItems.push({
+      key: "delete",
+      label: "Delete",
+      icon: "trash",
+      tone: "danger",
+      disabled: busy,
+      onSelect: () => setConfirmDelete(true)
+    });
+  }
+
   return (
     <>
       {row.airId ? (
@@ -214,40 +268,22 @@ function ResourceRowActions({
           rel="noopener noreferrer"
           className="r-card-action-link"
           title="View public detail"
+          aria-label="View public detail"
+          style={iconBtnStyle}
         >
-          <Icon name="eye" size={12} /> View
+          <Icon name="eye" size={14} />
         </Link>
       ) : null}
       <Link
         href={`/admin/resources/${row.id}/edit`}
         className="r-card-action-link"
         title="Edit"
+        aria-label="Edit"
+        style={iconBtnStyle}
       >
-        <Icon name="edit" size={12} /> Edit
+        <Icon name="edit" size={14} />
       </Link>
-      {allowed.map((a) => (
-        <button
-          key={a}
-          type="button"
-          className="r-card-action-link"
-          onClick={() => setActionFor(a)}
-          disabled={busy}
-          title={a.charAt(0).toUpperCase() + a.slice(1)}
-        >
-          {a.charAt(0).toUpperCase() + a.slice(1)}
-        </button>
-      ))}
-      {row.airId ? null : (
-        <button
-          type="button"
-          className="r-card-action-link"
-          onClick={() => setConfirmDelete(true)}
-          disabled={busy}
-          title="Delete"
-        >
-          <Icon name="trash" size={12} /> Delete
-        </button>
-      )}
+      {menuItems.length > 0 ? <RowActionMenu items={menuItems} /> : null}
 
       {error ? (
         <div className="field-error" style={{ width: "100%", marginTop: 4 }} role="alert">

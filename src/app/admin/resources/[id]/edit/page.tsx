@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { ResourceEditForm } from "@/components/admin/ResourceEditForm";
+import { ResourceLifecyclePanel } from "@/components/admin/ResourceLifecyclePanel";
 
 export const metadata = { title: "Admin · Edit resource" };
 export const dynamic = "force-dynamic";
@@ -32,6 +33,7 @@ export default async function AdminResourceEditPage({
       provider: { select: { slug: true, displayName: true } },
       primaryJurisdiction: { select: { code: true, name: true } },
       lifecycleStatus: { select: { code: true, name: true } },
+      listingOrigin: { select: { code: true, name: true } },
       riskLevel: { select: { code: true } },
       resourceBases: { include: { sovereigntyBasis: { select: { code: true } } } },
       resourceLanguages: { include: { language: { select: { code: true } } } },
@@ -64,7 +66,10 @@ export default async function AdminResourceEditPage({
     authMethods,
     accessModels,
     languages,
-    sectors
+    sectors,
+    resourceTypes,
+    providers,
+    listingOrigins
   ] = await Promise.all([
     prisma.riskLevel.findMany({
       where: { active: true },
@@ -110,6 +115,21 @@ export default async function AdminResourceEditPage({
       where: { active: true },
       orderBy: { name: "asc" },
       select: { code: true, name: true }
+    }),
+    prisma.resourceType.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+      select: { code: true, name: true }
+    }),
+    prisma.provider.findMany({
+      where: { adminSuspended: false },
+      orderBy: { displayName: "asc" },
+      select: { slug: true, displayName: true }
+    }),
+    prisma.listingOrigin.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+      select: { code: true, name: true }
     })
   ]);
 
@@ -124,6 +144,8 @@ export default async function AdminResourceEditPage({
     kindName: resource.resourceType.name,
     providerSlug: resource.provider.slug,
     providerName: resource.provider.displayName,
+    listingOriginCode: resource.listingOrigin.code,
+    listingOriginName: resource.listingOrigin.name,
     jurisdictionCode: resource.primaryJurisdiction.code,
     lifecycleCode: resource.lifecycleStatus.code,
     lifecycleName: resource.lifecycleStatus.name,
@@ -188,18 +210,55 @@ export default async function AdminResourceEditPage({
           ) : null}
         </p>
       </div>
-      <ResourceEditForm
-        initial={initial}
-        riskLevels={riskLevels}
-        jurisdictions={jurisdictions}
-        sovereigntyBases={sovereigntyBases}
-        evidenceTypes={evidenceTypes}
-        protocols={protocols}
-        authMethods={authMethods}
-        accessModels={accessModels}
-        languages={languages}
-        sectors={sectors}
-      />
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 320px",
+          gap: 24,
+          alignItems: "start"
+        }}
+      >
+        <ResourceEditForm
+          initial={initial}
+          riskLevels={riskLevels}
+          jurisdictions={jurisdictions}
+          sovereigntyBases={sovereigntyBases}
+          evidenceTypes={evidenceTypes}
+          protocols={protocols}
+          authMethods={authMethods}
+          accessModels={accessModels}
+          languages={languages}
+          sectors={sectors}
+          resourceTypes={resourceTypes}
+          providers={providers}
+          listingOrigins={listingOrigins}
+        />
+
+        <div style={{ display: "grid", gap: 16 }}>
+          <div className="glass" style={{ padding: 20 }}>
+            <h2 style={{ fontSize: 14, marginTop: 0, marginBottom: 8 }}>
+              Lifecycle & status
+            </h2>
+            <p
+              style={{
+                fontSize: 12,
+                color: "var(--text-3)",
+                marginTop: 0,
+                marginBottom: 14
+              }}
+            >
+              Changes write one TrustSignal of kind{" "}
+              <code>sovereignty_review</code> plus an append-only audit row.
+              Approving mints the AIR-ID.
+            </p>
+            <ResourceLifecyclePanel
+              resourceId={initial.id}
+              currentLifecycleCode={initial.lifecycleCode}
+              currentLifecycleName={initial.lifecycleName}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

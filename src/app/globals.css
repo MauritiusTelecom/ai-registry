@@ -24,6 +24,10 @@
 
 /* Dark theme (default) */
 [data-theme="dark"] {
+  /* color-scheme tells the browser to render native form controls (especially
+     <select> option lists) with dark-theme defaults — without it, light-theme
+     OS rendering shows white-on-white text in the popups. */
+  color-scheme: dark;
   --bg: #07090d;
   --bg-rgb: 7, 9, 13;
   --bg-2: #0a0d13;
@@ -54,6 +58,7 @@
 
 /* Light theme */
 [data-theme="light"] {
+  color-scheme: light;
   --bg: #f8fafc;
   --bg-rgb: 248, 250, 252;
   --bg-2: #f2f5fa;
@@ -1271,6 +1276,15 @@ p { color: var(--text-2); margin: 0; }
 .auth-input:focus {
   border-color: rgba(var(--primary-rgb), 0.55);
   box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.16);
+}
+
+/* Force option-list legibility per theme. Native <option> elements ignore
+   most CSS, but background + color do work in current Chromium / Firefox /
+   WebKit, so we pin them to theme-aware values to fix the
+   "white-on-white in light mode" issue. */
+select.auth-input option {
+  background: var(--panel-solid);
+  color: var(--text);
 }
 
 .form-success {

@@ -50,7 +50,19 @@ const ALLOWED_FROM: Record<Action, Set<string>> = {
   approve: new Set(["draft", "submitted", "in_review", "needs_update"]),
   reject: new Set(["submitted", "in_review", "listed", "needs_update"]),
   suspend: new Set(["listed"]),
-  restore: new Set(["suspended", "deprecated"]),
+  // Restore is the admin "revert to active" escape hatch and is intentionally
+  // permissive: any non-listed status (including `removed` tombstones) can be
+  // brought back to `listed`. Mints the AIR-ID when one was never issued, so
+  // resources that never reached `listed` can be promoted directly.
+  restore: new Set([
+    "suspended",
+    "deprecated",
+    "removed",
+    "needs_update",
+    "draft",
+    "submitted",
+    "in_review"
+  ]),
   deprecate: new Set(["listed"]),
   remove: new Set(["listed", "suspended", "deprecated", "needs_update", "draft", "submitted", "in_review"])
 };
@@ -150,7 +162,16 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     update.lastReviewedAt = new Date();
   }
   if (action === "restore") {
+    // Revert path. Promote the resource back to `listed`, restore public
+    // visibility, and — when restoring from a pre-approval state or a `removed`
+    // tombstone that never minted an AIR-ID — mint one now so the resource is
+    // publicly resolvable.
+    if (!resource.airId) {
+      update.airId = `air://${cfg.identityDomain}/${resource.resourceType.code}/${resource.provider.slug}/${resource.slug}`;
+    }
     update.publicVisibility = true;
+    if (!resource.listedAt) update.listedAt = new Date();
+    update.lastReviewedAt = new Date();
   }
   if (action === "suspend" || action === "remove" || action === "deprecate") {
     if (action === "remove") update.publicVisibility = false;

@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "@/components/public/Icon";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
+import { RowActionMenu, type RowMenuItem } from "./RowActionMenu";
 import { StatusPill } from "@/components/portals/StatusPill";
 import { withBase } from "@/lib/with-base";
 
@@ -30,6 +32,17 @@ const STATUS_DISPLAY: Record<string, string> = {
   official_provider: "trusted",
   suspended: "isolated"
 };
+
+// Compact icon-only style for the View / Edit inline buttons. Matches the
+// height of the kebab trigger so the trio aligns cleanly. `.r-card-action-link`
+// defaults to `--text-3` (muted) which is too dim for small icons — bump to
+// `--text-2` so the glyphs read clearly in both themes.
+const iconBtnStyle = {
+  padding: "4px 6px",
+  minWidth: 28,
+  justifyContent: "center",
+  color: "var(--text)"
+} as const;
 
 export function ProvidersAdmin({
   types,
@@ -145,6 +158,7 @@ function ProviderRowActions({
   jurisdictions: RefRow[];
   reload: () => void;
 }) {
+  const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -171,34 +185,44 @@ function ProviderRowActions({
 
   return (
     <>
-      <Link href={`/admin/providers/${row.id}`} className="r-card-action-link" title="View">
-        <Icon name="eye" size={12} /> View
+      <Link
+        href={`/admin/providers/${row.id}`}
+        className="r-card-action-link"
+        title="View"
+        aria-label="View"
+        style={iconBtnStyle}
+      >
+        <Icon name="eye" size={14} />
       </Link>
       <button
         type="button"
         className="r-card-action-link"
         onClick={() => setEditing(true)}
         title="Edit"
+        aria-label="Edit"
         disabled={busy}
+        style={iconBtnStyle}
       >
-        <Icon name="edit" size={12} /> Edit
+        <Icon name="edit" size={14} />
       </button>
-      <Link
-        href={`/admin/providers/${row.id}`}
-        className="r-card-action-link"
-        title="Verify"
-      >
-        Verify
-      </Link>
-      <button
-        type="button"
-        className="r-card-action-link"
-        onClick={() => setConfirmDelete(true)}
-        title="Delete"
-        disabled={busy}
-      >
-        <Icon name="trash" size={12} /> Delete
-      </button>
+      <RowActionMenu
+        items={[
+          {
+            key: "verify",
+            label: "Verify status",
+            icon: "shield",
+            onSelect: () => router.push(`/admin/providers/${row.id}`)
+          },
+          {
+            key: "delete",
+            label: "Delete",
+            icon: "trash",
+            tone: "danger",
+            disabled: busy,
+            onSelect: () => setConfirmDelete(true)
+          }
+        ] satisfies RowMenuItem[]}
+      />
 
       {error ? (
         <div className="field-error" style={{ width: "100%", marginTop: 4 }} role="alert">
