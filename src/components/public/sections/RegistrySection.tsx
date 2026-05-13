@@ -43,8 +43,7 @@ const KINDS: { id: "all" | Resource["kind"]; label: string; icon: IconName }[] =
   { id: "all", label: "All resources", icon: "layers" },
   { id: "model", label: "Models", icon: "cpu" },
   { id: "agent", label: "Agents", icon: "agent" },
-  { id: "skill", label: "Skills", icon: "zap" },
-  { id: "tool", label: "Tools", icon: "flow" }
+  { id: "skill", label: "Skills", icon: "zap" }
 ];
 
 const STATUS_FILTERS: Resource["status"][] = [
