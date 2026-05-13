@@ -161,7 +161,8 @@ export function RegistrySection({
   dataSource = "api",
   pageSize = 20,
   initialResources,
-  initialProviderSlug
+  initialProviderSlug,
+  initialKind
 }: {
   withHeader?: boolean;
   /**
@@ -174,8 +175,12 @@ export function RegistrySection({
   initialResources?: Resource[];
   /** When set (e.g. from `/registry?provider=`), all list requests include `provider` query. */
   initialProviderSlug?: string | null;
+  /** When set (e.g. from `/registry?kind=model`), the matching kind tab is pre-selected. */
+  initialKind?: (typeof KINDS)[number]["id"];
 }) {
-  const [activeKind, setActiveKind] = useState<(typeof KINDS)[number]["id"]>("all");
+  const [activeKind, setActiveKind] = useState<(typeof KINDS)[number]["id"]>(
+    initialKind ?? "all"
+  );
   const [activeStatus, setActiveStatus] = useState<Resource["status"] | null>(null);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");

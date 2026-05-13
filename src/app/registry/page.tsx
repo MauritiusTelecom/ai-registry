@@ -5,12 +5,28 @@ export const metadata = {
   title: "Registry · Mauritius AI Registry"
 };
 
+type RegistryKind = "all" | "model" | "agent" | "skill" | "tool";
+const VALID_KINDS: ReadonlySet<RegistryKind> = new Set([
+  "all",
+  "model",
+  "agent",
+  "skill",
+  "tool"
+]);
+
+function normalizeKind(raw: string | undefined): RegistryKind | undefined {
+  if (!raw) return undefined;
+  const k = raw.trim().toLowerCase();
+  return VALID_KINDS.has(k as RegistryKind) ? (k as RegistryKind) : undefined;
+}
+
 export default async function RegistryPage({
   searchParams
 }: {
-  searchParams: Promise<{ provider?: string }>;
+  searchParams: Promise<{ provider?: string; kind?: string }>;
 }) {
-  const { provider } = await searchParams;
+  const { provider, kind } = await searchParams;
+  const initialKind = normalizeKind(kind);
   return (
     <div>
       <PageHero
@@ -23,7 +39,11 @@ export default async function RegistryPage({
         }
         subtitle="Browse models, agents, skills and tools. Filter by kind. Listings carry verifiable providers and stable AIR-IDs."
       />
-      <RegistrySection withHeader={false} initialProviderSlug={provider} />
+      <RegistrySection
+        withHeader={false}
+        initialProviderSlug={provider}
+        initialKind={initialKind}
+      />
     </div>
   );
 }

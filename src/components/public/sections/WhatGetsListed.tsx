@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Icon, type IconName } from "../Icon";
 import { Reveal } from "../Reveal";
 
@@ -8,6 +9,8 @@ import { Reveal } from "../Reveal";
 
 type Tone = "primary" | "tertiary" | "secondary" | "emerald";
 
+type ResourceKind = "model" | "agent" | "skill" | "tool";
+
 const TYPES: {
   icon: IconName;
   eyebrow: string;
@@ -15,6 +18,7 @@ const TYPES: {
   desc: string;
   sample: string;
   tone: Tone;
+  kind: ResourceKind;
 }[] = [
   {
     icon: "doc",
@@ -22,7 +26,8 @@ const TYPES: {
     title: "Models",
     desc: "Language, vision or domain models trained on or aware of local context, language and norms.",
     sample: "model/mu-llm/kreol-1",
-    tone: "primary"
+    tone: "primary",
+    kind: "model"
   },
   {
     icon: "agent",
@@ -30,7 +35,8 @@ const TYPES: {
     title: "Agents",
     desc: "Autonomous workflows that act on local processes - registrations, filings, public-service navigation.",
     sample: "agent/mu-agent/service-finder",
-    tone: "tertiary"
+    tone: "tertiary",
+    kind: "agent"
   },
   {
     icon: "shield",
@@ -38,7 +44,8 @@ const TYPES: {
     title: "Skills",
     desc: "Packaged expertise - tax, legal, accounting workflows - ready to plug into agents.",
     sample: "skill/mu-skill/fiscaliste-mu",
-    tone: "emerald"
+    tone: "emerald",
+    kind: "skill"
   },
   {
     icon: "settings",
@@ -46,7 +53,8 @@ const TYPES: {
     title: "Tools",
     desc: "Callable APIs, calculators and functions that AI systems can compose programmatically.",
     sample: "tool/mu-tool/tax-calculator",
-    tone: "secondary"
+    tone: "secondary",
+    kind: "tool"
   }
 ];
 
@@ -111,7 +119,8 @@ export function WhatGetsListed() {
           {TYPES.map((t) => {
             const tone = TONE[t.tone];
             return (
-              <div
+              <Link
+                href={`/registry?kind=${t.kind}`}
                 className="feature-card type-card"
                 key={t.title}
                 style={{
@@ -121,6 +130,9 @@ export function WhatGetsListed() {
                   border: "1px solid var(--border)",
                   background: "var(--panel)",
                   overflow: "hidden",
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "block",
                   transition:
                     "transform 220ms cubic-bezier(.2,.8,.2,1), border-color 220ms"
                 }}
@@ -209,7 +221,7 @@ export function WhatGetsListed() {
                 >
                   {t.sample}
                 </span>
-              </div>
+              </Link>
             );
           })}
         </div>
