@@ -269,5 +269,41 @@ export const emailTemplates = {
         `Open the admin console:\n  ${opts.adminHomeUrl}\n\n` +
         `- ${opts.registryName} (automated)`
     };
+  },
+  /**
+   * Notification to the user a complaint has just been assigned to. Sent
+   * from the admin update endpoint when the assignment changes and the
+   * operator left the "Notify assignee" toggle on (the default).
+   */
+  complaintAssigned(opts: {
+    registryName: string;
+    assigneeName: string;
+    assignedByName: string;
+    complaintId: string;
+    complaintType: string;
+    severity: string;
+    targetSummary: string;
+    statusLabel: string;
+    description: string;
+    complaintUrl: string;
+  }): { subject: string; text: string } {
+    const excerpt =
+      opts.description.length > 240
+        ? `${opts.description.slice(0, 240)}…`
+        : opts.description;
+    return {
+      subject: `[${opts.registryName}] Complaint ${opts.complaintId.slice(0, 8)} assigned to you`,
+      text:
+        `Hi ${opts.assigneeName},\n\n` +
+        `${opts.assignedByName} assigned a complaint to you on ${opts.registryName}.\n\n` +
+        `Id: ${opts.complaintId}\n` +
+        `Type: ${opts.complaintType}\n` +
+        `Severity: ${opts.severity}\n` +
+        `Status: ${opts.statusLabel}\n` +
+        `Target: ${opts.targetSummary}\n\n` +
+        `Excerpt:\n${excerpt}\n\n` +
+        `Open the complaint:\n  ${opts.complaintUrl}\n\n` +
+        `- ${opts.registryName} (automated)`
+    };
   }
 };
