@@ -19,7 +19,7 @@ const TYPES: {
   {
     icon: "doc",
     eyebrow: "Type · Model",
-    title: "Model",
+    title: "Models",
     desc: "Language, vision or domain models trained on or aware of local context, language and norms.",
     sample: "model/mu-llm/kreol-1",
     tone: "primary"
@@ -27,7 +27,7 @@ const TYPES: {
   {
     icon: "agent",
     eyebrow: "Type · Agent",
-    title: "Agent",
+    title: "Agents",
     desc: "Autonomous workflows that act on local processes - registrations, filings, public-service navigation.",
     sample: "agent/mu-agent/service-finder",
     tone: "tertiary"
@@ -35,7 +35,7 @@ const TYPES: {
   {
     icon: "shield",
     eyebrow: "Type · Skill",
-    title: "Skill",
+    title: "Skills",
     desc: "Packaged expertise - tax, legal, accounting workflows - ready to plug into agents.",
     sample: "skill/mu-skill/fiscaliste-mu",
     tone: "emerald"
@@ -43,7 +43,7 @@ const TYPES: {
   {
     icon: "settings",
     eyebrow: "Type · Tool",
-    title: "Tool",
+    title: "Tools",
     desc: "Callable APIs, calculators and functions that AI systems can compose programmatically.",
     sample: "tool/mu-tool/tax-calculator",
     tone: "secondary"
