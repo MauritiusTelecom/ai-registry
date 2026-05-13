@@ -193,12 +193,19 @@ function ManageCard({
   const [statusId, setStatusId] = useState(currentStatusId);
   const [assignee, setAssignee] = useState(assignedToId ?? "");
   const [summary, setSummary] = useState(resolutionSummary ?? "");
+  // Email-on-assign toggle. Default ON, per spec. Only meaningful when the
+  // assignee actually changes — but rather than disable the checkbox in that
+  // case (which would feel jumpy) we just send it on every save and the
+  // server treats it as a no-op when nothing changed.
+  const [notifyAssignee, setNotifyAssignee] = useState(true);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
   const selectedStatus = statusOptions.find((s) => s.id === statusId);
   const isResolving =
     selectedStatus?.code === "resolved" || selectedStatus?.code === "rejected";
+  const assignmentWillChange = (assignee || null) !== (assignedToId ?? null);
+  const willNotifyOnSave = assignmentWillChange && !!assignee && notifyAssignee;
 
   async function save() {
     setMsg(null);
@@ -210,15 +217,26 @@ function ManageCard({
         body: JSON.stringify({
           statusId,
           assignedToId: assignee || null,
-          resolutionSummary: summary.trim() || null
+          resolutionSummary: summary.trim() || null,
+          notifyAssignee
         })
       });
-      const data = (await res.json()) as { error?: string };
+      const data = (await res.json()) as {
+        error?: string;
+        autoBumped?: boolean;
+        emailNotified?: boolean;
+      };
       if (!res.ok) {
         setMsg({ kind: "err", text: data.error ?? "Update failed" });
         return;
       }
-      setMsg({ kind: "ok", text: "Saved" });
+      // Compose a friendlier "what just happened" success line so the
+      // operator sees that the auto-bump fired and / or that the email
+      // went out.
+      const parts: string[] = ["Saved"];
+      if (data.autoBumped) parts.push("status moved to investigating");
+      if (data.emailNotified) parts.push("assignee notified by email");
+      setMsg({ kind: "ok", text: parts.join(" · ") });
       router.refresh();
     } catch {
       setMsg({ kind: "err", text: "Network error" });
@@ -259,6 +277,34 @@ function ManageCard({
             </option>
           ))}
         </select>
+        {/* Email toggle - only relevant on first-assign / reassign. We render
+            it inline so the operator can untick before saving. */}
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12,
+            color: assignmentWillChange && assignee
+              ? "var(--text-2)"
+              : "var(--text-3)",
+            marginTop: 2,
+            cursor: "pointer"
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={notifyAssignee}
+            onChange={(e) => setNotifyAssignee(e.target.checked)}
+            style={{ accentColor: "var(--primary)" }}
+          />
+          <span>
+            Email the assignee when this changes
+            {willNotifyOnSave ? (
+              <span style={{ color: "var(--text)", marginLeft: 6 }}>· will send</span>
+            ) : null}
+          </span>
+        </label>
       </label>
       <label style={{ display: "grid", gap: 6 }}>
         <span style={{ fontSize: 11, color: "var(--text-3)" }}>

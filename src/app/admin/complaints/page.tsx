@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/current-user";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 
 export const metadata = { title: "Admin · Complaints" };
 export const dynamic = "force-dynamic";
 
 /**
- * Admin · Complaints - full operator inbox for public complaints.
+ * Admin · Complaints - operator inbox for public complaints (formerly also
+ * known as Flags - the moderation queue is just complaints in
+ * `open` / `investigating` state, see the `needs_action` filter below).
  *
- * Unlike `/admin/flags` (which scopes to open / investigating only) this page
- * surfaces every complaint regardless of status so the operator can:
+ * Surfaces every complaint regardless of status so the operator can:
  *
  *   - view the complete record incl. complainant identity & contact email,
  *   - reply by email,
@@ -17,7 +19,12 @@ export const dynamic = "force-dynamic";
  *   - assign the complaint to a staff user, and
  *   - record a resolution summary on the audit trail.
  *
- * Filters: `?status=open|investigating|resolved|rejected|all` (default: all).
+ * Filters: `?status=mine|needs_action|open|investigating|resolved|rejected|all`
+ *   - `mine` scopes to complaints assigned to the signed-in admin (open +
+ *     investigating only - resolved complaints drop off the personal queue).
+ *   - `needs_action` is the union of `open` + `investigating` and is the
+ *     default landing for what used to be the Flags route.
+ *   - default is `all`.
  */
 
 type Row = {
@@ -48,8 +55,37 @@ const STATUS_COLOUR: Record<string, string> = {
   rejected: "var(--text-3)"
 };
 
-const ALLOWED_STATUS = ["open", "investigating", "resolved", "rejected", "all"] as const;
+const ALLOWED_STATUS = [
+  "mine",
+  "needs_action",
+  "open",
+  "investigating",
+  "resolved",
+  "rejected",
+  "all"
+] as const;
 type StatusFilter = (typeof ALLOWED_STATUS)[number];
+
+/** Maps a filter code to its Prisma where clause.
+ *  - `mine`         → complaints in open/investigating state assigned to me
+ *  - `needs_action` → the legacy "Flags" queue (open + investigating)
+ *  - others         → the underlying status code or "all"
+ */
+function whereForStatus(status: StatusFilter, currentUserId: string | null) {
+  if (status === "mine") {
+    return {
+      AND: [
+        { status: { code: { in: ["open", "investigating"] } } },
+        { assignedToId: currentUserId ?? "__no_user__" }
+      ]
+    };
+  }
+  if (status === "all") return undefined;
+  if (status === "needs_action") {
+    return { status: { code: { in: ["open", "investigating"] } } };
+  }
+  return { status: { code: status } };
+}
 
 export default async function AdminComplaintsPage({
   searchParams
@@ -62,11 +98,11 @@ export default async function AdminComplaintsPage({
     ? (raw as StatusFilter)
     : "all";
 
+  const me = await getCurrentUser();
+  const myId = me?.id ?? null;
+
   const rows = await prisma.complaint.findMany({
-    where:
-      status === "all"
-        ? undefined
-        : { status: { code: status } },
+    where: whereForStatus(status, myId),
     include: {
       complaintType: { select: { name: true } },
       severity: { select: { code: true, name: true } },
@@ -203,12 +239,31 @@ export default async function AdminComplaintsPage({
     }
   ];
 
-  const tabs: { code: StatusFilter; label: string }[] = [
-    { code: "all", label: "All" },
-    { code: "open", label: "Open" },
-    { code: "investigating", label: "Investigating" },
-    { code: "resolved", label: "Resolved" },
-    { code: "rejected", label: "Rejected" }
+  const needsActionCount =
+    (countsByCode["open"] ?? 0) + (countsByCode["investigating"] ?? 0);
+
+  // Personal queue count - only meaningful when we have a current user.
+  const mineCount = myId
+    ? await prisma.complaint.count({
+        where: {
+          assignedToId: myId,
+          status: { code: { in: ["open", "investigating"] } }
+        }
+      })
+    : 0;
+
+  const tabs: { code: StatusFilter; label: string; count: number }[] = [
+    { code: "mine", label: "Assigned to me", count: mineCount },
+    { code: "needs_action", label: "Needs action", count: needsActionCount },
+    { code: "all", label: "All", count: totalAll },
+    { code: "open", label: "Open", count: countsByCode["open"] ?? 0 },
+    {
+      code: "investigating",
+      label: "Investigating",
+      count: countsByCode["investigating"] ?? 0
+    },
+    { code: "resolved", label: "Resolved", count: countsByCode["resolved"] ?? 0 },
+    { code: "rejected", label: "Rejected", count: countsByCode["rejected"] ?? 0 }
   ];
 
   return (
@@ -222,7 +277,6 @@ export default async function AdminComplaintsPage({
         <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
           {tabs.map((t) => {
             const isActive = t.code === status;
-            const count = t.code === "all" ? totalAll : countsByCode[t.code] ?? 0;
             return (
               <Link
                 key={t.code}
@@ -237,7 +291,7 @@ export default async function AdminComplaintsPage({
                   fontSize: 12
                 }}
               >
-                {t.label} · <strong>{count}</strong>
+                {t.label} · <strong>{t.count}</strong>
               </Link>
             );
           })}

@@ -69,24 +69,28 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         ]
       },
       {
+        // ─── Governance ─────────────────────────────────────────
+        // Reviews and Complaints both feed the operator's moderation /
+        // decision workload. Complaints replaces the former Flags entry -
+        // Flags was just a filtered view of complaints in `open` /
+        // `investigating` state, which is now the "Needs action" tab on
+        // the Complaints page. /admin/flags redirects there.
         id: "governance",
         label: "Governance",
         items: [
           { id: "reviews", label: "Reviews", href: "/admin/reviews", icon: "check" },
-          { id: "flags", label: "Flags", href: "/admin/flags", icon: "flag" },
+          { id: "complaints", label: "Complaints", href: "/admin/complaints", icon: "flag" },
           { id: "policies", label: "Policies", href: "/admin/policies", icon: "doc" }
         ]
       },
       {
         // ─── Inbox ──────────────────────────────────────────────
-        // Public-facing intake the operator needs to triage. Complaints come
-        // from the public registry's "Report" form (Complaint table) and
-        // Contact messages from the public /contact form (Contact table).
-        // Both surfaces support view, reply (email), and status management.
+        // Public-facing intake the operator needs to triage. Contact
+        // messages come from the public /contact form (Contact table) and
+        // support view, reply (email), and status management.
         id: "inbox",
         label: "Inbox",
         items: [
-          { id: "complaints", label: "Complaints", href: "/admin/complaints", icon: "flag" },
           { id: "contacts", label: "Contact messages", href: "/admin/contacts", icon: "inbox" }
         ]
       },
