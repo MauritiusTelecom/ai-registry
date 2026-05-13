@@ -105,8 +105,8 @@ function resourcesListQuery(opts: {
 
 function FeatureResourceCard({ resource }: { resource: Resource }) {
   const detailHref = resource.slug ? `/registry/${resource.slug}` : null;
-  return (
-    <div className="r-card feature-card">
+  const body = (
+    <>
       <div className="r-card-head">
         <div className="r-icon">{resource.glyph}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -142,18 +142,25 @@ function FeatureResourceCard({ resource }: { resource: Resource }) {
         ))}
       </div>
       <div className="r-card-actions">
-        {detailHref ? (
-          <Link href={detailHref} className="r-card-action-link">
-            <Icon name="eye" size={12} /> View details
-          </Link>
-        ) : (
-          <button type="button">
-            <Icon name="eye" size={12} /> View details
-          </button>
-        )}
+        <span className="r-card-action-link" aria-hidden="true">
+          <Icon name="eye" size={12} /> View details
+        </span>
       </div>
-    </div>
+    </>
   );
+
+  if (detailHref) {
+    return (
+      <Link
+        href={detailHref}
+        className="r-card feature-card"
+        style={{ textDecoration: "none", color: "inherit", display: "flex" }}
+      >
+        {body}
+      </Link>
+    );
+  }
+  return <div className="r-card feature-card">{body}</div>;
 }
 
 export function RegistrySection({
