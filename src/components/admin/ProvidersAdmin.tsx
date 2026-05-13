@@ -253,6 +253,7 @@ function ProviderRowActions({
                 className="r-card-action-link"
                 onClick={() => setEditing(false)}
                 aria-label="Close"
+                style={{ color: "var(--text)" }}
               >
                 <Icon name="x" size={12} /> Close
               </button>

@@ -197,7 +197,18 @@ p { color: var(--text-2); margin: 0; }
   color: transparent;
 }
 
-/* Buttons */
+/* Buttons
+ *
+ * All `.btn` variants share a single hover treatment: the brand gradient
+ * (primary → tertiary, 13deg) sweeps in behind the label, the text becomes
+ * white, and the button lifts. This guarantees a readable hover state in
+ * both light and dark themes even when the resting background is subtle.
+ *
+ * Readability invariant: every variant has either a visible background, a
+ * visible border, or both — so the CTA never disappears against a dark
+ * panel. Disabled buttons get explicit styling that preserves text
+ * contrast (no greyed-out browser default).
+ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -207,15 +218,61 @@ p { color: var(--text-2); margin: 0; }
   font-size: 14px;
   font-weight: 500;
   letter-spacing: -0.005em;
-  border: 1px solid transparent;
-  transition: transform 180ms cubic-bezier(.2,.8,.2,1), filter 180ms, background-color 180ms, border-color 180ms, box-shadow 180ms;
-  background: transparent;
+  border: 1px solid var(--border-strong);
+  transition:
+    transform 180ms cubic-bezier(.2,.8,.2,1),
+    filter 220ms,
+    background 220ms,
+    background-color 220ms,
+    color 180ms,
+    border-color 220ms,
+    box-shadow 220ms;
+  background: var(--panel-strong);
   color: var(--text);
   white-space: nowrap;
+  cursor: pointer;
 }
+.btn:hover {
+  background: var(--grad-accent);
+  color: #fff;
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    0 10px 26px -10px rgba(var(--primary-rgb), 0.55),
+    0 6px 18px -10px rgba(var(--tertiary-rgb), 0.45);
+}
+.btn:focus-visible {
+  outline: 2px solid rgba(var(--primary-rgb), 0.55);
+  outline-offset: 2px;
+}
+.btn:disabled,
+.btn[disabled],
+.btn[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--panel-strong);
+  color: var(--text-2);
+  border-color: var(--border);
+  transform: none;
+  filter: grayscale(0.15);
+  box-shadow: none;
+}
+.btn:disabled:hover,
+.btn[disabled]:hover,
+.btn[aria-disabled="true"]:hover {
+  background: var(--panel-strong);
+  color: var(--text-2);
+  border-color: var(--border);
+  transform: none;
+  box-shadow: none;
+}
+
 .btn-primary {
   position: relative;
   background: var(--grad-accent);
+  background-size: 180% 180%;
+  background-position: 0% 0%;
   color: #fff;
   border: 1px solid transparent;
   box-shadow:
@@ -223,23 +280,68 @@ p { color: var(--text-2); margin: 0; }
     0 6px 22px -10px rgba(var(--primary-rgb), 0.55);
 }
 .btn-primary:hover {
-  filter: brightness(1.08);
-  transform: translateY(-1px);
+  background: var(--grad-accent);
+  background-size: 180% 180%;
+  background-position: 100% 100%;
+  color: #fff;
+  border-color: transparent;
+  filter: brightness(1.12) saturate(1.1);
+  transform: translateY(-2px);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.18),
-    0 12px 30px -10px rgba(var(--primary-rgb), 0.6);
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    0 14px 34px -10px rgba(var(--primary-rgb), 0.7),
+    0 8px 24px -10px rgba(var(--tertiary-rgb), 0.45);
 }
+.btn-primary:disabled,
+.btn-primary[disabled],
+.btn-primary[aria-disabled="true"] {
+  /* Override the .btn:disabled neutral fallback so the gradient stays
+     visible but obviously inactive. */
+  background: var(--grad-accent);
+  color: #fff;
+  opacity: 0.5;
+  filter: grayscale(0.4);
+  border-color: transparent;
+  box-shadow: none;
+  transform: none;
+}
+.btn-primary:disabled:hover,
+.btn-primary[disabled]:hover,
+.btn-primary[aria-disabled="true"]:hover {
+  background: var(--grad-accent);
+  filter: grayscale(0.4);
+  transform: none;
+  box-shadow: none;
+}
+
 .btn-secondary {
-  background: var(--input-bg);
+  background: var(--panel-strong);
   border-color: var(--border-strong);
+  color: var(--text);
   backdrop-filter: blur(8px);
 }
 .btn-secondary:hover {
-  background: var(--hover-bg);
-  border-color: var(--border-strong);
+  background: var(--grad-accent);
+  color: #fff;
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    0 10px 26px -10px rgba(var(--primary-rgb), 0.55);
 }
-.btn-ghost { color: var(--text-2); }
-.btn-ghost:hover { color: var(--text); background: var(--hover-bg); }
+
+.btn-ghost {
+  color: var(--text-2);
+  background: transparent;
+  border-color: transparent;
+}
+.btn-ghost:hover {
+  color: #fff;
+  background: var(--grad-accent);
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px -10px rgba(var(--primary-rgb), 0.5);
+}
 
 /* Glass panel */
 .glass {
@@ -862,14 +964,26 @@ p { color: var(--text-2); margin: 0; }
   padding: 7px 10px;
   font-size: 11.5px;
   border-radius: 7px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-2);
+  border: 1px solid var(--border-strong);
+  background: var(--panel-strong);
+  color: var(--text);
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  transition: color 140ms, border-color 140ms, background-color 140ms;
+  transition: color 180ms, border-color 220ms, background 220ms, background-color 220ms, transform 180ms, box-shadow 220ms;
 }
-.r-card-actions button:hover { color: var(--text); border-color: var(--border-strong); background: var(--hover-bg); }
-.r-card-actions .btn-report:hover { color: #ef4444; border-color: rgba(239, 68, 68, 0.4); }
+.r-card-actions button:hover {
+  color: #fff;
+  border-color: transparent;
+  background: var(--grad-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -10px rgba(var(--primary-rgb), 0.5);
+}
+/* Destructive variant inside the card keeps a red hover to communicate intent. */
+.r-card-actions .btn-report:hover {
+  color: #fff;
+  background: linear-gradient(13deg, #ef4444, #b91c1c);
+  border-color: transparent;
+  box-shadow: 0 8px 20px -10px rgba(239, 68, 68, 0.55);
+}
 
 /*
  * Red hover for the standalone "Report this listing" button on the resource

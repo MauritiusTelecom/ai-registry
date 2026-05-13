@@ -78,6 +78,19 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         ]
       },
       {
+        // ─── Inbox ──────────────────────────────────────────────
+        // Public-facing intake the operator needs to triage. Complaints come
+        // from the public registry's "Report" form (Complaint table) and
+        // Contact messages from the public /contact form (Contact table).
+        // Both surfaces support view, reply (email), and status management.
+        id: "inbox",
+        label: "Inbox",
+        items: [
+          { id: "complaints", label: "Complaints", href: "/admin/complaints", icon: "flag" },
+          { id: "contacts", label: "Contact messages", href: "/admin/contacts", icon: "inbox" }
+        ]
+      },
+      {
         id: "operations",
         label: "Operations",
         items: [

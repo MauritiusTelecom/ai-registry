@@ -305,6 +305,7 @@ export function AdminGrid<Row extends { id: string }>(props: AdminGridProps<Row>
                 className="r-card-action-link"
                 onClick={() => setAddOpen(false)}
                 aria-label="Close"
+                style={{ color: "var(--text)" }}
               >
                 <Icon name="x" size={12} /> Close
               </button>
