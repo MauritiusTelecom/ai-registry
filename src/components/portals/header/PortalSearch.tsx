@@ -25,6 +25,7 @@ type SearchKind =
   | "user"
   | "complaint"
   | "review"
+  | "incident"
   | "page";
 
 type SearchResult = {
@@ -46,6 +47,7 @@ const GROUP_ORDER: SearchKind[] = [
   "resource",
   "complaint",
   "review",
+  "incident",
   "provider",
   "user"
 ];
@@ -54,6 +56,7 @@ const GROUP_LABEL: Record<SearchKind, string> = {
   resource: "Resources",
   complaint: "Complaints",
   review: "Reviews",
+  incident: "Incidents",
   provider: "Providers",
   user: "Users"
 };
