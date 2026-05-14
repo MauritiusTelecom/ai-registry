@@ -5,6 +5,7 @@ import { writeAudit } from "@/lib/audit/write-audit";
 import { getConfig } from "@/lib/config";
 import { emailTemplates } from "@/lib/email";
 import { sendTransactionalEmail } from "@/lib/email/transactional-send";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
  * POST /api/admin/complaints/:id/update
@@ -229,7 +230,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     newAssigneeRecord.email
   ) {
     const cfg = getConfig();
-    const origin = new URL(req.url).origin;
+    const origin = getPublicOrigin(req);
     const targetSummary = current.targetResource
       ? `${current.targetResource.title} · ${current.targetResource.provider.displayName}`
       : current.targetProvider

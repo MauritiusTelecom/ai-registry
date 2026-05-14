@@ -7,6 +7,7 @@ import { generateRawToken, hashToken, verificationExpiry } from "@/lib/auth/toke
 import { emailTemplates, sendEmail } from "@/lib/email";
 import { normalizeContactEmail } from "@/lib/contacts/link-to-user";
 import { CONTACT_TOPIC_LABELS, CONTACT_TOPICS, type ContactTopicCode } from "@/lib/contacts/topics";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 type ContactPayload = {
   name?: string;
@@ -184,7 +185,7 @@ export async function POST(req: Request) {
   }
 
   const cfg = getConfig();
-  const origin = new URL(req.url).origin;
+  const origin = getPublicOrigin(req);
   const verifyUrl = `${origin}/contact/verify?token=${encodeURIComponent(rawVerify)}`;
   const tmpl = emailTemplates.contactConfirmation({
     senderName,

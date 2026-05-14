@@ -7,6 +7,7 @@ import { getConfig } from "@/lib/config";
 import { emailTemplates } from "@/lib/email";
 import { uniqueValidEmails } from "@/lib/email/recipients";
 import { sendTransactionalEmailAll } from "@/lib/email/transactional-send";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
  * POST /api/admin/providers/:id/verify
@@ -172,7 +173,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   // that don't send the flag; only an explicit `false` opts out.
   const notifyByEmail = body.notifyByEmail !== false;
   const cfg = getConfig();
-  const origin = new URL(req.url).origin;
+  const origin = getPublicOrigin(req);
   const recipients = uniqueValidEmails([provider.contactEmail, provider.legalContactEmail]);
   let emailNotified = false;
   if (notifyByEmail && recipients.length > 0) {

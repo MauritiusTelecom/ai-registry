@@ -10,6 +10,7 @@ import { getConfig } from "@/lib/config";
 import { emailTemplates } from "@/lib/email";
 import { uniqueValidEmails } from "@/lib/email/recipients";
 import { sendTransactionalEmailAll } from "@/lib/email/transactional-send";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
  * POST /api/admin/resources/:id/transition
@@ -230,7 +231,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   // Notify the provider's contacts of the lifecycle transition. Default ON;
   // only an explicit notifyByEmail: false skips it.
   const notifyByEmail = body.notifyByEmail !== false;
-  const origin = new URL(req.url).origin;
+  const origin = getPublicOrigin(req);
   const recipients = uniqueValidEmails([
     resource.provider.contactEmail,
     resource.provider.legalContactEmail
