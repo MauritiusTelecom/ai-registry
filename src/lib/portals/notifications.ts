@@ -30,15 +30,39 @@ export type PortalNotification = {
 export type PortalRole = "admin" | "provider" | "verifier" | "sovereign";
 
 const MAX_ENTRIES = 12;
+const MAX_PAGE_ENTRIES = 200;
+const DEFAULT_LOOKBACK_DAYS = 7;
+const PAGE_LOOKBACK_DAYS = 90;
+
+/**
+ * Options to widen the loader for the full-page notifications surface.
+ *
+ *   - `unlimited`   — drop the small MAX_ENTRIES cap used by the bell.
+ *   - `lookbackDays` — how far back to pull "recent decisions" entries.
+ *                      The default (7 days) is the bell's window.
+ */
+export type LoadNotificationsOptions = {
+  unlimited?: boolean;
+  lookbackDays?: number;
+};
 
 export async function loadPortalNotifications(
   user: SessionUser,
-  currentRole: PortalRole
+  currentRole: PortalRole,
+  opts: LoadNotificationsOptions = {}
 ): Promise<PortalNotification[]> {
   try {
-    if (currentRole === "provider") return await loadProviderNotifications(user);
-    if (currentRole === "admin") return await loadAdminNotifications();
-    return [];
+    const entries =
+      currentRole === "provider"
+        ? await loadProviderNotifications(user, opts)
+        : currentRole === "admin"
+          ? await loadAdminNotifications(opts)
+          : [];
+    if (entries.length === 0) return entries;
+    // Layer persisted read-receipts on top — anything in NotificationRead
+    // for this user flips `unread` to false. Doing the join in a second
+    // query keeps the per-role builders simple and small.
+    return applyReadReceipts(user.id, entries);
   } catch (error) {
     // Notifications are decorative — a query failure must never crash the
     // page render. Log and degrade to an empty list.
@@ -47,13 +71,66 @@ export async function loadPortalNotifications(
   }
 }
 
-async function loadProviderNotifications(user: SessionUser): Promise<PortalNotification[]> {
+/**
+ * Look up which notificationKey(s) the user has already dismissed and flip
+ * the `unread` flag accordingly. Best-effort — a query failure leaves the
+ * entries as the per-role builder set them.
+ */
+async function applyReadReceipts(
+  userId: string,
+  entries: PortalNotification[]
+): Promise<PortalNotification[]> {
+  const keys = entries.map((e) => e.id);
+  try {
+    const reads = await prisma.notificationRead.findMany({
+      where: { userId, notificationKey: { in: keys } },
+      select: { notificationKey: true }
+    });
+    if (reads.length === 0) return entries;
+    const readSet = new Set(reads.map((r) => r.notificationKey));
+    return entries.map((e) => (readSet.has(e.id) ? { ...e, unread: false } : e));
+  } catch (error) {
+    console.warn("portals.notifications.read_receipts_failed", error);
+    return entries;
+  }
+}
+
+/**
+ * Returns all notificationKeys currently visible to a user. The bell's
+ * "Mark all read" endpoint calls this so the server can persist a single
+ * read-receipt per visible entry instead of trusting an arbitrary list of
+ * keys submitted by the client.
+ */
+export async function listNotificationKeysFor(
+  user: SessionUser,
+  currentRole: PortalRole
+): Promise<string[]> {
+  try {
+    const entries =
+      currentRole === "provider"
+        ? await loadProviderNotifications(user)
+        : currentRole === "admin"
+          ? await loadAdminNotifications()
+          : [];
+    return entries.map((e) => e.id);
+  } catch (error) {
+    console.warn("portals.notifications.list_keys_failed", error);
+    return [];
+  }
+}
+
+async function loadProviderNotifications(
+  user: SessionUser,
+  opts: LoadNotificationsOptions = {}
+): Promise<PortalNotification[]> {
   if (!user.provider) return [];
   const providerId = user.provider.id;
+  // Wider window + larger cap for the full notifications page; narrow
+  // defaults for the bell.
+  const take = opts.unlimited ? MAX_PAGE_ENTRIES : 5;
+  const lookbackDays =
+    opts.lookbackDays ?? (opts.unlimited ? PAGE_LOOKBACK_DAYS : DEFAULT_LOOKBACK_DAYS);
 
-  // Run the three feeds in parallel — each is a narrow query bounded by
-  // provider scope and a small `take` so the header never blocks on a
-  // heavy read.
   const [openReviews, openComplaints, recentDecisions] = await Promise.all([
     prisma.review.findMany({
       where: {
@@ -61,7 +138,7 @@ async function loadProviderNotifications(user: SessionUser): Promise<PortalNotif
         status: { code: { in: ["open", "in_review"] } }
       },
       orderBy: { createdAt: "desc" },
-      take: 5,
+      take,
       select: {
         id: true,
         createdAt: true,
@@ -75,7 +152,7 @@ async function loadProviderNotifications(user: SessionUser): Promise<PortalNotif
         status: { code: { in: ["open", "investigating"] } }
       },
       orderBy: { createdAt: "desc" },
-      take: 5,
+      take,
       select: {
         id: true,
         createdAt: true,
@@ -88,10 +165,10 @@ async function loadProviderNotifications(user: SessionUser): Promise<PortalNotif
       where: {
         resource: { providerId },
         status: { code: "decided" },
-        completedAt: { not: null, gte: daysAgo(7) }
+        completedAt: { not: null, gte: daysAgo(lookbackDays) }
       },
       orderBy: { completedAt: "desc" },
-      take: 5,
+      take,
       select: {
         id: true,
         completedAt: true,
@@ -152,18 +229,56 @@ async function loadProviderNotifications(user: SessionUser): Promise<PortalNotif
 
   // Sort newest-first across all sources, cap to MAX_ENTRIES.
   entries.sort((a, b) => relativeRank(b.ts) - relativeRank(a.ts));
-  return entries.slice(0, MAX_ENTRIES);
+  // Bell uses the small MAX_ENTRIES cap; the full-page surface gets up
+  // to MAX_PAGE_ENTRIES so search / filter / pagination have something
+  // to work with.
+  return entries.slice(0, opts.unlimited ? MAX_PAGE_ENTRIES : MAX_ENTRIES);
 }
 
-async function loadAdminNotifications(): Promise<PortalNotification[]> {
-  const [openReviewCount, openComplaintCount] = await Promise.all([
-    prisma.review.count({
-      where: { status: { code: { in: ["open", "in_review"] } } }
-    }),
-    prisma.complaint.count({
-      where: { status: { code: { in: ["open", "investigating"] } } }
-    })
-  ]);
+async function loadAdminNotifications(
+  opts: LoadNotificationsOptions = {}
+): Promise<PortalNotification[]> {
+  // The bell aggregates counts into two roll-up entries. On the full
+  // page we additionally surface the most recent individual reviews and
+  // complaints so the admin can scan / search them.
+  const [openReviewCount, openComplaintCount, openReviews, openComplaints] =
+    await Promise.all([
+      prisma.review.count({
+        where: { status: { code: { in: ["open", "in_review"] } } }
+      }),
+      prisma.complaint.count({
+        where: { status: { code: { in: ["open", "investigating"] } } }
+      }),
+      opts.unlimited
+        ? prisma.review.findMany({
+            where: { status: { code: { in: ["open", "in_review"] } } },
+            orderBy: { createdAt: "desc" },
+            take: MAX_PAGE_ENTRIES,
+            select: {
+              id: true,
+              createdAt: true,
+              status: { select: { name: true } },
+              resource: { select: { title: true } },
+              provider: { select: { displayName: true } }
+            }
+          })
+        : Promise.resolve([] as never[]),
+      opts.unlimited
+        ? prisma.complaint.findMany({
+            where: { status: { code: { in: ["open", "investigating"] } } },
+            orderBy: { createdAt: "desc" },
+            take: MAX_PAGE_ENTRIES,
+            select: {
+              id: true,
+              createdAt: true,
+              severity: { select: { name: true } },
+              status: { select: { name: true } },
+              targetResource: { select: { title: true } },
+              targetProvider: { select: { displayName: true } }
+            }
+          })
+        : Promise.resolve([] as never[])
+    ]);
 
   const entries: PortalNotification[] = [];
   if (openReviewCount > 0) {
@@ -186,7 +301,51 @@ async function loadAdminNotifications(): Promise<PortalNotification[]> {
       unread: true
     });
   }
-  return entries;
+
+  // Per-row entries only on the full-page surface.
+  for (const r of openReviews as Array<{
+    id: string;
+    createdAt: Date;
+    status: { name: string };
+    resource: { title: string } | null;
+    provider: { displayName: string } | null;
+  }>) {
+    entries.push({
+      id: `review:${r.id}`,
+      kind: "review",
+      title: `Review · ${r.status.name}`,
+      body: r.resource?.title
+        ? r.resource.title
+        : r.provider?.displayName
+          ? `Provider · ${r.provider.displayName}`
+          : "(no target)",
+      ts: formatRelative(r.createdAt),
+      unread: true
+    });
+  }
+  for (const c of openComplaints as Array<{
+    id: string;
+    createdAt: Date;
+    severity: { name: string };
+    status: { name: string };
+    targetResource: { title: string } | null;
+    targetProvider: { displayName: string } | null;
+  }>) {
+    entries.push({
+      id: `complaint:${c.id}`,
+      kind: "alert",
+      title: `Complaint · ${c.status.name}`,
+      body: c.targetResource?.title
+        ? `${c.targetResource.title} — ${c.severity.name} severity`
+        : c.targetProvider?.displayName
+          ? `Provider · ${c.targetProvider.displayName} — ${c.severity.name} severity`
+          : `${c.severity.name} severity`,
+      ts: formatRelative(c.createdAt),
+      unread: true
+    });
+  }
+
+  return entries.slice(0, opts.unlimited ? MAX_PAGE_ENTRIES : MAX_ENTRIES);
 }
 
 function daysAgo(days: number): Date {

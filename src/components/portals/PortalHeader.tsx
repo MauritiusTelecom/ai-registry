@@ -1,13 +1,12 @@
 import type { SessionUser } from "@/lib/auth/current-user";
-// Notification bell is temporarily hidden — the dropdown's mark-as-read state
-// is not persisted yet (no NotificationRead table / endpoint). Re-enable
-// once persistence is wired up. See PortalHeader render for the commented
-// JSX and the surrounding context.
-// import { loadPortalNotifications } from "@/lib/portals/notifications";
+import { loadPortalNotifications } from "@/lib/portals/notifications";
 import { PortalSearch } from "./header/PortalSearch";
-import { PortalPalette } from "./header/PortalPalette";
+// Palette is an operator/dev-only colour-token tool — removed from the
+// portal header entirely. The component file remains in place for now in
+// case it's reintroduced as a settings-page surface.
+// import { PortalPalette } from "./header/PortalPalette";
 import { PortalThemeToggle } from "./header/PortalThemeToggle";
-// import { PortalNotifications } from "./header/PortalNotifications";
+import { PortalNotifications } from "./header/PortalNotifications";
 import { PortalUserDropdown } from "./header/PortalUserDropdown";
 
 /**
@@ -44,10 +43,11 @@ export async function PortalHeader({
   searchPlaceholder,
   user
 }: PortalHeaderProps) {
-  // Notifications fetch is commented out alongside the bell render below —
-  // see the header for the full reason. Re-enable once read-receipts are
-  // persisted server-side.
-  // const notifications = await loadPortalNotifications(user, currentRole);
+  // Notifications are scoped per-role on the server so a provider never
+  // sees admin-flavoured entries (and vice versa). Read state is
+  // persisted server-side via NotificationRead — see
+  // /api/portal/notifications/{read,read-all}.
+  const notifications = await loadPortalNotifications(user, currentRole);
   return (
     <header className="p-header">
       <div className="p-header-left">
@@ -63,31 +63,22 @@ export async function PortalHeader({
       </div>
       <div className="p-header-right">
         {/*
-          Search + palette are operator/dev tools and are hidden from the
-          provider portal until the command-palette index is wired up.
-          The placeholder modal was also surfacing an unwanted grey
-          empty-state container — removing the button removes that
-          surface entirely for providers.
+          Search is wired up to /api/portal/search (role-scoped). Provider
+          portal gets it too so they can quick-jump to their own resources
+          or portal pages. The palette icon was removed across all roles.
         */}
-        {currentRole !== "provider" ? (
-          <PortalSearch
-            placeholder={
-              searchPlaceholder ?? "Search resources, providers, audit…"
-            }
-          />
-        ) : null}
-        {currentRole !== "provider" ? <PortalPalette /> : null}
+        <PortalSearch
+          placeholder={
+            searchPlaceholder ??
+            (currentRole === "provider"
+              ? "Search your resources, complaints, pages…"
+              : currentRole === "admin"
+                ? "Search resources, providers, pages, actions…"
+                : "Search resources, providers, pages…")
+          }
+        />
         <PortalThemeToggle />
-        {/*
-          Notification bell hidden for now — the dropdown's "Mark all
-          read" / per-item dismiss is currently client-state only, so
-          the unread badge would reappear on every refresh and the
-          "read" affordance would mislead the user. Re-enable once a
-          NotificationRead table + API persist the state per user.
-          (See the conversation note on schema + endpoint design.)
-
-          <PortalNotifications initial={notifications} />
-        */}
+        <PortalNotifications initial={notifications} currentRole={currentRole} />
         <PortalUserDropdown
           user={{
             name: user.name,
