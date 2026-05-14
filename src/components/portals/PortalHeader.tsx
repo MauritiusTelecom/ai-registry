@@ -57,12 +57,20 @@ export async function PortalHeader({
         </div>
       </div>
       <div className="p-header-right">
-        <PortalSearch
-          placeholder={
-            searchPlaceholder ?? "Search resources, providers, audit…"
-          }
-        />
-        {/* Palette is an operator/dev tool — hide it from the provider portal. */}
+        {/*
+          Search + palette are operator/dev tools and are hidden from the
+          provider portal until the command-palette index is wired up.
+          The placeholder modal was also surfacing an unwanted grey
+          empty-state container — removing the button removes that
+          surface entirely for providers.
+        */}
+        {currentRole !== "provider" ? (
+          <PortalSearch
+            placeholder={
+              searchPlaceholder ?? "Search resources, providers, audit…"
+            }
+          />
+        ) : null}
         {currentRole !== "provider" ? <PortalPalette /> : null}
         <PortalThemeToggle />
         <PortalNotifications initial={notifications} />

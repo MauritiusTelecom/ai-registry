@@ -171,7 +171,9 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         id: "account",
         label: "Account",
         items: [
-          { id: "analytics", label: "Analytics", href: "/provider/analytics", icon: "activity" },
+          // Analytics is hidden from the provider portal until the metrics
+          // surface is wired up — the page route remains in place but the
+          // sidebar entry is omitted so providers don't see a stub.
           { id: "settings", label: "Settings", href: "/provider/settings", icon: "settings" }
         ]
       }

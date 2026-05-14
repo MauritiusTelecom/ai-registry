@@ -40,7 +40,12 @@ export function PortalSearch({ placeholder = "Search resources, providers…" }:
       </button>
 
       {open ? (
-        <div className="p-cmd-backdrop" role="dialog" aria-modal="true" onClick={() => setOpen(false)}>
+        <div
+          className="p-cmd-backdrop"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setOpen(false)}
+        >
           <div className="p-cmd" onClick={(e) => e.stopPropagation()}>
             <div className="p-cmd-input-wrap">
               <Icon name="search" size={16} />
@@ -52,11 +57,12 @@ export function PortalSearch({ placeholder = "Search resources, providers…" }:
               />
               <kbd>esc</kbd>
             </div>
-            <div className="p-cmd-empty">
-              {query
-                ? `Search results land here - Phase 4 wires command-palette search.`
-                : `Type to search across resources, providers, and pages. Phase 4 wires the index.`}
-            </div>
+            {/*
+              The empty-state placeholder panel (`.p-cmd-empty`) was removed
+              — it rendered a grey box below the input even before the user
+              typed anything, and the actual search index isn't wired up
+              yet. Re-add it once Phase 4 surfaces real results.
+            */}
           </div>
         </div>
       ) : null}
