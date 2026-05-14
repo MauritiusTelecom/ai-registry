@@ -29,7 +29,14 @@ import type { PortalRole } from "./notifications";
 export type PortalSearchResult = {
   /** Stable id for React keying (`kind:identity`). */
   id: string;
-  kind: "resource" | "provider" | "user" | "complaint" | "review" | "page";
+  kind:
+    | "resource"
+    | "provider"
+    | "user"
+    | "complaint"
+    | "review"
+    | "incident"
+    | "page";
   title: string;
   subtitle: string | null;
   href: string;
@@ -61,13 +68,15 @@ export async function executeSearch(
   }
 
   try {
-    const [resources, providers, complaints, reviews, users] = await Promise.all([
-      searchResources(q, user, role),
-      searchProviders(q, role),
-      searchComplaints(q, user, role),
-      searchReviews(q, user, role),
-      searchUsers(q, role)
-    ]);
+    const [resources, providers, complaints, reviews, incidents, users] =
+      await Promise.all([
+        searchResources(q, user, role),
+        searchProviders(q, role),
+        searchComplaints(q, user, role),
+        searchReviews(q, user, role),
+        searchIncidents(q, user, role),
+        searchUsers(q, role)
+      ]);
     const pages = searchPages(q, role);
 
     // Ordering: pages first (instant nav), then the inbox-style entries,
@@ -78,6 +87,7 @@ export async function executeSearch(
       ...resources,
       ...complaints,
       ...reviews,
+      ...incidents,
       ...providers,
       ...users
     ];
@@ -143,15 +153,11 @@ function hrefForResource(
   r: { id: string; slug: string; lifecycleStatus: { code: string } },
   role: PortalRole
 ): string {
-  // Providers jump to the edit screen for drafts/needs-update; otherwise
-  // the public detail page. Admins land on the admin edit page where the
-  // lifecycle / verification panels live. Other roles hit the public detail.
-  if (role === "provider") {
-    if (r.lifecycleStatus.code === "draft" || r.lifecycleStatus.code === "needs_update") {
-      return `/provider/resources/${r.id}/edit`;
-    }
-    return `/registry/${r.slug}`;
-  }
+  // Providers always land in their own CRUD area — the edit page for every
+  // lifecycle state. (Listed resources still render as a read-only form
+  // there; the link is never the public /registry detail because the
+  // provider portal search must stay inside the provider portal.)
+  if (role === "provider") return `/provider/resources/${r.id}/edit`;
   if (role === "admin") return `/admin/resources/${r.id}/edit`;
   return `/registry/${r.slug}`;
 }
@@ -296,7 +302,10 @@ async function searchComplaints(
     kind: "complaint" as const,
     title: titleForComplaint(c),
     subtitle: subtitleForComplaint(c),
-    href: hrefForComplaint(c.id, role),
+    // Providers land on /provider/complaints?q=<query> so the FilteredDataTable
+    // pre-filters to the matched row(s). Admins continue to land on the
+    // per-id detail.
+    href: hrefForComplaint(c.id, role, q),
     icon: "flag"
   }));
 }
@@ -327,11 +336,12 @@ function subtitleForComplaint(c: {
   return `${c.status.name} · ${c.severity.name} severity · ${excerpt}`;
 }
 
-function hrefForComplaint(id: string, role: PortalRole): string {
+function hrefForComplaint(id: string, role: PortalRole, q: string): string {
   if (role === "admin") return `/admin/complaints/${id}`;
-  // Provider portal has only a list page — no per-complaint detail. Jump
-  // there and let the user use the in-page filter to find their entry.
-  return `/provider/complaints`;
+  // Provider portal has only a list page — no per-complaint detail. Land
+  // there with the search query so the FilteredDataTable narrows to the
+  // matched row.
+  return `/provider/complaints?q=${encodeURIComponent(q)}`;
 }
 
 // ── Reviews ──────────────────────────────────────────────────────────
@@ -395,7 +405,7 @@ async function searchReviews(
     kind: "review" as const,
     title: titleForReview(r),
     subtitle: subtitleForReview(r),
-    href: hrefForReview(r.id, role),
+    href: hrefForReview(r.id, role, q),
     icon: "check"
   }));
 }
@@ -422,9 +432,107 @@ function subtitleForReview(r: {
   return r.status.name;
 }
 
-function hrefForReview(id: string, role: PortalRole): string {
+function hrefForReview(id: string, role: PortalRole, q: string): string {
   if (role === "admin" || role === "verifier") return `/admin/reviews/${id}`;
-  return `/provider/reviews`;
+  return `/provider/reviews?q=${encodeURIComponent(q)}`;
+}
+
+// ── Incidents (enforcement actions) ──────────────────────────────────
+async function searchIncidents(
+  q: string,
+  user: SessionUser,
+  role: PortalRole
+): Promise<PortalSearchResult[]> {
+  // Only provider / admin care about enforcement actions. Verifiers and
+  // sovereigns don't have an inbox surface for them.
+  if (role === "verifier" || role === "sovereign") return [];
+
+  const baseWhere: Record<string, unknown> = {
+    OR: [
+      { reason: { contains: q, mode: "insensitive" } },
+      { publicNote: { contains: q, mode: "insensitive" } },
+      { actionType: { name: { contains: q, mode: "insensitive" } } },
+      { targetResource: { title: { contains: q, mode: "insensitive" } } },
+      { targetProvider: { displayName: { contains: q, mode: "insensitive" } } }
+    ]
+  };
+  if (role === "provider") {
+    if (!user.provider) return [];
+    const providerId = user.provider.id;
+    baseWhere.OR = [
+      {
+        AND: [
+          {
+            OR: [
+              { reason: { contains: q, mode: "insensitive" } },
+              { publicNote: { contains: q, mode: "insensitive" } },
+              { actionType: { name: { contains: q, mode: "insensitive" } } },
+              { targetResource: { title: { contains: q, mode: "insensitive" } } }
+            ]
+          },
+          {
+            OR: [
+              { targetProviderId: providerId },
+              { targetResource: { providerId } }
+            ]
+          }
+        ]
+      }
+    ];
+  }
+
+  const rows = await prisma.enforcementAction.findMany({
+    where: baseWhere as never,
+    orderBy: { performedAt: "desc" },
+    take: RESULTS_PER_GROUP,
+    select: {
+      id: true,
+      reason: true,
+      publicNote: true,
+      performedAt: true,
+      actionType: { select: { name: true } },
+      targetResource: { select: { title: true } },
+      targetProvider: { select: { displayName: true } }
+    }
+  });
+
+  return rows.map((a) => ({
+    id: `incident:${a.id}`,
+    kind: "incident" as const,
+    title: titleForIncident(a),
+    subtitle: subtitleForIncident(a),
+    href: hrefForIncident(role, q),
+    icon: "shield"
+  }));
+}
+
+function titleForIncident(a: {
+  actionType: { name: string };
+  targetResource: { title: string } | null;
+  targetProvider: { displayName: string } | null;
+}): string {
+  const target = a.targetResource?.title
+    ? a.targetResource.title
+    : a.targetProvider
+      ? `Provider · ${a.targetProvider.displayName}`
+      : "(no target)";
+  return `${a.actionType.name} — ${target}`;
+}
+
+function subtitleForIncident(a: {
+  reason: string;
+  publicNote: string | null;
+}): string {
+  const note = a.publicNote && a.publicNote.trim() !== "" ? a.publicNote : a.reason;
+  const excerpt = note.length > 80 ? `${note.slice(0, 80)}…` : note;
+  return excerpt;
+}
+
+function hrefForIncident(role: PortalRole, q: string): string {
+  // Provider only has the list page; admin has the same — neither has a
+  // per-id detail. Pre-filter via ?q= so the destination grid narrows.
+  if (role === "provider") return `/provider/incidents?q=${encodeURIComponent(q)}`;
+  return `/admin/audit?q=${encodeURIComponent(q)}`;
 }
 
 // ── Users (admin only) ───────────────────────────────────────────────

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 
 /**
  * Client-side filterable / searchable wrapper around DataTable's layout.
@@ -74,8 +75,21 @@ export function FilteredDataTable<Row extends Record<string, unknown>>({
   searchableKeys = [],
   filters = []
 }: FilteredDataTableProps<Row>) {
-  const [q, setQ] = useState("");
-  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  // Seed q + filter values from the URL on first paint so a deep link
+  // (e.g. /provider/complaints?q=alice) lands pre-filtered. The header
+  // search uses this pattern when it routes a complaint/review/incident
+  // hit into the provider CRUD list pages.
+  const searchParams = useSearchParams();
+  const initialQ = searchParams.get("q") ?? "";
+  const initialFilters: Record<string, string> = {};
+  for (const f of filters) {
+    const v = searchParams.get(f.key);
+    if (v) initialFilters[f.key] = v;
+  }
+
+  const [q, setQ] = useState(initialQ);
+  const [filterValues, setFilterValues] =
+    useState<Record<string, string>>(initialFilters);
 
   const filteredRows = useMemo(() => {
     const needle = q.trim().toLowerCase();
