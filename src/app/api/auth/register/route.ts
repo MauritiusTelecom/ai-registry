@@ -5,6 +5,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { generateRawToken, hashToken, verificationExpiry } from "@/lib/auth/tokens";
 import { emailTemplates, sendEmail } from "@/lib/email";
 import { linkContactsToUser } from "@/lib/contacts/link-to-user";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
  * POST /api/auth/register
@@ -123,7 +124,7 @@ export async function POST(req: Request) {
 
   // Email verification link.
   const cfg = getConfig();
-  const origin = new URL(req.url).origin;
+  const origin = getPublicOrigin(req);
   const verifyUrl = `${origin}/auth/verify?token=${encodeURIComponent(rawToken)}`;
   const tmpl = emailTemplates.verification({
     name,

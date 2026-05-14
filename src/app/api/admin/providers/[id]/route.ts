@@ -7,6 +7,7 @@ import { getConfig } from "@/lib/config";
 import { emailTemplates } from "@/lib/email";
 import { uniqueValidEmails } from "@/lib/email/recipients";
 import { sendTransactionalEmailAll } from "@/lib/email/transactional-send";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -210,7 +211,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   let emailNotified = false;
   if ((publishedChanged || suspendedChanged) && notifyByEmail) {
     const cfg = getConfig();
-    const origin = new URL(req.url).origin;
+    const origin = getPublicOrigin(req);
     const newPublished =
       typeof data.published === "boolean" ? data.published : beforePublished;
     const newSuspended =

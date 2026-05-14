@@ -5,6 +5,7 @@ import { writeAudit } from "@/lib/audit/write-audit";
 import { getConfig } from "@/lib/config";
 import { emailTemplates } from "@/lib/email";
 import { sendTransactionalEmail } from "@/lib/email/transactional-send";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -161,7 +162,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   let emailNotified = false;
   if (statusChange && notifyByEmail) {
     const cfg = getConfig();
-    const origin = new URL(req.url).origin;
+    const origin = getPublicOrigin(req);
     const reason =
       typeof body.statusChangeReason === "string" && body.statusChangeReason.trim() !== ""
         ? body.statusChangeReason.trim()

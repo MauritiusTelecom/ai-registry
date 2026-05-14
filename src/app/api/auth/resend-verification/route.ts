@@ -3,6 +3,7 @@ import { getConfig } from "@/lib/config";
 import { prisma } from "@/lib/prisma";
 import { generateRawToken, hashToken, verificationExpiry } from "@/lib/auth/tokens";
 import { emailTemplates, sendEmail } from "@/lib/email";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
  * POST /api/auth/resend-verification
@@ -63,7 +64,7 @@ export async function POST(req: Request) {
   });
 
   const cfg = getConfig();
-  const origin = new URL(req.url).origin;
+  const origin = getPublicOrigin(req);
   const verifyUrl = `${origin}/auth/verify?token=${encodeURIComponent(rawToken)}`;
   const tmpl = emailTemplates.verification({
     name: user.name,

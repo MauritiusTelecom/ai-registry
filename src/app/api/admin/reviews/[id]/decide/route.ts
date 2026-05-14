@@ -11,6 +11,7 @@ import {
   SOVEREIGNTY_CHECKLIST_ITEMS,
   type ChecklistAnswerCode
 } from "@/lib/governance/sovereignty-checklist";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 type Decision = "approve" | "reject" | "request_changes";
 
@@ -215,7 +216,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
   // Default ON for backwards compatibility — only an explicit false opts out.
   const notifyByEmail = body.notifyByEmail !== false;
-  const origin = new URL(req.url).origin;
+  const origin = getPublicOrigin(req);
   const recipients = uniqueValidEmails([
     resource.provider.contactEmail,
     resource.provider.legalContactEmail

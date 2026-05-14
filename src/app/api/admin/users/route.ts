@@ -6,6 +6,7 @@ import { generateRawToken, hashToken, verificationExpiry } from "@/lib/auth/toke
 import { sendEmail, emailTemplates } from "@/lib/email";
 import { getConfig } from "@/lib/config";
 import type { Prisma } from "@/generated/prisma";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -203,7 +204,7 @@ export async function POST(req: Request) {
   });
 
   if (sendInvite && verificationToken) {
-    const origin = new URL(req.url).origin;
+    const origin = getPublicOrigin(req);
     const link = `${origin}/auth/verify?token=${encodeURIComponent(verificationToken)}`;
     const tmpl = emailTemplates.verification({
       name,
