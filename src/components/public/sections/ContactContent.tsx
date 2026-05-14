@@ -98,7 +98,7 @@ export function ContactContent() {
                 </div>
                 <div>
                   <div className="contact-info-label">Email</div>
-                  <div className="contact-info-value">airegistry@intnet.mu</div>
+                  <div className="contact-info-value">airegistry@telecom.mu</div>
                 </div>
               </div>
               <div className="contact-info-row">
