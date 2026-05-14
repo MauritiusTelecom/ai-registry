@@ -1,8 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { Icon, type IconName } from "../Icon";
-import { Reveal } from "../Reveal";
+import {
+  PageSection,
+  Section,
+  CardGrid,
+  CalloutBanner,
+  CtaPanel,
+  Card,
+  FeatureCard,
+  IconTile,
+  EyebrowLabel,
+  Chip,
+  ChipList,
+  Gradient,
+  Button,
+  Reveal,
+  AnchorNav,
+  type IconName,
+  type Tone
+} from "@/components/library";
 import { PageHero } from "./PageHero";
 
 // ============================================================
@@ -43,7 +60,7 @@ const OPERATOR_PROFILES = [
   "National CERTs"
 ];
 
-const INTEGRATOR_ROLES: { icon: IconName; title: string; desc: string; tone: "primary" | "tertiary" | "secondary" | "emerald" }[] = [
+const INTEGRATOR_ROLES: { icon: IconName; title: string; desc: string; tone: Tone }[] = [
   {
     icon: "flow",
     title: "Implementation & onboarding",
@@ -136,7 +153,7 @@ const FEDERATION_PRINCIPLES = [
   }
 ];
 
-const TRACKS: { num: string; title: string; desc: string; cta: string; href: string; featured: boolean }[] = [
+const TRACKS: { num: string; title: string; desc: string; cta?: string; href?: string; featured: boolean }[] = [
   {
     num: "Track 01",
     title: "Adopt",
@@ -165,8 +182,6 @@ const TRACKS: { num: string; title: string; desc: string; cta: string; href: str
     num: "Track 04",
     title: "Observe",
     desc: "Track airegistry.mu, study the operating model, and decide if and how to deploy in your context.",
-    cta: "Watch the reference",
-    href: "https://airegistry.mu",
     featured: false
   }
 ];
@@ -180,112 +195,33 @@ const NAV_ITEMS = [
   { id: "engage", label: "Engage" }
 ];
 
+// Tone cycle used to colour the audience cards in `ForWhom`.
+const AUDIENCE_TONES: Tone[] = ["primary", "tertiary", "secondary", "emerald"];
+
 // ============================================================
 // Sub-sections
 // ============================================================
 
-function AnchorNav() {
-  return (
-    <div
-      style={{
-        position: "sticky",
-        top: 64,
-        zIndex: 5,
-        padding: "12px 0",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
-        background:
-          "linear-gradient(180deg, rgba(var(--bg-rgb, 10,10,12), 0.85) 0%, rgba(var(--bg-rgb, 10,10,12), 0.65) 100%)",
-        borderBottom: "1px solid var(--hairline)"
-      }}
-    >
-      <div className="page" style={{ display: "flex", justifyContent: "center" }}>
-        <div
-          style={{
-            display: "flex",
-            gap: 6,
-            flexWrap: "wrap",
-            justifyContent: "center",
-            padding: "6px 8px",
-            borderRadius: 999,
-            border: "1px solid var(--border)",
-            background: "rgba(var(--primary-rgb), 0.04)"
-          }}
-        >
-          {NAV_ITEMS.map((n) => (
-            <a
-              key={n.id}
-              href={`#${n.id}`}
-              style={{
-                fontSize: 12.5,
-                padding: "6px 12px",
-                borderRadius: 999,
-                color: "var(--text-2)",
-                textDecoration: "none",
-                fontWeight: 500,
-                letterSpacing: "0.01em",
-                transition: "color 160ms, background 160ms"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "var(--text)";
-                e.currentTarget.style.background = "rgba(var(--primary-rgb), 0.10)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "var(--text-2)";
-                e.currentTarget.style.background = "transparent";
-              }}
-            >
-              {n.label}
-            </a>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ThePlatform() {
   return (
-    <section className="section" id="platform" style={{ scrollMarginTop: 120 }}>
-      <Reveal className="section-header">
-        <div className="eyebrow">
-          <span className="dot" />
-          <span>The AI Registry</span>
-        </div>
-        <h2>
-          A small, focused idea:{" "}
-          <span className="gradient-text">a registry that points.</span>
-        </h2>
-        <p>
-          The AI Registry separates three things that other platforms collapse.
-          Discovery, provider operations, and hosting - each operated by a different
-          party. The registry is only the first layer, and it is never on the runtime path.
-        </p>
-      </Reveal>
-
+    <PageSection
+      id="platform"
+      eyebrow="The AI Registry"
+      title={
+        <>
+          A small, focused idea: <Gradient>a registry that points.</Gradient>
+        </>
+      }
+      subtitle="The AI Registry separates three things that other platforms collapse. Discovery, provider operations, and hosting - each operated by a different party. The registry is only the first layer, and it is never on the runtime path."
+    >
       <Reveal>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: 16
-          }}
-        >
+        <CardGrid min={260} gap={16}>
           {LAYERS.map((layer) => (
-            <div
-              key={layer.num}
-              className="feature-card"
-              style={{
-                position: "relative",
-                padding: 22,
-                borderRadius: 14,
-                border: "1px solid var(--border)",
-                background: "var(--panel)"
-              }}
-            >
+            <FeatureCard key={layer.num} meta={layer.meta} padding={22}>
+              {/* Bespoke: the large gradient stratum number is unique to this section. */}
               <div
                 style={{
-                  fontFamily: "IBM Plex Mono, monospace",
+                  fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 28,
                   fontWeight: 600,
                   letterSpacing: "-0.02em",
@@ -298,18 +234,7 @@ function ThePlatform() {
               >
                 {layer.num}
               </div>
-              <div
-                style={{
-                  fontFamily: "IBM Plex Mono, monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color: "var(--text-2)",
-                  marginBottom: 10
-                }}
-              >
-                {layer.label}
-              </div>
+              <EyebrowLabel marginBottom={10}>{layer.label}</EyebrowLabel>
               <h4
                 style={{
                   fontSize: 17,
@@ -325,63 +250,34 @@ function ThePlatform() {
                   fontSize: 13.5,
                   color: "var(--text-2)",
                   lineHeight: 1.55,
-                  margin: "0 0 14px"
+                  margin: 0
                 }}
               >
                 {layer.desc}
               </p>
-              <div
-                style={{
-                  fontFamily: "IBM Plex Mono, monospace",
-                  fontSize: 12,
-                  color: "var(--text-2)",
-                  padding: "8px 10px",
-                  borderRadius: 8,
-                  background: "rgba(var(--primary-rgb), 0.06)",
-                  border: "1px solid var(--border)"
-                }}
-              >
-                {layer.meta}
-              </div>
-            </div>
+            </FeatureCard>
           ))}
-        </div>
+        </CardGrid>
       </Reveal>
 
       <Reveal>
-        <div
-          style={{
-            marginTop: 24,
-            padding: "16px 22px",
-            borderRadius: 12,
-            border: "1px solid var(--border-strong)",
-            background:
-              "linear-gradient(90deg, rgba(var(--primary-rgb),0.08), rgba(var(--tertiary-rgb),0.08))",
-            textAlign: "center",
-            color: "var(--text-2)",
-            fontSize: 14
-          }}
-        >
-          <strong style={{ color: "var(--text)" }}>The registry points.</strong>{" "}
-          &nbsp;The provider operates.&nbsp; The hosting environment secures.
-        </div>
+        <CalloutBanner intent="accent" marginTop={24}>
+          <strong style={{ color: "var(--text)" }}>The registry points.</strong>
+          &nbsp;&nbsp;The provider operates.&nbsp; The hosting environment secures.
+        </CalloutBanner>
       </Reveal>
-    </section>
+    </PageSection>
   );
 }
 
 function WhoRunsIt() {
   return (
-    <section className="section" id="operators" style={{ scrollMarginTop: 120 }}>
-      <Reveal className="section-header">
-        <div className="eyebrow">
-          <span className="dot" />
-          <span>Who runs it</span>
-        </div>
-        <h2>
-          Built for <span className="gradient-text">DPI enablers.</span>
-        </h2>
-        <p>
+    <PageSection
+      id="operators"
+      eyebrow="Who runs it"
+      title={<>Built for <Gradient>DPI enablers.</Gradient></>}
+      subtitle={
+        <>
           Best operated by organisations that already run trusted, neutral,
           national-scale digital services on behalf of broader ecosystems - the
           legitimacy, capability and convening power matter as much as the technology.{" "}
@@ -397,42 +293,19 @@ function WhoRunsIt() {
             </a>
             .
           </strong>
-        </p>
-      </Reveal>
-
+        </>
+      }
+    >
       <Reveal>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: 16
-          }}
-        >
-          <div
-            className="feature-card"
-            style={{
-              padding: 24,
-              borderRadius: 14,
-              border: "1px solid var(--border-strong)",
-              background:
-                "radial-gradient(300px 200px at 0% 0%, rgba(var(--secondary-rgb),0.10), transparent 60%), var(--panel)"
-            }}
+        <CardGrid min={280} gap={16}>
+          {/* First card - radial-gradient background, bullet list. */}
+          <FeatureCard
+            icon="check"
+            tone="secondary"
+            borderStrong
+            background="radial-gradient(300px 200px at 0% 0%, rgba(var(--secondary-rgb),0.10), transparent 60%), var(--panel)"
+            padding={24}
           >
-            <div
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 10,
-                display: "grid",
-                placeItems: "center",
-                background: "rgba(var(--secondary-rgb), 0.12)",
-                color: "var(--secondary)",
-                border: "1px solid rgba(var(--secondary-rgb), 0.30)",
-                marginBottom: 12
-              }}
-            >
-              <Icon name="check" size={18} stroke={1.8} />
-            </div>
             <h4 style={{ margin: "0 0 14px", fontSize: 17, fontWeight: 500 }}>
               What makes a DPI enabler
             </h4>
@@ -452,296 +325,145 @@ function WhoRunsIt() {
               <li>Comfortable with standards, interconnection and long-lived public services.</li>
               <li>Predictable governance and operational continuity over years, not project cycles.</li>
             </ul>
-          </div>
+          </FeatureCard>
 
-          <div
-            className="feature-card"
-            style={{
-              padding: 24,
-              borderRadius: 14,
-              border: "1px solid var(--border)",
-              background: "var(--panel)"
-            }}
-          >
-            <div
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 10,
-                display: "grid",
-                placeItems: "center",
-                background: "rgba(16, 185, 129, 0.12)",
-                color: "#10b981",
-                border: "1px solid rgba(16, 185, 129, 0.30)",
-                marginBottom: 12
-              }}
-            >
-              <Icon name="users" size={18} stroke={1.8} />
-            </div>
+          {/* Second card - chip cloud. */}
+          <FeatureCard icon="users" tone="emerald" padding={24}>
             <h4 style={{ margin: "0 0 6px", fontSize: 17, fontWeight: 500 }}>
               Natural operator profiles
             </h4>
-            <p style={{ color: "var(--text-2)", fontSize: 13.5, margin: "0 0 14px" }}>
+            <p
+              style={{
+                color: "var(--text-2)",
+                fontSize: 13.5,
+                margin: "0 0 14px"
+              }}
+            >
               In any given country, one or two organisations typically stand out.
             </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <ChipList>
               {OPERATOR_PROFILES.map((p) => (
-                <span
-                  key={p}
-                  style={{
-                    fontSize: 12.5,
-                    padding: "6px 12px",
-                    borderRadius: 999,
-                    background: "rgba(var(--primary-rgb), 0.08)",
-                    border: "1px solid var(--border)",
-                    color: "var(--text)"
-                  }}
-                >
-                  {p}
-                </span>
+                <Chip key={p}>{p}</Chip>
               ))}
-            </div>
-          </div>
-        </div>
+            </ChipList>
+          </FeatureCard>
+        </CardGrid>
       </Reveal>
 
       <Reveal>
-        <div
-          style={{
-            marginTop: 18,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: 16
-          }}
-        >
-          <div
-            className="feature-card"
-            style={{
-              padding: 22,
-              borderRadius: 14,
-              border: "1px solid var(--border)",
-              background: "var(--panel)"
-            }}
-          >
-            <div
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 10,
-                display: "grid",
-                placeItems: "center",
-                background: "rgba(var(--primary-rgb), 0.12)",
-                color: "var(--primary)",
-                border: "1px solid rgba(var(--primary-rgb), 0.30)",
-                marginBottom: 12
-              }}
-            >
-              <Icon name="layers" size={18} stroke={1.8} />
-            </div>
+        <CardGrid min={280} gap={16} marginTop={18}>
+          <FeatureCard icon="layers" tone="primary" padding={22}>
             <h5 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 500 }}>
               Telcos - operator
             </h5>
-            <p style={{ margin: 0, color: "var(--text-2)", fontSize: 13.5, lineHeight: 1.55 }}>
+            <p
+              style={{
+                margin: 0,
+                color: "var(--text-2)",
+                fontSize: 13.5,
+                lineHeight: 1.55
+              }}
+            >
               National infrastructure, enterprise ecosystems, interconnection, deep
               government relationships, hosting adjacency and sovereign-cloud ambitions
               - though hosting AI remains separate from operating the registry.
             </p>
-          </div>
+          </FeatureCard>
 
-          <div
-            className="feature-card"
-            style={{
-              padding: 22,
-              borderRadius: 14,
-              border: "1px solid var(--border)",
-              background: "var(--panel)"
-            }}
-          >
-            <div
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 10,
-                display: "grid",
-                placeItems: "center",
-                background: "rgba(var(--tertiary-rgb), 0.12)",
-                color: "var(--tertiary)",
-                border: "1px solid rgba(var(--tertiary-rgb), 0.30)",
-                marginBottom: 12
-              }}
-            >
-              <Icon name="shield" size={18} stroke={1.8} />
-            </div>
+          <FeatureCard icon="shield" tone="tertiary" padding={22}>
             <h5 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 500 }}>
               Government - policy sponsor
             </h5>
-            <p style={{ margin: 0, color: "var(--text-2)", fontSize: 13.5, lineHeight: 1.55 }}>
+            <p
+              style={{
+                margin: 0,
+                color: "var(--text-2)",
+                fontSize: 13.5,
+                lineHeight: 1.55
+              }}
+            >
               The most resilient model is a partnership: government provides policy
               legitimacy and sector convening; the operator (telco or other DPI
               enabler) provides platform operations and technical implementation.
             </p>
-          </div>
-        </div>
+          </FeatureCard>
+        </CardGrid>
       </Reveal>
-    </section>
+    </PageSection>
   );
 }
 
 function Integrators() {
-  const tones: Record<string, { rgb: string; color: string }> = {
-    primary: { rgb: "var(--primary-rgb)", color: "var(--primary)" },
-    tertiary: { rgb: "var(--tertiary-rgb)", color: "var(--tertiary)" },
-    secondary: { rgb: "var(--secondary-rgb)", color: "var(--secondary)" },
-    emerald: { rgb: "16, 185, 129", color: "#10b981" }
-  };
-
   return (
-    <section className="section" id="integrators" style={{ scrollMarginTop: 120 }}>
-      <Reveal className="section-header">
-        <div className="eyebrow">
-          <span className="dot" />
-          <span>Integration partners</span>
-        </div>
-        <h2>
-          The connective tissue - <span className="gradient-text">Integrators.</span>
-        </h2>
-        <p>
-          Registry, providers, hosting and identity are the operating layers. Integrators
-          are the connective tissue - the system integrators, advisories, reviewer pools
-          and specialists who help providers publish, jurisdictions deploy and ecosystems
-          mature.
-        </p>
-      </Reveal>
-
+    <PageSection
+      id="integrators"
+      eyebrow="Integration partners"
+      title={<>The connective tissue - <Gradient>Integrators.</Gradient></>}
+      subtitle="Registry, providers, hosting and identity are the operating layers. Integrators are the connective tissue - the system integrators, advisories, reviewer pools and specialists who help providers publish, jurisdictions deploy and ecosystems mature."
+    >
       <Reveal>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: 14
-          }}
-        >
-          {INTEGRATOR_ROLES.map((r) => {
-            const tone = tones[r.tone];
-            return (
-              <div
-                key={r.title}
-                className="feature-card"
+        <CardGrid min={240} gap={14}>
+          {INTEGRATOR_ROLES.map((r) => (
+            <FeatureCard
+              key={r.title}
+              icon={r.icon}
+              tone={r.tone}
+              padding={20}
+            >
+              <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 500, color: "var(--text)" }}>
+                {r.title}
+              </h4>
+              <p
                 style={{
-                  padding: 20,
-                  borderRadius: 14,
-                  border: "1px solid var(--border)",
-                  background: "var(--panel)"
+                  margin: 0,
+                  color: "var(--text-2)",
+                  fontSize: 13.5,
+                  lineHeight: 1.55
                 }}
               >
-                <div
-                  style={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: 10,
-                    display: "grid",
-                    placeItems: "center",
-                    background: `rgba(${tone.rgb}, 0.12)`,
-                    color: tone.color,
-                    border: `1px solid rgba(${tone.rgb}, 0.30)`,
-                    marginBottom: 12
-                  }}
-                >
-                  <Icon name={r.icon} size={18} stroke={1.8} />
-                </div>
-                <h4
-                  style={{
-                    margin: "0 0 6px",
-                    fontSize: 15,
-                    fontWeight: 500,
-                    color: "var(--text)"
-                  }}
-                >
-                  {r.title}
-                </h4>
-                <p
-                  style={{
-                    margin: 0,
-                    color: "var(--text-2)",
-                    fontSize: 13.5,
-                    lineHeight: 1.55
-                  }}
-                >
-                  {r.desc}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+                {r.desc}
+              </p>
+            </FeatureCard>
+          ))}
+        </CardGrid>
       </Reveal>
-    </section>
+    </PageSection>
   );
 }
 
 function ForWhom() {
   return (
-    <section className="section" id="audiences" style={{ scrollMarginTop: 120 }}>
-      <Reveal className="section-header">
-        <div className="eyebrow">
-          <span className="dot" />
-          <span>For whom</span>
-        </div>
-        <h2>
-          Value at <span className="gradient-text">every layer of the ecosystem.</span>
-        </h2>
-        <p>Small in scope, broad in impact. Here&rsquo;s what changes for each audience.</p>
-      </Reveal>
-
+    <PageSection
+      id="audiences"
+      eyebrow="For whom"
+      title={<>Value at <Gradient>every layer of the ecosystem.</Gradient></>}
+      subtitle={<>Small in scope, broad in impact. Here&rsquo;s what changes for each audience.</>}
+    >
       <Reveal>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: 16
-          }}
-        >
+        <CardGrid min={280} gap={16}>
           {AUDIENCES.map((a, idx) => {
-            const tones = [
-              { rgb: "var(--primary-rgb)", color: "var(--primary)" },
-              { rgb: "var(--tertiary-rgb)", color: "var(--tertiary)" },
-              { rgb: "var(--secondary-rgb)", color: "var(--secondary)" },
-              { rgb: "16, 185, 129", color: "#10b981" }
-            ];
-            const tone = tones[idx % tones.length];
+            const tone = AUDIENCE_TONES[idx % AUDIENCE_TONES.length];
             return (
-              <div
-                key={a.title}
-                className="feature-card"
-                style={{
-                  padding: 22,
-                  borderRadius: 14,
-                  border: "1px solid var(--border)",
-                  background: "var(--panel)"
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                  <div
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 10,
-                      display: "grid",
-                      placeItems: "center",
-                      background: `rgba(${tone.rgb}, 0.12)`,
-                      color: tone.color,
-                      border: `1px solid rgba(${tone.rgb}, 0.30)`,
-                      flexShrink: 0
-                    }}
-                  >
-                    <Icon name={a.icon} size={20} stroke={1.8} />
-                  </div>
+              <Card key={a.title} padding={22}>
+                {/* Horizontal icon + title + subtitle header - this layout
+                    doesn't fit FeatureCard's vertical icon stacking, so we
+                    use bare Card + IconTile and compose by hand. */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    marginBottom: 14
+                  }}
+                >
+                  <IconTile name={a.icon} tone={tone} size={40} marginBottom={0} />
                   <div>
                     <h4 style={{ margin: 0, fontSize: 15, fontWeight: 500 }}>{a.title}</h4>
                     <div
                       style={{
                         fontSize: 12,
                         color: "var(--text-2)",
-                        fontFamily: "IBM Plex Mono, monospace",
+                        fontFamily: "'IBM Plex Mono', monospace",
                         letterSpacing: "0.04em"
                       }}
                     >
@@ -764,35 +486,33 @@ function ForWhom() {
                     <li key={p}>{p}</li>
                   ))}
                 </ul>
-              </div>
+              </Card>
             );
           })}
-        </div>
+        </CardGrid>
       </Reveal>
-    </section>
+    </PageSection>
   );
 }
 
 function LongTermVision() {
   return (
-    <section className="section" id="federation" style={{ scrollMarginTop: 120 }}>
-      <Reveal className="section-header">
-        <div className="eyebrow">
-          <span className="dot" />
-          <span>The long-term vision</span>
-        </div>
-        <h2>
-          Federation - <span className="gradient-text">trust without merging.</span>
-        </h2>
-        <p>
+    <PageSection
+      id="federation"
+      eyebrow="The long-term vision"
+      title={<>Federation - <Gradient>trust without merging.</Gradient></>}
+      subtitle={
+        <>
           No country&rsquo;s AI ecosystem exists in isolation. Federation lets registries
           trust each other&rsquo;s metadata <em>without merging</em>. Each side keeps its
           sovereignty rubric, status labels and audit trail. Not an MVP requirement -
           but the registry is designed so it doesn&rsquo;t preclude federation later.
-        </p>
-      </Reveal>
-
+        </>
+      }
+    >
       <Reveal>
+        {/* Bespoke: the air://air.mu ↔ air://air.peer federation diagram is a
+            one-off visual; intentionally not absorbed into a library primitive. */}
         <div
           style={{
             display: "flex",
@@ -811,7 +531,7 @@ function LongTermVision() {
           <div style={{ textAlign: "center", minWidth: 180 }}>
             <div
               style={{
-                fontFamily: "IBM Plex Mono, monospace",
+                fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 14,
                 color: "var(--text)",
                 marginBottom: 4
@@ -834,7 +554,7 @@ function LongTermVision() {
           >
             <div
               style={{
-                fontFamily: "IBM Plex Mono, monospace",
+                fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 11,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
@@ -854,7 +574,7 @@ function LongTermVision() {
             />
             <div
               style={{
-                fontFamily: "IBM Plex Mono, monospace",
+                fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 11,
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
@@ -868,7 +588,7 @@ function LongTermVision() {
           <div style={{ textAlign: "center", minWidth: 180 }}>
             <div
               style={{
-                fontFamily: "IBM Plex Mono, monospace",
+                fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 14,
                 color: "var(--text)",
                 marginBottom: 4,
@@ -880,7 +600,7 @@ function LongTermVision() {
               <span>air://air.</span>
               <span
                 style={{
-                  fontFamily: "IBM Plex Mono, monospace",
+                  fontFamily: "'IBM Plex Mono', monospace",
                   fontSize: 12,
                   padding: "2px 8px",
                   borderRadius: 6,
@@ -898,258 +618,82 @@ function LongTermVision() {
           </div>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: 14
-          }}
-        >
+        <CardGrid min={220} gap={14}>
           {FEDERATION_PRINCIPLES.map((fp) => (
-            <div
+            <FeatureCard
               key={fp.label}
-              className="feature-card"
-              style={{
-                padding: 18,
-                borderRadius: 14,
-                border: "1px solid var(--border)",
-                background: "var(--panel)"
-              }}
-            >
-              <div
-                style={{
-                  fontFamily: "IBM Plex Mono, monospace",
-                  fontSize: 11,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  color: "var(--text-2)",
-                  marginBottom: 8
-                }}
-              >
-                {fp.label}
-              </div>
-              <h4 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 500 }}>{fp.title}</h4>
-              <p style={{ margin: 0, color: "var(--text-2)", fontSize: 13.5, lineHeight: 1.55 }}>
-                {fp.desc}
-              </p>
-            </div>
+              eyebrow={fp.label}
+              title={fp.title}
+              body={fp.desc}
+              padding={18}
+            />
           ))}
-        </div>
+        </CardGrid>
       </Reveal>
-    </section>
+    </PageSection>
   );
 }
 
 function GetInvolved() {
   return (
-    <section className="section" id="engage" style={{ scrollMarginTop: 120 }}>
-      <Reveal className="section-header">
-        <div className="eyebrow">
-          <span className="dot" />
-          <span>Get involved</span>
-        </div>
-        <h2>
-          Four ways to engage. <span className="gradient-text">Pick yours.</span>
-        </h2>
-        <p>
+    <PageSection
+      id="engage"
+      eyebrow="Get involved"
+      title={<>Four ways to engage. <Gradient>Pick yours.</Gradient></>}
+      subtitle={
+        <>
           Intentionally small, open and sovereign. The value comes from <em>restraint</em>
           {" "}- and from others deploying and governing their own. Mauritius Telecom is
           building the reference; the next steps are adoption, contribution and partnership.
-        </p>
-      </Reveal>
-
+        </>
+      }
+    >
       <Reveal>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: 16
-          }}
-        >
-          {TRACKS.map((t) => {
-            const isExternal = t.href.startsWith("http");
-            const LinkEl: React.ElementType = isExternal ? "a" : Link;
-            return (
-              <LinkEl
-                key={t.num}
-                href={t.href}
-                {...(isExternal
-                  ? { target: "_blank", rel: "noopener noreferrer" }
-                  : {})}
-                className="feature-card"
-                style={{
-                  position: "relative",
-                  padding: 22,
-                  borderRadius: 14,
-                  border: t.featured
-                    ? "1px solid rgba(var(--primary-rgb), 0.40)"
-                    : "1px solid var(--border)",
-                  background: t.featured
-                    ? "linear-gradient(160deg, rgba(var(--primary-rgb), 0.10), var(--panel))"
-                    : "var(--panel)",
-                  textDecoration: "none",
-                  color: "inherit",
-                  display: "block",
-                  transition: "transform 220ms cubic-bezier(.2,.8,.2,1), border-color 220ms"
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: "IBM Plex Mono, monospace",
-                    fontSize: 11,
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    color: t.featured ? "var(--primary)" : "var(--text-2)",
-                    marginBottom: 10
-                  }}
-                >
-                  {t.num}
-                </div>
-                <h4
-                  style={{
-                    margin: "0 0 8px",
-                    fontSize: 18,
-                    fontWeight: 500,
-                    letterSpacing: "-0.01em",
-                    ...(t.featured
-                      ? {
-                          background: "var(--grad-text)",
-                          WebkitBackgroundClip: "text",
-                          backgroundClip: "text",
-                          color: "transparent"
-                        }
-                      : { color: "var(--text)" })
-                  }}
-                >
-                  {t.title}
-                </h4>
-                <p
-                  style={{
-                    margin: "0 0 14px",
-                    color: "var(--text-2)",
-                    fontSize: 13.5,
-                    lineHeight: 1.55
-                  }}
-                >
-                  {t.desc}
-                </p>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: t.featured ? "var(--primary)" : "var(--text)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6
-                  }}
-                >
-                  {t.cta}
-                  <span aria-hidden>&rarr;</span>
-                </div>
-              </LinkEl>
-            );
-          })}
-        </div>
+        <CardGrid min={240} gap={16}>
+          {TRACKS.map((t) => (
+            <FeatureCard
+              key={t.num}
+              eyebrow={t.num}
+              title={t.title}
+              body={t.desc}
+              ctaLabel={t.cta}
+              featured={t.featured}
+              href={t.href}
+              padding={22}
+            />
+          ))}
+        </CardGrid>
       </Reveal>
-    </section>
+    </PageSection>
   );
 }
 
 function ClosingCta() {
   return (
-    <section className="section">
+    <Section>
       <Reveal>
-        <div
-          style={{
-            position: "relative",
-            overflow: "hidden",
-            padding: "48px 32px",
-            borderRadius: 20,
-            border: "1px solid var(--border-strong)",
-            background:
-              "radial-gradient(600px 320px at 50% 0%, rgba(var(--primary-rgb),0.18), transparent 60%), radial-gradient(600px 320px at 100% 100%, rgba(var(--tertiary-rgb),0.14), transparent 60%), var(--panel)",
-            textAlign: "center"
-          }}
-        >
-          <h2
-            style={{
-              margin: 0,
-              fontSize: 32,
-              fontWeight: 500,
-              letterSpacing: "-0.02em",
-              lineHeight: 1.2
-            }}
-          >
-            Build the{" "}
-            <span className="gradient-text">sovereign discovery layer</span>
-            <br />
-            for your country.
-          </h2>
-          <p
-            style={{
-              maxWidth: 580,
-              margin: "16px auto 28px",
-              color: "var(--text-2)",
-              fontSize: 15,
-              lineHeight: 1.55
-            }}
-          >
-            Open code. Local control. Sovereign discovery. Reach out for a private
-            preview, a partnership discussion or a technical walk-through.
-          </p>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 12,
-              justifyContent: "center"
-            }}
-          >
-            <a
-              href="https://airegistry.mu"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "10px 18px",
-                borderRadius: 10,
-                background: "var(--grad-accent)",
-                color: "#fff",
-                fontWeight: 500,
-                fontSize: 14,
-                textDecoration: "none",
-                border: "1px solid rgba(var(--primary-rgb), 0.40)"
-              }}
-            >
-              Open the live registry
-              <span aria-hidden>&rarr;</span>
-            </a>
-            <Link
+        <CtaPanel
+          title={
+            <>
+              Build the <Gradient>sovereign discovery layer</Gradient>
+              <br />
+              for your country.
+            </>
+          }
+          body="Open code. Local control. Sovereign discovery. Reach out for a private preview, a partnership discussion or a technical walk-through."
+          actions={
+            <Button
+              as={Link}
               href="/contact"
-              className="btn"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "10px 18px",
-                borderRadius: 10,
-                background: "transparent",
-                color: "var(--text)",
-                fontWeight: 500,
-                fontSize: 14,
-                textDecoration: "none",
-                border: "1px solid var(--border-strong)"
-              }}
+              intent="primary"
+              trailingIcon="arrow-right"
             >
               Talk to the team
-            </Link>
-          </div>
-        </div>
+            </Button>
+          }
+        />
       </Reveal>
-    </section>
+    </Section>
   );
 }
 
@@ -1164,13 +708,13 @@ export function EcosystemContent() {
         crumb="Ecosystem · Partners & Operators"
         title={
           <>
-            An ecosystem of <span className="gradient-text">independent operators</span>.
+            An ecosystem of <Gradient>independent stakeholders</Gradient>.
           </>
         }
         subtitle="The AI Registry, the operators who run it, the integrators who connect it, the audiences it serves, and the path to federation - independent parties held together only by open standards and stable identifiers."
       />
 
-      <AnchorNav />
+      <AnchorNav items={NAV_ITEMS} />
 
       <ThePlatform />
       <WhoRunsIt />
