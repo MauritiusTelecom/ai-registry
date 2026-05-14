@@ -1,9 +1,13 @@
 import type { SessionUser } from "@/lib/auth/current-user";
-import { loadPortalNotifications } from "@/lib/portals/notifications";
+// Notification bell is temporarily hidden — the dropdown's mark-as-read state
+// is not persisted yet (no NotificationRead table / endpoint). Re-enable
+// once persistence is wired up. See PortalHeader render for the commented
+// JSX and the surrounding context.
+// import { loadPortalNotifications } from "@/lib/portals/notifications";
 import { PortalSearch } from "./header/PortalSearch";
 import { PortalPalette } from "./header/PortalPalette";
 import { PortalThemeToggle } from "./header/PortalThemeToggle";
-import { PortalNotifications } from "./header/PortalNotifications";
+// import { PortalNotifications } from "./header/PortalNotifications";
 import { PortalUserDropdown } from "./header/PortalUserDropdown";
 
 /**
@@ -40,9 +44,10 @@ export async function PortalHeader({
   searchPlaceholder,
   user
 }: PortalHeaderProps) {
-  // Notifications are scoped per-role on the server so a provider never
-  // sees admin-flavoured entries (and vice versa).
-  const notifications = await loadPortalNotifications(user, currentRole);
+  // Notifications fetch is commented out alongside the bell render below —
+  // see the header for the full reason. Re-enable once read-receipts are
+  // persisted server-side.
+  // const notifications = await loadPortalNotifications(user, currentRole);
   return (
     <header className="p-header">
       <div className="p-header-left">
@@ -73,7 +78,16 @@ export async function PortalHeader({
         ) : null}
         {currentRole !== "provider" ? <PortalPalette /> : null}
         <PortalThemeToggle />
-        <PortalNotifications initial={notifications} />
+        {/*
+          Notification bell hidden for now — the dropdown's "Mark all
+          read" / per-item dismiss is currently client-state only, so
+          the unread badge would reappear on every refresh and the
+          "read" affordance would mislead the user. Re-enable once a
+          NotificationRead table + API persist the state per user.
+          (See the conversation note on schema + endpoint design.)
+
+          <PortalNotifications initial={notifications} />
+        */}
         <PortalUserDropdown
           user={{
             name: user.name,
