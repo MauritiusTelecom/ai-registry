@@ -105,16 +105,18 @@ export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
           options: lifecycles.map((l) => ({ value: l.code, label: l.name }))
         },
         {
+          // `status` here holds the derived public DisplayStatus produced by
+          // `deriveDisplayStatus` — NOT the lifecycle code (that's `lifecycleCode`).
+          // Option values must therefore be the display strings the function
+          // returns: "verified" | "trusted" | "active" | "experimental" | "isolated".
           key: "status",
           label: "Public status",
           options: [
-            { value: "listed", label: "Listed" },
-            { value: "draft", label: "Draft" },
-            { value: "in_review", label: "In review" },
-            { value: "needs_update", label: "Needs update" },
-            { value: "suspended", label: "Suspended" },
-            { value: "deprecated", label: "Deprecated" },
-            { value: "removed", label: "Removed" }
+            { value: "verified", label: "Verified" },
+            { value: "trusted", label: "Trusted (official provider)" },
+            { value: "active", label: "Active (listed)" },
+            { value: "experimental", label: "Experimental (pre-listing)" },
+            { value: "isolated", label: "Isolated (suspended / deprecated)" }
           ]
         }
       ]}
