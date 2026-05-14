@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 import { Icon } from "@/components/public/Icon";
 import { withBase } from "@/lib/with-base";
 
@@ -62,9 +63,24 @@ export type AdminGridProps<Row extends { id: string }> = {
 const PAGE_SIZES = [10, 20, 50, 100];
 
 export function AdminGrid<Row extends { id: string }>(props: AdminGridProps<Row>) {
-  const [q, setQ] = useState("");
-  const [debouncedQ, setDebouncedQ] = useState("");
-  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
+  // Seed q + filter values from the URL on first paint so a deep link
+  // (e.g. /admin/users?q=alice@example.com) lands with the row already
+  // pre-filtered. The header-search uses this exact pattern when it routes
+  // a user-kind result into the admin CRUD area.
+  const searchParams = useSearchParams();
+  const initialQ = searchParams.get("q") ?? "";
+  const initialFilters: Record<string, string> = {};
+  if (props.filters) {
+    for (const f of props.filters) {
+      const v = searchParams.get(f.id);
+      if (v) initialFilters[f.id] = v;
+    }
+  }
+
+  const [q, setQ] = useState(initialQ);
+  const [debouncedQ, setDebouncedQ] = useState(initialQ);
+  const [filterValues, setFilterValues] =
+    useState<Record<string, string>>(initialFilters);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [data, setData] = useState<ListResponse<Row> | null>(null);
