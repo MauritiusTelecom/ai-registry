@@ -62,6 +62,13 @@ export type RegistryConfig = {
     smtpPort: number | null;
     smtpUser: string | null;
     smtpPass: string | null;
+    /**
+     * When set, every transactional email is rerouted to this address and
+     * the subject is prefixed with `[orig: <intended-recipient>]`. Designed
+     * for QA / staging so an operator can verify every email path against
+     * a single inbox. Leave unset in production.
+     */
+    testInbox: string | null;
   };
   /**
    * First paragraph of the auto-reply after a public contact submission.
@@ -101,6 +108,33 @@ export type RegistryConfig = {
     operatorSubject: string;
     operatorBody: string;
   };
+  /**
+   * Subject + body templates for every transactional / lifecycle email
+   * the registry sends. Each pair can be overridden via .env (see
+   * .env.example) and references placeholders wrapped in {braces}.
+   * Newlines in env values may be written as the two-char escape `\n`.
+   */
+  emailTemplates: {
+    verification: EmailTemplate;
+    passwordReset: EmailTemplate;
+    passwordChanged: EmailTemplate;
+    contactConfirmation: EmailTemplate;
+    resourceSubmittedForReview: EmailTemplate;
+    reviewDecision: EmailTemplate;
+    providerVerificationUpdate: EmailTemplate;
+    complaintReceivedComplainant: EmailTemplate;
+    complaintReceivedOperator: EmailTemplate;
+    complaintAssigned: EmailTemplate;
+    userStatusChanged: EmailTemplate;
+    providerVisibilityChanged: EmailTemplate;
+    resourceLifecycleChanged: EmailTemplate;
+  };
+};
+
+/** Subject + body for a single transactional email. */
+export type EmailTemplate = {
+  subject: string;
+  body: string;
 };
 
 const REQUIRED_KEYS = [
@@ -133,6 +167,15 @@ function readRequired(env: NodeJS.ProcessEnv, key: RequiredKey): string {
     );
   }
   return value.trim();
+}
+
+/**
+ * Build an RFC 5322 From header. When a display name is supplied, the
+ * result is `"Display Name" <address>`; otherwise the bare address.
+ */
+function composeFromHeader(address: string, displayName: string): string {
+  if (displayName === "") return address;
+  return `"${displayName}" <${address}>`;
 }
 
 function splitCsv(value: string): string[] {
@@ -248,10 +291,27 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
   }
 
   // ── Mail (Phase 2) ─────────────────────────────────────────────────────
-  const mailFrom = (env.MAIL_FROM ?? "").trim();
-  if (mailFrom !== "" && !/^\S+@\S+\.\S+$/.test(mailFrom)) {
-    throw new ConfigError(`MAIL_FROM must be a valid email address (got "${mailFrom}").`);
+  // Accept either MAIL_FROM (original) or EMAIL_FROM (alternate spelling
+  // some operators use). MAIL_FROM wins when both are set.
+  const mailFromRaw =
+    (env.MAIL_FROM ?? "").trim() || (env.EMAIL_FROM ?? "").trim();
+  if (mailFromRaw !== "" && !/^\S+@\S+\.\S+$/.test(mailFromRaw)) {
+    throw new ConfigError(
+      `MAIL_FROM / EMAIL_FROM must be a valid email address (got "${mailFromRaw}").`
+    );
   }
+  // Optional display name. When set, the From header is rendered as
+  // `"Display Name" <address>` per RFC 5322. Common for branded sends.
+  const senderName =
+    (env.EMAIL_SENDER_NAME ?? "").trim() || (env.MAIL_SENDER_NAME ?? "").trim();
+  // Sanity check: forbid double-quotes inside the display name — they'd
+  // need escaping and the resulting header would be ambiguous.
+  if (senderName.includes('"')) {
+    throw new ConfigError(
+      `EMAIL_SENDER_NAME must not contain double-quotes (got "${senderName}").`
+    );
+  }
+  const mailFrom = mailFromRaw;
   const smtpHost = (env.SMTP_HOST ?? "").trim() || null;
   const smtpPortRaw = (env.SMTP_PORT ?? "").trim();
   const smtpPort = smtpPortRaw === "" ? null : Number.parseInt(smtpPortRaw, 10);
@@ -260,6 +320,19 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
   }
   const smtpUser = (env.SMTP_USER ?? "").trim() || null;
   const smtpPass = (env.SMTP_PASS ?? "").trim() || null;
+
+  // QA helper — when set, every email is rerouted here. Validated as an
+  // address so we never silently swallow a typo.
+  const testInboxRaw = (env.TEST_EMAIL_INBOX ?? "").trim();
+  let testInbox: string | null = null;
+  if (testInboxRaw !== "") {
+    if (!/^\S+@\S+\.\S+$/.test(testInboxRaw)) {
+      throw new ConfigError(
+        `TEST_EMAIL_INBOX must be a valid email address (got "${testInboxRaw}").`
+      );
+    }
+    testInbox = testInboxRaw.toLowerCase();
+  }
 
   const contactFormReplyRaw = (env.CONTACT_FORM_REPLY_MESSAGE ?? "").trim();
   const contactFormReplyMessage =
@@ -318,6 +391,215 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
   const operatorBody =
     unescape((env.PUBLIC_REPORT_OPERATOR_BODY ?? "").trim()) || defaultOperatorBody;
 
+  // ── Transactional email templates ─────────────────────────────────
+  // Helper: read an env var, unescape \n / \r / \t, fall back to default.
+  const tpl = (key: string, fallback: string): string => {
+    const raw = (env[key] ?? "").trim();
+    return raw === "" ? fallback : unescape(raw);
+  };
+
+  const emailTemplates = {
+    verification: {
+      subject: tpl(
+        "EMAIL_VERIFICATION_SUBJECT",
+        `Verify your {registryName} account`
+      ),
+      body: tpl(
+        "EMAIL_VERIFICATION_BODY",
+        `Hi {name},\n\n` +
+          `Welcome to {registryName}. Confirm your email address by opening this link:\n\n` +
+          `  {verifyUrl}\n\n` +
+          `The link expires in 24 hours. If you didn't request this, you can ignore this email.\n\n` +
+          `- {registryName}`
+      )
+    },
+    passwordReset: {
+      subject: tpl(
+        "EMAIL_PASSWORD_RESET_SUBJECT",
+        `Reset your {registryName} password`
+      ),
+      body: tpl(
+        "EMAIL_PASSWORD_RESET_BODY",
+        `Hi {name},\n\n` +
+          `We received a request to reset your {registryName} password. Open this link to set a new one:\n\n` +
+          `  {resetUrl}\n\n` +
+          `The link expires in 1 hour. If you didn't request this, ignore this email and your password will stay the same.\n\n` +
+          `- {registryName}`
+      )
+    },
+    passwordChanged: {
+      subject: tpl(
+        "EMAIL_PASSWORD_CHANGED_SUBJECT",
+        `Your {registryName} password was changed`
+      ),
+      body: tpl(
+        "EMAIL_PASSWORD_CHANGED_BODY",
+        `Hi {name},\n\n` +
+          `The password for your {registryName} account was just changed.\n\n` +
+          `If this was you, no action is needed. Sign in anytime:\n\n` +
+          `  {loginUrl}\n\n` +
+          `If you did not change your password, reset it immediately from the sign-in page.\n\n` +
+          `- {registryName}`
+      )
+    },
+    contactConfirmation: {
+      subject: tpl(
+        "EMAIL_CONTACT_CONFIRMATION_SUBJECT",
+        `We received your message - {registryName}`
+      ),
+      body: tpl(
+        "EMAIL_CONTACT_CONFIRMATION_BODY",
+        `Hi {senderName},\n\n` +
+          `{replyIntro}\n\n` +
+          `Topic: {topicLabel}\n\n` +
+          `Confirm this email address (required before we treat the thread as verified):\n\n` +
+          `  {verifyUrl}\n\n` +
+          `The link expires in 24 hours. If you did not use the contact form on {registryName}, you can ignore this email.\n\n` +
+          `- {operatorName} · {registryName}`
+      )
+    },
+    resourceSubmittedForReview: {
+      subject: tpl(
+        "EMAIL_RESOURCE_SUBMITTED_SUBJECT",
+        `Submitted for review - {resourceTitle}`
+      ),
+      body: tpl(
+        "EMAIL_RESOURCE_SUBMITTED_BODY",
+        `{registryName}: a resource was submitted for sovereignty review.\n\n` +
+          `Resource: {resourceTitle}\n` +
+          `Review id: {reviewId}\n\n` +
+          `View resources:\n  {portalResourcesUrl}\n\n` +
+          `Track reviews:\n  {portalReviewsUrl}\n\n` +
+          `- {registryName}`
+      )
+    },
+    reviewDecision: {
+      subject: tpl(
+        "EMAIL_REVIEW_DECISION_SUBJECT",
+        `Review update - {resourceTitle}`
+      ),
+      body: tpl(
+        "EMAIL_REVIEW_DECISION_BODY",
+        `Hello {providerDisplayName},\n\n` +
+          `{registryName} has updated the sovereignty review for "{resourceTitle}".\n\n` +
+          `Outcome: {decisionLabel}\n\n` +
+          `Summary:\n{decisionSummary}\n\n` +
+          `Open your provider reviews:\n  {portalReviewsUrl}\n` +
+          `{publicCatalogBlock}\n` +
+          `- {registryName}`
+      )
+    },
+    providerVerificationUpdate: {
+      subject: tpl(
+        "EMAIL_PROVIDER_VERIFICATION_SUBJECT",
+        `Provider verification update - {registryName}`
+      ),
+      body: tpl(
+        "EMAIL_PROVIDER_VERIFICATION_BODY",
+        `Hello {providerDisplayName},\n\n` +
+          `Your organisation's verification status on {registryName} is now: {statusLabel}.\n\n` +
+          `Summary:\n{summary}\n` +
+          `{noteBlock}` +
+          `\nProvider settings:\n  {portalSettingsUrl}\n\n` +
+          `- {registryName}`
+      )
+    },
+    complaintReceivedComplainant: {
+      subject: tpl(
+        "EMAIL_COMPLAINT_RECEIVED_COMPLAINANT_SUBJECT",
+        `Complaint received - {registryName}`
+      ),
+      body: tpl(
+        "EMAIL_COMPLAINT_RECEIVED_COMPLAINANT_BODY",
+        `Thank you for contacting {registryName}.\n\n` +
+          `We recorded your complaint (reference: {complaintId}). ` +
+          `{operatorName} will handle it according to our process.\n\n` +
+          `You can reach us again via:\n  {contactUrl}\n\n` +
+          `- {operatorName} · {registryName}`
+      )
+    },
+    complaintReceivedOperator: {
+      subject: tpl(
+        "EMAIL_COMPLAINT_RECEIVED_OPERATOR_SUBJECT",
+        `[{registryName}] New complaint {complaintId}`
+      ),
+      body: tpl(
+        "EMAIL_COMPLAINT_RECEIVED_OPERATOR_BODY",
+        `A new public complaint was filed.\n\n` +
+          `Id: {complaintId}\n` +
+          `Type: {complaintType}\n` +
+          `Severity: {severity}\n` +
+          `Target: {targetSummary}\n\n` +
+          `Open the admin console:\n  {adminHomeUrl}\n\n` +
+          `- {registryName} (automated)`
+      )
+    },
+    complaintAssigned: {
+      subject: tpl(
+        "EMAIL_COMPLAINT_ASSIGNED_SUBJECT",
+        `[{registryName}] Complaint {complaintIdShort} assigned to you`
+      ),
+      body: tpl(
+        "EMAIL_COMPLAINT_ASSIGNED_BODY",
+        `Hi {assigneeName},\n\n` +
+          `{assignedByName} assigned a complaint to you on {registryName}.\n\n` +
+          `Id: {complaintId}\n` +
+          `Type: {complaintType}\n` +
+          `Severity: {severity}\n` +
+          `Status: {statusLabel}\n` +
+          `Target: {targetSummary}\n\n` +
+          `Excerpt:\n{excerpt}\n\n` +
+          `Open the complaint:\n  {complaintUrl}\n\n` +
+          `- {registryName} (automated)`
+      )
+    },
+    userStatusChanged: {
+      subject: tpl(
+        "EMAIL_USER_STATUS_CHANGED_SUBJECT",
+        `Your {registryName} account status has changed`
+      ),
+      body: tpl(
+        "EMAIL_USER_STATUS_CHANGED_BODY",
+        `Hi {name},\n\n` +
+          `Your account on {registryName} is now: {statusLabel}.\n` +
+          `{reasonBlock}` +
+          `\nSign in or contact the operator if you have questions:\n  {loginUrl}\n\n` +
+          `- {operatorName} · {registryName}`
+      )
+    },
+    providerVisibilityChanged: {
+      subject: tpl(
+        "EMAIL_PROVIDER_VISIBILITY_SUBJECT",
+        `Provider visibility update - {registryName}`
+      ),
+      body: tpl(
+        "EMAIL_PROVIDER_VISIBILITY_BODY",
+        `Hello {providerDisplayName},\n\n` +
+          `Your organisation's public visibility on {registryName} is now: {visibilityLabel}.\n\n` +
+          `{summary}\n\n` +
+          `Provider settings:\n  {portalSettingsUrl}\n\n` +
+          `- {registryName}`
+      )
+    },
+    resourceLifecycleChanged: {
+      subject: tpl(
+        "EMAIL_RESOURCE_LIFECYCLE_SUBJECT",
+        `Resource update - {resourceTitle}`
+      ),
+      body: tpl(
+        "EMAIL_RESOURCE_LIFECYCLE_BODY",
+        `Hello {providerDisplayName},\n\n` +
+          `{registryName} has updated the lifecycle of "{resourceTitle}".\n\n` +
+          `Action: {actionLabel}\n` +
+          `New status: {newStatusLabel}\n\n` +
+          `Reason:\n{reason}\n\n` +
+          `View your resources:\n  {portalResourcesUrl}\n` +
+          `{publicCatalogBlock}\n` +
+          `- {registryName}`
+      )
+    }
+  };
+
   return {
     databaseUrl,
     registryName,
@@ -335,11 +617,15 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
       sessionTtlSeconds
     },
     mail: {
-      from: mailFrom || `no-reply@${portalDomain}`,
+      from: composeFromHeader(
+        mailFrom || `no-reply@${portalDomain}`,
+        senderName
+      ),
       smtpHost,
       smtpPort,
       smtpUser,
-      smtpPass
+      smtpPass,
+      testInbox
     },
     contactFormReplyMessage,
     operatorInboxEmail,
@@ -350,7 +636,8 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
       ackBody,
       operatorSubject,
       operatorBody
-    }
+    },
+    emailTemplates
   };
 }
 

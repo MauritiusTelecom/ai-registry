@@ -7,6 +7,9 @@ import {
 } from "@/lib/auth/separation-of-duties";
 import { writeAudit } from "@/lib/audit/write-audit";
 import { getConfig } from "@/lib/config";
+import { emailTemplates } from "@/lib/email";
+import { uniqueValidEmails } from "@/lib/email/recipients";
+import { sendTransactionalEmailAll } from "@/lib/email/transactional-send";
 
 /**
  * POST /api/admin/resources/:id/transition
@@ -27,6 +30,7 @@ import { getConfig } from "@/lib/config";
 type Body = {
   action?: unknown;
   reason?: unknown;
+  notifyByEmail?: unknown;
 };
 
 type Action =
@@ -109,7 +113,15 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     where: { id },
     include: {
       lifecycleStatus: { select: { code: true } },
-      provider: { select: { id: true, slug: true } },
+      provider: {
+        select: {
+          id: true,
+          slug: true,
+          displayName: true,
+          contactEmail: true,
+          legalContactEmail: true
+        }
+      },
       resourceType: { select: { code: true } }
     }
   });
@@ -215,10 +227,51 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     newValue: { lifecycle: toCode, reason }
   });
 
+  // Notify the provider's contacts of the lifecycle transition. Default ON;
+  // only an explicit notifyByEmail: false skips it.
+  const notifyByEmail = body.notifyByEmail !== false;
+  const origin = new URL(req.url).origin;
+  const recipients = uniqueValidEmails([
+    resource.provider.contactEmail,
+    resource.provider.legalContactEmail
+  ]);
+  let emailNotified = false;
+  if (notifyByEmail && recipients.length > 0) {
+    const actionLabel: Record<Action, string> = {
+      approve: "Approved",
+      reject: "Rejected — needs update",
+      suspend: "Suspended",
+      restore: "Restored",
+      deprecate: "Deprecated",
+      remove: "Removed"
+    };
+    const publicCatalogUrl =
+      toCode === "listed" || toCode === "deprecated"
+        ? `${origin}/registry/${resource.slug}`
+        : undefined;
+    const tmpl = emailTemplates.resourceLifecycleChanged({
+      registryName: cfg.registryName,
+      providerDisplayName: resource.provider.displayName,
+      resourceTitle: resource.title,
+      actionLabel: actionLabel[action],
+      newStatusLabel: toCode,
+      reason,
+      portalResourcesUrl: `${origin}/provider/resources`,
+      publicCatalogUrl
+    });
+    sendTransactionalEmailAll("resource_lifecycle", recipients, (to) => ({
+      to,
+      subject: tmpl.subject,
+      text: tmpl.text
+    }));
+    emailNotified = true;
+  }
+
   return NextResponse.json({
     ok: true,
     resourceId: id,
     fromLifecycle: fromCode,
-    toLifecycle: toCode
+    toLifecycle: toCode,
+    emailNotified
   });
 }

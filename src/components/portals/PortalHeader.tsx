@@ -1,4 +1,5 @@
 import type { SessionUser } from "@/lib/auth/current-user";
+import { loadPortalNotifications } from "@/lib/portals/notifications";
 import { PortalSearch } from "./header/PortalSearch";
 import { PortalPalette } from "./header/PortalPalette";
 import { PortalThemeToggle } from "./header/PortalThemeToggle";
@@ -32,13 +33,16 @@ export type PortalHeaderProps = {
   user: SessionUser;
 };
 
-export function PortalHeader({
+export async function PortalHeader({
   label,
   currentRole,
   subCrumb = null,
   searchPlaceholder,
   user
 }: PortalHeaderProps) {
+  // Notifications are scoped per-role on the server so a provider never
+  // sees admin-flavoured entries (and vice versa).
+  const notifications = await loadPortalNotifications(user, currentRole);
   return (
     <header className="p-header">
       <div className="p-header-left">
@@ -58,9 +62,10 @@ export function PortalHeader({
             searchPlaceholder ?? "Search resources, providers, audit…"
           }
         />
-        <PortalPalette />
+        {/* Palette is an operator/dev tool — hide it from the provider portal. */}
+        {currentRole !== "provider" ? <PortalPalette /> : null}
         <PortalThemeToggle />
-        <PortalNotifications />
+        <PortalNotifications initial={notifications} />
         <PortalUserDropdown
           user={{
             name: user.name,

@@ -162,7 +162,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         label: "Inbox",
         items: [
           { id: "complaints", label: "Complaints", href: "/provider/complaints", icon: "flag" },
-          { id: "contacts", label: "Contact requests", href: "/provider/contact-requests", icon: "inbox" },
+          // Contact requests is an admin-only inbox; provider portal omits it.
           { id: "reviews", label: "Reviews", href: "/provider/reviews", icon: "check" },
           { id: "incidents", label: "Incidents", href: "/provider/incidents", icon: "shield" }
         ]

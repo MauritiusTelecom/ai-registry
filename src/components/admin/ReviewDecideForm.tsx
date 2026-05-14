@@ -19,6 +19,9 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
     for (const item of SOVEREIGNTY_CHECKLIST_ITEMS) init[item.itemCode] = "yes";
     return init;
   });
+  // Email toggle. Default ON so existing behavior is preserved; admins can
+  // untick to record the decision without notifying the provider.
+  const [notifyByEmail, setNotifyByEmail] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -30,9 +33,11 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
         decision: string;
         decisionSummary: string;
         checklist?: Record<string, ChecklistAnswerCode>;
+        notifyByEmail: boolean;
       } = {
         decision,
-        decisionSummary: summary.trim()
+        decisionSummary: summary.trim(),
+        notifyByEmail
       };
       if (decision === "approve") body.checklist = checklist;
 
@@ -115,6 +120,25 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
           onChange={(e) => setSummary(e.target.value)}
           placeholder="Decision rationale for the audit trail"
         />
+      </label>
+
+      <label
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontSize: 12,
+          color: notifyByEmail ? "var(--text-2)" : "var(--text-3)",
+          cursor: "pointer"
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={notifyByEmail}
+          onChange={(e) => setNotifyByEmail(e.target.checked)}
+          style={{ accentColor: "var(--primary)" }}
+        />
+        <span>Email the provider's contacts about this decision</span>
       </label>
 
       {error ? (

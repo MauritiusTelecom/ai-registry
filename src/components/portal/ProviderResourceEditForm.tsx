@@ -114,9 +114,15 @@ export function ProviderResourceEditForm({
   const [languageCodes, setLanguageCodes] = useState<string[]>(initial.languageCodes);
   const [sectorCodes, setSectorCodes] = useState<string[]>(initial.sectorCodes);
 
-  const [busy, setBusy] = useState(false);
+  // Discriminated busy state so "Save" and "Submit for review" never flip
+  // labels at the same time — only the active button shows its busy text.
+  // The other button is disabled until the in-flight action settles.
+  const [pending, setPending] = useState<"save" | "submit" | null>(null);
+  const busy = pending !== null;
   const [error, setError] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
+  // Notify-operators toggle for the submit-for-review action. Default ON.
+  const [notifyOperators, setNotifyOperators] = useState(true);
 
   const evidenceBasisOptions = useMemo(
     () =>
@@ -180,7 +186,7 @@ export function ProviderResourceEditForm({
   async function save() {
     setError(null);
     setOkMsg(null);
-    setBusy(true);
+    setPending("save");
     try {
       const payload = {
         title: title.trim(),
@@ -236,18 +242,22 @@ export function ProviderResourceEditForm({
     } catch {
       setError("Network error");
     } finally {
-      setBusy(false);
+      setPending(null);
     }
   }
 
   async function submitForReview() {
     setError(null);
     setOkMsg(null);
-    setBusy(true);
+    setPending("submit");
     try {
       const res = await fetch(
         withBase(`/api/portal/resources/${initial.id}/submit`),
-        { method: "POST" }
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notifyByEmail: notifyOperators })
+        }
       );
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
@@ -259,7 +269,7 @@ export function ProviderResourceEditForm({
     } catch {
       setError("Network error");
     } finally {
-      setBusy(false);
+      setPending(null);
     }
   }
 
@@ -850,7 +860,7 @@ export function ProviderResourceEditForm({
             onClick={save}
             disabled={busy}
           >
-            {busy ? "Saving..." : "Save changes"}
+            {pending === "save" ? "Saving..." : "Save changes"}
           </button>
         ) : null}
         {canSubmit ? (
@@ -860,10 +870,30 @@ export function ProviderResourceEditForm({
             onClick={submitForReview}
             disabled={busy}
           >
-            {busy ? "Submitting..." : "Submit for review"}
+            {pending === "submit" ? "Submitting..." : "Submit for review"}
           </button>
         ) : null}
       </div>
+      {canSubmit ? (
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12,
+            color: notifyOperators ? "var(--text-2)" : "var(--text-3)",
+            cursor: "pointer"
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={notifyOperators}
+            onChange={(e) => setNotifyOperators(e.target.checked)}
+            style={{ accentColor: "var(--primary)" }}
+          />
+          <span>Email operators that this resource is awaiting review</span>
+        </label>
+      ) : null}
       {canSubmit ? (
         <p style={{ fontSize: 12, color: "var(--text-3)", margin: 0 }}>
           Submitting opens an operator review. You can keep editing until the registry moves

@@ -4,22 +4,28 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@/lib/with-base";
 
-const TYPES = ["model", "agent", "tool", "skill"] as const;
-
 export type NewResourceFormVariant = "public" | "provider";
+
+/** Resource type entry. Pages pass the DB-active set, intersected with the
+ * env `RESOURCE_TYPES` restriction so an inactive type can never appear in
+ * the dropdown. */
+export type ResourceTypeChoice = { code: string; name: string };
 
 export function NewResourceForm({
   allowedTypes,
   afterCreate = "portal",
   variant = "public"
 }: {
-  allowedTypes: string[];
+  /** Active resource types the operator allows. Empty list disables submit. */
+  allowedTypes: ResourceTypeChoice[];
   /** `portal` → `/portal/resources/:id`; `provider` → `/provider/resources/:id/edit` */
   afterCreate?: "portal" | "provider";
   variant?: NewResourceFormVariant;
 }) {
   const router = useRouter();
-  const [resourceTypeCode, setType] = useState<string>(allowedTypes[0] ?? "model");
+  const [resourceTypeCode, setType] = useState<string>(
+    allowedTypes[0]?.code ?? ""
+  );
   const [slug, setSlug] = useState("");
   const [title, setTitle] = useState("");
   const [shortDescription, setShort] = useState("");
@@ -79,13 +85,20 @@ export function NewResourceForm({
             className="p-input p-select"
             value={resourceTypeCode}
             onChange={(e) => setType(e.target.value)}
+            disabled={allowedTypes.length === 0}
           >
-            {TYPES.filter((t) => allowedTypes.includes(t)).map((t) => (
-              <option key={t} value={t}>
-                {t}
+            {allowedTypes.map((t) => (
+              <option key={t.code} value={t.code}>
+                {t.name}
               </option>
             ))}
           </select>
+          {allowedTypes.length === 0 ? (
+            <p style={{ fontSize: 12, color: "var(--text-3)", marginTop: 6, marginBottom: 0 }}>
+              No active resource types are currently available. Ask an admin to
+              enable one.
+            </p>
+          ) : null}
         </div>
       ) : (
         <label style={{ display: "grid", gap: 6 }}>
@@ -95,13 +108,19 @@ export function NewResourceForm({
             style={inputStyle}
             value={resourceTypeCode}
             onChange={(e) => setType(e.target.value)}
+            disabled={allowedTypes.length === 0}
           >
-            {TYPES.filter((t) => allowedTypes.includes(t)).map((t) => (
-              <option key={t} value={t}>
-                {t}
+            {allowedTypes.map((t) => (
+              <option key={t.code} value={t.code}>
+                {t.name}
               </option>
             ))}
           </select>
+          {allowedTypes.length === 0 ? (
+            <span style={{ fontSize: 12, color: "var(--text-3)" }}>
+              No active resource types are currently available.
+            </span>
+          ) : null}
         </label>
       )}
       {variant === "provider" ? (
@@ -196,7 +215,7 @@ export function NewResourceForm({
         type="button"
         className="btn btn-primary"
         style={{ marginTop: variant === "provider" ? 16 : 0 }}
-        disabled={busy}
+        disabled={busy || allowedTypes.length === 0}
         onClick={() => void submit()}
       >
         {busy ? "Creating…" : "Create draft"}

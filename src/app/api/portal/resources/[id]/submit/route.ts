@@ -24,6 +24,16 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   const { id } = await ctx.params;
   const providerId = await ensureUserProviderLinked(user.id);
 
+  // Optional body: { notifyByEmail?: boolean }. Defaults to true so existing
+  // clients (which sent an empty body) keep notifying.
+  let notifyByEmail = true;
+  try {
+    const body = (await req.json()) as { notifyByEmail?: unknown };
+    if (body && body.notifyByEmail === false) notifyByEmail = false;
+  } catch {
+    // No body / not JSON — keep the default.
+  }
+
   const [submitted, openReview, sovereigntyReviewType] = await Promise.all([
     prisma.lifecycleStatus.findUnique({ where: { code: "submitted" } }),
     prisma.reviewStatusType.findUnique({ where: { code: "open" } }),
@@ -88,7 +98,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     resource.provider.contactEmail,
     resource.provider.legalContactEmail
   ]);
-  if (recipients.length > 0) {
+  let emailNotified = false;
+  if (notifyByEmail && recipients.length > 0) {
     const tmpl = emailTemplates.resourceSubmittedForReview({
       registryName: cfg.registryName,
       resourceTitle: resource.title,
@@ -101,12 +112,14 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       subject: tmpl.subject,
       text: tmpl.text
     }));
+    emailNotified = true;
   }
 
   return NextResponse.json({
     ok: true,
     resourceId: id,
     reviewId: review.review.id,
-    lifecycle: "submitted"
+    lifecycle: "submitted",
+    emailNotified
   });
 }

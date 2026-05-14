@@ -15,7 +15,7 @@ import { PortalHeader } from "./PortalHeader";
  * The shared header is normative across all four role portals - see
  * `ai-registry-specs/shared/portal-chrome.md`.
  */
-export function PortalLayoutChrome({
+export async function PortalLayoutChrome({
   config,
   user,
   children

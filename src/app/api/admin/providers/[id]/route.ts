@@ -3,6 +3,10 @@ import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/audit/write-audit";
 import { isHttpUrl } from "@/lib/validators";
+import { getConfig } from "@/lib/config";
+import { emailTemplates } from "@/lib/email";
+import { uniqueValidEmails } from "@/lib/email/recipients";
+import { sendTransactionalEmailAll } from "@/lib/email/transactional-send";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -31,6 +35,8 @@ type Body = {
   webhookUrl?: unknown | null;
   published?: unknown;
   adminSuspended?: unknown;
+  notifyByEmail?: unknown;
+  visibilityChangeReason?: unknown;
 };
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -57,6 +63,8 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     }
   });
   if (!target) return NextResponse.json({ error: "Provider not found" }, { status: 404 });
+  const beforePublished = target.published;
+  const beforeAdminSuspended = target.adminSuspended;
 
   const data: Record<string, unknown> = {};
   const before = {
@@ -191,7 +199,56 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     newValue: data
   });
 
-  return NextResponse.json({ ok: true });
+  // Notify the provider when their visibility flags flip (published /
+  // adminSuspended). Default ON; only an explicit notifyByEmail: false skips.
+  const publishedChanged =
+    typeof data.published === "boolean" && data.published !== beforePublished;
+  const suspendedChanged =
+    typeof data.adminSuspended === "boolean" &&
+    data.adminSuspended !== beforeAdminSuspended;
+  const notifyByEmail = body.notifyByEmail !== false;
+  let emailNotified = false;
+  if ((publishedChanged || suspendedChanged) && notifyByEmail) {
+    const cfg = getConfig();
+    const origin = new URL(req.url).origin;
+    const newPublished =
+      typeof data.published === "boolean" ? data.published : beforePublished;
+    const newSuspended =
+      typeof data.adminSuspended === "boolean"
+        ? data.adminSuspended
+        : beforeAdminSuspended;
+    const visibilityLabel = newSuspended
+      ? "Hidden — admin suspended"
+      : newPublished
+        ? "Published — visible in the public registry"
+        : "Unpublished — not yet visible";
+    const summary =
+      typeof body.visibilityChangeReason === "string" &&
+      body.visibilityChangeReason.trim() !== ""
+        ? body.visibilityChangeReason.trim()
+        : `An administrator updated the visibility of your organisation on ${cfg.registryName}.`;
+    const recipients = uniqueValidEmails([
+      target.contactEmail,
+      target.legalContactEmail
+    ]);
+    if (recipients.length > 0) {
+      const tmpl = emailTemplates.providerVisibilityChanged({
+        registryName: cfg.registryName,
+        providerDisplayName: target.displayName,
+        visibilityLabel,
+        summary,
+        portalSettingsUrl: `${origin}/provider/settings`
+      });
+      sendTransactionalEmailAll("provider_visibility", recipients, (to) => ({
+        to,
+        subject: tmpl.subject,
+        text: tmpl.text
+      }));
+      emailNotified = true;
+    }
+  }
+
+  return NextResponse.json({ ok: true, emailNotified });
 }
 
 export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {

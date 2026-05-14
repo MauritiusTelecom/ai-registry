@@ -189,6 +189,12 @@ export async function POST(req: Request) {
   ]);
 
   if (!type) return NextResponse.json({ error: "Unknown resourceTypeCode" }, { status: 400 });
+  if (!type.active) {
+    return NextResponse.json(
+      { error: `Resource type "${typeCode}" is not currently available.` },
+      { status: 400 }
+    );
+  }
   if (!provider) return NextResponse.json({ error: "Unknown providerSlug" }, { status: 400 });
   if (!risk) return NextResponse.json({ error: "Unknown riskCode" }, { status: 400 });
   if (!draft || !listingOrigin) {

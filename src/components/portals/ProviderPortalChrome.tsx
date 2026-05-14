@@ -16,7 +16,7 @@ import { ProviderRegistrationBanner } from "./ProviderRegistrationBanner";
  * provider-specific. See `ai-registry-specs/shared/portal-chrome.md` for
  * the normative description.
  */
-export function ProviderPortalChrome({
+export async function ProviderPortalChrome({
   config,
   user,
   children

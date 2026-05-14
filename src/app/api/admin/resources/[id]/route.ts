@@ -259,6 +259,12 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     if (code !== target.resourceType.code) {
       const rt = await prisma.resourceType.findUnique({ where: { code } });
       if (!rt) return NextResponse.json({ error: "Unknown kindCode" }, { status: 400 });
+      if (!rt.active) {
+        return NextResponse.json(
+          { error: `Resource type "${code}" is not currently available.` },
+          { status: 400 }
+        );
+      }
       data.resourceTypeId = rt.id;
       before.kind = target.resourceType.code;
     }

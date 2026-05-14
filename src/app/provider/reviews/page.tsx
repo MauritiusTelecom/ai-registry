@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
-import { DataTable, type Column } from "@/components/portals/DataTable";
-import { StatusPill } from "@/components/portals/StatusPill";
+import {
+  ProviderReviewsGrid,
+  type ProviderReviewRow
+} from "@/components/portals/provider/ProviderReviewsGrid";
 
 export const metadata = { title: "Provider · Reviews" };
 export const dynamic = "force-dynamic";
@@ -18,17 +19,6 @@ export const dynamic = "force-dynamic";
  * surfaced here. Decision summaries are always shown; conditions only when
  * the review is decided.
  */
-
-type Row = {
-  id: string;
-  target: string;
-  targetSlug: string | null;
-  type: string;
-  status: string;
-  startedAt: string | null;
-  completedAt: string | null;
-  decisionSummary: string | null;
-};
 
 const STATUS_DISPLAY: Record<string, string> = {
   open: "experimental",
@@ -55,23 +45,27 @@ export default async function ProviderReviewsPage() {
     );
   }
 
-  const rows = await prisma.review.findMany({
-    where: {
-      OR: [
-        { providerId },
-        { resource: { providerId } }
-      ]
-    },
-    include: {
-      reviewType: { select: { name: true } },
-      status: { select: { code: true, name: true } },
-      resource: { select: { slug: true, title: true } }
-    },
-    orderBy: [{ status: { sortOrder: "asc" } }, { createdAt: "desc" }],
-    take: 200
-  });
+  const [rows, types] = await Promise.all([
+    prisma.review.findMany({
+      where: {
+        OR: [{ providerId }, { resource: { providerId } }]
+      },
+      include: {
+        reviewType: { select: { name: true } },
+        status: { select: { code: true, name: true } },
+        resource: { select: { slug: true, title: true } }
+      },
+      orderBy: [{ status: { sortOrder: "asc" } }, { createdAt: "desc" }],
+      take: 200
+    }),
+    prisma.reviewType.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+      select: { name: true }
+    })
+  ]);
 
-  const projected: Row[] = rows.map((r) => ({
+  const projected: ProviderReviewRow[] = rows.map((r) => ({
     id: r.id,
     target: r.resource?.title ?? "Provider record",
     targetSlug: r.resource?.slug ?? null,
@@ -84,38 +78,6 @@ export default async function ProviderReviewsPage() {
 
   const openCount = projected.filter((r) => r.status === "experimental").length;
 
-  const columns: Column<Row>[] = [
-    {
-      key: "target",
-      label: "Target",
-      render: (row) =>
-        row.targetSlug ? (
-          <Link
-            href={`/registry/${row.targetSlug}`}
-            style={{ color: "var(--text)", textDecoration: "none" }}
-          >
-            {row.target}
-          </Link>
-        ) : (
-          row.target
-        )
-    },
-    { key: "type", label: "Type", render: (row) => <span className="tag">{row.type}</span> },
-    { key: "status", label: "Status", render: (row) => <StatusPill status={row.status} /> },
-    { key: "started", label: "Started", render: (row) => row.startedAt ?? "-", mono: true },
-    { key: "completed", label: "Completed", render: (row) => row.completedAt ?? "-", mono: true },
-    {
-      key: "summary",
-      label: "Decision",
-      render: (row) =>
-        row.decisionSummary ? (
-          <span style={{ color: "var(--text-2)" }}>{row.decisionSummary}</span>
-        ) : (
-          "-"
-        )
-    }
-  ];
-
   return (
     <div className="p-content">
       <div className="p-page-header">
@@ -126,12 +88,7 @@ export default async function ProviderReviewsPage() {
           {openCount > 0 ? ` ${openCount} still in flight.` : ""}
         </p>
       </div>
-      <DataTable
-        rows={projected}
-        columns={columns}
-        emptyState="No reviews of your resources yet."
-        keyOf={(r) => r.id}
-      />
+      <ProviderReviewsGrid rows={projected} types={types} />
       <p
         style={{
           marginTop: 18,

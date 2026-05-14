@@ -144,6 +144,15 @@ export async function POST(req: Request) {
   if (!draft || !listingLocal || !riskLow || !rType || !basis || !protocolRest || !authApiKey || !accessRegistered || !healthUnknown) {
     return NextResponse.json({ error: "Reference data not seeded." }, { status: 503 });
   }
+  // Reject inactive resource types even if a client somehow bypassed the
+  // dropdown (curl, stale tab, etc.). UI already filters to active codes;
+  // this is the defense-in-depth check.
+  if (!rType.active) {
+    return NextResponse.json(
+      { error: `Resource type "${typeCode}" is not currently available.` },
+      { status: 400 }
+    );
+  }
 
   const provider = await prisma.provider.findUniqueOrThrow({
     where: { id: providerId },
