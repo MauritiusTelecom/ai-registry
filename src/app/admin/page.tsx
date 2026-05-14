@@ -58,25 +58,33 @@ export default async function AdminDashboardPage() {
           label="Listed resources"
           value={listedCount}
           hint={`of ${resourceCount} total`}
+          href="/admin/resources"
         />
         <StatCard
           label="Verified providers"
           value={verifiedProviderCount}
           hint={`of ${providerCount} total`}
+          href="/admin/providers"
         />
         <StatCard
           label="Open reviews"
           value={openReviewCount}
           hint={openReviewCount > 0 ? "needs attention" : "all caught up"}
           intent={openReviewCount > 0 ? "warning" : "positive"}
+          href="/admin/reviews"
         />
         <StatCard
           label="Open complaints"
           value={openComplaintCount}
           intent={openComplaintCount > 0 ? "warning" : "positive"}
+          href="/admin/complaints"
         />
-        <StatCard label="Users" value={userCount} />
-        <StatCard label="Audit entries" value={auditCount.toLocaleString()} />
+        <StatCard label="Users" value={userCount} href="/admin/users" />
+        <StatCard
+          label="Audit entries"
+          value={auditCount.toLocaleString()}
+          href="/admin/audit"
+        />
       </div>
 
       {/*
@@ -130,6 +138,7 @@ function MyOpenComplaintsCard({ count, name }: { count: number; name: string }) 
   return (
     <Link
       href="/admin/complaints?status=mine"
+      className="feature-card p-stat-card-link"
       style={{
         display: "flex",
         justifyContent: "space-between",
@@ -186,9 +195,14 @@ function MyOpenComplaintsCard({ count, name }: { count: number; name: string }) 
 }
 
 function QueueCard({ title, href, body }: { title: string; href: string; body: string }) {
+  // `feature-card` paints the primary→tertiary gradient-ring glow on hover
+  // (same effect as the public-home cards). `p-stat-card-link` adds the
+  // matching lift + focus ring so admin / provider / public dashboards all
+  // share one hover language.
   return (
     <Link
       href={href}
+      className="feature-card p-stat-card-link"
       style={{
         display: "block",
         textDecoration: "none",
