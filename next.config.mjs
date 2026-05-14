@@ -6,6 +6,11 @@ const nextConfig = {
   basePath,
   assetPrefix: basePath || undefined,
 
+  // Emit a self-contained server bundle at `.next/standalone/` so the deploy
+  // pipeline can rsync only the runtime (not the full node_modules tree).
+  // See deploy/DEPLOY.md for how this is consumed.
+  output: "standalone",
+
   // AIR-SPEC §13 names `/.well-known/ai-registry` as the capability document
   // path. Next.js's App Router excludes dot-prefixed folders, so the route
   // handler lives at /api/well-known/ai-registry and is exposed at the

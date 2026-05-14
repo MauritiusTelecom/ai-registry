@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@/lib/audit/write-audit";
+import { getConfig } from "@/lib/config";
+import { emailTemplates } from "@/lib/email";
+import { sendTransactionalEmail } from "@/lib/email/transactional-send";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -20,6 +24,8 @@ type Body = {
   roleCode?: unknown;
   statusCode?: unknown;
   providerSlug?: unknown | null;
+  notifyByEmail?: unknown;
+  statusChangeReason?: unknown;
 };
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -105,6 +111,9 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     }
   }
 
+  // Track whether the status actually changed (and to what) so we can
+  // send a notification email after the update commits.
+  let statusChange: { newCode: string; newName: string } | null = null;
   if (typeof body.statusCode === "string" && body.statusCode.trim() !== "") {
     const code = body.statusCode.trim().toLowerCase();
     if (code !== target.status.code) {
@@ -117,6 +126,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         );
       }
       data.statusId = st.id;
+      statusChange = { newCode: st.code, newName: st.name };
     }
   }
 
@@ -146,7 +156,36 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     newValue: data
   });
 
-  return NextResponse.json({ ok: true });
+  // Notify the user on a status change (suspend / reactivate / etc.).
+  // Default ON; only an explicit `notifyByEmail: false` suppresses it.
+  const notifyByEmail = body.notifyByEmail !== false;
+  let emailNotified = false;
+  if (statusChange && notifyByEmail) {
+    const cfg = getConfig();
+    const origin = getPublicOrigin(req);
+    const reason =
+      typeof body.statusChangeReason === "string" && body.statusChangeReason.trim() !== ""
+        ? body.statusChangeReason.trim()
+        : null;
+    const recipientEmail = typeof data.email === "string" ? data.email : target.email;
+    const recipientName = typeof data.name === "string" ? data.name : target.name;
+    const tmpl = emailTemplates.userStatusChanged({
+      name: recipientName,
+      registryName: cfg.registryName,
+      operatorName: cfg.operatorName,
+      statusLabel: statusChange.newName,
+      loginUrl: `${origin}/login`,
+      reason
+    });
+    sendTransactionalEmail("user_status_changed", {
+      to: recipientEmail,
+      subject: tmpl.subject,
+      text: tmpl.text
+    });
+    emailNotified = true;
+  }
+
+  return NextResponse.json({ ok: true, emailNotified });
 }
 
 export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string }> }) {

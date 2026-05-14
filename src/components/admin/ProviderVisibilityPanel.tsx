@@ -16,6 +16,9 @@ export function ProviderVisibilityPanel({
   const router = useRouter();
   const [published, setPublished] = useState(initialPublished);
   const [adminSuspended, setAdminSuspended] = useState(initialAdminSuspended);
+  // One toggle governs both visibility actions on this panel — default ON.
+  const [notifyByEmail, setNotifyByEmail] = useState(true);
+  const [reason, setReason] = useState("");
   const [busy, setBusy] = useState<"publish" | "suspend" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,10 +26,17 @@ export function ProviderVisibilityPanel({
     setError(null);
     setBusy(key);
     try {
+      const body: Record<string, unknown> = {
+        ...payload,
+        notifyByEmail
+      };
+      if (notifyByEmail && reason.trim() !== "") {
+        body.visibilityChangeReason = reason.trim();
+      }
       const res = await fetch(withBase(`/api/admin/providers/${providerId}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(body)
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
@@ -130,6 +140,44 @@ export function ProviderVisibilityPanel({
               ? "Lift suspension"
               : "Suspend"}
         </button>
+      </div>
+
+      <div style={{ display: "grid", gap: 8 }}>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12,
+            color: notifyByEmail ? "var(--text-2)" : "var(--text-3)",
+            cursor: "pointer"
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={notifyByEmail}
+            onChange={(e) => setNotifyByEmail(e.target.checked)}
+            style={{ accentColor: "var(--primary)" }}
+          />
+          <span>Email the provider's contacts when visibility changes</span>
+        </label>
+        {notifyByEmail ? (
+          <input
+            type="text"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Optional reason — appears in the notification email"
+            style={{
+              padding: "8px 10px",
+              borderRadius: 8,
+              background: "var(--input-bg)",
+              border: "1px solid var(--border)",
+              color: "var(--text)",
+              fontSize: 12,
+              fontFamily: "inherit"
+            }}
+          />
+        ) : null}
       </div>
 
       {error ? <p style={{ color: "#d33", fontSize: 12 }}>{error}</p> : null}

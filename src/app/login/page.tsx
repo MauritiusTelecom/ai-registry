@@ -10,10 +10,15 @@ export const metadata = { title: "Sign in" };
 export default async function LoginPage({
   searchParams
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{
+    next?: string;
+    registered?: string;
+    verified?: string;
+    verify?: string;
+  }>;
 }) {
-  const { next } = await searchParams;
-  const sanitized = sanitizeNext(next);
+  const params = await searchParams;
+  const sanitized = sanitizeNext(params.next);
 
   const user = await getCurrentUser();
   if (user) {
@@ -21,6 +26,8 @@ export default async function LoginPage({
     // to the user's role-specific portal.
     redirect(sanitized ?? portalForRole(user.role.code));
   }
+
+  const banner = pickBanner(params);
 
   return (
     <AuthShell
@@ -44,9 +51,43 @@ export default async function LoginPage({
         </>
       }
     >
+      {banner ? (
+        <div
+          role="status"
+          style={{
+            marginBottom: 14,
+            padding: "10px 12px",
+            borderRadius: 8,
+            border: "1px solid var(--border)",
+            background: "rgba(var(--primary-rgb), 0.08)",
+            color: "var(--text)",
+            fontSize: 13,
+            lineHeight: 1.5
+          }}
+        >
+          {banner}
+        </div>
+      ) : null}
       <LoginForm redirect={sanitized} />
     </AuthShell>
   );
+}
+
+function pickBanner(params: {
+  registered?: string;
+  verified?: string;
+  verify?: string;
+}): string | null {
+  if (params.verified === "1") {
+    return "Your email is verified. Sign in to continue.";
+  }
+  if (params.registered === "1") {
+    return "Account created. Check your email for a verification link, then sign in.";
+  }
+  if (params.verify === "1") {
+    return "Please verify your email before accessing the portal. Check your inbox or request a new link below.";
+  }
+  return null;
 }
 
 function sanitizeNext(value: string | undefined): string | null {

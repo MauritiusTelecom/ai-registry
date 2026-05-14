@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
-import { DataTable, type Column } from "@/components/portals/DataTable";
-import { StatusPill } from "@/components/portals/StatusPill";
+import {
+  ProviderComplaintsGrid,
+  type ProviderComplaintRow
+} from "@/components/portals/provider/ProviderComplaintsGrid";
 
 export const metadata = { title: "Provider · Complaints" };
 export const dynamic = "force-dynamic";
@@ -19,17 +20,6 @@ export const dynamic = "force-dynamic";
  * The provider sees only the redacted summary (type, severity, status,
  * description). The full record (with PII) lives in the admin portal.
  */
-
-type Row = {
-  id: string;
-  ts: string;
-  target: string;
-  targetSlug: string | null;
-  type: string;
-  severity: string;
-  status: string;
-  excerpt: string;
-};
 
 const SEVERITY_DISPLAY: Record<string, string> = {
   low: "active",
@@ -62,25 +52,29 @@ export default async function ProviderComplaintsPage() {
     );
   }
 
-  const rows = await prisma.complaint.findMany({
-    where: {
-      OR: [
-        { targetProviderId: providerId },
-        { targetResource: { providerId } }
-      ]
-    },
-    include: {
-      complaintType: { select: { name: true } },
-      severity: { select: { code: true, name: true } },
-      status: { select: { code: true, name: true } },
-      targetResource: { select: { slug: true, title: true } },
-      targetProvider: { select: { displayName: true } }
-    },
-    orderBy: [{ status: { sortOrder: "asc" } }, { createdAt: "desc" }],
-    take: 200
-  });
+  const [rows, types] = await Promise.all([
+    prisma.complaint.findMany({
+      where: {
+        OR: [{ targetProviderId: providerId }, { targetResource: { providerId } }]
+      },
+      include: {
+        complaintType: { select: { name: true } },
+        severity: { select: { code: true, name: true } },
+        status: { select: { code: true, name: true } },
+        targetResource: { select: { slug: true, title: true } },
+        targetProvider: { select: { displayName: true } }
+      },
+      orderBy: [{ status: { sortOrder: "asc" } }, { createdAt: "desc" }],
+      take: 200
+    }),
+    prisma.complaintType.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+      select: { name: true }
+    })
+  ]);
 
-  const projected: Row[] = rows.map((c) => ({
+  const projected: ProviderComplaintRow[] = rows.map((c) => ({
     id: c.id,
     ts: c.submittedAt.toISOString().slice(0, 10),
     target: c.targetResource
@@ -97,37 +91,6 @@ export default async function ProviderComplaintsPage() {
 
   const openCount = projected.filter((r) => r.status === "experimental").length;
 
-  const columns: Column<Row>[] = [
-    { key: "ts", label: "Filed", render: (row) => row.ts, mono: true },
-    {
-      key: "target",
-      label: "Target",
-      render: (row) =>
-        row.targetSlug ? (
-          <Link
-            href={`/registry/${row.targetSlug}`}
-            style={{ color: "var(--text)", textDecoration: "none" }}
-          >
-            {row.target}
-          </Link>
-        ) : (
-          row.target
-        )
-    },
-    { key: "type", label: "Type", render: (row) => <span className="tag">{row.type}</span> },
-    {
-      key: "severity",
-      label: "Severity",
-      render: (row) => <StatusPill status={row.severity} />
-    },
-    { key: "status", label: "Status", render: (row) => <StatusPill status={row.status} /> },
-    {
-      key: "excerpt",
-      label: "Excerpt",
-      render: (row) => <span style={{ color: "var(--text-2)" }}>{row.excerpt}</span>
-    }
-  ];
-
   return (
     <div className="p-content">
       <div className="p-page-header">
@@ -138,12 +101,7 @@ export default async function ProviderComplaintsPage() {
           {openCount > 0 ? ` ${openCount} still open.` : " None open."}
         </p>
       </div>
-      <DataTable
-        rows={projected}
-        columns={columns}
-        emptyState="No complaints filed against your provider or resources."
-        keyOf={(r) => r.id}
-      />
+      <ProviderComplaintsGrid rows={projected} types={types} />
       <p
         style={{
           marginTop: 18,

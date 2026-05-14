@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { getConfig } from "@/lib/config";
 import { ProviderOrganisationForm } from "@/components/portals/ProviderOrganisationForm";
-import { ProviderNotificationsForm } from "@/components/portals/ProviderNotificationsForm";
+// import { ProviderNotificationsForm } from "@/components/portals/ProviderNotificationsForm";
 
 export const metadata = { title: "Provider · Settings" };
 export const dynamic = "force-dynamic";
@@ -97,8 +97,7 @@ export default async function ProviderSettingsPage() {
       <div className="p-page-header">
         <h1 className="p-title">Settings</h1>
         <p className="p-subtitle">
-          Organisation identity and notifications. Complete organisation details to unlock resource
-          authoring.
+          Organisation identity. Complete organisation details to unlock resource authoring.
         </p>
       </div>
 
@@ -110,20 +109,27 @@ export default async function ProviderSettingsPage() {
           defaultJurisdictionCode={cfg.jurisdiction}
         />
 
-        <div style={{ maxWidth: 560 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Notifications</h2>
-          <p style={{ fontSize: 12.5, color: "var(--text-3)", marginTop: 0, marginBottom: 14 }}>
-            Where the registry pages your team during incidents and renewals. All three fields are
-            optional.
-          </p>
-          <ProviderNotificationsForm
-            initial={{
-              incidentChannel: provider.incidentChannel,
-              oncallEmail: provider.oncallEmail,
-              webhookUrl: provider.webhookUrl
-            }}
-          />
-        </div>
+        {/*
+          Notifications section temporarily hidden — incident channel,
+          on-call email, and webhook URL are not yet wired into the
+          registry's paging flows. Re-enable once those backend integrations
+          land.
+
+          <div style={{ maxWidth: 560 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>Notifications</h2>
+            <p style={{ fontSize: 12.5, color: "var(--text-3)", marginTop: 0, marginBottom: 14 }}>
+              Where the registry pages your team during incidents and renewals. All three fields are
+              optional.
+            </p>
+            <ProviderNotificationsForm
+              initial={{
+                incidentChannel: provider.incidentChannel,
+                oncallEmail: provider.oncallEmail,
+                webhookUrl: provider.webhookUrl
+              }}
+            />
+          </div>
+        */}
       </div>
     </div>
   );

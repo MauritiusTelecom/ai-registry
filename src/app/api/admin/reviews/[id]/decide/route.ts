@@ -11,6 +11,7 @@ import {
   SOVEREIGNTY_CHECKLIST_ITEMS,
   type ChecklistAnswerCode
 } from "@/lib/governance/sovereignty-checklist";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 type Decision = "approve" | "reject" | "request_changes";
 
@@ -18,6 +19,7 @@ type Body = {
   decision?: unknown;
   decisionSummary?: unknown;
   checklist?: unknown;
+  notifyByEmail?: unknown;
 };
 
 function isChecklistAnswer(v: unknown): v is ChecklistAnswerCode {
@@ -212,12 +214,15 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     }
   });
 
-  const origin = new URL(req.url).origin;
+  // Default ON for backwards compatibility — only an explicit false opts out.
+  const notifyByEmail = body.notifyByEmail !== false;
+  const origin = getPublicOrigin(req);
   const recipients = uniqueValidEmails([
     resource.provider.contactEmail,
     resource.provider.legalContactEmail
   ]);
-  if (recipients.length > 0) {
+  let emailNotified = false;
+  if (notifyByEmail && recipients.length > 0) {
     const decisionLabel =
       decision === "approve"
         ? "Approved and listed"
@@ -240,6 +245,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       subject: tmpl.subject,
       text: tmpl.text
     }));
+    emailNotified = true;
   }
 
   return NextResponse.json({
@@ -247,6 +253,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     reviewId,
     resourceId: resource.id,
     decision,
-    lifecycle: decision === "approve" ? "listed" : "needs_update"
+    lifecycle: decision === "approve" ? "listed" : "needs_update",
+    emailNotified
   });
 }

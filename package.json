@@ -15,9 +15,17 @@
     "db:push": "prisma db push",
     "db:seed": "tsx src/prisma/seed.ts",
     "db:reset": "prisma db push --force-reset && npm run db:seed",
-    "deploy:db": "prisma generate && prisma db push --skip-generate && tsx src/prisma/seed.ts",
+    "deploy:db": "prisma generate && prisma db push --skip-generate",
+    "db:bootstrap": "prisma generate && prisma db push --skip-generate && tsx src/prisma/seed.ts",
+    "deploy:v2": "bash scripts/deploy.sh v2",
+    "deploy:legacy": "bash scripts/deploy.sh legacy",
     "config:validate": "tsx scripts/validate-config.ts",
-    "smoke": "tsx scripts/smoke-public.ts"
+    "test:emails": "tsx scripts/test-emails.ts",
+    "test:smtp": "tsx scripts/test-smtp.ts",
+    "smoke": "tsx scripts/smoke-public.ts",
+    "deploy": "bash deploy/deploy.sh",
+    "deploy:dry": "DRY_RUN=1 bash deploy/deploy.sh",
+    "deploy:db:remote": "bash deploy/deploy-db.sh"
   },
   "prisma": {
     "schema": "src/prisma/schema.prisma",

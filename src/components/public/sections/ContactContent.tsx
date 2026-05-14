@@ -98,16 +98,7 @@ export function ContactContent() {
                 </div>
                 <div>
                   <div className="contact-info-label">Email</div>
-                  <div className="contact-info-value">airegistry@intnet.mu</div>
-                </div>
-              </div>
-              <div className="contact-info-row">
-                <div className="contact-info-icon">
-                  <Icon name="phone" size={16} />
-                </div>
-                <div>
-                  <div className="contact-info-label">Mauritius Telecom desk</div>
-                  <div className="contact-info-value">+230 203 7000</div>
+                  <div className="contact-info-value">airegistry@telecom.mu</div>
                 </div>
               </div>
               <div className="contact-info-row">
@@ -129,20 +120,6 @@ export function ContactContent() {
                 <div className="contact-info-label">Hours</div>
                 <div style={{ fontSize: 13.5, color: "var(--text-2)", marginTop: 6 }}>
                   Mon-Fri · 09:00-17:30 · GMT+4
-                </div>
-              </div>
-              <div style={{ paddingTop: 8 }}>
-                <div className="contact-info-label">Status</div>
-                <div
-                  style={{
-                    fontSize: 13.5,
-                    marginTop: 6,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8
-                  }}
-                >
-                  <span className="status-dot" /> All systems nominal · 99.97% 90-day SLO
                 </div>
               </div>
             </div>

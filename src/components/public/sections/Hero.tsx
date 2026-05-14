@@ -71,8 +71,8 @@ const FALLBACK_CARDS: FloatCardData[] = [
     dot: "#10b981"
   },
   {
-    title: "my.t Conversational AI",
-    subtitle: "Verified · Mauritius Telecom · Kreol Morisien",
+    title: "my.t Vision AI",
+    subtitle: "Verified · Mauritius Telecom · Vision",
     dot: "#a855f7"
   },
   {

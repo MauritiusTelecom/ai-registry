@@ -1,12 +1,15 @@
+import Link from "next/link";
 import { Icon, type IconName } from "../Icon";
 import { Reveal } from "../Reveal";
 
-// "What gets listed" — four resource types listed on the registry.
-// Renders as a 4-column grid of feature cards that collapse to 2-up and
+// "What gets listed" — three resource types listed on the registry.
+// Renders as a 3-column grid of feature cards that collapse to 2-up and
 // 1-up on smaller viewports. Mirrors the cards in
 // uploads/AI_Registry_Decision_Makers_Guide.html (#features section).
 
-type Tone = "primary" | "tertiary" | "secondary" | "emerald";
+type Tone = "primary" | "tertiary" | "emerald";
+
+type ResourceKind = "model" | "agent" | "skill";
 
 const TYPES: {
   icon: IconName;
@@ -15,38 +18,34 @@ const TYPES: {
   desc: string;
   sample: string;
   tone: Tone;
+  kind: ResourceKind;
 }[] = [
   {
     icon: "doc",
     eyebrow: "Type · Model",
-    title: "Model",
+    title: "Models",
     desc: "Language, vision or domain models trained on or aware of local context, language and norms.",
     sample: "model/mu-llm/kreol-1",
-    tone: "primary"
+    tone: "primary",
+    kind: "model"
   },
   {
     icon: "agent",
     eyebrow: "Type · Agent",
-    title: "Agent",
+    title: "Agents",
     desc: "Autonomous workflows that act on local processes - registrations, filings, public-service navigation.",
     sample: "agent/mu-agent/service-finder",
-    tone: "tertiary"
-  },
-  {
-    icon: "settings",
-    eyebrow: "Type · Tool",
-    title: "Tool",
-    desc: "Callable APIs, calculators and functions that AI systems can compose programmatically.",
-    sample: "tool/mu-tool/tax-calculator",
-    tone: "secondary"
+    tone: "tertiary",
+    kind: "agent"
   },
   {
     icon: "shield",
     eyebrow: "Type · Skill",
-    title: "Skill",
+    title: "Skills",
     desc: "Packaged expertise - tax, legal, accounting workflows - ready to plug into agents.",
     sample: "skill/mu-skill/fiscaliste-mu",
-    tone: "emerald"
+    tone: "emerald",
+    kind: "skill"
   }
 ];
 
@@ -71,13 +70,6 @@ const TONE: Record<
       "linear-gradient(13deg, rgba(var(--tertiary-rgb),0.25), rgba(var(--primary-rgb),0.15))",
     sampleColor: "var(--secondary)"
   },
-  secondary: {
-    rgb: "var(--secondary-rgb)",
-    color: "var(--secondary)",
-    iconBg:
-      "linear-gradient(13deg, rgba(var(--secondary-rgb),0.25), rgba(var(--primary-rgb),0.15))",
-    sampleColor: "var(--secondary)"
-  },
   emerald: {
     rgb: "16, 185, 129",
     color: "#10b981",
@@ -96,11 +88,11 @@ export function WhatGetsListed() {
           <span>What gets listed</span>
         </div>
         <h2>
-          Four resource types.{" "}
+          Three resource types.{" "}
           <span className="gradient-text">Composable by AI.</span>
         </h2>
         <p>
-          The registry covers four kinds of sovereign AI resource - models, agents, tools
+          The registry covers three kinds of sovereign AI resource - models, agents
           and skills. Each has its own listing template and stable AIR-ID, so consumers
           and AI systems can find and combine them programmatically.
         </p>
@@ -111,7 +103,8 @@ export function WhatGetsListed() {
           {TYPES.map((t) => {
             const tone = TONE[t.tone];
             return (
-              <div
+              <Link
+                href={`/registry?kind=${t.kind}`}
                 className="feature-card type-card"
                 key={t.title}
                 style={{
@@ -121,6 +114,9 @@ export function WhatGetsListed() {
                   border: "1px solid var(--border)",
                   background: "var(--panel)",
                   overflow: "hidden",
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "block",
                   transition:
                     "transform 220ms cubic-bezier(.2,.8,.2,1), border-color 220ms"
                 }}
@@ -209,7 +205,7 @@ export function WhatGetsListed() {
                 >
                   {t.sample}
                 </span>
-              </div>
+              </Link>
             );
           })}
         </div>

@@ -25,6 +25,10 @@ export function ProviderVerifyForm({
   const [summary, setSummary] = useState("");
   const [publicNote, setPublicNote] = useState("");
   const [internalNote, setInternalNote] = useState("");
+  // Email toggle. Default ON so existing behavior is preserved; admins
+  // can untick to record the decision without notifying the provider's
+  // contact list.
+  const [notifyByEmail, setNotifyByEmail] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +43,8 @@ export function ProviderVerifyForm({
           status,
           summary: summary.trim(),
           publicNote: publicNote.trim() || null,
-          internalNote: internalNote.trim() || null
+          internalNote: internalNote.trim() || null,
+          notifyByEmail
         })
       });
       const data = (await res.json()) as { error?: string };
@@ -119,6 +124,24 @@ export function ProviderVerifyForm({
           onChange={(e) => setInternalNote(e.target.value)}
           placeholder="Admins only - never shown publicly."
         />
+      </label>
+      <label
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontSize: 12,
+          color: notifyByEmail ? "var(--text-2)" : "var(--text-3)",
+          cursor: "pointer"
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={notifyByEmail}
+          onChange={(e) => setNotifyByEmail(e.target.checked)}
+          style={{ accentColor: "var(--primary)" }}
+        />
+        <span>Email the provider's contacts about this decision</span>
       </label>
       {error ? (
         <p style={{ color: "#d33", fontSize: 12, margin: 0 }}>{error}</p>

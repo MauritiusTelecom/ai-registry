@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getConfig } from "@/lib/config";
+import { prisma } from "@/lib/prisma";
 import { PageHero } from "@/components/public/sections/PageHero";
 import { NewResourceForm } from "@/components/portal/NewResourceForm";
 
@@ -13,6 +14,13 @@ export default async function PortalNewResourcePage() {
   if (user.role.code !== "provider") redirect("/portal");
 
   const cfg = getConfig();
+  // DB-active types ∩ env RESOURCE_TYPES restriction — admins can hide a
+  // type without a redeploy by flipping ResourceType.active.
+  const allowedTypes = await prisma.resourceType.findMany({
+    where: { active: true, code: { in: cfg.resourceTypes } },
+    orderBy: { sortOrder: "asc" },
+    select: { code: true, name: true }
+  });
 
   return (
     <div>
@@ -34,7 +42,7 @@ export default async function PortalNewResourcePage() {
       />
       <section className="section" style={{ paddingTop: 24, paddingBottom: 80 }}>
         <div className="glass" style={{ maxWidth: 560, margin: "0 auto", padding: 28 }}>
-          <NewResourceForm allowedTypes={cfg.resourceTypes} />
+          <NewResourceForm allowedTypes={allowedTypes} />
         </div>
       </section>
     </div>

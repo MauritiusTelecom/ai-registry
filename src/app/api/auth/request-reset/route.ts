@@ -3,6 +3,7 @@ import { getConfig } from "@/lib/config";
 import { prisma } from "@/lib/prisma";
 import { generateRawToken, hashToken, resetExpiry } from "@/lib/auth/tokens";
 import { emailTemplates, sendEmail } from "@/lib/email";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
  * POST /api/auth/request-reset
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
   });
 
   const cfg = getConfig();
-  const origin = new URL(req.url).origin;
+  const origin = getPublicOrigin(req);
   const resetUrl = `${origin}/auth/reset/${encodeURIComponent(rawToken)}`;
   const tmpl = emailTemplates.passwordReset({
     name: user.name,

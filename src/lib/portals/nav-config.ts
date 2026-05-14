@@ -69,12 +69,29 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         ]
       },
       {
+        // ─── Governance ─────────────────────────────────────────
+        // Reviews and Complaints both feed the operator's moderation /
+        // decision workload. Complaints replaces the former Flags entry -
+        // Flags was just a filtered view of complaints in `open` /
+        // `investigating` state, which is now the "Needs action" tab on
+        // the Complaints page. /admin/flags redirects there.
         id: "governance",
         label: "Governance",
         items: [
           { id: "reviews", label: "Reviews", href: "/admin/reviews", icon: "check" },
-          { id: "flags", label: "Flags", href: "/admin/flags", icon: "flag" },
+          { id: "complaints", label: "Complaints", href: "/admin/complaints", icon: "flag" },
           { id: "policies", label: "Policies", href: "/admin/policies", icon: "doc" }
+        ]
+      },
+      {
+        // ─── Inbox ──────────────────────────────────────────────
+        // Public-facing intake the operator needs to triage. Contact
+        // messages come from the public /contact form (Contact table) and
+        // support view, reply (email), and status management.
+        id: "inbox",
+        label: "Inbox",
+        items: [
+          { id: "contacts", label: "Contact messages", href: "/admin/contacts", icon: "inbox" }
         ]
       },
       {
@@ -145,7 +162,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         label: "Inbox",
         items: [
           { id: "complaints", label: "Complaints", href: "/provider/complaints", icon: "flag" },
-          { id: "contacts", label: "Contact requests", href: "/provider/contact-requests", icon: "inbox" },
+          // Contact requests is an admin-only inbox; provider portal omits it.
           { id: "reviews", label: "Reviews", href: "/provider/reviews", icon: "check" },
           { id: "incidents", label: "Incidents", href: "/provider/incidents", icon: "shield" }
         ]
@@ -154,7 +171,9 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         id: "account",
         label: "Account",
         items: [
-          { id: "analytics", label: "Analytics", href: "/provider/analytics", icon: "activity" },
+          // Analytics is hidden from the provider portal until the metrics
+          // surface is wired up — the page route remains in place but the
+          // sidebar entry is omitted so providers don't see a stub.
           { id: "settings", label: "Settings", href: "/provider/settings", icon: "settings" }
         ]
       }
