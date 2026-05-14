@@ -73,6 +73,8 @@ export function ResourceLifecyclePanel({
   const router = useRouter();
   const [action, setAction] = useState<Action | null>(null);
   const [reason, setReason] = useState("");
+  // Notify the provider when the lifecycle moves. Default ON.
+  const [notifyByEmail, setNotifyByEmail] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
@@ -94,7 +96,7 @@ export function ResourceLifecyclePanel({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action, reason: reason.trim() })
+          body: JSON.stringify({ action, reason: reason.trim(), notifyByEmail })
         }
       );
       const data = (await res.json()) as { error?: string };
@@ -207,6 +209,24 @@ export function ResourceLifecyclePanel({
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="What changed and why?"
                 />
+              </label>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 12,
+                  color: notifyByEmail ? "var(--text-2)" : "var(--text-3)",
+                  cursor: "pointer"
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={notifyByEmail}
+                  onChange={(e) => setNotifyByEmail(e.target.checked)}
+                  style={{ accentColor: "var(--primary)" }}
+                />
+                <span>Email the provider's contacts about this transition</span>
               </label>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                 <button

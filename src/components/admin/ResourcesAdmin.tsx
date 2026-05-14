@@ -357,6 +357,8 @@ function ActionDialog({
   onClose: (refreshed: boolean) => void;
 }) {
   const [reason, setReason] = useState("");
+  // Notify provider contacts about this lifecycle transition. Default ON.
+  const [notifyByEmail, setNotifyByEmail] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -367,7 +369,7 @@ function ActionDialog({
       const res = await fetch(withBase(`/api/admin/resources/${row.id}/transition`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, reason: reason.trim() })
+        body: JSON.stringify({ action, reason: reason.trim(), notifyByEmail })
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
@@ -441,6 +443,25 @@ function ActionDialog({
             onChange={(e) => setReason(e.target.value)}
             placeholder="What changed and why?"
           />
+        </label>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12,
+            color: notifyByEmail ? "var(--text-2)" : "var(--text-3)",
+            marginTop: 10,
+            cursor: "pointer"
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={notifyByEmail}
+            onChange={(e) => setNotifyByEmail(e.target.checked)}
+            style={{ accentColor: "var(--primary)" }}
+          />
+          <span>Email the provider's contacts about this transition</span>
         </label>
         {error ? (
           <div className="field-error" role="alert" style={{ marginTop: 12 }}>

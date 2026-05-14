@@ -1,7 +1,9 @@
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { prisma } from "@/lib/prisma";
-import { DataTable, type Column } from "@/components/portals/DataTable";
+import {
+  ProviderIncidentsGrid,
+  type ProviderIncidentRow
+} from "@/components/portals/provider/ProviderIncidentsGrid";
 
 export const metadata = { title: "Provider · Incidents" };
 export const dynamic = "force-dynamic";
@@ -16,16 +18,6 @@ export const dynamic = "force-dynamic";
  * Public-safe projection: `internalNote` is NEVER surfaced here. Provider
  * sees the publicNote (operator-curated explanation) and the action type.
  */
-
-type Row = {
-  id: string;
-  ts: string;
-  action: string;
-  target: string;
-  targetSlug: string | null;
-  reason: string;
-  publicNote: string | null;
-};
 
 export default async function ProviderIncidentsPage() {
   const user = await getCurrentUser();
@@ -45,23 +37,27 @@ export default async function ProviderIncidentsPage() {
     );
   }
 
-  const rows = await prisma.enforcementAction.findMany({
-    where: {
-      OR: [
-        { targetProviderId: providerId },
-        { targetResource: { providerId } }
-      ]
-    },
-    include: {
-      actionType: { select: { name: true } },
-      targetResource: { select: { slug: true, title: true } },
-      targetProvider: { select: { displayName: true } }
-    },
-    orderBy: { performedAt: "desc" },
-    take: 200
-  });
+  const [rows, actionTypes] = await Promise.all([
+    prisma.enforcementAction.findMany({
+      where: {
+        OR: [{ targetProviderId: providerId }, { targetResource: { providerId } }]
+      },
+      include: {
+        actionType: { select: { name: true } },
+        targetResource: { select: { slug: true, title: true } },
+        targetProvider: { select: { displayName: true } }
+      },
+      orderBy: { performedAt: "desc" },
+      take: 200
+    }),
+    prisma.enforcementType.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+      select: { name: true }
+    })
+  ]);
 
-  const projected: Row[] = rows.map((a) => ({
+  const projected: ProviderIncidentRow[] = rows.map((a) => ({
     id: a.id,
     ts: a.performedAt.toISOString().replace("T", " ").slice(0, 19),
     action: a.actionType.name,
@@ -75,36 +71,6 @@ export default async function ProviderIncidentsPage() {
     publicNote: a.publicNote
   }));
 
-  const columns: Column<Row>[] = [
-    { key: "ts", label: "Performed", render: (row) => row.ts, mono: true },
-    {
-      key: "action",
-      label: "Action",
-      render: (row) => <span className="tag">{row.action}</span>
-    },
-    {
-      key: "target",
-      label: "Target",
-      render: (row) =>
-        row.targetSlug ? (
-          <Link
-            href={`/registry/${row.targetSlug}`}
-            style={{ color: "var(--text)", textDecoration: "none" }}
-          >
-            {row.target}
-          </Link>
-        ) : (
-          row.target
-        )
-    },
-    { key: "reason", label: "Reason", render: (row) => <span style={{ color: "var(--text-2)" }}>{row.reason}</span> },
-    {
-      key: "note",
-      label: "Public note",
-      render: (row) => (row.publicNote ? <span style={{ color: "var(--text-2)" }}>{row.publicNote}</span> : "-")
-    }
-  ];
-
   return (
     <div className="p-content">
       <div className="p-page-header">
@@ -115,12 +81,7 @@ export default async function ProviderIncidentsPage() {
           {projected.length === 1 ? "y" : "ies"} on record.
         </p>
       </div>
-      <DataTable
-        rows={projected}
-        columns={columns}
-        emptyState="No enforcement actions on record. Quiet is good."
-        keyOf={(r) => r.id}
-      />
+      <ProviderIncidentsGrid rows={projected} actionTypes={actionTypes} />
       <p
         style={{
           marginTop: 18,

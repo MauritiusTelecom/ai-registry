@@ -33,12 +33,19 @@ export function EditResourceForm({
   const [title, setTitle] = useState(initialTitle);
   const [shortDescription, setShort] = useState(initialShort);
   const [longDescription, setLong] = useState(initialLong ?? "");
+  // Toggle for the "notify operators" email triggered by /submit. Default ON.
+  const [notifyOperators, setNotifyOperators] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  // Discriminated busy state — `"save"` flips only the Save button label,
+  // `"submit"` flips only the Submit-for-review label. The other button
+  // is disabled while either action is in flight so the user can't
+  // double-fire.
+  const [pending, setPending] = useState<"save" | "submit" | null>(null);
+  const isBusy = pending !== null;
 
   async function save() {
     setError(null);
-    setBusy(true);
+    setPending("save");
     try {
       const res = await fetch(withBase(`/api/portal/resources/${resourceId}`), {
         method: "PATCH",
@@ -52,33 +59,36 @@ export function EditResourceForm({
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
         setError(data.error ?? "Save failed");
-        setBusy(false);
         return;
       }
       router.refresh();
-      setBusy(false);
     } catch {
       setError("Network error");
-      setBusy(false);
+    } finally {
+      setPending(null);
     }
   }
 
   async function submitForReview() {
     setError(null);
-    setBusy(true);
+    setPending("submit");
     try {
-      const res = await fetch(withBase(`/api/portal/resources/${resourceId}/submit`), { method: "POST" });
+      const res = await fetch(withBase(`/api/portal/resources/${resourceId}/submit`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notifyByEmail: notifyOperators })
+      });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
         setError(data.error ?? "Submit failed");
-        setBusy(false);
         return;
       }
       router.push(postSubmitPath);
       router.refresh();
     } catch {
       setError("Network error");
-      setBusy(false);
+    } finally {
+      setPending(null);
     }
   }
 
@@ -185,22 +195,43 @@ export function EditResourceForm({
           type="button"
           className="btn btn-secondary"
           style={{ marginTop: variant === "provider" ? 8 : 0 }}
-          disabled={busy}
+          disabled={isBusy}
           onClick={() => void save()}
         >
-          {busy ? "Saving…" : "Save changes"}
+          {pending === "save" ? "Saving…" : "Save changes"}
         </button>
       ) : null}
       {canSubmit ? (
-        <button
-          type="button"
-          className="btn btn-primary"
-          style={{ marginTop: 12 }}
-          disabled={busy}
-          onClick={() => void submitForReview()}
-        >
-          {busy ? "Submitting…" : "Submit for review"}
-        </button>
+        <>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 12,
+              color: notifyOperators ? "var(--text-2)" : "var(--text-3)",
+              marginTop: 12,
+              cursor: "pointer"
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={notifyOperators}
+              onChange={(e) => setNotifyOperators(e.target.checked)}
+              style={{ accentColor: "var(--primary)" }}
+            />
+            <span>Email operators that this resource is awaiting review</span>
+          </label>
+          <button
+            type="button"
+            className="btn btn-primary"
+            style={{ marginTop: 12 }}
+            disabled={isBusy}
+            onClick={() => void submitForReview()}
+          >
+            {pending === "submit" ? "Submitting…" : "Submit for review"}
+          </button>
+        </>
       ) : null}
       {variant === "provider" && canSubmit ? (
         <p style={{ fontSize: 12, color: "var(--text-3)", marginTop: 8, marginBottom: 0 }}>

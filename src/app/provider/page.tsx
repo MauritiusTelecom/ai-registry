@@ -35,10 +35,6 @@ export default async function ProviderDashboardPage() {
             status: { code: { in: ["open", "investigating"] } }
           }
         }),
-        // Inbox: contact requests linked to my team
-        prisma.contact.count({
-          where: { emailVerified: true, linkedUser: { providerId } }
-        }),
         // Inbox: reviews of my stuff
         prisma.review.count({
           where: {
@@ -53,14 +49,13 @@ export default async function ProviderDashboardPage() {
           }
         })
       ])
-    : [0, 0, 0, 0, 0, 0, 0];
+    : [0, 0, 0, 0, 0, 0];
 
   const [
     resources,
     listed,
     openSubs,
     openComplaints,
-    contactRequests,
     openReviews,
     enforcementActions
   ] = stats;
@@ -78,7 +73,11 @@ export default async function ProviderDashboardPage() {
         </p>
         {providerId ? (
           <div className="p-actions" style={{ marginTop: 12 }}>
-            <GatedPublishButton href="/provider/publish" canAuthorResources={user.canAuthorResources}>
+            <GatedPublishButton
+              href="/provider/publish"
+              canAuthorResources={user.canAuthorResources}
+              emailVerified={user.emailVerified}
+            >
               Publish resource
             </GatedPublishButton>
           </div>
@@ -107,7 +106,6 @@ export default async function ProviderDashboardPage() {
           value={openComplaints}
           intent={openComplaints > 0 ? "warning" : "positive"}
         />
-        <StatCard label="Verified contact requests" value={contactRequests} />
         <StatCard
           label="Open reviews"
           value={openReviews}
@@ -137,11 +135,6 @@ export default async function ProviderDashboardPage() {
           title="Complaints"
           href="/provider/complaints"
           body="Public reports filed against your provider or resources."
-        />
-        <ActionCard
-          title="Contact requests"
-          href="/provider/contact-requests"
-          body="Verified contact-form messages from your team."
         />
         <ActionCard
           title="Reviews"

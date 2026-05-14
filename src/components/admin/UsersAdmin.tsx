@@ -175,6 +175,10 @@ function UserRowActions({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // Suspend/reactivate confirm dialog state.
+  const [confirmStatus, setConfirmStatus] = useState(false);
+  const [statusNotify, setStatusNotify] = useState(true);
+  const [statusReason, setStatusReason] = useState("");
 
   const isSelf = row.id === selfId;
   const isSuspended = row.statusCode === "suspended" || row.statusCode === "deactivated";
@@ -243,8 +247,11 @@ function UserRowActions({
             icon: isSuspended ? "check" : "lock",
             tone: isSuspended ? "default" : "danger",
             disabled: busy || isSelf,
-            onSelect: () =>
-              void patch({ statusCode: isSuspended ? "active" : "suspended" })
+            onSelect: () => {
+              setStatusNotify(true);
+              setStatusReason("");
+              setConfirmStatus(true);
+            }
           },
           {
             key: "delete",
@@ -346,6 +353,95 @@ function UserRowActions({
           </div>
         </div>
       ) : null}
+
+      {confirmStatus ? (
+        <div className="modal-backdrop" onClick={() => setConfirmStatus(false)}>
+          <div
+            className="glass"
+            style={{ maxWidth: 460, padding: 24, width: "100%" }}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <h3 style={{ margin: 0, marginBottom: 8 }}>
+              {isSuspended ? "Reactivate user?" : "Suspend user?"}
+            </h3>
+            <p style={{ color: "var(--text-2)", fontSize: 14, marginBottom: 14 }}>
+              <strong>{row.name}</strong> ({row.email}) will be marked as{" "}
+              <strong>{isSuspended ? "active" : "suspended"}</strong>.
+            </p>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: 12.5,
+                color: statusNotify ? "var(--text-2)" : "var(--text-3)",
+                marginBottom: 12,
+                cursor: "pointer"
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={statusNotify}
+                onChange={(e) => setStatusNotify(e.target.checked)}
+              />
+              Email the user about this status change
+            </label>
+            {statusNotify ? (
+              <label style={{ display: "grid", gap: 6, marginBottom: 14 }}>
+                <span style={{ fontSize: 11, color: "var(--text-3)", letterSpacing: "0.08em" }}>
+                  REASON (OPTIONAL, INCLUDED IN EMAIL)
+                </span>
+                <textarea
+                  className="auth-input"
+                  rows={2}
+                  value={statusReason}
+                  onChange={(e) => setStatusReason(e.target.value)}
+                  placeholder="Why is this status changing?"
+                />
+              </label>
+            ) : null}
+            {error ? (
+              <div className="field-error" style={{ marginBottom: 12 }}>
+                {error}
+              </div>
+            ) : null}
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setConfirmStatus(false)}
+                disabled={busy}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={busy}
+                onClick={async () => {
+                  const ok = await patch({
+                    statusCode: isSuspended ? "active" : "suspended",
+                    notifyByEmail: statusNotify,
+                    statusChangeReason:
+                      statusNotify && statusReason.trim() !== ""
+                        ? statusReason.trim()
+                        : undefined
+                  });
+                  if (ok) setConfirmStatus(false);
+                }}
+              >
+                {busy
+                  ? "Saving…"
+                  : isSuspended
+                    ? "Reactivate"
+                    : "Suspend"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }
@@ -371,8 +467,16 @@ function UserForm({
   const [statusCode, setStatusCode] = useState(initial?.statusCode ?? "invited");
   const [providerSlug, setProviderSlug] = useState(initial?.providerSlug ?? "");
   const [sendInvite, setSendInvite] = useState(true);
+  // Edit mode: notify the user when their status changes. Default ON; only
+  // surfaced in the UI once the operator picks a status different from the
+  // current one.
+  const [notifyOnStatusChange, setNotifyOnStatusChange] = useState(true);
+  const [statusChangeReason, setStatusChangeReason] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const statusWillChange =
+    mode === "edit" && !!initial && statusCode !== initial.statusCode;
 
   async function submit() {
     setError(null);
@@ -386,6 +490,12 @@ function UserForm({
         providerSlug: providerSlug || null
       };
       if (mode === "create") body.sendInvite = sendInvite;
+      if (mode === "edit" && statusWillChange) {
+        body.notifyByEmail = notifyOnStatusChange;
+        if (statusChangeReason.trim() !== "") {
+          body.statusChangeReason = statusChangeReason.trim();
+        }
+      }
 
       const url =
         mode === "create" ? "/api/admin/users" : `/api/admin/users/${initial!.id}`;
@@ -482,6 +592,38 @@ function UserForm({
           />
           Send verification / invite email now
         </label>
+      ) : null}
+      {statusWillChange ? (
+        <div style={{ display: "grid", gap: 8 }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              fontSize: 12.5,
+              color: notifyOnStatusChange ? "var(--text-2)" : "var(--text-3)",
+              cursor: "pointer"
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={notifyOnStatusChange}
+              onChange={(e) => setNotifyOnStatusChange(e.target.checked)}
+            />
+            Email the user about this status change
+          </label>
+          {notifyOnStatusChange ? (
+            <Field label="Reason (optional, included in email)">
+              <textarea
+                className="auth-input"
+                rows={2}
+                value={statusChangeReason}
+                onChange={(e) => setStatusChangeReason(e.target.value)}
+                placeholder="Why is this status changing? Shown to the user."
+              />
+            </Field>
+          ) : null}
+        </div>
       ) : null}
       {error ? (
         <div className="field-error" role="alert">

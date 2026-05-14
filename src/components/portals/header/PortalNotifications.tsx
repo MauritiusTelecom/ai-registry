@@ -4,13 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/public/Icon";
 
 /**
- * Notifications dropdown. Phase 4 will wire to a real stream (review queue,
- * verification expiries, audit signing); for now we mock four entries that
- * mirror the prototype so the visual contract is locked.
+ * Notifications dropdown. The entries are loaded server-side, scoped to the
+ * currently-signed-in user's role and (for providers) their provider
+ * linkage — see `loadPortalNotifications` in `src/lib/portals/notifications.ts`.
+ * That keeps a provider from ever seeing admin-flavoured items like
+ * "Audit log signed" in their bell.
  */
 
 type Notification = {
-  id: number;
+  id: string;
   kind: "review" | "alert" | "audit" | "system";
   title: string;
   body: string;
@@ -18,44 +20,9 @@ type Notification = {
   unread: boolean;
 };
 
-const SEED: Notification[] = [
-  {
-    id: 1,
-    kind: "review",
-    title: "New submission queued",
-    body: "“mcp/edu-curriculum” awaits sovereignty review",
-    ts: "2m ago",
-    unread: true
-  },
-  {
-    id: 2,
-    kind: "alert",
-    title: "Provider verification expiring",
-    body: "Renew DNS-TXT proof in 7 days",
-    ts: "1h ago",
-    unread: true
-  },
-  {
-    id: 3,
-    kind: "audit",
-    title: "Audit log signed",
-    body: "47 status changes notarised",
-    ts: "3h ago",
-    unread: true
-  },
-  {
-    id: 4,
-    kind: "system",
-    title: "Scheduled maintenance",
-    body: "Sun 03:00 GMT · 12 minutes",
-    ts: "Yesterday",
-    unread: false
-  }
-];
-
-export function PortalNotifications() {
+export function PortalNotifications({ initial = [] }: { initial?: Notification[] }) {
   const [open, setOpen] = useState(false);
-  const [notifs, setNotifs] = useState<Notification[]>(SEED);
+  const [notifs, setNotifs] = useState<Notification[]>(initial);
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -79,7 +46,7 @@ export function PortalNotifications() {
   function markAllRead() {
     setNotifs((ns) => ns.map((n) => ({ ...n, unread: false })));
   }
-  function markRead(id: number) {
+  function markRead(id: string) {
     setNotifs((ns) => ns.map((n) => (n.id === id ? { ...n, unread: false } : n)));
   }
 
@@ -103,21 +70,34 @@ export function PortalNotifications() {
             </button>
           </div>
           <div className="p-notif-list">
-            {notifs.map((n) => (
-              <button
-                key={n.id}
-                type="button"
-                className={`p-notif-item ${n.unread ? "unread" : ""}`}
-                onClick={() => markRead(n.id)}
+            {notifs.length === 0 ? (
+              <div
+                style={{
+                  padding: "18px 16px",
+                  fontSize: 13,
+                  color: "var(--text-3)",
+                  textAlign: "center"
+                }}
               >
-                <span className={`p-notif-dot kind-${n.kind}`} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="p-notif-title">{n.title}</div>
-                  <div className="p-notif-body">{n.body}</div>
-                  <div className="p-notif-ts mono">{n.ts}</div>
-                </div>
-              </button>
-            ))}
+                Nothing new for you right now.
+              </div>
+            ) : (
+              notifs.map((n) => (
+                <button
+                  key={n.id}
+                  type="button"
+                  className={`p-notif-item ${n.unread ? "unread" : ""}`}
+                  onClick={() => markRead(n.id)}
+                >
+                  <span className={`p-notif-dot kind-${n.kind}`} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="p-notif-title">{n.title}</div>
+                    <div className="p-notif-body">{n.body}</div>
+                    <div className="p-notif-ts mono">{n.ts}</div>
+                  </div>
+                </button>
+              ))
+            )}
           </div>
         </div>
       ) : null}

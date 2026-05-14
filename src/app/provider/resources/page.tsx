@@ -1,25 +1,14 @@
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { GatedPublishButton } from "@/components/portals/GatedPublishButton";
 import { prisma } from "@/lib/prisma";
-import { DataTable, type Column } from "@/components/portals/DataTable";
-import { StatusPill } from "@/components/portals/StatusPill";
+import {
+  ProviderResourcesGrid,
+  type ProviderResourceRow
+} from "@/components/portals/provider/ProviderResourcesGrid";
 import { deriveDisplayStatus } from "@/lib/discovery/serializers";
 
 export const metadata = { title: "Provider · Resources" };
 export const dynamic = "force-dynamic";
-
-type Row = {
-  id: string;
-  airId: string | null;
-  slug: string;
-  title: string;
-  kind: string;
-  status: string;
-  lifecycle: string;
-  lifecycleCode: string;
-  updatedAt: string;
-};
 
 export default async function ProviderResourcesPage() {
   const user = await getCurrentUser();
@@ -44,17 +33,29 @@ export default async function ProviderResourcesPage() {
     );
   }
 
-  const rows = await prisma.resource.findMany({
-    where: { providerId },
-    include: {
-      resourceType: { select: { code: true } },
-      lifecycleStatus: true,
-      trustSignals: { include: { kind: true, status: true } }
-    },
-    orderBy: [{ lifecycleStatus: { sortOrder: "asc" } }, { updatedAt: "desc" }]
-  });
+  const [rows, kinds, lifecycles] = await Promise.all([
+    prisma.resource.findMany({
+      where: { providerId },
+      include: {
+        resourceType: { select: { code: true } },
+        lifecycleStatus: true,
+        trustSignals: { include: { kind: true, status: true } }
+      },
+      orderBy: [{ lifecycleStatus: { sortOrder: "asc" } }, { updatedAt: "desc" }]
+    }),
+    prisma.resourceType.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+      select: { code: true, name: true }
+    }),
+    prisma.lifecycleStatus.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+      select: { code: true, name: true }
+    })
+  ]);
 
-  const projected: Row[] = rows.map((r) => ({
+  const projected: ProviderResourceRow[] = rows.map((r) => ({
     id: r.id,
     airId: r.airId,
     slug: r.slug,
@@ -70,49 +71,6 @@ export default async function ProviderResourcesPage() {
     updatedAt: r.updatedAt.toISOString().slice(0, 10)
   }));
 
-  const columns: Column<Row>[] = [
-    {
-      key: "title",
-      label: "Title",
-      render: (row) => (
-        <div>
-          <Link href={`/registry/${row.slug}`} style={{ color: "var(--text)", textDecoration: "none" }}>
-            {row.title}
-          </Link>
-          <div
-            style={{
-              fontSize: 11.5,
-              color: "var(--text-3)",
-              fontFamily: "IBM Plex Mono, monospace"
-            }}
-          >
-            {row.airId ?? "(no AIR-ID - pre-listing)"}
-          </div>
-        </div>
-      )
-    },
-    { key: "kind", label: "Kind", render: (row) => <span className="tag">{row.kind}</span> },
-    { key: "lifecycle", label: "Lifecycle", render: (row) => row.lifecycle },
-    { key: "status", label: "Public status", render: (row) => <StatusPill status={row.status} /> },
-    { key: "updatedAt", label: "Updated", render: (row) => row.updatedAt, mono: true },
-    {
-      key: "actions",
-      label: "",
-      render: (row) =>
-        row.lifecycleCode === "draft" || row.lifecycleCode === "needs_update" ? (
-          <Link href={`/provider/resources/${row.id}/edit`} className="btn btn-secondary" style={{ fontSize: 13 }}>
-            Edit / submit
-          </Link>
-        ) : row.lifecycleCode === "listed" ? (
-          <Link href={`/registry/${row.slug}`} className="btn btn-secondary" style={{ fontSize: 13 }}>
-            Public
-          </Link>
-        ) : (
-          <span style={{ color: "var(--text-3)", fontSize: 12 }}>-</span>
-        )
-    }
-  ];
-
   return (
     <div className="p-content">
       <div className="p-page-header">
@@ -122,17 +80,16 @@ export default async function ProviderResourcesPage() {
           {user?.provider?.displayName ?? "this provider"}.
         </p>
         <div className="p-actions">
-          <GatedPublishButton href="/provider/publish" canAuthorResources={user.canAuthorResources}>
+          <GatedPublishButton
+            href="/provider/publish"
+            canAuthorResources={user.canAuthorResources}
+            emailVerified={user.emailVerified}
+          >
             Publish new resource
           </GatedPublishButton>
         </div>
       </div>
-      <DataTable
-        rows={projected}
-        columns={columns}
-        emptyState="You haven't published any resources yet."
-        keyOf={(r) => r.id}
-      />
+      <ProviderResourcesGrid rows={projected} kinds={kinds} lifecycles={lifecycles} />
     </div>
   );
 }

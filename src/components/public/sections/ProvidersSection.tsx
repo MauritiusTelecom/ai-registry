@@ -107,9 +107,9 @@ function ProviderCard({ provider }: { provider: PublicProviderCard }) {
         <Link href={`/registry?provider=${encodeURIComponent(provider.slug)}`} className="r-card-action-link">
           <Icon name="layers" size={12} /> Listings
         </Link>
-        <Link href="/contact" className="r-card-action-link">
-          <Icon name="mail" size={12} /> Contact
-        </Link>
+        {/* Contact CTA intentionally omitted — the public listing must not
+            invite messages directly from each card. Reach-out paths run
+            through the operator (/contact) instead, not the provider. */}
       </div>
     </div>
   );

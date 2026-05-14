@@ -12,7 +12,7 @@
  * need `nodemailer` installed.
  */
 
-import { getConfig } from "@/lib/config";
+import { getConfig, type RegistryConfig } from "@/lib/config";
 
 export type SendEmailInput = {
   to: string;
@@ -27,7 +27,22 @@ export type SendEmailResult =
 
 export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult> {
   const cfg = getConfig();
-  const { smtpHost, smtpPort, smtpUser, smtpPass, from } = cfg.mail;
+  const { smtpHost, smtpPort, smtpUser, smtpPass, from, testInbox } = cfg.mail;
+
+  // QA redirect — when TEST_EMAIL_INBOX is configured, override the
+  // recipient and tag the subject so the operator can verify every
+  // production email path against a single inbox without touching real
+  // user mailboxes. The original recipient is preserved in the subject
+  // line so multi-recipient runs (e.g. a provider with two contacts)
+  // remain distinguishable.
+  const intendedTo = input.to;
+  if (testInbox !== null) {
+    input = {
+      ...input,
+      to: testInbox,
+      subject: `[orig: ${intendedTo}] ${input.subject}`
+    };
+  }
 
   // Always log a structured summary so the audit/observability layer sees
   // the attempt, regardless of channel.
@@ -35,6 +50,8 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
     JSON.stringify({
       event: "email.attempt",
       to: input.to,
+      intendedTo,
+      redirected: testInbox !== null,
       subject: input.subject,
       smtpConfigured: smtpHost !== null && smtpPort !== null,
       ts: new Date().toISOString()
@@ -102,35 +119,44 @@ export function renderTemplate(template: string, vars: Record<string, string>): 
   return template.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? "");
 }
 
-/** Templates: keeping these inline so no separate templating engine is needed. */
+/**
+ * Render the configured template pair (subject + body) for a given
+ * transactional email. Pulls subject/body strings from
+ * `getConfig().emailTemplates` so operators can override every wording
+ * through .env without code changes.
+ */
+function renderConfigured(
+  key: keyof RegistryConfig["emailTemplates"],
+  vars: Record<string, string>
+): { subject: string; text: string } {
+  const tpl = getConfig().emailTemplates[key];
+  return {
+    subject: renderTemplate(tpl.subject, vars),
+    text: renderTemplate(tpl.body, vars)
+  };
+}
+
+/** Templates: all subject/body strings come from .env (see config.ts). */
 export const emailTemplates = {
   verification(opts: { name: string; verifyUrl: string; registryName: string }): {
     subject: string;
     text: string;
   } {
-    return {
-      subject: `Verify your ${opts.registryName} account`,
-      text:
-        `Hi ${opts.name},\n\n` +
-        `Welcome to ${opts.registryName}. Confirm your email address by opening this link:\n\n` +
-        `  ${opts.verifyUrl}\n\n` +
-        `The link expires in 24 hours. If you didn't request this, you can ignore this email.\n\n` +
-        `- ${opts.registryName}`
-    };
+    return renderConfigured("verification", {
+      name: opts.name,
+      verifyUrl: opts.verifyUrl,
+      registryName: opts.registryName
+    });
   },
   passwordReset(opts: { name: string; resetUrl: string; registryName: string }): {
     subject: string;
     text: string;
   } {
-    return {
-      subject: `Reset your ${opts.registryName} password`,
-      text:
-        `Hi ${opts.name},\n\n` +
-        `We received a request to reset your ${opts.registryName} password. Open this link to set a new one:\n\n` +
-        `  ${opts.resetUrl}\n\n` +
-        `The link expires in 1 hour. If you didn't request this, ignore this email and your password will stay the same.\n\n` +
-        `- ${opts.registryName}`
-    };
+    return renderConfigured("passwordReset", {
+      name: opts.name,
+      resetUrl: opts.resetUrl,
+      registryName: opts.registryName
+    });
   },
   /** Auto-reply after POST /api/public/contact; includes email-ownership verification link. */
   contactConfirmation(opts: {
@@ -141,32 +167,24 @@ export const emailTemplates = {
     replyIntro: string;
     verifyUrl: string;
   }): { subject: string; text: string } {
-    return {
-      subject: `We received your message - ${opts.registryName}`,
-      text:
-        `Hi ${opts.senderName},\n\n` +
-        `${opts.replyIntro}\n\n` +
-        `Topic: ${opts.topicLabel}\n\n` +
-        `Confirm this email address (required before we treat the thread as verified):\n\n` +
-        `  ${opts.verifyUrl}\n\n` +
-        `The link expires in 24 hours. If you did not use the contact form on ${opts.registryName}, you can ignore this email.\n\n` +
-        `- ${opts.operatorName} · ${opts.registryName}`
-    };
+    return renderConfigured("contactConfirmation", {
+      senderName: opts.senderName,
+      registryName: opts.registryName,
+      operatorName: opts.operatorName,
+      topicLabel: opts.topicLabel,
+      replyIntro: opts.replyIntro,
+      verifyUrl: opts.verifyUrl
+    });
   },
   passwordChanged(opts: { name: string; registryName: string; loginUrl: string }): {
     subject: string;
     text: string;
   } {
-    return {
-      subject: `Your ${opts.registryName} password was changed`,
-      text:
-        `Hi ${opts.name},\n\n` +
-        `The password for your ${opts.registryName} account was just changed.\n\n` +
-        `If this was you, no action is needed. Sign in anytime:\n\n` +
-        `  ${opts.loginUrl}\n\n` +
-        `If you did not change your password, reset it immediately from the sign-in page.\n\n` +
-        `- ${opts.registryName}`
-    };
+    return renderConfigured("passwordChanged", {
+      name: opts.name,
+      registryName: opts.registryName,
+      loginUrl: opts.loginUrl
+    });
   },
   resourceSubmittedForReview(opts: {
     registryName: string;
@@ -175,16 +193,13 @@ export const emailTemplates = {
     portalResourcesUrl: string;
     portalReviewsUrl: string;
   }): { subject: string; text: string } {
-    return {
-      subject: `Submitted for review - ${opts.resourceTitle}`,
-      text:
-        `${opts.registryName}: a resource was submitted for sovereignty review.\n\n` +
-        `Resource: ${opts.resourceTitle}\n` +
-        `Review id: ${opts.reviewId}\n\n` +
-        `View resources:\n  ${opts.portalResourcesUrl}\n\n` +
-        `Track reviews:\n  ${opts.portalReviewsUrl}\n\n` +
-        `- ${opts.registryName}`
-    };
+    return renderConfigured("resourceSubmittedForReview", {
+      registryName: opts.registryName,
+      resourceTitle: opts.resourceTitle,
+      reviewId: opts.reviewId,
+      portalResourcesUrl: opts.portalResourcesUrl,
+      portalReviewsUrl: opts.portalReviewsUrl
+    });
   },
   reviewDecision(opts: {
     registryName: string;
@@ -195,21 +210,20 @@ export const emailTemplates = {
     portalReviewsUrl: string;
     publicCatalogUrl?: string;
   }): { subject: string; text: string } {
-    const listed =
+    const publicCatalogBlock =
       opts.publicCatalogUrl !== undefined
         ? `\nPublic catalog entry:\n  ${opts.publicCatalogUrl}\n`
         : "";
-    return {
-      subject: `Review update - ${opts.resourceTitle}`,
-      text:
-        `Hello ${opts.providerDisplayName},\n\n` +
-        `${opts.registryName} has updated the sovereignty review for "${opts.resourceTitle}".\n\n` +
-        `Outcome: ${opts.decisionLabel}\n\n` +
-        `Summary:\n${opts.decisionSummary}\n\n` +
-        `Open your provider reviews:\n  ${opts.portalReviewsUrl}\n` +
-        listed +
-        `\n- ${opts.registryName}`
-    };
+    return renderConfigured("reviewDecision", {
+      registryName: opts.registryName,
+      providerDisplayName: opts.providerDisplayName,
+      resourceTitle: opts.resourceTitle,
+      decisionLabel: opts.decisionLabel,
+      decisionSummary: opts.decisionSummary,
+      portalReviewsUrl: opts.portalReviewsUrl,
+      publicCatalogUrl: opts.publicCatalogUrl ?? "",
+      publicCatalogBlock
+    });
   },
   providerVerificationUpdate(opts: {
     registryName: string;
@@ -219,20 +233,19 @@ export const emailTemplates = {
     publicNote: string | null;
     portalSettingsUrl: string;
   }): { subject: string; text: string } {
-    const note =
+    const noteBlock =
       opts.publicNote !== null && opts.publicNote.trim() !== ""
         ? `\nNote from the operator:\n${opts.publicNote}\n`
         : "";
-    return {
-      subject: `Provider verification update - ${opts.registryName}`,
-      text:
-        `Hello ${opts.providerDisplayName},\n\n` +
-        `Your organisation's verification status on ${opts.registryName} is now: ${opts.statusLabel}.\n\n` +
-        `Summary:\n${opts.summary}\n` +
-        note +
-        `\nProvider settings:\n  ${opts.portalSettingsUrl}\n\n` +
-        `- ${opts.registryName}`
-    };
+    return renderConfigured("providerVerificationUpdate", {
+      registryName: opts.registryName,
+      providerDisplayName: opts.providerDisplayName,
+      statusLabel: opts.statusLabel,
+      summary: opts.summary,
+      publicNote: opts.publicNote ?? "",
+      noteBlock,
+      portalSettingsUrl: opts.portalSettingsUrl
+    });
   },
   complaintReceivedComplainant(opts: {
     registryName: string;
@@ -240,15 +253,12 @@ export const emailTemplates = {
     complaintId: string;
     contactUrl: string;
   }): { subject: string; text: string } {
-    return {
-      subject: `Complaint received - ${opts.registryName}`,
-      text:
-        `Thank you for contacting ${opts.registryName}.\n\n` +
-        `We recorded your complaint (reference: ${opts.complaintId}). ` +
-        `${opts.operatorName} will handle it according to our process.\n\n` +
-        `You can reach us again via:\n  ${opts.contactUrl}\n\n` +
-        `- ${opts.operatorName} · ${opts.registryName}`
-    };
+    return renderConfigured("complaintReceivedComplainant", {
+      registryName: opts.registryName,
+      operatorName: opts.operatorName,
+      complaintId: opts.complaintId,
+      contactUrl: opts.contactUrl
+    });
   },
   complaintReceivedOperator(opts: {
     registryName: string;
@@ -258,17 +268,14 @@ export const emailTemplates = {
     targetSummary: string;
     adminHomeUrl: string;
   }): { subject: string; text: string } {
-    return {
-      subject: `[${opts.registryName}] New complaint ${opts.complaintId}`,
-      text:
-        `A new public complaint was filed.\n\n` +
-        `Id: ${opts.complaintId}\n` +
-        `Type: ${opts.complaintType}\n` +
-        `Severity: ${opts.severity}\n` +
-        `Target: ${opts.targetSummary}\n\n` +
-        `Open the admin console:\n  ${opts.adminHomeUrl}\n\n` +
-        `- ${opts.registryName} (automated)`
-    };
+    return renderConfigured("complaintReceivedOperator", {
+      registryName: opts.registryName,
+      complaintId: opts.complaintId,
+      complaintType: opts.complaintType,
+      severity: opts.severity,
+      targetSummary: opts.targetSummary,
+      adminHomeUrl: opts.adminHomeUrl
+    });
   },
   /**
    * Notification to the user a complaint has just been assigned to. Sent
@@ -291,19 +298,97 @@ export const emailTemplates = {
       opts.description.length > 240
         ? `${opts.description.slice(0, 240)}…`
         : opts.description;
-    return {
-      subject: `[${opts.registryName}] Complaint ${opts.complaintId.slice(0, 8)} assigned to you`,
-      text:
-        `Hi ${opts.assigneeName},\n\n` +
-        `${opts.assignedByName} assigned a complaint to you on ${opts.registryName}.\n\n` +
-        `Id: ${opts.complaintId}\n` +
-        `Type: ${opts.complaintType}\n` +
-        `Severity: ${opts.severity}\n` +
-        `Status: ${opts.statusLabel}\n` +
-        `Target: ${opts.targetSummary}\n\n` +
-        `Excerpt:\n${excerpt}\n\n` +
-        `Open the complaint:\n  ${opts.complaintUrl}\n\n` +
-        `- ${opts.registryName} (automated)`
-    };
+    return renderConfigured("complaintAssigned", {
+      registryName: opts.registryName,
+      assigneeName: opts.assigneeName,
+      assignedByName: opts.assignedByName,
+      complaintId: opts.complaintId,
+      complaintIdShort: opts.complaintId.slice(0, 8),
+      complaintType: opts.complaintType,
+      severity: opts.severity,
+      statusLabel: opts.statusLabel,
+      targetSummary: opts.targetSummary,
+      description: opts.description,
+      excerpt,
+      complaintUrl: opts.complaintUrl
+    });
+  },
+  /**
+   * Sent when an admin changes a user's status (suspend / reactivate /
+   * deactivate, etc.). Skipped server-side when the admin un-ticks the
+   * "send email" checkbox in UsersAdmin.
+   */
+  userStatusChanged(opts: {
+    name: string;
+    registryName: string;
+    operatorName: string;
+    statusLabel: string;
+    loginUrl: string;
+    reason: string | null;
+  }): { subject: string; text: string } {
+    const reasonBlock =
+      opts.reason !== null && opts.reason.trim() !== ""
+        ? `\nReason from the operator:\n${opts.reason}\n`
+        : "";
+    return renderConfigured("userStatusChanged", {
+      name: opts.name,
+      registryName: opts.registryName,
+      operatorName: opts.operatorName,
+      statusLabel: opts.statusLabel,
+      loginUrl: opts.loginUrl,
+      reason: opts.reason ?? "",
+      reasonBlock
+    });
+  },
+  /**
+   * Sent to provider contacts when an admin toggles published /
+   * adminSuspended on a provider (the visibility panel — separate from
+   * the verification flow which has its own template).
+   */
+  providerVisibilityChanged(opts: {
+    registryName: string;
+    providerDisplayName: string;
+    visibilityLabel: string;
+    summary: string;
+    portalSettingsUrl: string;
+  }): { subject: string; text: string } {
+    return renderConfigured("providerVisibilityChanged", {
+      registryName: opts.registryName,
+      providerDisplayName: opts.providerDisplayName,
+      visibilityLabel: opts.visibilityLabel,
+      summary: opts.summary,
+      portalSettingsUrl: opts.portalSettingsUrl
+    });
+  },
+  /**
+   * Sent to provider contacts when an admin runs a resource lifecycle
+   * transition (approve / reject / suspend / restore / deprecate /
+   * remove). Skipped server-side when notifyByEmail is unticked.
+   */
+  resourceLifecycleChanged(opts: {
+    registryName: string;
+    providerDisplayName: string;
+    resourceTitle: string;
+    actionLabel: string;
+    newStatusLabel: string;
+    reason: string;
+    portalResourcesUrl: string;
+    publicCatalogUrl?: string;
+  }): { subject: string; text: string } {
+    const publicCatalogBlock =
+      opts.publicCatalogUrl !== undefined && opts.publicCatalogUrl !== ""
+        ? `\nPublic catalog entry:\n  ${opts.publicCatalogUrl}\n`
+        : "";
+    return renderConfigured("resourceLifecycleChanged", {
+      registryName: opts.registryName,
+      providerDisplayName: opts.providerDisplayName,
+      resourceTitle: opts.resourceTitle,
+      actionLabel: opts.actionLabel,
+      newStatusLabel: opts.newStatusLabel,
+      reason: opts.reason,
+      portalResourcesUrl: opts.portalResourcesUrl,
+      publicCatalogUrl: opts.publicCatalogUrl ?? "",
+      publicCatalogBlock
+    });
   }
 };
