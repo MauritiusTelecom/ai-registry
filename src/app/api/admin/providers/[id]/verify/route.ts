@@ -7,6 +7,7 @@ import { getConfig } from "@/lib/config";
 import { emailTemplates } from "@/lib/email";
 import { uniqueValidEmails } from "@/lib/email/recipients";
 import { sendTransactionalEmailAll } from "@/lib/email/transactional-send";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
  * POST /api/admin/providers/:id/verify
@@ -39,6 +40,7 @@ type Body = {
   summary?: unknown;
   publicNote?: unknown;
   internalNote?: unknown;
+  notifyByEmail?: unknown;
 };
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -167,10 +169,14 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     newValue: { status, summary }
   });
 
+  // Email toggle. Default ON for backwards compatibility with older clients
+  // that don't send the flag; only an explicit `false` opts out.
+  const notifyByEmail = body.notifyByEmail !== false;
   const cfg = getConfig();
-  const origin = new URL(req.url).origin;
+  const origin = getPublicOrigin(req);
   const recipients = uniqueValidEmails([provider.contactEmail, provider.legalContactEmail]);
-  if (recipients.length > 0) {
+  let emailNotified = false;
+  if (notifyByEmail && recipients.length > 0) {
     const tmpl = emailTemplates.providerVerificationUpdate({
       registryName: cfg.registryName,
       providerDisplayName: provider.displayName,
@@ -184,11 +190,13 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       subject: tmpl.subject,
       text: tmpl.text
     }));
+    emailNotified = true;
   }
 
   return NextResponse.json({
     ok: true,
     providerId: provider.id,
-    status
+    status,
+    emailNotified
   });
 }

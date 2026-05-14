@@ -5,6 +5,7 @@ import { hashToken } from "@/lib/auth/tokens";
 import { getConfig } from "@/lib/config";
 import { emailTemplates } from "@/lib/email";
 import { sendTransactionalEmail } from "@/lib/email/transactional-send";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
  * POST /api/auth/reset-password
@@ -18,7 +19,7 @@ import { sendTransactionalEmail } from "@/lib/email/transactional-send";
 type ResetPayload = { token?: unknown; password?: unknown };
 
 export async function POST(req: Request) {
-  const origin = new URL(req.url).origin;
+  const origin = getPublicOrigin(req);
   let body: ResetPayload;
   try {
     body = (await req.json()) as ResetPayload;

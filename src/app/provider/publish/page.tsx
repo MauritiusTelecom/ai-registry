@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { getConfig } from "@/lib/config";
+import { prisma } from "@/lib/prisma";
 import { NewResourceForm } from "@/components/portal/NewResourceForm";
 import { StubPanel } from "@/components/portals/StubPanel";
 import { REGISTRATION_MSG } from "@/lib/portal/authoring-messages";
@@ -11,6 +12,14 @@ export const dynamic = "force-dynamic";
 export default async function ProviderPublishPage() {
   const user = await getCurrentUser();
   const cfg = getConfig();
+  // Resource types must be active in the DB AND permitted by the env
+  // `RESOURCE_TYPES` restriction. The intersection guarantees an admin can
+  // hide a type (active=false) without redeploying.
+  const allowedTypes = await prisma.resourceType.findMany({
+    where: { active: true, code: { in: cfg.resourceTypes } },
+    orderBy: { sortOrder: "asc" },
+    select: { code: true, name: true }
+  });
 
   return (
     <div className="p-content">
@@ -64,7 +73,7 @@ export default async function ProviderPublishPage() {
             edit a complete record. Fill in the rest, then submit for review.
           </p>
           <NewResourceForm
-            allowedTypes={cfg.resourceTypes as string[]}
+            allowedTypes={allowedTypes}
             afterCreate="provider"
             variant="provider"
           />

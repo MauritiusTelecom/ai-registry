@@ -1,9 +1,10 @@
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/current-user";
 import { GatedPublishButton } from "@/components/portals/GatedPublishButton";
 import { prisma } from "@/lib/prisma";
-import { DataTable, type Column } from "@/components/portals/DataTable";
-import { StatusPill } from "@/components/portals/StatusPill";
+import {
+  ProviderSubmissionsGrid,
+  type ProviderSubmissionRow
+} from "@/components/portals/provider/ProviderSubmissionsGrid";
 import { deriveDisplayStatus } from "@/lib/discovery/serializers";
 
 export const metadata = { title: "Provider · Submissions" };
@@ -17,18 +18,6 @@ export const dynamic = "force-dynamic";
  */
 
 const PRE_LISTED = ["draft", "submitted", "in_review", "needs_update"] as const;
-
-type Row = {
-  id: string;
-  slug: string;
-  title: string;
-  kind: string;
-  lifecycle: string;
-  lifecycleCode: string;
-  status: string;
-  submittedAt: string | null;
-  updatedAt: string;
-};
 
 export default async function ProviderSubmissionsPage() {
   const user = await getCurrentUser();
@@ -50,20 +39,32 @@ export default async function ProviderSubmissionsPage() {
     );
   }
 
-  const rows = await prisma.resource.findMany({
-    where: {
-      providerId,
-      lifecycleStatus: { code: { in: [...PRE_LISTED] } }
-    },
-    include: {
-      resourceType: { select: { code: true } },
-      lifecycleStatus: true,
-      trustSignals: { include: { kind: true, status: true } }
-    },
-    orderBy: [{ lifecycleStatus: { sortOrder: "asc" } }, { updatedAt: "desc" }]
-  });
+  const [rows, kinds, lifecycles] = await Promise.all([
+    prisma.resource.findMany({
+      where: {
+        providerId,
+        lifecycleStatus: { code: { in: [...PRE_LISTED] } }
+      },
+      include: {
+        resourceType: { select: { code: true } },
+        lifecycleStatus: true,
+        trustSignals: { include: { kind: true, status: true } }
+      },
+      orderBy: [{ lifecycleStatus: { sortOrder: "asc" } }, { updatedAt: "desc" }]
+    }),
+    prisma.resourceType.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+      select: { code: true, name: true }
+    }),
+    prisma.lifecycleStatus.findMany({
+      where: { active: true, code: { in: [...PRE_LISTED] } },
+      orderBy: { sortOrder: "asc" },
+      select: { code: true, name: true }
+    })
+  ]);
 
-  const projected: Row[] = rows.map((r) => ({
+  const projected: ProviderSubmissionRow[] = rows.map((r) => ({
     id: r.id,
     slug: r.slug,
     title: r.title,
@@ -79,42 +80,6 @@ export default async function ProviderSubmissionsPage() {
     updatedAt: r.updatedAt.toISOString().slice(0, 10)
   }));
 
-  const columns: Column<Row>[] = [
-    {
-      key: "title",
-      label: "Title",
-      render: (row) =>
-        row.lifecycleCode === "listed" ? (
-          <Link href={`/registry/${row.slug}`} style={{ color: "var(--text)", textDecoration: "none" }}>
-            {row.title}
-          </Link>
-        ) : (
-          <span style={{ fontWeight: 500 }}>{row.title}</span>
-        )
-    },
-    { key: "kind", label: "Kind", render: (row) => <span className="tag">{row.kind}</span> },
-    { key: "lifecycle", label: "Lifecycle", render: (row) => row.lifecycle },
-    { key: "status", label: "Visual status", render: (row) => <StatusPill status={row.status} /> },
-    { key: "submitted", label: "Submitted", render: (row) => row.submittedAt ?? "-", mono: true },
-    { key: "updated", label: "Updated", render: (row) => row.updatedAt, mono: true },
-    {
-      key: "actions",
-      label: "",
-      render: (row) =>
-        row.lifecycleCode === "draft" || row.lifecycleCode === "needs_update" ? (
-          <Link href={`/provider/resources/${row.id}/edit`} className="btn btn-secondary" style={{ fontSize: 13 }}>
-            Edit / submit
-          </Link>
-        ) : row.lifecycleCode === "listed" ? (
-          <Link href={`/registry/${row.slug}`} className="btn btn-secondary" style={{ fontSize: 13 }}>
-            Public
-          </Link>
-        ) : (
-          <span style={{ color: "var(--text-3)", fontSize: 12 }}>-</span>
-        )
-    }
-  ];
-
   return (
     <div className="p-content">
       <div className="p-page-header">
@@ -124,17 +89,16 @@ export default async function ProviderSubmissionsPage() {
           drafts, in-review, or needs-update.
         </p>
         <div className="p-actions">
-          <GatedPublishButton href="/provider/publish" canAuthorResources={user.canAuthorResources}>
+          <GatedPublishButton
+            href="/provider/publish"
+            canAuthorResources={user.canAuthorResources}
+            emailVerified={user.emailVerified}
+          >
             Publish new resource
           </GatedPublishButton>
         </div>
       </div>
-      <DataTable
-        rows={projected}
-        columns={columns}
-        emptyState="No in-flight submissions - all your resources are either listed or removed."
-        keyOf={(r) => r.id}
-      />
+      <ProviderSubmissionsGrid rows={projected} kinds={kinds} lifecycles={lifecycles} />
     </div>
   );
 }

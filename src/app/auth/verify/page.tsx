@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { hashToken } from "@/lib/auth/tokens";
 import { AuthShell } from "@/components/public/auth/AuthShell";
+import { ResendVerificationForm } from "@/components/public/auth/ResendVerificationForm";
 
 export const metadata = { title: "Verify email" };
 
@@ -59,23 +61,10 @@ export default async function VerifyEmailPage({
     : { ok: false, reason: "missing" };
 
   if (result.ok) {
-    return (
-      <AuthShell
-        eyebrow="Email verified"
-        title={
-          <>
-            You're <span className="gradient-text">all set</span>.
-          </>
-        }
-        subtitle={`Confirmed for ${result.email}.`}
-      >
-        <div style={{ textAlign: "center" }}>
-          <Link href="/portal" className="btn btn-primary">
-            Go to your portal
-          </Link>
-        </div>
-      </AuthShell>
-    );
+    // Email is now verified. Send the user to sign in — no session is
+    // issued on this page, so they must authenticate before reaching the
+    // portal. ?verified=1 lets /login show a confirmation banner.
+    redirect("/login?verified=1");
   }
 
   if (result.reason === "missing") {
@@ -98,13 +87,9 @@ export default async function VerifyEmailPage({
     <AuthShell
       eyebrow="Email verification"
       title={<>This link is no longer valid.</>}
-      subtitle="It may have expired or already been used. Sign in and re-request a verification email from your portal."
+      subtitle="It may have expired or already been used. Enter your email below and we'll send you a fresh verification link."
     >
-      <div style={{ textAlign: "center" }}>
-        <Link href="/login" className="btn btn-primary">
-          Back to sign in
-        </Link>
-      </div>
+      <ResendVerificationForm />
     </AuthShell>
   );
 }

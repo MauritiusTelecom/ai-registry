@@ -7,6 +7,10 @@ import {
 } from "@/lib/auth/separation-of-duties";
 import { writeAudit } from "@/lib/audit/write-audit";
 import { getConfig } from "@/lib/config";
+import { emailTemplates } from "@/lib/email";
+import { uniqueValidEmails } from "@/lib/email/recipients";
+import { sendTransactionalEmailAll } from "@/lib/email/transactional-send";
+import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
  * POST /api/admin/resources/:id/transition
@@ -27,6 +31,7 @@ import { getConfig } from "@/lib/config";
 type Body = {
   action?: unknown;
   reason?: unknown;
+  notifyByEmail?: unknown;
 };
 
 type Action =
@@ -50,7 +55,19 @@ const ALLOWED_FROM: Record<Action, Set<string>> = {
   approve: new Set(["draft", "submitted", "in_review", "needs_update"]),
   reject: new Set(["submitted", "in_review", "listed", "needs_update"]),
   suspend: new Set(["listed"]),
-  restore: new Set(["suspended", "deprecated"]),
+  // Restore is the admin "revert to active" escape hatch and is intentionally
+  // permissive: any non-listed status (including `removed` tombstones) can be
+  // brought back to `listed`. Mints the AIR-ID when one was never issued, so
+  // resources that never reached `listed` can be promoted directly.
+  restore: new Set([
+    "suspended",
+    "deprecated",
+    "removed",
+    "needs_update",
+    "draft",
+    "submitted",
+    "in_review"
+  ]),
   deprecate: new Set(["listed"]),
   remove: new Set(["listed", "suspended", "deprecated", "needs_update", "draft", "submitted", "in_review"])
 };
@@ -97,7 +114,15 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     where: { id },
     include: {
       lifecycleStatus: { select: { code: true } },
-      provider: { select: { id: true, slug: true } },
+      provider: {
+        select: {
+          id: true,
+          slug: true,
+          displayName: true,
+          contactEmail: true,
+          legalContactEmail: true
+        }
+      },
       resourceType: { select: { code: true } }
     }
   });
@@ -150,7 +175,16 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     update.lastReviewedAt = new Date();
   }
   if (action === "restore") {
+    // Revert path. Promote the resource back to `listed`, restore public
+    // visibility, and — when restoring from a pre-approval state or a `removed`
+    // tombstone that never minted an AIR-ID — mint one now so the resource is
+    // publicly resolvable.
+    if (!resource.airId) {
+      update.airId = `air://${cfg.identityDomain}/${resource.resourceType.code}/${resource.provider.slug}/${resource.slug}`;
+    }
     update.publicVisibility = true;
+    if (!resource.listedAt) update.listedAt = new Date();
+    update.lastReviewedAt = new Date();
   }
   if (action === "suspend" || action === "remove" || action === "deprecate") {
     if (action === "remove") update.publicVisibility = false;
@@ -194,10 +228,51 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     newValue: { lifecycle: toCode, reason }
   });
 
+  // Notify the provider's contacts of the lifecycle transition. Default ON;
+  // only an explicit notifyByEmail: false skips it.
+  const notifyByEmail = body.notifyByEmail !== false;
+  const origin = getPublicOrigin(req);
+  const recipients = uniqueValidEmails([
+    resource.provider.contactEmail,
+    resource.provider.legalContactEmail
+  ]);
+  let emailNotified = false;
+  if (notifyByEmail && recipients.length > 0) {
+    const actionLabel: Record<Action, string> = {
+      approve: "Approved",
+      reject: "Rejected — needs update",
+      suspend: "Suspended",
+      restore: "Restored",
+      deprecate: "Deprecated",
+      remove: "Removed"
+    };
+    const publicCatalogUrl =
+      toCode === "listed" || toCode === "deprecated"
+        ? `${origin}/registry/${resource.slug}`
+        : undefined;
+    const tmpl = emailTemplates.resourceLifecycleChanged({
+      registryName: cfg.registryName,
+      providerDisplayName: resource.provider.displayName,
+      resourceTitle: resource.title,
+      actionLabel: actionLabel[action],
+      newStatusLabel: toCode,
+      reason,
+      portalResourcesUrl: `${origin}/provider/resources`,
+      publicCatalogUrl
+    });
+    sendTransactionalEmailAll("resource_lifecycle", recipients, (to) => ({
+      to,
+      subject: tmpl.subject,
+      text: tmpl.text
+    }));
+    emailNotified = true;
+  }
+
   return NextResponse.json({
     ok: true,
     resourceId: id,
     fromLifecycle: fromCode,
-    toLifecycle: toCode
+    toLifecycle: toCode,
+    emailNotified
   });
 }

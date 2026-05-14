@@ -35,10 +35,6 @@ export default async function ProviderDashboardPage() {
             status: { code: { in: ["open", "investigating"] } }
           }
         }),
-        // Inbox: contact requests linked to my team
-        prisma.contact.count({
-          where: { emailVerified: true, linkedUser: { providerId } }
-        }),
         // Inbox: reviews of my stuff
         prisma.review.count({
           where: {
@@ -53,14 +49,13 @@ export default async function ProviderDashboardPage() {
           }
         })
       ])
-    : [0, 0, 0, 0, 0, 0, 0];
+    : [0, 0, 0, 0, 0, 0];
 
   const [
     resources,
     listed,
     openSubs,
     openComplaints,
-    contactRequests,
     openReviews,
     enforcementActions
   ] = stats;
@@ -78,7 +73,11 @@ export default async function ProviderDashboardPage() {
         </p>
         {providerId ? (
           <div className="p-actions" style={{ marginTop: 12 }}>
-            <GatedPublishButton href="/provider/publish" canAuthorResources={user.canAuthorResources}>
+            <GatedPublishButton
+              href="/provider/publish"
+              canAuthorResources={user.canAuthorResources}
+              emailVerified={user.emailVerified}
+            >
               Publish resource
             </GatedPublishButton>
           </div>
@@ -89,12 +88,18 @@ export default async function ProviderDashboardPage() {
         Catalogue
       </h2>
       <div className="p-stat-grid">
-        <StatCard label="Listed resources" value={listed} hint={`of ${resources} total`} />
+        <StatCard
+          label="Listed resources"
+          value={listed}
+          hint={`of ${resources} total`}
+          href="/provider/resources"
+        />
         <StatCard
           label="Submissions in flight"
           value={openSubs}
           intent={openSubs > 0 ? "warning" : "positive"}
           hint={openSubs > 0 ? "drafts / in-review / needs-update" : "all listed"}
+          href="/provider/submissions"
         />
       </div>
 
@@ -106,18 +111,20 @@ export default async function ProviderDashboardPage() {
           label="Open complaints"
           value={openComplaints}
           intent={openComplaints > 0 ? "warning" : "positive"}
+          href="/provider/complaints"
         />
-        <StatCard label="Verified contact requests" value={contactRequests} />
         <StatCard
           label="Open reviews"
           value={openReviews}
           intent={openReviews > 0 ? "warning" : "positive"}
           hint={openReviews > 0 ? "awaiting reviewer decision" : "none in flight"}
+          href="/provider/reviews"
         />
         <StatCard
           label="Enforcement actions"
           value={enforcementActions}
           intent={enforcementActions > 0 ? "warning" : "positive"}
+          href="/provider/incidents"
         />
       </div>
 
@@ -139,11 +146,6 @@ export default async function ProviderDashboardPage() {
           body="Public reports filed against your provider or resources."
         />
         <ActionCard
-          title="Contact requests"
-          href="/provider/contact-requests"
-          body="Verified contact-form messages from your team."
-        />
-        <ActionCard
           title="Reviews"
           href="/provider/reviews"
           body="Sovereignty / verification reviews of your records."
@@ -159,9 +161,14 @@ export default async function ProviderDashboardPage() {
 }
 
 function ActionCard({ title, href, body }: { title: string; href: string; body: string }) {
+  // `feature-card` paints the same primary→tertiary gradient-ring glow used
+  // on the public-home cards (.pillar / .r-card) and on the dashboard's
+  // StatCard tiles. `p-stat-card-link` adds the matching hover lift and
+  // focus ring so all the clickable cards on this page share one effect.
   return (
     <Link
       href={href}
+      className="feature-card p-stat-card-link"
       style={{
         display: "block",
         textDecoration: "none",

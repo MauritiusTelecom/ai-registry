@@ -446,6 +446,7 @@ model User {
   complaintsAssigned       Complaint[]                     @relation("ComplaintAssignedTo")
   enforcementActions       EnforcementAction[]             @relation("EnforcementPerformedBy")
   contacts                 Contact[]
+  notificationReads        NotificationRead[]
 
   @@index([providerId])
   @@index([roleId])
@@ -1107,5 +1108,32 @@ model FederatedResourceReference {
   @@unique([sourceRegistryId, sourceAirId])
   @@index([sourceRegistryId])
   @@index([localResourceId])
+  @@schema("registry")
+}
+
+/**
+ * Per-user read receipts for portal header notifications.
+ *
+ * The notification list is derived live from underlying tables (reviews,
+ * complaints, etc.) — there's no materialised Notification row. Each entry's
+ * stable id (e.g. "review:<uuid>", "complaint:<uuid>", "decision:<uuid>") is
+ * stored here against the user that dismissed it, so the unread flag survives
+ * page reloads and is consistent across devices.
+ *
+ * `notificationKey` is the same string id the loader hands the client.
+ * The composite unique constraint dedupes accidental double-posts (two tabs
+ * marking the same entry read in the same second).
+ */
+model NotificationRead {
+  id              String   @id @default(uuid())
+  userId          String   @db.Uuid
+  notificationKey String
+  readAt          DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, notificationKey])
+  @@index([userId])
+  @@index([readAt])
   @@schema("registry")
 }
