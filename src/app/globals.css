@@ -1743,6 +1743,25 @@ button.p-nav-divider-toggle:hover { color: var(--text-2); }
   border-radius: 12px;
   padding: 18px 20px;
 }
+/* Linked variant: same chrome, but with hover affordance + cursor pointer.
+ * The visible glow comes from `.feature-card::before` (shared with the
+ * public-home `.pillar` / `.r-card` cards). Here we only contribute the
+ * subtle lift, border darkening, and focus ring so the gradient halo
+ * does the heavy visual lift unobstructed. */
+.p-stat-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1), border-color 220ms;
+}
+.p-stat-card-link:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+.p-stat-card-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
 .p-stat-label {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10.5px;
