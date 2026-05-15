@@ -219,13 +219,29 @@ function MobileMenu({ pathname }: { pathname: string }) {
   );
 }
 
-export function TopNav({ registryName }: { registryName: string }) {
+export function TopNav({
+  registryName,
+  logoUrl
+}: {
+  registryName: string;
+  logoUrl?: string | null;
+}) {
   const pathname = usePathname() ?? "/";
   return (
     <nav className="nav">
       <div className="nav-inner">
         <Link href="/" className="nav-logo" aria-label={registryName}>
-          <span className="nav-logo-mark" />
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={withBase(logoUrl)}
+              alt=""
+              className="nav-logo-mark"
+              style={{ background: "transparent", boxShadow: "none", objectFit: "contain" }}
+            />
+          ) : (
+            <span className="nav-logo-mark" />
+          )}
           <span className="nav-logo-text">{registryName}</span>
         </Link>
         <div className="nav-links">
