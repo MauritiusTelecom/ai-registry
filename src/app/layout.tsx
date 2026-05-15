@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import "./globals.css";
-import { getConfig } from "@/lib/config";
+import { getBranding } from "@/lib/branding";
 import { SAR_THEME_KEY, themeFromCookie } from "@/lib/theme-cookie";
 import { SiteShell } from "@/components/public/SiteShell";
 import { ThemeProvider } from "@/components/public/ThemeProvider";
 import { ChromeSwitch } from "@/components/public/ChromeSwitch";
 
-// Title is sourced from the deployment configuration (REGISTRY_NAME) so the
-// codebase ships no jurisdiction-specific default.
+// Title flows from /admin/branding overrides, falling back to the env
+// REGISTRY_NAME so a fresh deployment still ships with sensible defaults.
 export async function generateMetadata(): Promise<Metadata> {
-  const cfg = getConfig();
+  const branding = await getBranding();
   return {
-    title: cfg.registryName,
+    title: branding.registryName,
     description:
       "Mauritius AI Registry - public portal for the locally-governed AI Registry under AIR-SPEC 0.4."
   };

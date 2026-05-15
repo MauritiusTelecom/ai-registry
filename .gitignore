@@ -7,6 +7,10 @@ src/generated/
 .next/
 out/
 
+# Logos uploaded via /admin/branding land here at runtime. Per-deployment
+# state, not source.
+public/branding/
+
 # Local-only deploy machine config (host, user, paths). Real values live here.
 deploy/deploy.config.sh
 # Never commit anything dropped into deploy/secrets/. It is consumed by

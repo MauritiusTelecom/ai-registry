@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import type { SessionUser } from "@/lib/auth/current-user";
 import type { PortalConfig } from "@/lib/portals/nav-config";
+import { getBranding } from "@/lib/branding";
 import { PortalSidebar } from "./PortalSidebar";
 import { PortalHeader } from "./PortalHeader";
 import { ProviderRegistrationBanner } from "./ProviderRegistrationBanner";
@@ -29,10 +30,14 @@ export async function ProviderPortalChrome({
   // still see `admin` so the dropdown highlights their primary identity.
   const isAdmin = user.roles.includes("admin");
   const currentRole: "admin" | "provider" = isAdmin ? "admin" : "provider";
+  const branding = await getBranding();
 
   return (
     <div className="p-shell">
-      <PortalSidebar config={config} />
+      <PortalSidebar
+        config={config}
+        branding={{ registryName: branding.registryName, logoUrl: branding.logoUrl }}
+      />
 
       <div className="p-main">
         <PortalHeader

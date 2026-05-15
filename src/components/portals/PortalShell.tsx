@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import type { SessionUser } from "@/lib/auth/current-user";
 import type { PortalConfig } from "@/lib/portals/nav-config";
+import { getBranding } from "@/lib/branding";
 import { LogoutButton } from "@/components/public/auth/LogoutButton";
 import { PortalSidebar } from "./PortalSidebar";
 
@@ -25,7 +26,7 @@ export type PageHeader = {
   actions?: ReactNode;
 };
 
-export function PortalShell({
+export async function PortalShell({
   config,
   user,
   header,
@@ -36,9 +37,13 @@ export function PortalShell({
   header: PageHeader;
   children: ReactNode;
 }) {
+  const branding = await getBranding();
   return (
     <div className="p-shell">
-      <PortalSidebar config={config} />
+      <PortalSidebar
+        config={config}
+        branding={{ registryName: branding.registryName, logoUrl: branding.logoUrl }}
+      />
 
       <div className="p-main">
         <header className="p-topbar">

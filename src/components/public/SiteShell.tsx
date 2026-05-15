@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { getConfig } from "@/lib/config";
+import { getBranding } from "@/lib/branding";
 import { AuthProvider } from "./AuthProvider";
 import { ReportProvider } from "./ReportContext";
 import { TopNav } from "./TopNav";
@@ -11,19 +11,24 @@ import { TweaksPanel } from "./TweaksPanel";
  * Public site shell - providers + nav + footer + modal + (dev) tweaks panel.
  * Server component shell; the React-context providers below are all `"use client"`.
  *
- * Brand strings (registry name) flow from `src/lib/config.ts` (driven by
- * `REGISTRY_NAME` in `.env`) so the codebase carries no jurisdiction-specific
- * default. Forks change `.env`, never the components.
+ * Brand strings (registry name, footer copy) and the logo come from
+ * `getBranding()` - DB overrides set via /admin/branding fall back to the env
+ * `REGISTRY_NAME` and built-in footer defaults when unset.
  */
-export function SiteShell({ children }: { children: ReactNode }) {
+export async function SiteShell({ children }: { children: ReactNode }) {
   const isDev = process.env.NODE_ENV !== "production";
-  const cfg = getConfig();
+  const branding = await getBranding();
   return (
     <AuthProvider>
       <ReportProvider>
-        <TopNav registryName={cfg.registryName} />
+        <TopNav registryName={branding.registryName} logoUrl={branding.logoUrl} />
         <main>{children}</main>
-        <Footer registryName={cfg.registryName} />
+        <Footer
+          registryName={branding.registryName}
+          logoUrl={branding.logoUrl}
+          copyrightLine={branding.copyrightLine}
+          buildLine={branding.buildLine}
+        />
         <ReportModal />
         {isDev ? <TweaksPanel /> : null}
       </ReportProvider>
