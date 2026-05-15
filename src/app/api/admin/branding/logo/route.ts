@@ -16,6 +16,31 @@ const ALLOWED: Record<string, string> = {
   "image/webp": "webp"
 };
 
+/**
+ * Two upload slots share this route:
+ *   - "logo"   → SiteBranding.logoUrl, filename prefix `logo-`
+ *   - "hero"   → SiteBranding.heroEyebrowIconUrl, filename prefix `hero-`
+ * Slot is read from a `slot` query param (defaults to "logo" for backward
+ * compat with the original logo-only callers).
+ */
+type Slot = "logo" | "hero";
+
+const SLOT_FIELDS: Record<Slot, "logoUrl" | "heroEyebrowIconUrl"> = {
+  logo: "logoUrl",
+  hero: "heroEyebrowIconUrl"
+};
+
+const SLOT_PREFIXES: Record<Slot, string> = {
+  logo: "logo",
+  hero: "hero"
+};
+
+function parseSlot(req: Request): Slot {
+  const url = new URL(req.url);
+  const raw = url.searchParams.get("slot");
+  return raw === "hero" ? "hero" : "logo";
+}
+
 function adminOnly(user: { roles: string[] } | null) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!user.roles.includes("admin")) {
@@ -28,6 +53,9 @@ export async function POST(req: Request) {
   const actor = await getCurrentUser();
   const guard = adminOnly(actor);
   if (guard) return guard;
+
+  const slot = parseSlot(req);
+  const field = SLOT_FIELDS[slot];
 
   let form: FormData;
   try {
@@ -57,26 +85,27 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "File exceeds 1 MB limit" }, { status: 400 });
   }
 
-  // Hash the bytes so the public URL changes whenever the logo changes -
+  // Hash the bytes so the public URL changes whenever the asset changes -
   // browser caches reliably refetch without an explicit cache-buster.
   const hash = createHash("sha256").update(bytes).digest("hex").slice(0, 16);
-  const filename = `logo-${hash}.${ext}`;
+  const filename = `${SLOT_PREFIXES[slot]}-${hash}.${ext}`;
   const dir = join(process.cwd(), "public", "branding");
   await mkdir(dir, { recursive: true });
   await writeFile(join(dir, filename), bytes);
   const publicPath = `/branding/${filename}`;
 
   const before = await prisma.siteBranding.findUnique({ where: { id: SINGLETON_ID } });
+  const previousPath = before ? before[field] : null;
   const updated = await prisma.siteBranding.upsert({
     where: { id: SINGLETON_ID },
-    update: { logoUrl: publicPath, updatedById: actor!.id },
-    create: { id: SINGLETON_ID, logoUrl: publicPath, updatedById: actor!.id }
+    update: { [field]: publicPath, updatedById: actor!.id },
+    create: { id: SINGLETON_ID, [field]: publicPath, updatedById: actor!.id }
   });
 
   // Best-effort cleanup of the previous file. Skip if it points outside the
   // branding dir or doesn't exist.
-  if (before?.logoUrl && before.logoUrl !== publicPath && before.logoUrl.startsWith("/branding/")) {
-    const prev = join(dir, before.logoUrl.slice("/branding/".length));
+  if (previousPath && previousPath !== publicPath && previousPath.startsWith("/branding/")) {
+    const prev = join(dir, previousPath.slice("/branding/".length));
     if (prev.startsWith(dir + sep)) {
       try { await unlink(prev); } catch { /* ignore */ }
     }
@@ -88,29 +117,33 @@ export async function POST(req: Request) {
     actorUserId: actor!.id,
     entityType: "site_branding",
     entityId: SINGLETON_ID,
-    action: "branding.logo_uploaded",
-    previousValue: before ? { logoUrl: before.logoUrl } : null,
-    newValue: { logoUrl: updated.logoUrl, sizeBytes: bytes.byteLength, mimeType: file.type }
+    action: `branding.${slot}_uploaded`,
+    previousValue: { [field]: previousPath },
+    newValue: { [field]: updated[field], sizeBytes: bytes.byteLength, mimeType: file.type }
   });
 
-  return NextResponse.json({ ok: true, logoUrl: publicPath });
+  return NextResponse.json({ ok: true, slot, url: publicPath });
 }
 
-export async function DELETE() {
+export async function DELETE(req: Request) {
   const actor = await getCurrentUser();
   const guard = adminOnly(actor);
   if (guard) return guard;
 
+  const slot = parseSlot(req);
+  const field = SLOT_FIELDS[slot];
+
   const before = await prisma.siteBranding.findUnique({ where: { id: SINGLETON_ID } });
+  const previousPath = before ? before[field] : null;
   await prisma.siteBranding.upsert({
     where: { id: SINGLETON_ID },
-    update: { logoUrl: null, updatedById: actor!.id },
-    create: { id: SINGLETON_ID, logoUrl: null, updatedById: actor!.id }
+    update: { [field]: null, updatedById: actor!.id },
+    create: { id: SINGLETON_ID, [field]: null, updatedById: actor!.id }
   });
 
-  if (before?.logoUrl?.startsWith("/branding/")) {
+  if (previousPath?.startsWith("/branding/")) {
     const dir = join(process.cwd(), "public", "branding");
-    const prev = join(dir, before.logoUrl.slice("/branding/".length));
+    const prev = join(dir, previousPath.slice("/branding/".length));
     if (prev.startsWith(dir + sep)) {
       try { await unlink(prev); } catch { /* ignore */ }
     }
@@ -122,10 +155,10 @@ export async function DELETE() {
     actorUserId: actor!.id,
     entityType: "site_branding",
     entityId: SINGLETON_ID,
-    action: "branding.logo_cleared",
-    previousValue: before ? { logoUrl: before.logoUrl } : null,
-    newValue: { logoUrl: null }
+    action: `branding.${slot}_cleared`,
+    previousValue: { [field]: previousPath },
+    newValue: { [field]: null }
   });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, slot });
 }

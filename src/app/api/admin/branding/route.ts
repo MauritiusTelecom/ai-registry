@@ -27,6 +27,8 @@ export async function GET() {
     logoUrl: row?.logoUrl ?? null,
     copyrightLine: row?.copyrightLine ?? null,
     buildLine: row?.buildLine ?? null,
+    heroEyebrowText: row?.heroEyebrowText ?? null,
+    heroEyebrowIconUrl: row?.heroEyebrowIconUrl ?? null,
     updatedAt: row?.updatedAt?.toISOString() ?? null
   });
 }
@@ -35,6 +37,7 @@ type PatchPayload = {
   registryName?: string | null;
   copyrightLine?: string | null;
   buildLine?: string | null;
+  heroEyebrowText?: string | null;
 };
 
 function clean(value: unknown): string | null {
@@ -69,6 +72,10 @@ export async function PATCH(req: Request) {
     const v = clean(body.buildLine);
     if (v !== undefined) data.buildLine = v;
   }
+  if ("heroEyebrowText" in body) {
+    const v = clean(body.heroEyebrowText);
+    if (v !== undefined) data.heroEyebrowText = v;
+  }
 
   const before = await prisma.siteBranding.findUnique({ where: { id: SINGLETON_ID } });
   const updated = await prisma.siteBranding.upsert({
@@ -88,13 +95,15 @@ export async function PATCH(req: Request) {
       ? {
           registryName: before.registryName,
           copyrightLine: before.copyrightLine,
-          buildLine: before.buildLine
+          buildLine: before.buildLine,
+          heroEyebrowText: before.heroEyebrowText
         }
       : null,
     newValue: {
       registryName: updated.registryName,
       copyrightLine: updated.copyrightLine,
-      buildLine: updated.buildLine
+      buildLine: updated.buildLine,
+      heroEyebrowText: updated.heroEyebrowText
     }
   });
 
