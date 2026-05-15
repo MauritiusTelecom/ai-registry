@@ -6,6 +6,8 @@ export type Branding = {
   logoUrl: string | null;
   copyrightLine: string;
   buildLine: string;
+  heroEyebrowText: string;
+  heroEyebrowIconUrl: string | null;
 };
 
 const DEFAULT_COPYRIGHT_LINE = "© 2026 Mauritius AI Registry · airegistry.mu";
@@ -25,11 +27,25 @@ export async function getBranding(): Promise<Branding> {
   if (cache && cache.expiresAt > now) return cache.value;
 
   const cfg = getConfig();
-  let row: { registryName: string | null; logoUrl: string | null; copyrightLine: string | null; buildLine: string | null } | null = null;
+  let row: {
+    registryName: string | null;
+    logoUrl: string | null;
+    copyrightLine: string | null;
+    buildLine: string | null;
+    heroEyebrowText: string | null;
+    heroEyebrowIconUrl: string | null;
+  } | null = null;
   try {
     row = await prisma.siteBranding.findUnique({
       where: { id: SINGLETON_ID },
-      select: { registryName: true, logoUrl: true, copyrightLine: true, buildLine: true }
+      select: {
+        registryName: true,
+        logoUrl: true,
+        copyrightLine: true,
+        buildLine: true,
+        heroEyebrowText: true,
+        heroEyebrowIconUrl: true
+      }
     });
   } catch {
     // DB not reachable or table missing - fall back to env/defaults so the
@@ -41,7 +57,9 @@ export async function getBranding(): Promise<Branding> {
     registryName: row?.registryName?.trim() || cfg.registryName,
     logoUrl: row?.logoUrl?.trim() || null,
     copyrightLine: row?.copyrightLine?.trim() || DEFAULT_COPYRIGHT_LINE,
-    buildLine: row?.buildLine?.trim() || DEFAULT_BUILD_LINE
+    buildLine: row?.buildLine?.trim() || DEFAULT_BUILD_LINE,
+    heroEyebrowText: row?.heroEyebrowText?.trim() || cfg.portalDomain,
+    heroEyebrowIconUrl: row?.heroEyebrowIconUrl?.trim() || null
   };
 
   cache = { value, expiresAt: now + CACHE_TTL_MS };

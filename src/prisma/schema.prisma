@@ -1143,13 +1143,15 @@ model NotificationRead {
 /// the title, hardcoded footer copy for copyright/build line, CSS gradient for
 /// the logo). Enforced singleton via fixed id = "default".
 model SiteBranding {
-  id            String   @id @default("default")
-  registryName  String?
-  logoUrl       String?
-  copyrightLine String?
-  buildLine     String?
-  updatedAt     DateTime @updatedAt
-  updatedById   String?  @db.Uuid
+  id                 String   @id @default("default")
+  registryName       String?
+  logoUrl            String?
+  copyrightLine      String?
+  buildLine          String?
+  heroEyebrowText    String?
+  heroEyebrowIconUrl String?
+  updatedAt          DateTime @updatedAt
+  updatedById        String?  @db.Uuid
 
   @@schema("registry")
 }

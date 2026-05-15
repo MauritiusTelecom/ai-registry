@@ -31,12 +31,15 @@ export default async function AdminBrandingPage() {
           registryName: row?.registryName ?? "",
           logoUrl: row?.logoUrl ?? null,
           copyrightLine: row?.copyrightLine ?? "",
-          buildLine: row?.buildLine ?? ""
+          buildLine: row?.buildLine ?? "",
+          heroEyebrowText: row?.heroEyebrowText ?? "",
+          heroEyebrowIconUrl: row?.heroEyebrowIconUrl ?? null
         }}
         defaults={{
           registryName: cfg.registryName,
           copyrightLine: DEFAULT_COPYRIGHT_LINE,
-          buildLine: DEFAULT_BUILD_LINE
+          buildLine: DEFAULT_BUILD_LINE,
+          heroEyebrowText: cfg.portalDomain
         }}
       />
     </div>
