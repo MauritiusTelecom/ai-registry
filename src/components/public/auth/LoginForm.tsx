@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/library";
 import { withBase } from "@/lib/with-base";
+import { AuthFormField } from "./AuthShell";
 
 /**
  * `redirect` carries the URL the user should land on if they were deep-linked
@@ -78,7 +80,7 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
 
   return (
     <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <FormField label="Email" htmlFor="login-email">
+      <AuthFormField label="Email" htmlFor="login-email">
         <input
           id="login-email"
           type="email"
@@ -88,8 +90,8 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
           onChange={(e) => setEmail(e.target.value)}
           className="auth-input"
         />
-      </FormField>
-      <FormField label="Password" htmlFor="login-password">
+      </AuthFormField>
+      <AuthFormField label="Password" htmlFor="login-password">
         <input
           id="login-password"
           type="password"
@@ -100,7 +102,7 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
           onChange={(e) => setPassword(e.target.value)}
           className="auth-input"
         />
-      </FormField>
+      </AuthFormField>
       {error ? (
         <div className="field-error" role="alert">
           {error}
@@ -130,54 +132,27 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
               Verification email re-sent. Check your inbox (and spam folder).
             </span>
           ) : (
-            <button
-              type="button"
+            <Button
+              intent="ghost"
+              size="sm"
               onClick={onResend}
               disabled={resendBusy}
-              className="btn"
               style={{ alignSelf: "flex-start" }}
             >
               {resendBusy ? "Sending…" : "Resend verification email"}
-            </button>
+            </Button>
           )}
         </div>
       ) : null}
-      <button
+      <Button
         type="submit"
-        className="btn btn-primary"
+        intent="primary"
         disabled={busy}
         style={{ marginTop: 6 }}
       >
         {busy ? "Signing in…" : "Sign in"}
-      </button>
+      </Button>
     </form>
   );
 }
-
-function FormField({
-  label,
-  htmlFor,
-  children
-}: {
-  label: string;
-  htmlFor: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label
-        htmlFor={htmlFor}
-        style={{
-          fontFamily: "IBM Plex Mono, monospace",
-          fontSize: 10.5,
-          letterSpacing: "0.18em",
-          textTransform: "uppercase",
-          color: "var(--text-3)"
-        }}
-      >
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-}
+// safe padding li

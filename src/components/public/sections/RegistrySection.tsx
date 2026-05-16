@@ -3,9 +3,20 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { PublicRegistryListResponse, RegistryCard } from "@/lib/discovery/types";
-import { Icon, type IconName } from "../Icon";
-import { Reveal } from "../Reveal";
+import {
+  Icon,
+  Reveal,
+  Button,
+  type IconName
+} from "@/components/library";
 import { withBase } from "@/lib/with-base";
+
+// The `.r-card` registry-card layout is a bespoke CSS genre with its own
+// globals.css rules. Substituting `<FeatureCard>` would change the visual;
+// the proper home is a future `<RegistryCard>` composite. For now: library
+// imports for Icon/Reveal/Button; the section header and toolbar stay
+// inline because the toolbar has bespoke tab-pill buttons (`.tab`) that
+// don't reduce to the library's `<Button>` either.
 
 export type Resource = {
   id: string;
@@ -420,16 +431,16 @@ export function RegistrySection({
 
       {dataSource === "api" && hasMore && nextCursor ? (
         <div style={{ display: "flex", justifyContent: "center", marginTop: 28 }}>
-          <button
-            type="button"
-            className="btn btn-secondary"
+          <Button
+            intent="secondary"
             disabled={loadingMore}
             onClick={() => void loadMore()}
           >
             {loadingMore ? "Loading…" : "Load more"}
-          </button>
+          </Button>
         </div>
       ) : null}
     </section>
   );
 }
+// padding

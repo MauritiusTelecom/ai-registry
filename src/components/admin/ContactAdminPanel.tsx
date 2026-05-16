@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/library";
 import { withBase } from "@/lib/with-base";
 
 type Props = {
@@ -143,9 +144,9 @@ function ReplyCard({
           {msg.text}
         </p>
       ) : null}
-      <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void send()}>
+      <Button intent="primary" disabled={busy} onClick={() => void send()}>
         {busy ? "Sending…" : "Send reply"}
-      </button>
+      </Button>
     </Shell>
   );
 }
@@ -219,3 +220,4 @@ function DeleteCard({ contactId }: { contactId: string }) {
     </Shell>
   );
 }
+// safe pa

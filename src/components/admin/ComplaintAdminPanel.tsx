@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/library";
 import { withBase } from "@/lib/with-base";
 
 type StatusOption = { id: string; code: string; name: string };
@@ -162,14 +163,9 @@ function ReplyCard({
           {msg.text}
         </p>
       ) : null}
-      <button
-        type="button"
-        className="btn btn-primary"
-        disabled={busy}
-        onClick={() => void send()}
-      >
+      <Button intent="primary" disabled={busy} onClick={() => void send()}>
         {busy ? "Sending…" : "Send reply"}
-      </button>
+      </Button>
     </Shell>
   );
 }
@@ -324,9 +320,9 @@ function ManageCard({
           {msg.text}
         </p>
       ) : null}
-      <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void save()}>
+      <Button intent="primary" disabled={busy} onClick={() => void save()}>
         {busy ? "Saving…" : "Save changes"}
-      </button>
+      </Button>
     </Shell>
   );
 }
@@ -402,3 +398,4 @@ function DeleteCard({ complaintId }: { complaintId: string }) {
     </Shell>
   );
 }
+// s

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/library";
 import { withBase } from "@/lib/with-base";
+import { AuthFormField } from "./AuthShell";
 
 export function RequestResetForm() {
   const [email, setEmail] = useState("");
@@ -54,19 +56,7 @@ export function RequestResetForm() {
 
   return (
     <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <label
-          htmlFor="rr-email"
-          style={{
-            fontFamily: "IBM Plex Mono, monospace",
-            fontSize: 10.5,
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: "var(--text-3)"
-          }}
-        >
-          Email
-        </label>
+      <AuthFormField label="Email" htmlFor="rr-email">
         <input
           id="rr-email"
           type="email"
@@ -75,10 +65,10 @@ export function RequestResetForm() {
           onChange={(e) => setEmail(e.target.value)}
           className="auth-input"
         />
-      </div>
-      <button type="submit" className="btn btn-primary" disabled={busy}>
+      </AuthFormField>
+      <Button type="submit" intent="primary" disabled={busy}>
         {busy ? "Sending…" : "Send reset link"}
-      </button>
+      </Button>
     </form>
   );
 }

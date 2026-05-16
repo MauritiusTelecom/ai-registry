@@ -1,10 +1,16 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { Icon } from "../Icon";
-import { Reveal } from "../Reveal";
+import { Icon, Reveal, Button, Gradient } from "@/components/library";
 import { PageHero } from "./PageHero";
 import { withBase } from "@/lib/with-base";
+
+// The `.field`, `.contact-grid`, `.contact-info-*`, `.contact-form-block`
+// classes here are a bespoke contact-page CSS genre (defined in globals.css)
+// distinct from both the portal `.p-field` and the auth `.auth-input`
+// styles. The library's `<Field>` / `<Input>` would change the visual, so
+// the form structure is kept inline. Buttons and icons go through the
+// library.
 
 type Form = {
   name: string;
@@ -83,7 +89,7 @@ export function ContactContent() {
         crumb="Contact · Talk to Mauritius Telecom"
         title={
           <>
-            Get in <span className="gradient-text">touch</span>.
+            Get in <Gradient>touch</Gradient>.
           </>
         }
         subtitle="Submit a resource, request review, report an issue, or talk to the Mauritius Telecom team about standing up a registry in your jurisdiction."
@@ -137,9 +143,8 @@ export function ContactContent() {
                       you register with the same email, your verified messages appear in your portal.
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
+                  <Button
+                    intent="secondary"
                     style={{ marginTop: 18 }}
                     onClick={() => {
                       setSent(false);
@@ -148,7 +153,7 @@ export function ContactContent() {
                     }}
                   >
                     Send another
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <form onSubmit={submit} noValidate>
@@ -220,9 +225,14 @@ export function ContactContent() {
                     >
                       We reply within 2 working days.
                     </span>
-                    <button type="submit" className="btn btn-primary" disabled={submitting}>
-                      {submitting ? "Sending…" : "Send message"} <Icon name="arrow-right" size={13} />
-                    </button>
+                    <Button
+                      type="submit"
+                      intent="primary"
+                      disabled={submitting}
+                      trailingIcon="arrow-right"
+                    >
+                      {submitting ? "Sending…" : "Send message"}
+                    </Button>
                   </div>
                 </form>
               )}

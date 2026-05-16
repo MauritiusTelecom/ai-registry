@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
+import { EntityGrid, type EntityColumn } from "@/components/library";
 import { StatusPill } from "../StatusPill";
 
 export type ProviderComplaintRow = {
@@ -21,7 +21,7 @@ type Props = {
 };
 
 export function ProviderComplaintsGrid({ rows, types }: Props) {
-  const columns: FilteredColumn<ProviderComplaintRow>[] = [
+  const columns: EntityColumn<ProviderComplaintRow>[] = [
     { key: "ts", label: "Filed", render: (row) => row.ts, mono: true },
     {
       key: "target",
@@ -61,10 +61,9 @@ export function ProviderComplaintsGrid({ rows, types }: Props) {
   ];
 
   return (
-    <FilteredDataTable
+    <EntityGrid
       rows={rows}
       columns={columns}
-      keyOf={(r) => r.id}
       emptyState="No complaints filed against your provider or resources."
       searchPlaceholder="Search complaints by target or text excerpt…"
       searchableKeys={["target", "excerpt"]}

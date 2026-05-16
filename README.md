@@ -1,10 +1,34 @@
 # ai-registry
 
-**Reference implementation** of the [AIR-SPEC 0.4](../ai-registry-specs/.speckit/specification.md) Mauritius AI Registry - a Next.js public portal, Provider/Admin/Verifier/Sovereign workspaces, and the PostgreSQL `registry` schema. Discovery is exposed via REST under `/api/...`; an MCP Streamable HTTP adapter at `/api/mcp` is on the Phase 5 roadmap.
+**Reference implementation** of the [AIR-SPEC 0.4](../ai-registry-specs/.speckit/specification.md) Mauritius AI Registry - a Next.js public portal, Provider/Admin/Verifier/Sovereign workspaces, and the PostgreSQL `registry` schema. Discovery is exposed via REST under `/api/...`, plus an MCP Streamable HTTP adapter at `/api/mcp` (Phase 5).
 
 The reference deployment is `airegistry.mu` (Mauritius Telecom as first reference operator). The codebase carries **no jurisdiction-specific defaults** - every deployment supplies its own `registry_name`, `jurisdiction`, `identity_domain`, `operator_name`, `default_language`, and resource-type set via configuration (see "Configuration" below).
 
 > **Listing ≠ endorsement.** The registry points; the provider operates; the hosting environment secures. Public surfaces reflect this separation in copy, status labels, and footer disclaimer.
+
+## What this is
+
+An AI Registry is a jurisdiction-configured catalogue: it **lists, identifies, describes, and helps discover** AI resources that are locally relevant (for example models, agents, tools, and skills), with structured metadata and stable identifiers. It does **not** host workloads, run inference, authorize access to third-party provider APIs, or sit on the runtime path between consumers and providers.
+
+## AIR identifiers
+
+Listing identity uses the dedicated `air://` URI scheme (distinct from runtime workload identity such as `spiffe://`). Conventional shape:
+
+```
+air://{identity_domain}/{resource_type}/{provider_slug}/{resource_slug}
+```
+
+Example: `air://air.mu/skill/gov/mra-tax-calculator`. Grammar and constraints are normative in [AIR-SPEC 0.4](../ai-registry-specs/.speckit/specification.md).
+
+## Status
+
+This codebase implements **AIR-SPEC 0.4**. The specification and schema may still evolve, including **breaking** database changes addressed through Prisma migrations. The **`package.json` version** is the application release line, not the AIR-SPEC version (see [`GOVERNANCE.md`](GOVERNANCE.md) section 7).
+
+## Product scope (summary)
+
+**In scope:** public directory and discovery APIs; governance metadata (for example provider verification, sovereignty review, official-resource elevation); append-only audit for governance writes; localisation; adapters (MCP and future) as read-only **views** over the same catalogue data.
+
+**Out of scope:** hosting inference or agents for third parties; acting as a runtime gateway or proxy; issuing runtime credentials for provider APIs; billing or marketplace settlement; legal certification or liability arbitration for providers. The authoritative list is in [`GOVERNANCE.md`](GOVERNANCE.md) (sections 2–3).
 
 ## Quickstart
 
@@ -57,6 +81,7 @@ npm run dev                       # http://localhost:3002
 | `npm run db:reset` | Drop the `registry` schema, re-push, and re-seed (development only - destructive). |
 | `npm run config:validate` | Load and validate the deployment configuration without booting Next.js. |
 | `npm run smoke` | Hit the Phase 5 adapter surface (`/api/health`, `/.well-known/ai-registry`, `/api/resources`, `/api/resolve`, `/api/mcp`) against the running app. Set `BASE=http://host:port` to point elsewhere. |
+| `npm run smoke:extra` | Companion smoke for other unauthenticated public APIs (`/api/discover`, `/api/providers`, taxonomies, `/api/openapi`, `GET /api/mcp` → 405). Same `BASE` env as `smoke`. |
 
 ## Configuration
 
@@ -110,12 +135,18 @@ Phased delivery is tracked in [`../ai-registry-specs/.speckit/implementation_pla
 
 ## Repository conventions
 
+Contributions are welcome from telcos, government digital agencies, sovereign cloud operators, public-interest technology organisations, and individual developers. Follow [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`GOVERNANCE.md`](GOVERNANCE.md); changes that breach the registry-only boundary in `GOVERNANCE.md` will not be accepted.
+
 - Open-source license: Apache-2.0 (see [`LICENSE`](LICENSE)).
 - Contribution process and conduct: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 - Security disclosure: [`SECURITY.md`](SECURITY.md).
 - Governance and explicitly-out-of-scope list: [`GOVERNANCE.md`](GOVERNANCE.md).
 - Specs are normative and live under [`../ai-registry-specs/`](../ai-registry-specs/).
 - Design source-of-truth is the Claude prototype at [`../ai-registry-prototype/claudedesign/`](../ai-registry-prototype/claudedesign/) (the local copy carries the latest fixes; see `ai-registry-specs/.speckit/design.md`).
+
+## Acknowledgements
+
+AI Registry was spearheaded by Mauritius Telecom. The reference deployment at [airegistry.mu](https://www.airegistry.mu) is operated by Mauritius Telecom as the first reference operator; other jurisdictions can deploy this codebase with their own environment configuration.
 
 ## License
 

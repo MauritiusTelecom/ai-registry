@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Icon } from "@/components/public/Icon";
+import { Icon, ConfirmDialog, Modal, Button } from "@/components/library";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
 import { RowActionMenu, type RowMenuItem } from "./RowActionMenu";
 import { StatusPill } from "@/components/portals/StatusPill";
@@ -230,89 +230,48 @@ function ProviderRowActions({
         </div>
       ) : null}
 
-      {editing ? (
-        <div className="modal-backdrop" onClick={() => setEditing(false)}>
-          <div
-            className="glass"
-            style={{ maxWidth: 600, padding: 24, width: "100%" }}
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
-            <header
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "baseline",
-                marginBottom: 16
-              }}
-            >
-              <h3 style={{ margin: 0 }}>Edit provider</h3>
-              <button
-                type="button"
-                className="r-card-action-link"
-                onClick={() => setEditing(false)}
-                aria-label="Close"
-                style={{ color: "var(--text)" }}
-              >
-                <Icon name="x" size={12} /> Close
-              </button>
-            </header>
-            <ProviderForm
-              types={types}
-              jurisdictions={jurisdictions}
-              mode="edit"
-              initial={row}
-              onDone={() => {
-                setEditing(false);
-                reload();
-              }}
-            />
-          </div>
+      <Modal
+        open={editing}
+        onClose={() => setEditing(false)}
+        title="Edit provider"
+        maxWidth={600}
+      >
+        <div style={{ padding: 24 }}>
+          <ProviderForm
+            types={types}
+            jurisdictions={jurisdictions}
+            mode="edit"
+            initial={row}
+            onDone={() => {
+              setEditing(false);
+              reload();
+            }}
+          />
         </div>
-      ) : null}
+      </Modal>
 
-      {confirmDelete ? (
-        <div className="modal-backdrop" onClick={() => setConfirmDelete(false)}>
-          <div
-            className="glass"
-            style={{ maxWidth: 460, padding: 24 }}
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
-            <h3 style={{ margin: 0, marginBottom: 8 }}>Delete provider?</h3>
-            <p style={{ color: "var(--text-2)", fontSize: 14, marginBottom: 18 }}>
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete provider?"
+        body={
+          <>
+            <p style={{ margin: 0, color: "var(--text-2)", fontSize: 14, marginBottom: 12 }}>
               <strong>{row.displayName}</strong> ({row.slug}) will be deleted permanently.
               Delete is refused when any resource, user, or audit reference exists - suspend
               the provider instead.
             </p>
             {error ? (
-              <div className="field-error" style={{ marginBottom: 12 }}>
+              <div className="field-error" style={{ marginBottom: 4 }}>
                 {error}
               </div>
             ) : null}
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setConfirmDelete(false)}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={doDelete}
-                disabled={busy}
-                style={{ background: "#ef4444", borderColor: "#ef4444" }}
-              >
-                {busy ? "Deleting…" : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+          </>
+        }
+        destructive
+        confirmLabel={busy ? "Deleting…" : "Delete"}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={doDelete}
+      />
     </>
   );
 }
@@ -462,17 +421,12 @@ function ProviderForm({
       ) : null}
 
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 6 }}>
-        <button type="button" className="btn btn-secondary" onClick={onDone}>
+        <Button intent="secondary" onClick={onDone}>
           Cancel
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={submit}
-          disabled={busy}
-        >
+        </Button>
+        <Button intent="primary" onClick={submit} disabled={busy}>
           {busy ? "Saving…" : mode === "create" ? "Create provider" : "Save"}
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SOVEREIGNTY_CHECKLIST_ITEMS, type ChecklistAnswerCode } from "@/lib/governance/sovereignty-checklist";
 import { withBase } from "@/lib/with-base";
+import { Button } from "@/components/library";
 
 type Props = {
   reviewId: string;
@@ -147,9 +148,9 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
         </p>
       ) : null}
 
-      <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void submit()}>
+      <Button intent="primary" disabled={busy} onClick={() => void submit()}>
         {busy ? "Saving…" : "Submit decision"}
-      </button>
+      </Button>
     </div>
   );
 }

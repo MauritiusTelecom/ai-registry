@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Icon, type IconName } from "@/components/public/Icon";
+import { Icon, ConfirmDialog, Modal, Button, type IconName } from "@/components/library";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
 import { RowActionMenu, type RowMenuItem } from "./RowActionMenu";
 import { withBase } from "@/lib/with-base";
@@ -302,47 +302,28 @@ function ResourceRowActions({
         />
       ) : null}
 
-      {confirmDelete ? (
-        <div className="modal-backdrop" onClick={() => setConfirmDelete(false)}>
-          <div
-            className="glass"
-            style={{ maxWidth: 460, padding: 24 }}
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
-            <h3 style={{ margin: 0, marginBottom: 8 }}>Delete resource?</h3>
-            <p style={{ color: "var(--text-2)", fontSize: 14, marginBottom: 18 }}>
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete resource?"
+        body={
+          <>
+            <p style={{ margin: 0, color: "var(--text-2)", fontSize: 14, marginBottom: 12 }}>
               <strong>{row.title}</strong> will be deleted permanently. Delete is refused once
               an AIR-ID has been minted or any review / trust-signal exists - use{" "}
               <strong>Remove</strong> instead to tombstone the row.
             </p>
             {error ? (
-              <div className="field-error" style={{ marginBottom: 12 }}>
+              <div className="field-error" style={{ marginBottom: 4 }}>
                 {error}
               </div>
             ) : null}
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setConfirmDelete(false)}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={doDelete}
-                disabled={busy}
-                style={{ background: "#ef4444", borderColor: "#ef4444" }}
-              >
-                {busy ? "Deleting…" : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+          </>
+        }
+        destructive
+        confirmLabel={busy ? "Deleting…" : "Delete"}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={doDelete}
+      />
     </>
   );
 }
@@ -385,35 +366,17 @@ function ActionDialog({
   }
 
   return (
-    <div className="modal-backdrop" onClick={() => onClose(false)}>
-      <div
-        className="glass"
-        style={{ maxWidth: 480, padding: 24, width: "100%" }}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-      >
-        <header
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "baseline",
-            marginBottom: 16
-          }}
-        >
-          <h3 style={{ margin: 0, textTransform: "capitalize" }}>
-            {action} · {row.title}
-          </h3>
-          <button
-            type="button"
-            className="r-card-action-link"
-            onClick={() => onClose(false)}
-            aria-label="Close"
-            style={{ color: "var(--text)" }}
-          >
-            <Icon name="x" size={12} /> Close
-          </button>
-        </header>
+    <Modal
+      open
+      onClose={() => onClose(false)}
+      title={
+        <span style={{ textTransform: "capitalize" }}>
+          {action} · {row.title}
+        </span>
+      }
+      maxWidth={480}
+    >
+      <div style={{ padding: 24 }}>
         <p style={{ fontSize: 13, color: "var(--text-2)", margin: "0 0 14px" }}>
           {action === "approve" ? (
             <>
@@ -469,24 +432,19 @@ function ActionDialog({
           </div>
         ) : null}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 14 }}>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => onClose(false)}
-          >
+          <Button intent="secondary" onClick={() => onClose(false)}>
             Cancel
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
+          </Button>
+          <Button
+            intent="primary"
             onClick={submit}
             disabled={busy || reason.trim().length < 4}
           >
             {busy ? "Working…" : action.charAt(0).toUpperCase() + action.slice(1)}
-          </button>
+          </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -649,17 +607,12 @@ function ResourceForm({
       ) : null}
 
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 6 }}>
-        <button type="button" className="btn btn-secondary" onClick={onDone}>
+        <Button intent="secondary" onClick={onDone}>
           Cancel
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={submit}
-          disabled={busy}
-        >
+        </Button>
+        <Button intent="primary" onClick={submit} disabled={busy}>
           {busy ? "Saving…" : "Create & open editor"}
-        </button>
+        </Button>
       </div>
     </div>
   );

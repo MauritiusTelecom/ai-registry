@@ -1,12 +1,16 @@
-import { Icon, type IconName } from "../Icon";
-import { Reveal } from "../Reveal";
+import {
+  PageSection,
+  Reveal,
+  FeatureCard,
+  Gradient,
+  type IconName,
+  type Tone
+} from "@/components/library";
 
 // "Listing criteria" — the sovereignty test. Left panel explains how it
 // works and the quality-over-quantity stance; right panel is a 2x2 grid of
 // the four sovereignty bases. Mirrors the #sovereignty section in
 // uploads/AI_Registry_Decision_Makers_Guide.html.
-
-type Tone = "primary" | "tertiary" | "secondary" | "emerald";
 
 const BASES: { icon: IconName; title: string; desc: string; tone: Tone }[] = [
   {
@@ -35,32 +39,24 @@ const BASES: { icon: IconName; title: string; desc: string; tone: Tone }[] = [
   }
 ];
 
-const TONE: Record<Tone, { rgb: string; color: string }> = {
-  primary: { rgb: "var(--primary-rgb)", color: "var(--primary)" },
-  tertiary: { rgb: "var(--tertiary-rgb)", color: "var(--tertiary)" },
-  secondary: { rgb: "var(--secondary-rgb)", color: "var(--secondary)" },
-  emerald: { rgb: "16, 185, 129", color: "#10b981" }
-};
-
 export function ListingCriteria() {
   return (
-    <section className="section">
-      <Reveal className="section-header">
-        <div className="eyebrow">
-          <span className="dot" />
-          <span>Listing criteria</span>
-        </div>
-        <h2>
-          The <span className="gradient-text">sovereignty test.</span>
-        </h2>
-        <p>
+    <PageSection
+      eyebrow="Listing criteria"
+      title={
+        <>
+          The <Gradient>sovereignty test.</Gradient>
+        </>
+      }
+      subtitle={
+        <>
           Only resources that meet a sovereignty test are listed past basic discovery.
           The test asks whether the resource encodes local law, local data, local
           systems, or local language and culture - keeping &ldquo;sovereign&rdquo;
           specific, not aspirational.
-        </p>
-      </Reveal>
-
+        </>
+      }
+    >
       <Reveal>
         <div
           style={{
@@ -70,7 +66,9 @@ export function ListingCriteria() {
           }}
           className="listing-criteria-grid"
         >
-          {/* Left: How it works panel */}
+          {/* Left: bespoke "How it works" explainer panel - heavier border,
+              radial-gradient background, an inline amber quality-over-quantity
+              callout. Kept inline because it's a one-off layout. */}
           <div
             style={{
               padding: 28,
@@ -135,7 +133,7 @@ export function ListingCriteria() {
             </div>
           </div>
 
-          {/* Right: 2x2 grid of sovereignty bases */}
+          {/* Right: 2x2 grid of sovereignty bases - clean FeatureCard fit. */}
           <div
             style={{
               display: "grid",
@@ -144,61 +142,19 @@ export function ListingCriteria() {
             }}
             className="listing-criteria-bases"
           >
-            {BASES.map((b) => {
-              const tone = TONE[b.tone];
-              return (
-                <div
-                  key={b.title}
-                  style={{
-                    padding: 18,
-                    borderRadius: 14,
-                    border: "1px solid var(--border)",
-                    background: "var(--panel)",
-                    transition: "border-color 200ms"
-                  }}
-                  className="feature-card"
-                >
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 10,
-                      display: "grid",
-                      placeItems: "center",
-                      marginBottom: 12,
-                      background: `rgba(${tone.rgb}, 0.15)`,
-                      color: tone.color,
-                      border: `1px solid rgba(${tone.rgb}, 0.30)`
-                    }}
-                  >
-                    <Icon name={b.icon} size={18} stroke={1.8} />
-                  </div>
-                  <h4
-                    style={{
-                      margin: "0 0 6px",
-                      fontSize: 15,
-                      fontWeight: 500,
-                      color: "var(--text)"
-                    }}
-                  >
-                    {b.title}
-                  </h4>
-                  <p
-                    style={{
-                      margin: 0,
-                      color: "var(--text-2)",
-                      fontSize: 13.5,
-                      lineHeight: 1.55
-                    }}
-                  >
-                    {b.desc}
-                  </p>
-                </div>
-              );
-            })}
+            {BASES.map((b) => (
+              <FeatureCard
+                key={b.title}
+                icon={b.icon}
+                tone={b.tone}
+                title={b.title}
+                body={b.desc}
+                padding={18}
+              />
+            ))}
           </div>
         </div>
       </Reveal>
-    </section>
+    </PageSection>
   );
 }

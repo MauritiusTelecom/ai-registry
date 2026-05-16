@@ -23,6 +23,7 @@
     "test:emails": "tsx scripts/test-emails.ts",
     "test:smtp": "tsx scripts/test-smtp.ts",
     "smoke": "tsx scripts/smoke-public.ts",
+    "smoke:extra": "tsx scripts/smoke-public-extra.ts",
     "deploy": "bash deploy/deploy.sh",
     "deploy:dry": "DRY_RUN=1 bash deploy/deploy.sh",
     "deploy:db:remote": "bash deploy/deploy-db.sh"

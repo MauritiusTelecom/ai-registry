@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@/lib/with-base";
+import { Button } from "@/components/library";
 
 const OPTIONS: { value: string; label: string }[] = [
   { value: "verified", label: "Verified" },
@@ -146,15 +147,13 @@ export function ProviderVerifyForm({
       {error ? (
         <p style={{ color: "#d33", fontSize: 12, margin: 0 }}>{error}</p>
       ) : null}
-      <button
-        type="button"
-        className="btn btn-primary"
+      <Button intent="primary"
         disabled={busy || summary.trim().length < 4}
         onClick={submit}
         style={{ justifySelf: "start" }}
       >
         {busy ? "Saving…" : "Record decision"}
-      </button>
+      </Button>
     </div>
   );
 }

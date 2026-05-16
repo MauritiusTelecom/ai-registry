@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Icon } from "@/components/public/Icon";
+import { Icon, Button, Field, Input, Select, TextArea } from "@/components/library";
 import { withBase } from "@/lib/with-base";
 
 type RefRow = { code: string; name: string };
@@ -272,21 +271,19 @@ export function ResourceEditForm({
       <Section title="Identity & classification">
         <Row>
           <Field label="Title">
-            <input
-              className="auth-input"
-              value={title}
+            <Input
+                            value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </Field>
           <Field label="Slug (immutable)">
-            <input className="auth-input" value={initial.slug} disabled />
+            <Input value={initial.slug} disabled />
           </Field>
         </Row>
         <Row>
           <Field label="Kind / resource type">
-            <select
-              className="auth-input"
-              value={kindCode}
+            <Select
+                            value={kindCode}
               onChange={(e) => setKindCode(e.target.value)}
             >
               {resourceTypes.map((rt) => (
@@ -294,12 +291,11 @@ export function ResourceEditForm({
                   {rt.name} ({rt.code})
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <Field label="Provider">
-            <select
-              className="auth-input"
-              value={providerSlug}
+            <Select
+                            value={providerSlug}
               onChange={(e) => setProviderSlug(e.target.value)}
             >
               {providers.map((p) => (
@@ -307,14 +303,13 @@ export function ResourceEditForm({
                   {p.displayName} ({p.slug})
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
         </Row>
         <Row>
           <Field label="Primary jurisdiction">
-            <select
-              className="auth-input"
-              value={jurisdictionCode}
+            <Select
+                            value={jurisdictionCode}
               onChange={(e) => setJurisdictionCode(e.target.value)}
             >
               {jurisdictions.map((j) => (
@@ -322,12 +317,11 @@ export function ResourceEditForm({
                   {j.name} ({j.code})
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <Field label="Risk level">
-            <select
-              className="auth-input"
-              value={riskCode}
+            <Select
+                            value={riskCode}
               onChange={(e) => setRiskCode(e.target.value)}
             >
               {riskLevels.map((r) => (
@@ -335,14 +329,13 @@ export function ResourceEditForm({
                   {r.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
         </Row>
         <Row>
           <Field label="Listing origin">
-            <select
-              className="auth-input"
-              value={listingOriginCode}
+            <Select
+                            value={listingOriginCode}
               onChange={(e) => setListingOriginCode(e.target.value)}
             >
               {listingOrigins.map((lo) => (
@@ -350,12 +343,11 @@ export function ResourceEditForm({
                   {lo.name} ({lo.code})
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
           <Field label="Lifecycle status (use the sidebar to change)">
-            <input
-              className="auth-input"
-              value={`${initial.lifecycleName} (${initial.lifecycleCode})`}
+            <Input
+                            value={`${initial.lifecycleName} (${initial.lifecycleCode})`}
               disabled
             />
           </Field>
@@ -377,17 +369,15 @@ export function ResourceEditForm({
       {/* ── 2. Descriptions ─────────────────────────────────────────────── */}
       <Section title="Descriptions">
         <Field label="Short description (8+ chars, shown on cards)">
-          <textarea
-            className="auth-input"
-            style={{ minHeight: 70, fontFamily: "inherit" }}
+          <TextArea
+                          style={{ minHeight: 70, fontFamily: "inherit" }}
             value={shortDescription}
             onChange={(e) => setShortDescription(e.target.value)}
           />
         </Field>
         <Field label="Long description (markdown OK, shown on detail page)">
-          <textarea
-            className="auth-input"
-            style={{ minHeight: 140, fontFamily: "inherit" }}
+          <TextArea
+                          style={{ minHeight: 140, fontFamily: "inherit" }}
             value={longDescription}
             onChange={(e) => setLongDescription(e.target.value)}
           />
@@ -398,17 +388,15 @@ export function ResourceEditForm({
       <Section title="Versioning & access">
         <Row>
           <Field label="License">
-            <input
-              className="auth-input"
-              placeholder="Commercial, Apache-2.0, …"
+            <Input
+                            placeholder="Commercial, Apache-2.0, …"
               value={license}
               onChange={(e) => setLicense(e.target.value)}
             />
           </Field>
           <Field label="Version label">
-            <input
-              className="auth-input"
-              placeholder="200k tokens, Multi-step, …"
+            <Input
+                            placeholder="200k tokens, Multi-step, …"
               value={versionLabel}
               onChange={(e) => setVersionLabel(e.target.value)}
             />
@@ -416,50 +404,44 @@ export function ResourceEditForm({
         </Row>
         <Row>
           <Field label="Version number">
-            <input
-              className="auth-input"
-              placeholder="0.1.0"
+            <Input
+                            placeholder="0.1.0"
               value={versionNumber}
               onChange={(e) => setVersionNumber(e.target.value)}
             />
           </Field>
           <Field label="Latency tier">
-            <input
-              className="auth-input"
-              placeholder="0.8s, Async (job), …"
+            <Input
+                            placeholder="0.8s, Async (job), …"
               value={latencyTier}
               onChange={(e) => setLatencyTier(e.target.value)}
             />
           </Field>
         </Row>
         <Field label="Access URL">
-          <input
-            className="auth-input"
-            placeholder="https://…"
+          <Input
+                          placeholder="https://…"
             value={accessUrl}
             onChange={(e) => setAccessUrl(e.target.value)}
           />
         </Field>
         <Field label="Source code URL">
-          <input
-            className="auth-input"
-            placeholder="https://github.com/…"
+          <Input
+                          placeholder="https://github.com/…"
             value={sourceCodeUrl}
             onChange={(e) => setSourceCodeUrl(e.target.value)}
           />
         </Field>
         <Field label="Documentation URL">
-          <input
-            className="auth-input"
-            placeholder="https://…"
+          <Input
+                          placeholder="https://…"
             value={documentationUrl}
             onChange={(e) => setDocumentationUrl(e.target.value)}
           />
         </Field>
         <Field label="Terms URL">
-          <input
-            className="auth-input"
-            placeholder="https://…"
+          <Input
+                          placeholder="https://…"
             value={termsUrl}
             onChange={(e) => setTermsUrl(e.target.value)}
           />
@@ -526,9 +508,8 @@ export function ResourceEditForm({
             >
               <Row>
                 <Field label="Evidence type">
-                  <select
-                    className="auth-input"
-                    value={e.evidenceTypeCode}
+                  <Select
+                                  value={e.evidenceTypeCode}
                     onChange={(ev) =>
                       updateEvidence(i, { evidenceTypeCode: ev.target.value })
                     }
@@ -538,12 +519,11 @@ export function ResourceEditForm({
                         {t.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </Field>
                 <Field label="Sovereignty basis">
-                  <select
-                    className="auth-input"
-                    value={e.sovereigntyBasisCode}
+                  <Select
+                                  value={e.sovereigntyBasisCode}
                     onChange={(ev) =>
                       updateEvidence(i, { sovereigntyBasisCode: ev.target.value })
                     }
@@ -553,20 +533,18 @@ export function ResourceEditForm({
                         {b.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </Field>
               </Row>
               <Field label="Title">
-                <input
-                  className="auth-input"
-                  value={e.title}
+                <Input
+                                value={e.title}
                   onChange={(ev) => updateEvidence(i, { title: ev.target.value })}
                 />
               </Field>
               <Field label="Description">
-                <textarea
-                  className="auth-input"
-                  style={{ minHeight: 70, fontFamily: "inherit" }}
+                <TextArea
+                                style={{ minHeight: 70, fontFamily: "inherit" }}
                   value={e.description ?? ""}
                   onChange={(ev) =>
                     updateEvidence(i, { description: ev.target.value })
@@ -575,9 +553,8 @@ export function ResourceEditForm({
               </Field>
               <Row>
                 <Field label="Reference URL">
-                  <input
-                    className="auth-input"
-                    placeholder="https://…"
+                  <Input
+                                  placeholder="https://…"
                     value={e.referenceUrl ?? ""}
                     onChange={(ev) =>
                       updateEvidence(i, { referenceUrl: ev.target.value })
@@ -585,9 +562,8 @@ export function ResourceEditForm({
                   />
                 </Field>
                 <Field label="Reference identifier">
-                  <input
-                    className="auth-input"
-                    placeholder="DPA 2017, MT-CLOUD-EBN, …"
+                  <Input
+                                  placeholder="DPA 2017, MT-CLOUD-EBN, …"
                     value={e.referenceIdentifier ?? ""}
                     onChange={(ev) =>
                       updateEvidence(i, { referenceIdentifier: ev.target.value })
@@ -596,9 +572,8 @@ export function ResourceEditForm({
                 </Field>
               </Row>
               <Field label="Issuing body">
-                <input
-                  className="auth-input"
-                  placeholder="Data Protection Office, …"
+                <Input
+                                placeholder="Data Protection Office, …"
                   value={e.issuingBody ?? ""}
                   onChange={(ev) =>
                     updateEvidence(i, { issuingBody: ev.target.value })
@@ -673,9 +648,8 @@ export function ResourceEditForm({
           >
             <Row>
               <Field label="Protocol">
-                <select
-                  className="auth-input"
-                  value={ep.protocolCode}
+                <Select
+                                value={ep.protocolCode}
                   onChange={(e) => updateEndpoint(i, { protocolCode: e.target.value })}
                 >
                   {protocols.map((p) => (
@@ -683,21 +657,19 @@ export function ResourceEditForm({
                       {p.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
               <Field label="Endpoint URL">
-                <input
-                  className="auth-input"
-                  placeholder="https://…"
+                <Input
+                                placeholder="https://…"
                   value={ep.endpointUrl}
                   onChange={(e) => updateEndpoint(i, { endpointUrl: e.target.value })}
                 />
               </Field>
             </Row>
             <Field label="Documentation URL">
-              <input
-                className="auth-input"
-                placeholder="https://…"
+              <Input
+                              placeholder="https://…"
                 value={ep.documentationUrl ?? ""}
                 onChange={(e) =>
                   updateEndpoint(i, { documentationUrl: e.target.value })
@@ -706,9 +678,8 @@ export function ResourceEditForm({
             </Field>
             <Row>
               <Field label="Auth method">
-                <select
-                  className="auth-input"
-                  value={ep.authMethodCode}
+                <Select
+                                value={ep.authMethodCode}
                   onChange={(e) =>
                     updateEndpoint(i, { authMethodCode: e.target.value })
                   }
@@ -718,12 +689,11 @@ export function ResourceEditForm({
                       {a.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
               <Field label="Access model">
-                <select
-                  className="auth-input"
-                  value={ep.accessModelCode}
+                <Select
+                                value={ep.accessModelCode}
                   onChange={(e) =>
                     updateEndpoint(i, { accessModelCode: e.target.value })
                   }
@@ -733,7 +703,7 @@ export function ResourceEditForm({
                       {a.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
             </Row>
             <div
@@ -856,17 +826,16 @@ export function ResourceEditForm({
           background: "var(--bg)"
         }}
       >
-        <Link className="btn btn-secondary" href="/admin/resources">
+        <Button href="/admin/resources" intent="secondary">
           Back to grid
-        </Link>
-        <button
-          type="button"
-          className="btn btn-primary"
+        </Button>
+        <Button
+          intent="primary"
           onClick={submit}
           disabled={busy}
         >
           {busy ? "Saving…" : "Save changes"}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -889,23 +858,5 @@ function Row({ children }: { children: React.ReactNode }) {
     <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
       {children}
     </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label style={{ display: "grid", gap: 6, fontSize: 13 }}>
-      <span
-        style={{
-          fontSize: 11,
-          color: "var(--text-3)",
-          letterSpacing: "0.08em",
-          textTransform: "uppercase"
-        }}
-      >
-        {label}
-      </span>
-      {children}
-    </label>
   );
 }

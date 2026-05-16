@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
+import { EntityGrid, type EntityColumn } from "@/components/library";
 import { StatusPill } from "../StatusPill";
 
 export type ProviderReviewRow = {
@@ -21,7 +21,7 @@ type Props = {
 };
 
 export function ProviderReviewsGrid({ rows, types }: Props) {
-  const columns: FilteredColumn<ProviderReviewRow>[] = [
+  const columns: EntityColumn<ProviderReviewRow>[] = [
     {
       key: "target",
       label: "Target",
@@ -67,10 +67,9 @@ export function ProviderReviewsGrid({ rows, types }: Props) {
   ];
 
   return (
-    <FilteredDataTable
+    <EntityGrid
       rows={rows}
       columns={columns}
-      keyOf={(r) => r.id}
       emptyState="No reviews of your resources yet."
       searchPlaceholder="Search reviews by target or decision summary…"
       searchableKeys={["target", "decisionSummary"]}

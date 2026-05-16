@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@/lib/with-base";
+import { Button } from "@/components/library";
 
 type Action =
   | "approve"
@@ -154,13 +155,11 @@ export function ResourceLifecyclePanel({
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {allowed.map((a) => (
-              <button
+              <Button
                 key={a}
-                type="button"
-                className="btn btn-secondary"
+                intent="secondary"
+                size="sm"
                 style={{
-                  padding: "6px 10px",
-                  fontSize: 12,
                   borderColor: action === a ? ACTION_TONE[a] : undefined,
                   color: action === a ? ACTION_TONE[a] : undefined
                 }}
@@ -172,7 +171,7 @@ export function ResourceLifecyclePanel({
                 disabled={busy}
               >
                 {a.charAt(0).toUpperCase() + a.slice(1)}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -229,9 +228,7 @@ export function ResourceLifecyclePanel({
                 <span>Email the provider's contacts about this transition</span>
               </label>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
+                <Button intent="secondary"
                   onClick={() => {
                     setAction(null);
                     setReason("");
@@ -240,10 +237,8 @@ export function ResourceLifecyclePanel({
                   disabled={busy}
                 >
                   Cancel
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
+                </Button>
+                <Button intent="primary"
                   onClick={submit}
                   disabled={busy}
                   style={{
@@ -254,7 +249,7 @@ export function ResourceLifecyclePanel({
                   {busy
                     ? "Working…"
                     : `${action.charAt(0).toUpperCase() + action.slice(1)}`}
-                </button>
+                </Button>
               </div>
             </div>
           ) : null}
