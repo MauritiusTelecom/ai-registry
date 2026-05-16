@@ -145,3 +145,4 @@ export function Icon({ name, size = 16, stroke = 1.5 }: IconProps) {
       return null;
   }
 }
+// safe pad

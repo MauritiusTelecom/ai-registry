@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
 import type {
   PublicRegistryListResponse,
@@ -8,7 +7,7 @@ import type {
   DisplayStatus
 } from "@/lib/discovery/types";
 import { withBase } from "@/lib/with-base";
-import { Icon } from "../Icon";
+import { Icon, Button, Gradient } from "@/components/library";
 import { Globe } from "./Globe";
 
 type HeroFloatCardProps = {
@@ -198,7 +197,7 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
         <h1 className="hero-title">
           Mauritius
           <br />
-          <span className="gradient-text">AI Registry.</span>
+          <Gradient>AI Registry.</Gradient>
         </h1>
 
         <p className="hero-subtitle">
@@ -208,13 +207,12 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
         </p>
 
         <div className="hero-cta-row">
-          <Link href="/registry" className="btn btn-primary">
+          <Button href="/registry" intent="primary" trailingIcon="arrow-right">
             Explore Registry
-            <Icon name="arrow-right" size={14} />
-          </Link>
-          <Link href="/ecosystem" className="btn btn-secondary">
+          </Button>
+          <Button href="/ecosystem" intent="secondary">
             Discover Ecosystem
-          </Link>
+          </Button>
         </div>
       </div>
 

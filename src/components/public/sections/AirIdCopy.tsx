@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Icon } from "../Icon";
+import { Icon } from "@/components/library";
 
 /**
  * Copy-to-clipboard pill for an AIR-ID. Used on the resource detail page so

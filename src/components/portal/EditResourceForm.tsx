@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@/lib/with-base";
+import { Button } from "@/components/library";
 
 type Props = {
   resourceId: string;
@@ -191,15 +192,13 @@ export function EditResourceForm({
         </p>
       ) : null}
       {canEdit ? (
-        <button
-          type="button"
-          className="btn btn-secondary"
+        <Button intent="secondary"
           style={{ marginTop: variant === "provider" ? 8 : 0 }}
           disabled={isBusy}
           onClick={() => void save()}
         >
           {pending === "save" ? "Saving…" : "Save changes"}
-        </button>
+        </Button>
       ) : null}
       {canSubmit ? (
         <>
@@ -222,15 +221,13 @@ export function EditResourceForm({
             />
             <span>Email operators that this resource is awaiting review</span>
           </label>
-          <button
-            type="button"
-            className="btn btn-primary"
+          <Button intent="primary"
             style={{ marginTop: 12 }}
             disabled={isBusy}
             onClick={() => void submitForReview()}
           >
             {pending === "submit" ? "Submitting…" : "Submit for review"}
-          </button>
+          </Button>
         </>
       ) : null}
       {variant === "provider" && canSubmit ? (

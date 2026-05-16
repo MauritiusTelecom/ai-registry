@@ -3,10 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { Icon } from "./Icon";
-import { useTheme } from "./ThemeProvider";
+import { Icon, useTheme } from "@/components/library";
 import { useAuth } from "./AuthProvider";
 import { withBase } from "@/lib/with-base";
+
+// The `.theme-toggle`, `.nav-cta`, `.nav-user`, `.dropdown` and `.nav-link`
+// classes are bespoke nav-chrome CSS genres. The library's `<Button>` and
+// `<IconButton>` would change their visual; kept inline. Only the Icon and
+// useTheme imports change.
 
 // Top-nav links. Ecosystem / Governance / Documentation moved out of the
 // top nav - they remain reachable from the footer columns (see Footer in
@@ -248,3 +252,4 @@ export function TopNav({ registryName }: { registryName: string }) {
     </nav>
   );
 }
+// safe

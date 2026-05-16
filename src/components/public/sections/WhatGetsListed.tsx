@@ -1,11 +1,21 @@
 import Link from "next/link";
-import { Icon, type IconName } from "../Icon";
-import { Reveal } from "../Reveal";
+import {
+  PageSection,
+  Reveal,
+  Icon,
+  Gradient,
+  type IconName
+} from "@/components/library";
 
 // "What gets listed" — three resource types listed on the registry.
 // Renders as a 3-column grid of feature cards that collapse to 2-up and
 // 1-up on smaller viewports. Mirrors the cards in
 // uploads/AI_Registry_Decision_Makers_Guide.html (#features section).
+//
+// The `.type-card` is a bespoke CSS genre: bigger than `<FeatureCard>` (52px
+// gradient icon tile, 26px padding, 18px radius), with a radial corona
+// behind the icon and an AIR-ID sample chip at the bottom. Kept inline so
+// the visual is preserved verbatim.
 
 type Tone = "primary" | "tertiary" | "emerald";
 
@@ -81,23 +91,15 @@ const TONE: Record<
 
 export function WhatGetsListed() {
   return (
-    <section className="section">
-      <Reveal className="section-header">
-        <div className="eyebrow">
-          <span className="dot" />
-          <span>What gets listed</span>
-        </div>
-        <h2>
-          Three resource types.{" "}
-          <span className="gradient-text">Composable by AI.</span>
-        </h2>
-        <p>
-          The registry covers three kinds of sovereign AI resource - models, agents
-          and skills. Each has its own listing template and stable AIR-ID, so consumers
-          and AI systems can find and combine them programmatically.
-        </p>
-      </Reveal>
-
+    <PageSection
+      eyebrow="What gets listed"
+      title={
+        <>
+          Three resource types. <Gradient>Composable by AI.</Gradient>
+        </>
+      }
+      subtitle="The registry covers three kinds of sovereign AI resource - models, agents and skills. Each has its own listing template and stable AIR-ID, so consumers and AI systems can find and combine them programmatically."
+    >
       <Reveal>
         <div className="types-grid">
           {TYPES.map((t) => {
@@ -210,6 +212,6 @@ export function WhatGetsListed() {
           })}
         </div>
       </Reveal>
-    </section>
+    </PageSection>
   );
 }

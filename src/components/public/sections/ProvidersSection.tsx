@@ -3,9 +3,22 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { PublicProviderCard, PublicProvidersListResponse } from "@/lib/discovery/types";
-import { Icon, type IconName } from "../Icon";
-import { Reveal } from "../Reveal";
+import {
+  Icon,
+  Reveal,
+  PageSection,
+  Button,
+  Gradient,
+  type IconName
+} from "@/components/library";
 import { withBase } from "@/lib/with-base";
+
+// The `.r-card` registry-card layout (glyph + head + meta rows + tags +
+// action footer) is a bespoke CSS genre with its own globals.css rules.
+// Substituting `<FeatureCard>` here would change the visual; the proper
+// home for this card is a future `<RegistryCard>` composite (Phase D in
+// the proposal). For now: section header uses `<PageSection>`, the
+// load-more button uses `<Button>`, the cards stay inline.
 
 /** @deprecated Use `PublicProviderCard` from discovery types; kept for mock-mode rows. */
 export type Provider = PublicProviderCard;
@@ -243,29 +256,17 @@ export function ProvidersSection({
     setSearch("");
   };
 
-  return (
-    <section className="section" id="providers-section">
-      {withHeader && (
-        <Reveal className="section-header">
-          <div className="eyebrow">
-            <span className="dot" />
-            <span>Providers</span>
-          </div>
-          <h2>
-            Meet the organisations <span className="gradient-text">Mauritius already trusts</span>.
-          </h2>
-          <p>
-            Every listing in the registry traces back to a verifiable provider. Browse who hosts,
-            operates, and stands behind the AI resources you can integrate locally - sovereign
-            operators, model labs, hosting partners, and accredited integrators.
-          </p>
-          {dataSource === "api" && !loading && !error ? (
-            <p style={{ fontSize: 13, color: "var(--text-3)", marginTop: 8 }}>
-              Showing {filtered.length} of {apiTotal} public provider{apiTotal === 1 ? "" : "s"} (server-filtered).
-            </p>
-          ) : null}
-        </Reveal>
-      )}
+  // When the parent (`/` home) renders this section in-place we use a
+  // `<PageSection>` for the standard header. When the parent (`/providers`)
+  // renders it without a header (`withHeader={false}`) we drop straight into
+  // the toolbar / grid markup inside a plain `<section>`.
+  const body = (
+    <>
+      {dataSource === "api" && !loading && !error && withHeader ? (
+        <p style={{ fontSize: 13, color: "var(--text-3)", marginTop: -8, marginBottom: 18 }}>
+          Showing {filtered.length} of {apiTotal} public provider{apiTotal === 1 ? "" : "s"} (server-filtered).
+        </p>
+      ) : null}
 
       {/* Toolbar hidden on /providers while the catalogue carries only a
           handful of providers - the search, kind tabs and status chips all
@@ -323,16 +324,38 @@ export function ProvidersSection({
 
       {dataSource === "api" && hasMore && nextCursor ? (
         <div style={{ display: "flex", justifyContent: "center", marginTop: 28 }}>
-          <button
-            type="button"
-            className="btn btn-secondary"
+          <Button
+            intent="secondary"
             disabled={loadingMore}
             onClick={() => void loadMore()}
           >
             {loadingMore ? "Loading…" : "Load more"}
-          </button>
+          </Button>
         </div>
       ) : null}
+    </>
+  );
+
+  if (withHeader) {
+    return (
+      <PageSection
+        id="providers-section"
+        eyebrow="Providers"
+        title={
+          <>
+            Meet the organisations <Gradient>Mauritius already trusts</Gradient>.
+          </>
+        }
+        subtitle="Every listing in the registry traces back to a verifiable provider. Browse who hosts, operates, and stands behind the AI resources you can integrate locally - sovereign operators, model labs, hosting partners, and accredited integrators."
+      >
+        {body}
+      </PageSection>
+    );
+  }
+  return (
+    <section className="section" id="providers-section">
+      {body}
     </section>
   );
 }
+// padding to absorb Windows-mount trailing-byte truncation

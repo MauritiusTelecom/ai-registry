@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/library";
 import { withBase } from "@/lib/with-base";
+import { AuthFormField } from "./AuthShell";
 
 export function ResetPasswordForm({ token }: { token: string }) {
   const [password, setPassword] = useState("");
@@ -42,16 +44,16 @@ export function ResetPasswordForm({ token }: { token: string }) {
         <p style={{ color: "var(--text-2)", fontSize: 14 }}>
           Password updated. You can now sign in with your new password.
         </p>
-        <a href="/login" className="btn btn-primary">
+        <Button href="/login" intent="primary">
           Sign in
-        </a>
+        </Button>
       </div>
     );
   }
 
   return (
     <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <FormField label="New password" htmlFor="rp-pw">
+      <AuthFormField label="New password" htmlFor="rp-pw">
         <input
           id="rp-pw"
           type="password"
@@ -62,8 +64,8 @@ export function ResetPasswordForm({ token }: { token: string }) {
           onChange={(e) => setPassword(e.target.value)}
           className="auth-input"
         />
-      </FormField>
-      <FormField label="Confirm new password" htmlFor="rp-pw2">
+      </AuthFormField>
+      <AuthFormField label="Confirm new password" htmlFor="rp-pw2">
         <input
           id="rp-pw2"
           type="password"
@@ -74,43 +76,15 @@ export function ResetPasswordForm({ token }: { token: string }) {
           onChange={(e) => setConfirm(e.target.value)}
           className="auth-input"
         />
-      </FormField>
+      </AuthFormField>
       {error ? (
         <div className="field-error" role="alert">
           {error}
         </div>
       ) : null}
-      <button type="submit" className="btn btn-primary" disabled={busy}>
+      <Button type="submit" intent="primary" disabled={busy}>
         {busy ? "Updating…" : "Set new password"}
-      </button>
+      </Button>
     </form>
-  );
-}
-
-function FormField({
-  label,
-  htmlFor,
-  children
-}: {
-  label: string;
-  htmlFor: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label
-        htmlFor={htmlFor}
-        style={{
-          fontFamily: "IBM Plex Mono, monospace",
-          fontSize: 10.5,
-          letterSpacing: "0.18em",
-          textTransform: "uppercase",
-          color: "var(--text-3)"
-        }}
-      >
-        {label}
-      </label>
-      {children}
-    </div>
   );
 }

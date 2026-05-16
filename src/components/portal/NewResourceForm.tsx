@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@/lib/with-base";
+import { Button } from "@/components/library";
 
 export type NewResourceFormVariant = "public" | "provider";
 
@@ -211,15 +212,13 @@ export function NewResourceForm({
           {error}
         </p>
       ) : null}
-      <button
-        type="button"
-        className="btn btn-primary"
+      <Button intent="primary"
         style={{ marginTop: variant === "provider" ? 16 : 0 }}
         disabled={busy || allowedTypes.length === 0}
         onClick={() => void submit()}
       >
         {busy ? "Creating…" : "Create draft"}
-      </button>
+      </Button>
     </div>
   );
 }

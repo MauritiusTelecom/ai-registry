@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Button } from "@/components/library";
 import { withBase } from "@/lib/with-base";
+import { AuthFormField } from "./AuthShell";
 
 /**
  * Asks for an email address and posts to `/api/auth/resend-verification`.
@@ -65,9 +66,9 @@ export function ResendVerificationForm({ initialEmail = "" }: { initialEmail?: s
           </div>
         ) : null}
         <div style={{ textAlign: "center" }}>
-          <Link href="/login" className="btn btn-primary">
+          <Button href="/login" intent="primary">
             Back to sign in
-          </Link>
+          </Button>
         </div>
       </div>
     );
@@ -75,19 +76,7 @@ export function ResendVerificationForm({ initialEmail = "" }: { initialEmail?: s
 
   return (
     <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <label
-          htmlFor="resend-email"
-          style={{
-            fontFamily: "IBM Plex Mono, monospace",
-            fontSize: 10.5,
-            letterSpacing: "0.18em",
-            textTransform: "uppercase",
-            color: "var(--text-3)"
-          }}
-        >
-          Email
-        </label>
+      <AuthFormField label="Email" htmlFor="resend-email">
         <input
           id="resend-email"
           type="email"
@@ -97,20 +86,20 @@ export function ResendVerificationForm({ initialEmail = "" }: { initialEmail?: s
           onChange={(e) => setEmail(e.target.value)}
           className="auth-input"
         />
-      </div>
+      </AuthFormField>
       {error ? (
         <div className="field-error" role="alert">
           {error}
         </div>
       ) : null}
-      <button
+      <Button
         type="submit"
-        className="btn btn-primary"
+        intent="primary"
         disabled={busy}
         style={{ marginTop: 6 }}
       >
         {busy ? "Sending…" : "Send verification email"}
-      </button>
+      </Button>
     </form>
   );
 }

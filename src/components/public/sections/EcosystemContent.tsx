@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   PageSection,
   Section,
@@ -682,12 +681,7 @@ function ClosingCta() {
           }
           body="Open code. Local control. Sovereign discovery. Reach out for a private preview, a partnership discussion or a technical walk-through."
           actions={
-            <Button
-              as={Link}
-              href="/contact"
-              intent="primary"
-              trailingIcon="arrow-right"
-            >
+            <Button href="/contact" intent="primary" trailingIcon="arrow-right">
               Talk to the team
             </Button>
           }

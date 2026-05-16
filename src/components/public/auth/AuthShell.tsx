@@ -52,3 +52,42 @@ export function AuthShell({
     </section>
   );
 }
+
+/**
+ * Form field used inside auth forms. Renders a mono-uppercase label above
+ * a child control (typically an `<input className="auth-input">`).
+ *
+ * Shared here rather than redefined per form. Distinct from the library's
+ * `<Field>` because the auth label aesthetic — IBM Plex Mono, 10.5px,
+ * 0.18em letter-spacing, uppercase, --text-3 colour — is deliberately
+ * smaller and more decorative than the standard form label, and it pairs
+ * with the bespoke `.auth-input` styling rather than `.p-input`.
+ */
+export function AuthFormField({
+  label,
+  htmlFor,
+  children
+}: {
+  label: string;
+  htmlFor: string;
+  children: ReactNode;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label
+        htmlFor={htmlFor}
+        style={{
+          fontFamily: "IBM Plex Mono, monospace",
+          fontSize: 10.5,
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          color: "var(--text-3)"
+        }}
+      >
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+// extra padding

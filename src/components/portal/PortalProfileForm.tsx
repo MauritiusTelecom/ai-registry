@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@/lib/with-base";
+import { Button } from "@/components/library";
 
 type Props = { initialName: string; initialOrganisation: string | null };
 
@@ -68,9 +69,9 @@ export function PortalProfileForm({ initialName, initialOrganisation }: Props) {
             {error}
           </p>
         ) : null}
-        <button type="button" className="btn btn-secondary" disabled={busy} onClick={() => void save()}>
+        <Button intent="secondary" disabled={busy} onClick={() => void save()}>
           {busy ? "Saving…" : "Save profile"}
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Button } from "@/components/library";
 import { withBase } from "@/lib/with-base";
+import { AuthFormField } from "./AuthShell";
 
 export function RegisterForm() {
   const [name, setName] = useState("");
@@ -69,12 +70,12 @@ export function RegisterForm() {
           </div>
         ) : null}
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <Link href="/login?registered=1" className="btn btn-primary">
+          <Button href="/login?registered=1" intent="primary">
             Go to sign in
-          </Link>
-          <Link href="/auth/verify" className="btn" style={{ color: "var(--text-2)" }}>
+          </Button>
+          <Button href="/auth/verify" intent="ghost">
             Resend verification email
-          </Link>
+          </Button>
         </div>
       </div>
     );
@@ -82,7 +83,7 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <FormField label="Full name" htmlFor="reg-name">
+      <AuthFormField label="Full name" htmlFor="reg-name">
         <input
           id="reg-name"
           type="text"
@@ -93,8 +94,8 @@ export function RegisterForm() {
           onChange={(e) => setName(e.target.value)}
           className="auth-input"
         />
-      </FormField>
-      <FormField label="Organisation (optional)" htmlFor="reg-org">
+      </AuthFormField>
+      <AuthFormField label="Organisation (optional)" htmlFor="reg-org">
         <input
           id="reg-org"
           type="text"
@@ -103,8 +104,8 @@ export function RegisterForm() {
           onChange={(e) => setOrganisationName(e.target.value)}
           className="auth-input"
         />
-      </FormField>
-      <FormField label="Email" htmlFor="reg-email">
+      </AuthFormField>
+      <AuthFormField label="Email" htmlFor="reg-email">
         <input
           id="reg-email"
           type="email"
@@ -114,8 +115,8 @@ export function RegisterForm() {
           onChange={(e) => setEmail(e.target.value)}
           className="auth-input"
         />
-      </FormField>
-      <FormField label="Password (min 8 chars)" htmlFor="reg-password">
+      </AuthFormField>
+      <AuthFormField label="Password (min 8 chars)" htmlFor="reg-password">
         <input
           id="reg-password"
           type="password"
@@ -126,48 +127,20 @@ export function RegisterForm() {
           onChange={(e) => setPassword(e.target.value)}
           className="auth-input"
         />
-      </FormField>
+      </AuthFormField>
       {error ? (
         <div className="field-error" role="alert">
           {error}
         </div>
       ) : null}
-      <button
+      <Button
         type="submit"
-        className="btn btn-primary"
+        intent="primary"
         disabled={busy}
         style={{ marginTop: 6 }}
       >
         {busy ? "Creating account…" : "Create account"}
-      </button>
+      </Button>
     </form>
-  );
-}
-
-function FormField({
-  label,
-  htmlFor,
-  children
-}: {
-  label: string;
-  htmlFor: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label
-        htmlFor={htmlFor}
-        style={{
-          fontFamily: "IBM Plex Mono, monospace",
-          fontSize: 10.5,
-          letterSpacing: "0.18em",
-          textTransform: "uppercase",
-          color: "var(--text-3)"
-        }}
-      >
-        {label}
-      </label>
-      {children}
-    </div>
   );
 }

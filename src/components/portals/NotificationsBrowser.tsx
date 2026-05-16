@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Button } from "@/components/library";
 import { withBase } from "@/lib/with-base";
 
 /**
@@ -174,15 +175,14 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
         <span className="p-grid-count">
           {filtered.length} of {notifs.length}
         </span>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          style={{ fontSize: 12, padding: "6px 12px" }}
+        <Button
+          intent="secondary"
+          size="sm"
           disabled={busy || unreadCount === 0}
           onClick={() => void markAllRead()}
         >
           {busy ? "Saving…" : `Mark all read${unreadCount > 0 ? ` (${unreadCount})` : ""}`}
-        </button>
+        </Button>
       </div>
 
       {visible.length === 0 ? (
@@ -293,24 +293,22 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
             {Math.min(start + PAGE_SIZE, filtered.length)} of {filtered.length}
           </span>
           <span style={{ display: "flex", gap: 8 }}>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              style={{ fontSize: 12, padding: "6px 12px" }}
+            <Button
+              intent="secondary"
+              size="sm"
               disabled={safePage <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
               ← Prev
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              style={{ fontSize: 12, padding: "6px 12px" }}
+            </Button>
+            <Button
+              intent="secondary"
+              size="sm"
               disabled={safePage >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             >
               Next →
-            </button>
+            </Button>
           </span>
         </div>
       ) : null}

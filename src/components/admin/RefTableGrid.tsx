@@ -1,325 +1,169 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { Icon } from "@/components/public/Icon";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import {
+  EntityGrid,
+  ConfirmDialog,
+  type EntityColumn,
+  type EntityFilter,
+  type EntityRowAction
+} from "@/components/library";
 import type { RefTableConfig } from "@/lib/admin/reference-tables";
 import { withBase } from "@/lib/with-base";
 
 /**
- * Server-side-paginated CRUD grid driven by a `RefTableConfig`. Renders the
- * search input, the active-filter dropdown (when applicable), the data
- * grid, the per-row action icons (view / edit / delete), and the paginator.
+ * CRUD grid for one reference table. Now a thin adapter that translates a
+ * `RefTableConfig` into `<EntityGrid>` props and adds the delete-confirm
+ * flow. All paging / search / filter / fetch logic lives in `EntityGrid`.
  *
- * Loads `/api/admin/ref/[table]` on mount and on every filter / page change.
+ * The endpoint `/api/admin/ref/[table]` keeps its existing `pageSize` URL
+ * param convention (rather than EntityGrid's default `limit`) so no server
+ * changes are required.
  */
 
 type Row = Record<string, unknown> & { id: string };
 
-type ListResponse = {
-  rows: Row[];
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-};
-
-const PAGE_SIZES = [10, 20, 50, 100];
-
 export function RefTableGrid({ config }: { config: RefTableConfig }) {
-  const [q, setQ] = useState("");
-  const [active, setActive] = useState<"all" | "true" | "false">("all");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
-  const [data, setData] = useState<ListResponse | null>(null);
+  const router = useRouter();
+  const [deleting, setDeleting] = useState<Row | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<Row | null>(null);
-  const [version, setVersion] = useState(0); // forces refetch after delete
+  const [reloadKey, setReloadKey] = useState(0);
 
-  // Debounced search.
-  const [debouncedQ, setDebouncedQ] = useState(q);
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedQ(q), 220);
-    return () => clearTimeout(t);
-  }, [q]);
+  // Translate `config.gridColumns` (string keys) into EntityGrid columns
+  // by looking up the matching field label.
+  const columns: EntityColumn<Row>[] = useMemo(
+    () =>
+      config.gridColumns.map((key) => ({
+        key,
+        label: labelFor(config, key),
+        mono: key === "code",
+        render: (row) => renderCell(row[key])
+      })),
+    [config]
+  );
 
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedQ, active, pageSize]);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      setBusy(true);
-      setError(null);
-      const params = new URLSearchParams();
-      if (debouncedQ.trim() !== "") params.set("q", debouncedQ.trim());
-      if (config.hasActive && active !== "all") params.set("active", active);
-      params.set("page", String(page));
-      params.set("pageSize", String(pageSize));
-      try {
-        const res = await fetch(withBase(`/api/admin/ref/${config.id}?${params.toString()}`));
-        if (!res.ok) {
-          const body = (await res.json().catch(() => ({}))) as { detail?: string; error?: string };
-          throw new Error(body.detail ?? body.error ?? `HTTP ${res.status}`);
-        }
-        const json = (await res.json()) as ListResponse;
-        if (!cancelled) setData(json);
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
-      } finally {
-        if (!cancelled) setBusy(false);
+  // The grid surfaces an `active` filter when the table has the column.
+  const filters: EntityFilter[] | undefined = useMemo(() => {
+    if (!config.hasActive) return undefined;
+    return [
+      {
+        key: "active",
+        label: "Active",
+        options: [
+          { value: "true", label: "Active only" },
+          { value: "false", label: "Inactive only" }
+        ]
       }
-    }
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [config.id, config.hasActive, debouncedQ, active, page, pageSize, version]);
+    ];
+  }, [config.hasActive]);
 
-  const totalPages = useMemo(() => {
-    if (!data) return 1;
-    return Math.max(1, Math.ceil(data.total / data.pageSize));
-  }, [data]);
-
-  async function confirmDelete() {
+  const onDelete = useCallback(async () => {
     if (!deleting) return;
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(withBase(`/api/admin/ref/${config.id}/${deleting.id}`), {
-        method: "DELETE"
-      });
+      const res = await fetch(
+        withBase(`/api/admin/ref/${config.id}/${deleting.id}`),
+        { method: "DELETE" }
+      );
       if (!res.ok) {
-        const body = (await res.json().catch(() => ({}))) as { detail?: string; title?: string };
+        const body = (await res.json().catch(() => ({}))) as {
+          detail?: string;
+          title?: string;
+        };
         throw new Error(body.detail ?? body.title ?? `HTTP ${res.status}`);
       }
       setDeleting(null);
-      setVersion((v) => v + 1);
+      setReloadKey((k) => k + 1);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
     }
-  }
+  }, [deleting, config.id]);
+
+  const rowActions: EntityRowAction<Row>[] = useMemo(
+    () => [
+      {
+        id: "view",
+        label: "",
+        icon: "eye",
+        onSelect: (row) => router.push(`/admin/ref/${config.id}/${row.id}`)
+      },
+      {
+        id: "edit",
+        label: "",
+        icon: "edit",
+        onSelect: (row) => router.push(`/admin/ref/${config.id}/${row.id}/edit`)
+      },
+      {
+        id: "delete",
+        label: "",
+        icon: "trash",
+        destructive: true,
+        onSelect: (row) => setDeleting(row)
+      }
+    ],
+    [router, config.id]
+  );
 
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          gap: 10,
-          alignItems: "center",
-          flexWrap: "wrap",
-          marginBottom: 16
-        }}
-      >
-        <div className="search-input" style={{ minWidth: 280, flex: 1, maxWidth: 480 }}>
-          <Icon name="search" size={15} />
-          <input
-            placeholder="Search…"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-        </div>
-
-        {config.hasActive ? (
-          <select
-            value={active}
-            onChange={(e) => setActive(e.target.value as typeof active)}
-            className="auth-input"
-            style={{ width: 140 }}
-            aria-label="Active filter"
-          >
-            <option value="all">All</option>
-            <option value="true">Active only</option>
-            <option value="false">Inactive only</option>
-          </select>
-        ) : null}
-
-        <select
-          value={pageSize}
-          onChange={(e) => setPageSize(Number.parseInt(e.target.value, 10))}
-          className="auth-input"
-          style={{ width: 110 }}
-          aria-label="Page size"
-        >
-          {PAGE_SIZES.map((n) => (
-            <option key={n} value={n}>
-              {n} / page
-            </option>
-          ))}
-        </select>
-
-        <Link
-          href={`/admin/ref/${config.id}/new`}
-          className="btn btn-primary"
-          style={{ marginLeft: "auto" }}
-        >
-          <Icon name="plus" size={12} /> Add new
-        </Link>
-      </div>
-
       {error ? (
         <div className="field-error" role="alert" style={{ marginBottom: 12 }}>
           {error}
         </div>
       ) : null}
 
-      <div className="p-table-wrap">
-        <table className="p-table">
-          <thead>
-            <tr>
-              {config.gridColumns.map((col) => (
-                <th key={col}>{labelFor(config, col)}</th>
-              ))}
-              <th style={{ width: 140 }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {!data && busy ? (
-              <tr>
-                <td colSpan={config.gridColumns.length + 1} className="mono" style={{ textAlign: "center", color: "var(--text-3)" }}>
-                  Loading…
-                </td>
-              </tr>
-            ) : null}
-            {data && data.rows.length === 0 ? (
-              <tr>
-                <td colSpan={config.gridColumns.length + 1} className="mono" style={{ textAlign: "center", color: "var(--text-3)" }}>
-                  No rows match the current filter.
-                </td>
-              </tr>
-            ) : null}
-            {data?.rows.map((row) => (
-              <tr key={row.id}>
-                {config.gridColumns.map((col) => (
-                  <td key={col} className={col === "code" ? "mono" : undefined}>
-                    {renderCell(row[col])}
-                  </td>
-                ))}
-                <td>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <Link
-                      href={`/admin/ref/${config.id}/${row.id}`}
-                      className="r-card-action-link"
-                      title="View"
-                      aria-label="View"
-                    >
-                      <Icon name="eye" size={12} />
-                    </Link>
-                    <Link
-                      href={`/admin/ref/${config.id}/${row.id}/edit`}
-                      className="r-card-action-link"
-                      title="Edit"
-                      aria-label="Edit"
-                    >
-                      <Icon name="edit" size={12} />
-                    </Link>
-                    <button
-                      type="button"
-                      className="r-card-action-link"
-                      onClick={() => setDeleting(row)}
-                      title="Delete"
-                      aria-label="Delete"
-                    >
-                      <Icon name="trash" size={12} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <EntityGrid<Row>
+        endpoint={withBase(`/api/admin/ref/${config.id}`)}
+        columns={columns}
+        filters={filters}
+        rowActions={rowActions}
+        addAction={{ href: `/admin/ref/${config.id}/new` }}
+        searchPlaceholder="Search…"
+        pageSizeOptions={[10, 20, 50, 100]}
+        defaultPageSize={20}
+        pageSizeParam="pageSize"
+        emptyState="No rows match the current filter."
+        reloadKey={reloadKey}
+      />
 
-      {data ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginTop: 14,
-            fontFamily: "IBM Plex Mono, monospace",
-            fontSize: 12,
-            color: "var(--text-3)"
-          }}
-        >
-          <span>
-            Page {data.page} of {totalPages} · {data.total} total
-            {busy ? " · loading…" : ""}
-          </span>
-          <div style={{ display: "flex", gap: 6 }}>
-            <button
-              type="button"
-              className="r-card-action-link"
-              disabled={data.page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              ← Prev
-            </button>
-            <button
-              type="button"
-              className="r-card-action-link"
-              disabled={!data.hasMore}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next →
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {deleting ? (
-        <div className="modal-backdrop" onClick={() => setDeleting(null)}>
-          <div
-            className="glass"
-            style={{ maxWidth: 460, padding: 24 }}
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
-            <h3 style={{ margin: 0, marginBottom: 8 }}>Delete row?</h3>
-            <p style={{ color: "var(--text-2)", fontSize: 14, marginBottom: 18 }}>
-              This permanently removes the entry from <code>{config.label}</code>. If
-              other rows reference it, deletion is blocked - toggle <code>active</code>
-              to false instead.
-            </p>
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setDeleting(null)}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={confirmDelete}
-                disabled={busy}
-                style={{ background: "#ef4444", borderColor: "#ef4444" }}
-              >
-                {busy ? "Deleting…" : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ConfirmDialog
+        open={Boolean(deleting)}
+        title="Delete row?"
+        body={
+          <p style={{ margin: 0, color: "var(--text-2)", fontSize: 14 }}>
+            This permanently removes the entry from <code>{config.label}</code>. If
+            other rows reference it, deletion is blocked - toggle <code>active</code>
+            to false instead.
+          </p>
+        }
+        destructive
+        confirmLabel={busy ? "Deleting…" : "Delete"}
+        onCancel={() => setDeleting(null)}
+        onConfirm={onDelete}
+      />
     </>
   );
 }
 
-function renderCell(value: unknown) {
-  if (value === null || value === undefined || value === "") return <span style={{ color: "var(--text-3)" }}>-</span>;
-  if (typeof value === "boolean")
+function renderCell(value: unknown): ReactNode {
+  if (value === null || value === undefined || value === "") {
+    return <span style={{ color: "var(--text-3)" }}>-</span>;
+  }
+  if (typeof value === "boolean") {
     return value ? (
       <span className="tag" style={{ color: "#10b981" }}>active</span>
     ) : (
       <span className="tag">inactive</span>
     );
-  if (typeof value === "string" && value.length > 80) return value.slice(0, 77) + "…";
+  }
+  if (typeof value === "string" && value.length > 80) {
+    return value.slice(0, 77) + "…";
+  }
   return String(value);
 }
 

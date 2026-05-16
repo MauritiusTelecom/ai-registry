@@ -1,10 +1,20 @@
-import { Icon, type IconName } from "../Icon";
-import { Reveal } from "../Reveal";
+import {
+  PageSection,
+  Reveal,
+  Icon,
+  Gradient,
+  type IconName
+} from "@/components/library";
 
 // Six numbered stages from Submit → Maintain. Each renders as a card in a
 // horizontal strip; cards stack on narrower viewports. Layout mirrors the
 // "ORCHESTRATION FLOW" reference design (eyebrow + title + desc + footer
 // icon chip).
+//
+// The `.orch-stage` card is a bespoke CSS genre defined in globals.css and
+// styled differently from the library's `<FeatureCard>` (it has a numbered
+// header pill, a footer-positioned icon chip, and a specific hover ripple).
+// Kept inline so the visual is preserved verbatim.
 
 const STAGES: { num: string; title: string; desc: string; icon: IconName }[] = [
   {
@@ -47,21 +57,16 @@ const STAGES: { num: string; title: string; desc: string; icon: IconName }[] = [
 
 export function Orchestration() {
   return (
-    <section className="section">
-      <Reveal className="section-header">
-        <div className="eyebrow">
-          <span className="dot" />
-          <span>From Submission to Use</span>
-        </div>
-        <h2>
+    <PageSection
+      eyebrow="From Submission to Use"
+      title={
+        <>
           The journey is short, deliberate, and{" "}
-          <span className="gradient-text">exposes the boundaries</span>.
-        </h2>
-        <p>
-          Every resource walks the same six steps. The registry points; the provider
-          operates; the hosting environment secures.
-        </p>
-      </Reveal>
+          <Gradient>exposes the boundaries</Gradient>.
+        </>
+      }
+      subtitle="Every resource walks the same six steps. The registry points; the provider operates; the hosting environment secures."
+    >
       <Reveal>
         <div className="orch-stages">
           {STAGES.map((stage) => (
@@ -76,6 +81,6 @@ export function Orchestration() {
           ))}
         </div>
       </Reveal>
-    </section>
+    </PageSection>
   );
 }

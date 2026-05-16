@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
+import { Button } from "@/components/library";
+import { EntityGrid, type EntityColumn } from "@/components/library";
 import { StatusPill } from "../StatusPill";
 
 export type ProviderResourceRow = {
@@ -23,7 +24,7 @@ type Props = {
 };
 
 export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
-  const columns: FilteredColumn<ProviderResourceRow>[] = [
+  const columns: EntityColumn<ProviderResourceRow>[] = [
     {
       key: "title",
       label: "Title",
@@ -64,21 +65,21 @@ export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
       label: "",
       render: (row) =>
         row.lifecycleCode === "draft" || row.lifecycleCode === "needs_update" ? (
-          <Link
+          <Button
             href={`/provider/resources/${row.id}/edit`}
-            className="btn btn-secondary"
-            style={{ fontSize: 13 }}
+            intent="secondary"
+            size="sm"
           >
             Edit / submit
-          </Link>
+          </Button>
         ) : row.lifecycleCode === "listed" ? (
-          <Link
+          <Button
             href={`/registry/${row.slug}`}
-            className="btn btn-secondary"
-            style={{ fontSize: 13 }}
+            intent="secondary"
+            size="sm"
           >
             Public
-          </Link>
+          </Button>
         ) : (
           <span style={{ color: "var(--text-3)", fontSize: 12 }}>-</span>
         )
@@ -86,10 +87,9 @@ export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
   ];
 
   return (
-    <FilteredDataTable
+    <EntityGrid
       rows={rows}
       columns={columns}
-      keyOf={(r) => r.id}
       emptyState="You haven't published any resources yet."
       searchPlaceholder="Search title, AIR-ID, or slug…"
       searchableKeys={["title", "airId", "slug"]}

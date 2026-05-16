@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
+import { EntityGrid, type EntityColumn } from "@/components/library";
 
 export type ProviderIncidentRow = {
   id: string;
@@ -19,7 +19,7 @@ type Props = {
 };
 
 export function ProviderIncidentsGrid({ rows, actionTypes }: Props) {
-  const columns: FilteredColumn<ProviderIncidentRow>[] = [
+  const columns: EntityColumn<ProviderIncidentRow>[] = [
     { key: "ts", label: "Performed", render: (row) => row.ts, mono: true },
     {
       key: "action",
@@ -59,10 +59,9 @@ export function ProviderIncidentsGrid({ rows, actionTypes }: Props) {
   ];
 
   return (
-    <FilteredDataTable
+    <EntityGrid
       rows={rows}
       columns={columns}
-      keyOf={(r) => r.id}
       emptyState="No enforcement actions on record. Quiet is good."
       searchPlaceholder="Search incidents by target or reason…"
       searchableKeys={["target", "reason", "publicNote"]}

@@ -1,6 +1,10 @@
 import Link from "next/link";
-import { Reveal } from "../Reveal";
+import { Reveal } from "@/components/library";
 import { PageHero } from "./PageHero";
+
+// The `glass` panels here are a bespoke CSS genre (heavier blur, lighter
+// border, different shadow ramp than the library's `<Card>`). Kept inline
+// so the visual stays identical.
 
 const sectionStyle: React.CSSProperties = {
   paddingTop: 32,

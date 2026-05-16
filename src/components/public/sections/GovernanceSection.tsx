@@ -1,5 +1,10 @@
-import { Icon, type IconName } from "../Icon";
-import { Reveal } from "../Reveal";
+import {
+  PageSection,
+  Reveal,
+  Icon,
+  Gradient,
+  type IconName
+} from "@/components/library";
 
 const PILLARS: { icon: IconName; title: string; desc: string }[] = [
   {
@@ -43,26 +48,30 @@ const TEST_ROWS: { label: string; body: string }[] = [
   }
 ];
 
+// The `.pillar` card and `.trust-chain-panel` are bespoke CSS genres with
+// their own globals.css rules (column layout via `.gov-grid`, animated
+// dashed divider, etc.). Kept inline rather than pushed into `<FeatureCard>`
+// so the visual stays identical.
+
 export function GovernanceSection() {
   return (
-    <section className="section">
-      <Reveal className="section-header">
-        <div className="eyebrow">
-          <span className="dot" />
-          <span>Governance, not Gatekeeping</span>
-        </div>
-        <h2>
+    <PageSection
+      eyebrow="Governance, not Gatekeeping"
+      title={
+        <>
           Listing is not endorsement.
           <br />
-          <span className="gradient-text">Three independent signals do the work.</span>
-        </h2>
-        <p>
+          <Gradient>Three independent signals do the work.</Gradient>
+        </>
+      }
+      subtitle={
+        <>
           The registry exposes lightweight governance metadata so users can tell apart &ldquo;this
           resource exists&rdquo; from &ldquo;an authorised body has officially endorsed it.&rdquo;
           Status labels are explicit and auditable.
-        </p>
-      </Reveal>
-
+        </>
+      }
+    >
       <div className="gov-grid">
         <Reveal>
           <div className="gov-pillars">
@@ -143,6 +152,6 @@ export function GovernanceSection() {
           </div>
         </Reveal>
       </div>
-    </section>
+    </PageSection>
   );
 }

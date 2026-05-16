@@ -1,6 +1,4 @@
-import Link from "next/link";
-import { Icon } from "../Icon";
-import { Reveal } from "../Reveal";
+import { Reveal, Button } from "@/components/library";
 
 export function Promo() {
   return (
@@ -19,9 +17,9 @@ export function Promo() {
             </p>
           </div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <Link href="/contact" className="btn btn-primary">
-              Submit a Resource <Icon name="arrow-right" size={14} />
-            </Link>
+            <Button href="/contact" intent="primary" trailingIcon="arrow-right">
+              Submit a Resource
+            </Button>
           </div>
         </div>
       </Reveal>

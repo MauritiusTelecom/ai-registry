@@ -1,6 +1,6 @@
 "use client";
 
-import { useCountUp } from "../useCountUp";
+import { useCountUp } from "@/components/library";
 
 type Metric = {
   label: string;

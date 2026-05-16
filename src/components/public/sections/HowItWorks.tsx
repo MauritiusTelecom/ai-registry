@@ -1,4 +1,4 @@
-import { Reveal } from "../Reveal";
+import { PageSection, Reveal, Gradient } from "@/components/library";
 
 // "How it works" — six steps from submission to use. Step 5 is highlighted
 // to make the point that the actual *use* of a resource happens directly
@@ -50,20 +50,22 @@ const STEPS: { num: number; title: string; desc: string; highlight?: boolean }[]
   }
 ];
 
+// Bespoke: the step card has a custom pink/purple highlight variant for
+// step 5, plus a number-bubble + gradient-title visual that doesn't map to
+// the library's `<FeatureCard>` (which uses tone tokens, not bespoke 3-stop
+// gradients, and renders an `<IconTile>` rather than a number bubble).
+// Kept inline so the visual is identical.
+
 export function HowItWorks() {
   return (
-    <section className="section">
-      <Reveal className="section-header">
-        <div className="eyebrow">
-          <span className="dot" />
-          <span>How it works</span>
-        </div>
-        <h2>
-          From submission to use,{" "}
-          <span className="gradient-text">in six steps.</span>
-        </h2>
-      </Reveal>
-
+    <PageSection
+      eyebrow="How it works"
+      title={
+        <>
+          From submission to use, <Gradient>in six steps.</Gradient>
+        </>
+      }
+    >
       <Reveal>
         <div className="how-steps">
           {STEPS.map((s) => {
@@ -153,6 +155,6 @@ export function HowItWorks() {
           })}
         </div>
       </Reveal>
-    </section>
+    </PageSection>
   );
 }

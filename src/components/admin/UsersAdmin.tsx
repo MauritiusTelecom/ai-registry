@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Icon } from "@/components/public/Icon";
+import { Icon, ConfirmDialog, Modal, Button } from "@/components/library";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
 import { RowActionMenu, type RowMenuItem } from "./RowActionMenu";
 import { StatusPill } from "@/components/portals/StatusPill";
@@ -270,103 +270,55 @@ function UserRowActions({
         </div>
       ) : null}
 
-      {editing ? (
-        <div className="modal-backdrop" onClick={() => setEditing(false)}>
-          <div
-            className="glass"
-            style={{ maxWidth: 560, padding: 24, width: "100%" }}
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
-            <header
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "baseline",
-                marginBottom: 16
-              }}
-            >
-              <h3 style={{ margin: 0 }}>Edit user</h3>
-              <button
-                type="button"
-                className="r-card-action-link"
-                onClick={() => setEditing(false)}
-                aria-label="Close"
-                style={{ color: "var(--text)" }}
-              >
-                <Icon name="x" size={12} /> Close
-              </button>
-            </header>
-            <UserForm
-              roles={roles}
-              statuses={statuses}
-              providers={providers}
-              mode="edit"
-              initial={row}
-              onDone={() => {
-                setEditing(false);
-                reload();
-              }}
-            />
-          </div>
+      <Modal
+        open={editing}
+        onClose={() => setEditing(false)}
+        title="Edit user"
+        maxWidth={560}
+      >
+        <div style={{ padding: 24 }}>
+          <UserForm
+            roles={roles}
+            statuses={statuses}
+            providers={providers}
+            mode="edit"
+            initial={row}
+            onDone={() => {
+              setEditing(false);
+              reload();
+            }}
+          />
         </div>
-      ) : null}
+      </Modal>
 
-      {confirmDelete ? (
-        <div className="modal-backdrop" onClick={() => setConfirmDelete(false)}>
-          <div
-            className="glass"
-            style={{ maxWidth: 460, padding: 24 }}
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
-            <h3 style={{ margin: 0, marginBottom: 8 }}>Delete user?</h3>
-            <p style={{ color: "var(--text-2)", fontSize: 14, marginBottom: 18 }}>
+      <ConfirmDialog
+        open={confirmDelete}
+        title="Delete user?"
+        body={
+          <>
+            <p style={{ margin: 0, color: "var(--text-2)", fontSize: 14, marginBottom: 12 }}>
               <strong>{row.name}</strong> ({row.email}) will be removed permanently. Audit
               entries they authored remain but become anonymous.
             </p>
             {error ? (
-              <div className="field-error" style={{ marginBottom: 12 }}>
+              <div className="field-error" style={{ marginBottom: 4 }}>
                 {error}
               </div>
             ) : null}
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setConfirmDelete(false)}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={doDelete}
-                disabled={busy}
-                style={{ background: "#ef4444", borderColor: "#ef4444" }}
-              >
-                {busy ? "Deleting…" : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+          </>
+        }
+        destructive
+        confirmLabel={busy ? "Deleting…" : "Delete"}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={doDelete}
+      />
 
-      {confirmStatus ? (
-        <div className="modal-backdrop" onClick={() => setConfirmStatus(false)}>
-          <div
-            className="glass"
-            style={{ maxWidth: 460, padding: 24, width: "100%" }}
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-          >
-            <h3 style={{ margin: 0, marginBottom: 8 }}>
-              {isSuspended ? "Reactivate user?" : "Suspend user?"}
-            </h3>
-            <p style={{ color: "var(--text-2)", fontSize: 14, marginBottom: 14 }}>
+      <ConfirmDialog
+        open={confirmStatus}
+        title={isSuspended ? "Reactivate user?" : "Suspend user?"}
+        body={
+          <>
+            <p style={{ margin: 0, color: "var(--text-2)", fontSize: 14, marginBottom: 14 }}>
               <strong>{row.name}</strong> ({row.email}) will be marked as{" "}
               <strong>{isSuspended ? "active" : "suspended"}</strong>.
             </p>
@@ -403,45 +355,26 @@ function UserRowActions({
               </label>
             ) : null}
             {error ? (
-              <div className="field-error" style={{ marginBottom: 12 }}>
+              <div className="field-error" style={{ marginBottom: 4 }}>
                 {error}
               </div>
             ) : null}
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setConfirmStatus(false)}
-                disabled={busy}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                disabled={busy}
-                onClick={async () => {
-                  const ok = await patch({
-                    statusCode: isSuspended ? "active" : "suspended",
-                    notifyByEmail: statusNotify,
-                    statusChangeReason:
-                      statusNotify && statusReason.trim() !== ""
-                        ? statusReason.trim()
-                        : undefined
-                  });
-                  if (ok) setConfirmStatus(false);
-                }}
-              >
-                {busy
-                  ? "Saving…"
-                  : isSuspended
-                    ? "Reactivate"
-                    : "Suspend"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+          </>
+        }
+        confirmLabel={busy ? "Saving…" : isSuspended ? "Reactivate" : "Suspend"}
+        onCancel={() => setConfirmStatus(false)}
+        onConfirm={async () => {
+          const ok = await patch({
+            statusCode: isSuspended ? "active" : "suspended",
+            notifyByEmail: statusNotify,
+            statusChangeReason:
+              statusNotify && statusReason.trim() !== ""
+                ? statusReason.trim()
+                : undefined
+          });
+          if (ok) setConfirmStatus(false);
+        }}
+      />
     </>
   );
 }
@@ -631,17 +564,12 @@ function UserForm({
         </div>
       ) : null}
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-        <button type="button" className="btn btn-secondary" onClick={onDone}>
+        <Button intent="secondary" onClick={onDone}>
           Cancel
-        </button>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={submit}
-          disabled={busy}
-        >
+        </Button>
+        <Button intent="primary" onClick={submit} disabled={busy}>
           {busy ? "Saving…" : mode === "create" ? "Create user" : "Save"}
-        </button>
+        </Button>
       </div>
     </div>
   );

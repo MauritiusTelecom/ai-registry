@@ -1,4 +1,4 @@
-import { Reveal } from "../Reveal";
+import { Reveal, Gradient } from "@/components/library";
 import { PageHero } from "./PageHero";
 
 const SECTIONS = [
@@ -36,7 +36,7 @@ export function DocsContent() {
         crumb="Documentation · AIR-SPEC 0.4 MVP"
         title={
           <>
-            The technical <span className="gradient-text">specification</span>.
+            The technical <Gradient>specification</Gradient>.
           </>
         }
         subtitle="Everything you need to publish, resolve and audit listings against the v0.4 reference implementation at airegistry.mu."
@@ -102,3 +102,4 @@ GET /.well-known/air-spec/${section.id}
     </div>
   );
 }
+//
