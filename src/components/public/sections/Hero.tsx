@@ -1,147 +1,89 @@
 "use client";
 
 import { useEffect, useState, type CSSProperties } from "react";
-import type {
-  PublicRegistryListResponse,
-  RegistryCard,
-  DisplayStatus
-} from "@/lib/discovery/types";
+import { Button, Gradient, Reveal } from "@/components/library";
+import type { PublicRegistryListResponse, RegistryCard } from "@/lib/discovery/types";
 import { withBase } from "@/lib/with-base";
-import { Icon, Button, Gradient } from "@/components/library";
 import { Globe } from "./Globe";
 
-type HeroFloatCardProps = {
-  style: CSSProperties;
-  title: string;
-  subtitle?: string;
-  dot?: string;
-  delay?: number;
-};
+type ShowcaseCard = { title: string; subtitle: string; dot: string };
 
-function HeroFloatCard({
-  style,
-  title,
-  subtitle,
-  dot = "#22d3ee",
-  delay = 0
-}: HeroFloatCardProps) {
+const FALLBACK: ShowcaseCard[] = [
+  { title: "MytGPT Enterprise", subtitle: "Verified · Mauritius Telecom", dot: "#10b981" },
+  { title: "my.t Vision AI", subtitle: "Verified · Mauritius Telecom", dot: "#a855f7" },
+  { title: "my.t Document AI", subtitle: "Verified · Mauritius Telecom", dot: "#22d3ee" }
+];
+
+const CARD_POS: (CSSProperties & { delay: string })[] = [
+  { top: "10%", left: "4%", delay: "0s" },
+  { top: "36%", right: "0%", delay: "2.4s" },
+  { bottom: "14%", left: "12%", delay: "4.8s" }
+];
+
+const LISTED = new Set(["verified", "trusted", "active"]);
+
+function shuffle<T>(items: T[]): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function statusLabel(status: string) {
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function toCard(row: RegistryCard, i: number): ShowcaseCard {
+  return {
+    title: row.title,
+    subtitle: `${statusLabel(row.status)} · ${row.provider}`,
+    dot: FALLBACK[i % FALLBACK.length].dot
+  };
+}
+
+function pickShowcase(rows: RegistryCard[]): ShowcaseCard[] {
+  const eligible = rows.filter((r) => LISTED.has(r.status));
+  if (!eligible.length) return FALLBACK;
+  const picked = shuffle(eligible)
+    .slice(0, 3)
+    .map((row, i) => toCard(row, i));
+  while (picked.length < 3) picked.push(FALLBACK[picked.length]);
+  return picked;
+}
+
+function MauritiusFlag() {
   return (
-    <div className="float-card" style={{ ...style, animationDelay: `${delay}s` }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--text)" }}>
-        <span
-          style={{
-            width: 6,
-            height: 6,
-            borderRadius: "50%",
-            background: dot,
-            boxShadow: `0 0 8px ${dot}`
-          }}
-        />
-        <span style={{ fontWeight: 500, letterSpacing: "0.02em" }}>{title}</span>
+    <svg width="16" height="11" viewBox="0 0 16 11" aria-hidden style={{ borderRadius: 2 }}>
+      <rect width="16" height="11" fill="#EA2839" />
+      <rect width="16" height="3.67" y="3.67" fill="#1A206D" />
+      <rect width="16" height="3.66" y="7.34" fill="#FFD500" />
+      <rect width="5" height="11" fill="#1A206D" />
+    </svg>
+  );
+}
+
+function FloatCard({ card, style }: { card: ShowcaseCard; style: CSSProperties }) {
+  return (
+    <div className="float-card" style={style}>
+      <div className="float-card-name">{card.title}</div>
+      <div className="float-card-meta">
+        <div className="float-card-status">
+          <span
+            className="status-dot"
+            style={{ background: card.dot, boxShadow: `0 0 6px ${card.dot}` }}
+          />
+          {card.subtitle}
+        </div>
       </div>
-      {subtitle && (
-        <div style={{ marginTop: 4, color: "var(--text-3)", fontSize: 10.5 }}>{subtitle}</div>
-      )}
     </div>
   );
 }
 
-// ----- Hero float-card data plumbing -----
+export function Hero() {
+  const [cards, setCards] = useState<ShowcaseCard[]>(FALLBACK);
 
-type FloatCardData = {
-  title: string;
-  subtitle: string;
-  dot: string;
-};
-
-// Three fixed slots on the globe-stage. Data rotates; positions stay stable.
-const CARD_SLOTS: CSSProperties[] = [
-  { top: "4%", left: "-6%" },
-  { top: "32%", right: "-4%" },
-  { bottom: "6%", left: "4%" }
-];
-
-// Fallback shown before the fetch resolves, or if the API errors / returns
-// zero rows. Keeps the existing Mauritius Telecom branding as a safe default.
-const FALLBACK_CARDS: FloatCardData[] = [
-  {
-    title: "MytGPT Enterprise",
-    subtitle: "Verified · Mauritius Telecom · Chat",
-    dot: "#10b981"
-  },
-  {
-    title: "my.t Vision AI",
-    subtitle: "Verified · Mauritius Telecom · Vision",
-    dot: "#a855f7"
-  },
-  {
-    title: "my.t Document AI",
-    subtitle: "Verified · Mauritius Telecom · OCR",
-    dot: "#22d3ee"
-  }
-];
-
-// Maps display-status badge -> dot colour. Mirrors the original hard-coded palette
-// so the visual rhythm stays consistent regardless of which resources land here.
-const STATUS_DOT: Record<DisplayStatus, string> = {
-  verified: "#10b981",
-  trusted: "#22d3ee",
-  active: "#a855f7",
-  experimental: "#f59e0b",
-  isolated: "#ef4444"
-};
-
-// Strictly "listed" (lifecycle) only. `/api/resources` actually returns four
-// public lifecycle codes - listed, needs_update, deprecated, suspended - so
-// we trim client-side. The three allowed display badges below all map onto
-// listed lifecycle:
-//   verified -> listed + trust signals
-//   trusted  -> listed + trust signals
-//   active   -> listed (no trust signals)
-//   experimental -> needs_update    (excluded)
-//   isolated     -> suspended/deprecated (excluded)
-const ALLOWED_STATUSES: DisplayStatus[] = ["verified", "trusted", "active"];
-
-function statusLabel(s: DisplayStatus): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-function cardToFloat(card: RegistryCard): FloatCardData {
-  const status = card.status;
-  const tail = card.context?.trim() || card.kind || "AI resource";
-  return {
-    title: card.title,
-    subtitle: `${statusLabel(status)} · ${card.provider} · ${tail}`,
-    dot: STATUS_DOT[status] ?? "#22d3ee"
-  };
-}
-
-// Fisher-Yates shuffle on a copy.
-function shuffle<T>(arr: T[]): T[] {
-  const out = arr.slice();
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
-}
-
-function pickThree(rows: RegistryCard[]): FloatCardData[] {
-  const eligible = rows.filter((r) =>
-    ALLOWED_STATUSES.includes(r.status as DisplayStatus)
-  );
-  if (eligible.length === 0) return FALLBACK_CARDS;
-  const chosen = shuffle(eligible).slice(0, 3).map(cardToFloat);
-  // Pad with fallback entries if the registry has fewer than 3 eligible rows.
-  while (chosen.length < 3) chosen.push(FALLBACK_CARDS[chosen.length]);
-  return chosen;
-}
-
-export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
-  const [cards, setCards] = useState<FloatCardData[]>(FALLBACK_CARDS);
-
-  // Fetch once on mount. `cache: "no-store"` ensures every page load gets a
-  // fresh sample - we want the three cards to rotate across visits.
   useEffect(() => {
     const ac = new AbortController();
     (async () => {
@@ -150,14 +92,13 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
           cache: "no-store",
           signal: ac.signal
         });
-        if (!res.ok) return; // silent fallback - hero never surfaces API errors
+        if (!res.ok) return;
         const data = (await res.json()) as PublicRegistryListResponse;
-        if (Array.isArray(data.rows) && data.rows.length > 0) {
-          setCards(pickThree(data.rows));
+        if (Array.isArray(data.rows) && data.rows.length) {
+          setCards(pickShowcase(data.rows));
         }
-      } catch (e) {
-        if ((e as Error)?.name === "AbortError") return;
-        // Swallow - fallback cards stay rendered.
+      } catch {
+        /* fallbacks */
       }
     })();
     return () => ac.abort();
@@ -165,47 +106,23 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
 
   return (
     <section className="hero">
-      <div className="hero-overlay">
-        <div className="grid-bg" />
-      </div>
-
-      <div className="hero-content">
+      <div className="hero-overlay" aria-hidden />
+      <Reveal className="hero-content">
         <div className="eyebrow">
           <span className="dot" />
-          <svg
-            width="21"
-            height="14"
-            viewBox="0 0 60 40"
-            role="img"
-            aria-label="Mauritius flag"
-            style={{
-              flexShrink: 0,
-              borderRadius: 2,
-              boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
-              display: "block"
-            }}
-          >
-            <title>Mauritius</title>
-            <rect x="0" y="0" width="60" height="10" fill="#EA2839" />
-            <rect x="0" y="10" width="60" height="10" fill="#1A206D" />
-            <rect x="0" y="20" width="60" height="10" fill="#FFD500" />
-            <rect x="0" y="30" width="60" height="10" fill="#00A04D" />
-          </svg>
+          <MauritiusFlag />
           <span>airegistry.mu</span>
         </div>
-
         <h1 className="hero-title">
           Mauritius
           <br />
           <Gradient>AI Registry.</Gradient>
         </h1>
-
         <p className="hero-subtitle">
           Govern, orchestrate, and monitor trusted AI agents, models, and MCP infrastructure from a
-          unified sovereign platform - built for nations, regulators, and the enterprises they
-          depend on.
+          unified sovereign platform - built for nations, regulators, and the enterprises they depend
+          on.
         </p>
-
         <div className="hero-cta-row">
           <Button href="/registry" intent="primary" trailingIcon="arrow-right">
             Explore Registry
@@ -214,24 +131,22 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
             Discover Ecosystem
           </Button>
         </div>
-      </div>
+      </Reveal>
 
-      <div className="hero-visual">
-        <div className="globe-stage">
-          <Globe motionIntensity={motionIntensity} />
-
-          {cards.map((c, i) => (
-            <HeroFloatCard
-              key={`${c.title}-${i}`}
-              style={CARD_SLOTS[i] ?? {}}
-              title={c.title}
-              subtitle={c.subtitle}
-              dot={c.dot}
-              delay={i * 1.2}
-            />
-          ))}
-        </div>
-      </div>
+      <Reveal className="hero-visual" delay={100}>
+        <Globe>
+          {cards.map((card, i) => {
+            const { delay, ...pos } = CARD_POS[i];
+            return (
+              <FloatCard
+                key={`${card.title}-${i}`}
+                card={card}
+                style={{ ...pos, animationDelay: delay }}
+              />
+            );
+          })}
+        </Globe>
+      </Reveal>
     </section>
   );
 }

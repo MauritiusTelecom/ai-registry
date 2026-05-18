@@ -7,87 +7,130 @@ import {
   type IconName
 } from "@/components/library";
 
-// "What gets listed" — three resource types listed on the registry.
-// Renders as a 3-column grid of feature cards that collapse to 2-up and
-// 1-up on smaller viewports. Mirrors the cards in
-// uploads/AI_Registry_Decision_Makers_Guide.html (#features section).
-//
-// The `.type-card` is a bespoke CSS genre: bigger than `<FeatureCard>` (52px
-// gradient icon tile, 26px padding, 18px radius), with a radial corona
-// behind the icon and an AIR-ID sample chip at the bottom. Kept inline so
-// the visual is preserved verbatim.
-
-type Tone = "primary" | "tertiary" | "emerald";
-
 type ResourceKind = "model" | "agent" | "skill";
 
-const TYPES: {
+type TypeEntry = {
   icon: IconName;
   eyebrow: string;
   title: string;
-  desc: string;
+  description: string;
   sample: string;
-  tone: Tone;
   kind: ResourceKind;
-}[] = [
+  accent: { rgb: string; color: string };
+};
+
+const TYPES: TypeEntry[] = [
   {
     icon: "doc",
     eyebrow: "Type · Model",
     title: "Models",
-    desc: "Language, vision or domain models trained on or aware of local context, language and norms.",
+    description:
+      "Language, vision or domain models trained on or aware of local context, language and norms.",
     sample: "model/mu-llm/kreol-1",
-    tone: "primary",
-    kind: "model"
+    kind: "model",
+    accent: { rgb: "var(--primary-rgb)", color: "var(--primary)" }
   },
   {
     icon: "agent",
     eyebrow: "Type · Agent",
     title: "Agents",
-    desc: "Autonomous workflows that act on local processes - registrations, filings, public-service navigation.",
+    description:
+      "Autonomous workflows that act on local processes - registrations, filings, public-service navigation.",
     sample: "agent/mu-agent/service-finder",
-    tone: "tertiary",
-    kind: "agent"
+    kind: "agent",
+    accent: { rgb: "var(--tertiary-rgb)", color: "var(--tertiary)" }
   },
   {
     icon: "shield",
     eyebrow: "Type · Skill",
     title: "Skills",
-    desc: "Packaged expertise - tax, legal, accounting workflows - ready to plug into agents.",
+    description:
+      "Packaged expertise - tax legal accounting workflows - ready to plug into agents.",
     sample: "skill/mu-skill/fiscaliste-mu",
-    tone: "emerald",
-    kind: "skill"
+    kind: "skill",
+    accent: { rgb: "16, 185, 129", color: "#10b981" }
   }
 ];
 
-// Inline tone styles. Uses the same brand variables as the rest of the page
-// (--primary, --tertiary, --secondary) plus an emerald accent matched to the
-// reference HTML. Each tone tints the icon chip, glow, and the AIR-ID sample.
-const TONE: Record<
-  Tone,
-  { rgb: string; color: string; iconBg: string; sampleColor: string }
-> = {
-  primary: {
-    rgb: "var(--primary-rgb)",
-    color: "var(--primary)",
-    iconBg:
-      "linear-gradient(13deg, rgba(var(--primary-rgb),0.22), rgba(var(--tertiary-rgb),0.22))",
-    sampleColor: "var(--secondary)"
-  },
-  tertiary: {
-    rgb: "var(--tertiary-rgb)",
-    color: "var(--tertiary)",
-    iconBg:
-      "linear-gradient(13deg, rgba(var(--tertiary-rgb),0.25), rgba(var(--primary-rgb),0.15))",
-    sampleColor: "var(--secondary)"
-  },
-  emerald: {
-    rgb: "16, 185, 129",
-    color: "#10b981",
-    iconBg:
-      "linear-gradient(13deg, rgba(16,185,129,0.25), rgba(var(--secondary-rgb),0.15))",
-    sampleColor: "var(--secondary)"
-  }
-};
+function TypeCard({ entry, index }: { entry: TypeEntry; index: number }) {
+  const { rgb, color } = entry.accent;
+  return (
+    <Reveal delay={80 + index * 40}>
+      <Link
+        href={`/registry?kind=${entry.kind}`}
+        className="feature-card type-card"
+        style={{
+          position: "relative",
+          padding: 26,
+          borderRadius: 18,
+          border: "1px solid var(--border)",
+          background: "var(--panel)",
+          overflow: "hidden",
+          textDecoration: "none",
+          color: "inherit",
+          display: "block"
+        }}
+      >
+        <span
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: "-40% auto auto -20%",
+            width: 180,
+            height: 180,
+            borderRadius: "50%",
+            background: `radial-gradient(circle, rgba(${rgb}, 0.18), transparent 70%)`,
+            pointerEvents: "none"
+          }}
+        />
+        <span
+          style={{
+            width: 52,
+            height: 52,
+            borderRadius: 14,
+            display: "grid",
+            placeItems: "center",
+            background: `linear-gradient(13deg, rgba(${rgb}, 0.22), rgba(${rgb}, 0.08))`,
+            border: `1px solid rgba(${rgb}, 0.35)`,
+            color,
+            marginBottom: 18
+          }}
+        >
+          <Icon name={entry.icon} size={24} stroke={1.8} />
+        </span>
+        <p
+          style={{
+            margin: "0 0 8px",
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--text-3)"
+          }}
+        >
+          {entry.eyebrow}
+        </p>
+        <h3 style={{ margin: "0 0 10px", fontSize: 22, fontWeight: 500, letterSpacing: "-0.02em" }}>
+          {entry.title}
+        </h3>
+        <p style={{ margin: 0, color: "var(--text-2)", fontSize: 14, lineHeight: 1.55 }}>
+          {entry.description}
+        </p>
+        <p
+          style={{
+            marginTop: 20,
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 11.5,
+            color,
+            letterSpacing: "0.04em"
+          }}
+        >
+          {entry.sample}
+        </p>
+      </Link>
+    </Reveal>
+  );
+}
 
 export function WhatGetsListed() {
   return (
@@ -100,118 +143,11 @@ export function WhatGetsListed() {
       }
       subtitle="The registry covers three kinds of sovereign AI resource - models, agents and skills. Each has its own listing template and stable AIR-ID, so consumers and AI systems can find and combine them programmatically."
     >
-      <Reveal>
-        <div className="types-grid">
-          {TYPES.map((t) => {
-            const tone = TONE[t.tone];
-            return (
-              <Link
-                href={`/registry?kind=${t.kind}`}
-                className="feature-card type-card"
-                key={t.title}
-                style={{
-                  position: "relative",
-                  padding: 26,
-                  borderRadius: 18,
-                  border: "1px solid var(--border)",
-                  background: "var(--panel)",
-                  overflow: "hidden",
-                  textDecoration: "none",
-                  color: "inherit",
-                  display: "block",
-                  transition:
-                    "transform 220ms cubic-bezier(.2,.8,.2,1), border-color 220ms"
-                }}
-              >
-                <div
-                  aria-hidden
-                  style={{
-                    position: "absolute",
-                    inset: "-40% -30% auto auto",
-                    width: 240,
-                    height: 240,
-                    pointerEvents: "none",
-                    opacity: 0.7,
-                    background: `radial-gradient(circle at center, rgba(${tone.rgb}, 0.22), transparent 60%)`
-                  }}
-                />
-                <div
-                  style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 14,
-                    display: "grid",
-                    placeItems: "center",
-                    background: tone.iconBg,
-                    border: "1px solid var(--border-strong)",
-                    color: "var(--text)",
-                    marginBottom: 18,
-                    position: "relative",
-                    zIndex: 1
-                  }}
-                >
-                  <Icon name={t.icon} size={22} stroke={1.8} />
-                </div>
-                <div
-                  style={{
-                    fontFamily: "IBM Plex Mono, monospace",
-                    fontSize: 10.5,
-                    letterSpacing: "0.16em",
-                    textTransform: "uppercase",
-                    color: "var(--text-3)",
-                    marginBottom: 4,
-                    position: "relative",
-                    zIndex: 1
-                  }}
-                >
-                  {t.eyebrow}
-                </div>
-                <h4
-                  style={{
-                    fontSize: 20,
-                    margin: "0 0 8px",
-                    fontWeight: 500,
-                    letterSpacing: "-0.01em",
-                    position: "relative",
-                    zIndex: 1,
-                    color: "var(--text)"
-                  }}
-                >
-                  {t.title}
-                </h4>
-                <p
-                  style={{
-                    color: "var(--text-2)",
-                    margin: "0 0 16px",
-                    fontSize: 14,
-                    lineHeight: 1.6,
-                    position: "relative",
-                    zIndex: 1
-                  }}
-                >
-                  {t.desc}
-                </p>
-                <span
-                  style={{
-                    fontFamily: "IBM Plex Mono, monospace",
-                    fontSize: 11,
-                    padding: "8px 11px",
-                    borderRadius: 8,
-                    background: "var(--code-bg)",
-                    border: "1px solid var(--border)",
-                    color: tone.sampleColor,
-                    display: "inline-flex",
-                    position: "relative",
-                    zIndex: 1
-                  }}
-                >
-                  {t.sample}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
-      </Reveal>
+      <section className="types-grid" aria-label="Resource types">
+        {TYPES.map((entry, index) => (
+          <TypeCard key={entry.kind} entry={entry} index={index} />
+        ))}
+      </section>
     </PageSection>
   );
 }
