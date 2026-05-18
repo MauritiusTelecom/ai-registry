@@ -170,6 +170,11 @@ button { font-family: inherit; cursor: pointer; }
   50% { opacity: 0.5; transform: scale(0.85); }
 }
 
+@keyframes globe-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @keyframes drift-y {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }

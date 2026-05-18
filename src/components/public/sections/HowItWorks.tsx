@@ -1,60 +1,126 @@
 import { PageSection, Reveal, Gradient } from "@/components/library";
 
-// "How it works" — six steps from submission to use. Step 5 is highlighted
-// to make the point that the actual *use* of a resource happens directly
-// between consumer and provider; the registry is never on the runtime path.
-// Mirrors the #how section in
-// uploads/AI_Registry_Decision_Makers_Guide.html.
+type Step = {
+  num: number;
+  title: string;
+  description: string;
+  highlight?: boolean;
+};
 
-// Pink → purple palette for the highlighted step. The 3-stop gradient is
-// applied to the step number bubble (as background) and the step title
-// text (as gradient text). Border, soft background tint, glow and the
-// "Off-registry" label use alpha variants of the primary pink.
-const HI_PRIMARY = "rgb(236, 72, 153)"; // pink
-const HI_PRIMARY_RGB = "236, 72, 153";
-const HI_SECONDARY = "rgb(244, 114, 182)"; // light pink
-const HI_TERTIARY = "rgb(168, 85, 247)"; // purple
-const HI_GRADIENT = `linear-gradient(13deg, ${HI_PRIMARY} 0%, ${HI_SECONDARY} 50%, ${HI_TERTIARY} 100%)`;
-
-const STEPS: { num: number; title: string; desc: string; highlight?: boolean }[] = [
+const STEPS: Step[] = [
   {
     num: 1,
     title: "Submit",
-    desc: "Provider submits the resource with metadata and sovereignty evidence."
+    description: "Provider submits the resource with metadata and sovereignty evidence."
   },
   {
     num: 2,
     title: "Review",
-    desc: "Reviewer applies the sovereignty rubric and records reviewer notes."
+    description: "Reviewer applies the sovereignty rubric and records reviewer notes."
   },
   {
     num: 3,
     title: "Publish",
-    desc: "Operator publishes the listing and issues the stable AIR-ID."
+    description: "Operator publishes the listing and issues the stable AIR-ID."
   },
   {
     num: 4,
     title: "Discover",
-    desc: "Consumer finds the resource through the portal or discovery API."
+    description: "Consumer finds the resource through the portal or discovery API."
   },
   {
     num: 5,
     title: "Use",
-    desc: "Consumer calls the provider directly - runtime never touches the registry.",
+    description:
+      "Consumer calls the provider directly - runtime never touches the registry.",
     highlight: true
   },
   {
     num: 6,
     title: "Maintain",
-    desc: "Provider keeps metadata accurate; status reflects any changes over time."
+    description: "Provider keeps metadata accurate; status reflects any changes over time."
   }
 ];
 
-// Bespoke: the step card has a custom pink/purple highlight variant for
-// step 5, plus a number-bubble + gradient-title visual that doesn't map to
-// the library's `<FeatureCard>` (which uses tone tokens, not bespoke 3-stop
-// gradients, and renders an `<IconTile>` rather than a number bubble).
-// Kept inline so the visual is identical.
+const HI_GRADIENT =
+  "linear-gradient(13deg, rgb(236, 72, 153) 0%, rgb(244, 114, 182) 50%, rgb(168, 85, 247) 100%)";
+
+function StepCard({ step, index }: { step: Step; index: number }) {
+  const hi = !!step.highlight;
+  return (
+    <Reveal delay={80 + index * 40}>
+      <article
+        className={`how-step feature-card${hi ? " how-step--hi" : ""}`}
+        style={{
+          position: "relative",
+          padding: "22px 18px",
+          borderRadius: 14,
+          border: hi
+            ? "1px solid rgba(236, 72, 153, 0.45)"
+            : "1px solid var(--border)",
+          background: hi
+            ? "linear-gradient(160deg, rgba(236, 72, 153, 0.12), var(--panel))"
+            : "var(--panel)"
+        }}
+      >
+        {hi ? (
+          <span
+            style={{
+              position: "absolute",
+              top: 14,
+              right: 14,
+              fontFamily: "'IBM Plex Mono', monospace",
+              fontSize: 10,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: "rgb(236, 72, 153)"
+            }}
+          >
+            Off-registry
+          </span>
+        ) : null}
+        <span
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 10,
+            display: "grid",
+            placeItems: "center",
+            fontFamily: "'IBM Plex Mono', monospace",
+            fontSize: 13,
+            fontWeight: 600,
+            marginBottom: 14,
+            background: hi ? HI_GRADIENT : "rgba(var(--primary-rgb), 0.12)",
+            color: hi ? "#fff" : "var(--primary)",
+            border: hi ? "none" : "1px solid rgba(var(--primary-rgb), 0.35)"
+          }}
+        >
+          {step.num}
+        </span>
+        <h4
+          style={{
+            margin: "0 0 8px",
+            fontSize: 16,
+            fontWeight: 500,
+            ...(hi
+              ? {
+                  background: HI_GRADIENT,
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent"
+                }
+              : { color: "var(--text)" })
+          }}
+        >
+          {step.title}
+        </h4>
+        <p style={{ margin: 0, color: "var(--text-2)", fontSize: 13.5, lineHeight: 1.55 }}>
+          {step.description}
+        </p>
+      </article>
+    </Reveal>
+  );
+}
 
 export function HowItWorks() {
   return (
@@ -66,95 +132,11 @@ export function HowItWorks() {
         </>
       }
     >
-      <Reveal>
-        <div className="how-steps">
-          {STEPS.map((s) => {
-            const isHi = !!s.highlight;
-            return (
-              <div
-                key={s.num}
-                className={`how-step feature-card${isHi ? " how-step--hi" : ""}`}
-                style={{
-                  position: "relative",
-                  padding: "22px 18px",
-                  borderRadius: 14,
-                  border: `1px solid ${
-                    isHi ? `rgba(${HI_PRIMARY_RGB}, 0.40)` : "var(--border)"
-                  }`,
-                  background: isHi
-                    ? `linear-gradient(160deg, rgba(${HI_PRIMARY_RGB}, 0.10), var(--panel))`
-                    : "var(--panel)",
-                  transition:
-                    "border-color 220ms, transform 220ms cubic-bezier(.2,.8,.2,1)"
-                }}
-              >
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 9,
-                    background: isHi ? HI_GRADIENT : "var(--grad-text)",
-                    color: "#fff",
-                    display: "grid",
-                    placeItems: "center",
-                    fontFamily: "IBM Plex Mono, monospace",
-                    fontWeight: 600,
-                    fontSize: 14,
-                    marginBottom: 14,
-                    boxShadow: isHi
-                      ? `0 0 14px rgba(${HI_PRIMARY_RGB}, 0.55)`
-                      : "0 0 14px rgba(var(--primary-rgb), 0.4)"
-                  }}
-                >
-                  {s.num}
-                </div>
-                <h5
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 500,
-                    margin: "0 0 6px",
-                    letterSpacing: "-0.01em",
-                    ...(isHi
-                      ? {
-                          background: HI_GRADIENT,
-                          WebkitBackgroundClip: "text",
-                          backgroundClip: "text",
-                          color: "transparent"
-                        }
-                      : { color: "var(--text)" })
-                  }}
-                >
-                  {s.title}
-                </h5>
-                <p
-                  style={{
-                    fontSize: 13,
-                    color: "var(--text-2)",
-                    margin: 0,
-                    lineHeight: 1.55
-                  }}
-                >
-                  {s.desc}
-                </p>
-                {isHi && (
-                  <div
-                    style={{
-                      fontFamily: "IBM Plex Mono, monospace",
-                      fontSize: 10,
-                      letterSpacing: "0.14em",
-                      textTransform: "uppercase",
-                      color: HI_PRIMARY,
-                      marginTop: 10
-                    }}
-                  >
-                    Off-registry
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </Reveal>
+      <section className="how-steps" aria-label="Registry lifecycle">
+        {STEPS.map((step, index) => (
+          <StepCard key={step.num} step={step} index={index} />
+        ))}
+      </section>
     </PageSection>
   );
 }
