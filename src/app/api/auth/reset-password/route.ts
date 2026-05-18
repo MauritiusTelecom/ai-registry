@@ -48,12 +48,26 @@ export async function POST(req: Request) {
   }
 
   const passwordHash = await hashPassword(body.password);
+
+  // Receiving the reset email proves ownership of the address, so completing
+  // a password reset doubles as email verification. Without this, an
+  // unverified user who resets their password is stuck in a loop: login keeps
+  // rejecting them with "Please verify your email" even after a successful
+  // reset.
+  const activeStatus = user.emailVerified
+    ? null
+    : await prisma.userStatusType.findUnique({ where: { code: "active" } });
+
   await prisma.user.update({
     where: { id: user.id },
     data: {
       passwordHash,
       resetToken: null,
-      resetTokenExpiry: null
+      resetTokenExpiry: null,
+      emailVerified: true,
+      verificationToken: null,
+      verificationTokenExpiry: null,
+      ...(activeStatus ? { statusId: activeStatus.id } : {})
     }
   });
 

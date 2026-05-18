@@ -138,7 +138,17 @@ function pickThree(rows: RegistryCard[]): FloatCardData[] {
   return chosen;
 }
 
-export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
+export function Hero({
+  motionIntensity = 1,
+  eyebrowText,
+  eyebrowIconUrl
+}: {
+  motionIntensity?: number;
+  /** Hero chip text. Falls back to "airegistry.mu" when undefined. */
+  eyebrowText?: string;
+  /** Optional custom icon for the hero chip. When set, replaces the Mauritius flag SVG. */
+  eyebrowIconUrl?: string | null;
+}) {
   const [cards, setCards] = useState<FloatCardData[]>(FALLBACK_CARDS);
 
   // Fetch once on mount. `cache: "no-store"` ensures every page load gets a
@@ -173,26 +183,43 @@ export function Hero({ motionIntensity = 1 }: { motionIntensity?: number }) {
       <div className="hero-content">
         <div className="eyebrow">
           <span className="dot" />
-          <svg
-            width="21"
-            height="14"
-            viewBox="0 0 60 40"
-            role="img"
-            aria-label="Mauritius flag"
-            style={{
-              flexShrink: 0,
-              borderRadius: 2,
-              boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
-              display: "block"
-            }}
-          >
-            <title>Mauritius</title>
-            <rect x="0" y="0" width="60" height="10" fill="#EA2839" />
-            <rect x="0" y="10" width="60" height="10" fill="#1A206D" />
-            <rect x="0" y="20" width="60" height="10" fill="#FFD500" />
-            <rect x="0" y="30" width="60" height="10" fill="#00A04D" />
-          </svg>
-          <span>airegistry.mu</span>
+          {eyebrowIconUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={withBase(eyebrowIconUrl)}
+              alt=""
+              width={21}
+              height={14}
+              style={{
+                flexShrink: 0,
+                borderRadius: 2,
+                boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
+                display: "block",
+                objectFit: "cover"
+              }}
+            />
+          ) : (
+            <svg
+              width="21"
+              height="14"
+              viewBox="0 0 60 40"
+              role="img"
+              aria-label="Mauritius flag"
+              style={{
+                flexShrink: 0,
+                borderRadius: 2,
+                boxShadow: "0 0 0 1px rgba(255,255,255,0.08)",
+                display: "block"
+              }}
+            >
+              <title>Mauritius</title>
+              <rect x="0" y="0" width="60" height="10" fill="#EA2839" />
+              <rect x="0" y="10" width="60" height="10" fill="#1A206D" />
+              <rect x="0" y="20" width="60" height="10" fill="#FFD500" />
+              <rect x="0" y="30" width="60" height="10" fill="#00A04D" />
+            </svg>
+          )}
+          <span>{eyebrowText ?? "airegistry.mu"}</span>
         </div>
 
         <h1 className="hero-title">

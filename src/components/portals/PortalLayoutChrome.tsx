@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import type { PortalConfig } from "@/lib/portals/nav-config";
 import type { SessionUser } from "@/lib/auth/current-user";
+import { getBranding } from "@/lib/branding";
 import { PortalSidebar } from "./PortalSidebar";
 import { PortalHeader } from "./PortalHeader";
 
@@ -28,10 +29,14 @@ export async function PortalLayoutChrome({
   // Admins viewing another portal still see "admin" because the dropdown's
   // role filter aliases admin → every portal (PortalUserDropdown).
   const currentRole = user.roles.includes("admin") ? "admin" : config.role;
+  const branding = await getBranding();
 
   return (
     <div className="p-shell">
-      <PortalSidebar config={config} />
+      <PortalSidebar
+        config={config}
+        branding={{ registryName: branding.registryName, logoUrl: branding.logoUrl }}
+      />
 
       <div className="p-main">
         <PortalHeader label={config.label} currentRole={currentRole} user={user} />
