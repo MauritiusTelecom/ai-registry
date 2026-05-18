@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ProviderPortalFooterLink } from "./ProviderPortalFooterLink";
+import { withBase } from "@/lib/with-base";
 
 // Bundle B footer (matches the home composition in app.jsx + sections.jsx).
 // Six columns, brand block, then bottom row with build/operational tags.
@@ -87,14 +88,34 @@ function FooterColumn({
   );
 }
 
-export function Footer({ registryName }: { registryName: string }) {
+export function Footer({
+  registryName,
+  logoUrl,
+  copyrightLine,
+  buildLine
+}: {
+  registryName: string;
+  logoUrl?: string | null;
+  copyrightLine: string;
+  buildLine: string;
+}) {
   return (
     <footer className="footer">
       <div className="footer-glow" />
       <div className="footer-grid">
         <div className="footer-col">
           <Link href="/" className="nav-logo" style={{ marginBottom: 16 }}>
-            <span className="nav-logo-mark" />
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={withBase(logoUrl)}
+                alt=""
+                className="nav-logo-mark"
+                style={{ background: "transparent", boxShadow: "none", objectFit: "contain" }}
+              />
+            ) : (
+              <span className="nav-logo-mark" />
+            )}
             <span style={{ fontSize: 15 }}>{registryName}</span>
           </Link>
           <p className="footer-brand">
@@ -116,8 +137,8 @@ export function Footer({ registryName }: { registryName: string }) {
       </div>
 
       <div className="footer-bottom">
-        <span>© 2026 Mauritius AI Registry · airegistry.mu</span>
-        <span>BUILD 2026.05.07-r3 · TZ:GMT+4</span>
+        <span>{copyrightLine}</span>
+        <span>{buildLine}</span>
       </div>
     </footer>
   );

@@ -100,6 +100,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         items: [
           { id: "users", label: "Users & roles", href: "/admin/users", icon: "user" },
           { id: "integrations", label: "Integrations", href: "/admin/integrations", icon: "flow" },
+          { id: "branding", label: "Branding", href: "/admin/branding", icon: "eye" },
           { id: "settings", label: "Settings", href: "/admin/settings", icon: "settings" }
         ]
       },

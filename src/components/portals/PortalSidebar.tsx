@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/public/Icon";
 import type { PortalConfig } from "@/lib/portals/nav-config";
+import { withBase } from "@/lib/with-base";
 
 /**
  * Sidebar (client component for active-link highlighting).
@@ -19,16 +20,34 @@ import type { PortalConfig } from "@/lib/portals/nav-config";
  * group auto-expands whenever the active route is inside it, regardless of
  * the persisted choice (so the user can always see where they are).
  */
-export function PortalSidebar({ config }: { config: PortalConfig }) {
+export function PortalSidebar({
+  config,
+  branding
+}: {
+  config: PortalConfig;
+  branding?: { registryName: string; logoUrl: string | null };
+}) {
   const pathname = usePathname() ?? "";
+  const registryName = branding?.registryName ?? "AI Registry";
+  const logoUrl = branding?.logoUrl ?? null;
 
   return (
     <aside className="p-sidebar">
       <div className="p-sidebar-head">
         <Link href="/" className="p-logo">
-          <span className="p-logo-mark" />
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={withBase(logoUrl)}
+              alt=""
+              className="p-logo-mark"
+              style={{ background: "transparent", boxShadow: "none", objectFit: "contain" }}
+            />
+          ) : (
+            <span className="p-logo-mark" />
+          )}
           <div className="p-logo-text">
-            <span className="p-logo-name">AI Registry</span>
+            <span className="p-logo-name">{registryName}</span>
             <span className="p-logo-sub">{config.label}</span>
           </div>
         </Link>

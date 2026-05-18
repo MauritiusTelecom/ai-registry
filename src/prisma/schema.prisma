@@ -1137,3 +1137,21 @@ model NotificationRead {
   @@index([readAt])
   @@schema("registry")
 }
+
+/// Singleton holding portal branding overrides editable from /admin/branding.
+/// Any field left null means "use the built-in default" (env REGISTRY_NAME for
+/// the title, hardcoded footer copy for copyright/build line, CSS gradient for
+/// the logo). Enforced singleton via fixed id = "default".
+model SiteBranding {
+  id                 String   @id @default("default")
+  registryName       String?
+  logoUrl            String?
+  copyrightLine      String?
+  buildLine          String?
+  heroEyebrowText    String?
+  heroEyebrowIconUrl String?
+  updatedAt          DateTime @updatedAt
+  updatedById        String?  @db.Uuid
+
+  @@schema("registry")
+}

@@ -268,10 +268,30 @@ export function ProvidersSection({
         </p>
       ) : null}
 
-      {/* Toolbar hidden on /providers while the catalogue carries only a
-          handful of providers - the search, kind tabs and status chips all
-          add noise without enough rows to filter against. Re-enable when the
-          provider list grows. */}
+      <Reveal>
+        <div className="registry-toolbar">
+          {/* maxWidth is set inline because .search-input has flex:1 in the
+              shared toolbar CSS - which is right on /registry where tabs and
+              status chips share the row, but on /providers the tabs and chips
+              are hidden (too few rows to be meaningful), so without a cap the
+              search would stretch the full page width. */}
+          <div className="search-input" style={{ maxWidth: 520 }}>
+            <Icon name="search" size={15} />
+            <input
+              placeholder="Search providers, jurisdictions, capabilities…"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              aria-busy={dataSource === "api" && loading}
+            />
+            <kbd>⌘K</kbd>
+          </div>
+          {/* Kind tabs hidden while the catalogue carries only a handful of
+              providers - the tab counts would mostly read zero. */}
+        </div>
+      </Reveal>
+
+      {/* Status chips hidden while the catalogue has a single provider -
+          all rows carry the same status, so the filter would do nothing. */}
 
       {error ? (
         <p
