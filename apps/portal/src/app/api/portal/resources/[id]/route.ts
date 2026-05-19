@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { writeAudit } from "@airegistry/sdk";
 import { isHttpUrl } from "@airegistry/sdk";
+import { getReferenceRow } from "@airegistry/sdk/server";
+import { findReferenceRowsByCodes } from "@airegistry/sdk/server";
 
 const EDITABLE = new Set(["draft", "needs_update"]);
 
@@ -270,10 +272,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   let basisRows: { id: string; code: string }[] = [];
   if (basisCodes !== undefined && basisCodes.length > 0) {
-    basisRows = await prisma.sovereigntyBasis.findMany({
-      where: { code: { in: basisCodes } },
-      select: { id: true, code: true }
-    });
+    basisRows = await findReferenceRowsByCodes("sovereigntyBasis", basisCodes);
     const missing = basisCodes.filter((c) => !basisRows.find((b) => b.code === c));
     if (missing.length) {
       return NextResponse.json(
@@ -285,10 +284,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   let languageRows: { id: string; code: string }[] = [];
   if (languageCodes !== undefined && languageCodes.length > 0) {
-    languageRows = await prisma.language.findMany({
-      where: { code: { in: languageCodes } },
-      select: { id: true, code: true }
-    });
+    languageRows = await findReferenceRowsByCodes("language", languageCodes);
     const missing = languageCodes.filter((c) => !languageRows.find((l) => l.code === c));
     if (missing.length) {
       return NextResponse.json(
@@ -300,10 +296,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   let sectorRows: { id: string; code: string }[] = [];
   if (sectorCodes !== undefined && sectorCodes.length > 0) {
-    sectorRows = await prisma.sector.findMany({
-      where: { code: { in: sectorCodes } },
-      select: { id: true, code: true }
-    });
+    sectorRows = await findReferenceRowsByCodes("sector", sectorCodes);
     const missing = sectorCodes.filter((c) => !sectorRows.find((s) => s.code === c));
     if (missing.length) {
       return NextResponse.json(
@@ -342,14 +335,8 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       )
     );
     const [types, bases] = await Promise.all([
-      prisma.evidenceType.findMany({
-        where: { code: { in: typeCodes } },
-        select: { id: true, code: true }
-      }),
-      prisma.sovereigntyBasis.findMany({
-        where: { code: { in: basisCodesEv } },
-        select: { id: true, code: true }
-      })
+      findReferenceRowsByCodes("evidenceType", typeCodes),
+      findReferenceRowsByCodes("sovereigntyBasis", basisCodesEv)
     ]);
     evidenceResolved = [];
     for (const [idx, r] of rows.entries()) {
@@ -432,19 +419,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       )
     );
     const [protocols, auths, accesses, unknownHealth] = await Promise.all([
-      prisma.protocol.findMany({
-        where: { code: { in: protoCodes } },
-        select: { id: true, code: true }
-      }),
-      prisma.authMethodType.findMany({
-        where: { code: { in: authCodes } },
-        select: { id: true, code: true }
-      }),
-      prisma.accessModelType.findMany({
-        where: { code: { in: accessCodes } },
-        select: { id: true, code: true }
-      }),
-      prisma.endpointHealthType.findUnique({ where: { code: "unknown" } })
+      findReferenceRowsByCodes("protocol", protoCodes),
+      findReferenceRowsByCodes("authMethodType", authCodes),
+      findReferenceRowsByCodes("accessModelType", accessCodes),
+      getReferenceRow("endpointHealthType", "unknown")
     ]);
     if (!unknownHealth) {
       return NextResponse.json({ error: "Reference data not seeded." }, { status: 503 });

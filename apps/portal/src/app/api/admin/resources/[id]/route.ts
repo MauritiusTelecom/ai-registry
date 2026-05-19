@@ -3,6 +3,8 @@ import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@airegistry/sdk";
 import { isHttpUrl } from "@airegistry/sdk";
+import { getReferenceRow } from "@airegistry/sdk/server";
+import { findReferenceRowsByCodes } from "@airegistry/sdk/server";
 
 /**
  * GET /api/admin/resources/:id - full edit-shape payload for the admin edit
@@ -237,7 +239,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (typeof body.riskCode === "string" && body.riskCode.trim() !== "") {
     const code = body.riskCode.trim().toLowerCase();
     if (code !== target.riskLevel.code) {
-      const r = await prisma.riskLevel.findUnique({ where: { code } });
+      const r = await getReferenceRow("riskLevel", code);
       if (!r) return NextResponse.json({ error: "Unknown riskCode" }, { status: 400 });
       data.riskLevelId = r.id;
       before.risk = target.riskLevel.code;
@@ -247,7 +249,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (typeof body.jurisdictionCode === "string" && body.jurisdictionCode.trim() !== "") {
     const code = body.jurisdictionCode.trim().toUpperCase();
     if (code !== target.primaryJurisdiction.code) {
-      const j = await prisma.jurisdiction.findUnique({ where: { code } });
+      const j = await getReferenceRow("jurisdiction", code);
       if (!j) return NextResponse.json({ error: "Unknown jurisdictionCode" }, { status: 400 });
       data.primaryJurisdictionId = j.id;
       before.jurisdiction = target.primaryJurisdiction.code;
@@ -257,7 +259,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (typeof body.kindCode === "string" && body.kindCode.trim() !== "") {
     const code = body.kindCode.trim().toLowerCase();
     if (code !== target.resourceType.code) {
-      const rt = await prisma.resourceType.findUnique({ where: { code } });
+      const rt = await getReferenceRow("resourceType", code);
       if (!rt) return NextResponse.json({ error: "Unknown kindCode" }, { status: 400 });
       if (!rt.active) {
         return NextResponse.json(
@@ -285,7 +287,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (typeof body.listingOriginCode === "string" && body.listingOriginCode.trim() !== "") {
     const code = body.listingOriginCode.trim().toLowerCase();
     if (code !== target.listingOrigin.code) {
-      const lo = await prisma.listingOrigin.findUnique({ where: { code } });
+      const lo = await getReferenceRow("listingOrigin", code);
       if (!lo) {
         return NextResponse.json({ error: "Unknown listingOriginCode" }, { status: 400 });
       }
@@ -342,10 +344,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   let basisRows: { id: string; code: string }[] = [];
   if (basisCodes !== undefined && basisCodes.length > 0) {
-    basisRows = await prisma.sovereigntyBasis.findMany({
-      where: { code: { in: basisCodes } },
-      select: { id: true, code: true }
-    });
+    basisRows = await findReferenceRowsByCodes("sovereigntyBasis", basisCodes);
     const missing = basisCodes.filter((c) => !basisRows.find((b) => b.code === c));
     if (missing.length) {
       return NextResponse.json(
@@ -357,10 +356,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   let languageRows: { id: string; code: string }[] = [];
   if (languageCodes !== undefined && languageCodes.length > 0) {
-    languageRows = await prisma.language.findMany({
-      where: { code: { in: languageCodes } },
-      select: { id: true, code: true }
-    });
+    languageRows = await findReferenceRowsByCodes("language", languageCodes);
     const missing = languageCodes.filter((c) => !languageRows.find((l) => l.code === c));
     if (missing.length) {
       return NextResponse.json(
@@ -372,10 +368,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   let sectorRows: { id: string; code: string }[] = [];
   if (sectorCodes !== undefined && sectorCodes.length > 0) {
-    sectorRows = await prisma.sector.findMany({
-      where: { code: { in: sectorCodes } },
-      select: { id: true, code: true }
-    });
+    sectorRows = await findReferenceRowsByCodes("sector", sectorCodes);
     const missing = sectorCodes.filter((c) => !sectorRows.find((s) => s.code === c));
     if (missing.length) {
       return NextResponse.json(
@@ -413,14 +406,8 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       )
     );
     const [types, bases] = await Promise.all([
-      prisma.evidenceType.findMany({
-        where: { code: { in: typeCodes } },
-        select: { id: true, code: true }
-      }),
-      prisma.sovereigntyBasis.findMany({
-        where: { code: { in: basisCodesEv } },
-        select: { id: true, code: true }
-      })
+      findReferenceRowsByCodes("evidenceType", typeCodes),
+      findReferenceRowsByCodes("sovereigntyBasis", basisCodesEv)
     ]);
     evidenceResolved = [];
     for (const [idx, r] of rows.entries()) {
@@ -502,19 +489,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       )
     );
     const [protocols, auths, accesses, unknownHealth] = await Promise.all([
-      prisma.protocol.findMany({
-        where: { code: { in: protoCodes } },
-        select: { id: true, code: true }
-      }),
-      prisma.authMethodType.findMany({
-        where: { code: { in: authCodes } },
-        select: { id: true, code: true }
-      }),
-      prisma.accessModelType.findMany({
-        where: { code: { in: accessCodes } },
-        select: { id: true, code: true }
-      }),
-      prisma.endpointHealthType.findUnique({ where: { code: "unknown" } })
+      findReferenceRowsByCodes("protocol", protoCodes),
+      findReferenceRowsByCodes("authMethodType", authCodes),
+      findReferenceRowsByCodes("accessModelType", accessCodes),
+      getReferenceRow("endpointHealthType", "unknown")
     ]);
     if (!unknownHealth) {
       return NextResponse.json({ error: "Reference data not seeded." }, { status: 503 });

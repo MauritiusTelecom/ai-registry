@@ -6,6 +6,7 @@ import { getConfig } from "@airegistry/sdk";
 import { emailTemplates } from "@airegistry/sdk/server";
 import { sendTransactionalEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
+import { getReferenceRow } from "@airegistry/sdk/server";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -91,7 +92,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (typeof body.roleCode === "string" && body.roleCode.trim() !== "") {
     const code = body.roleCode.trim().toLowerCase();
     if (code !== target.role.code) {
-      const role = await prisma.userRoleType.findUnique({ where: { code } });
+      const role = await getReferenceRow("userRoleType", code);
       if (!role) return NextResponse.json({ error: "Unknown roleCode" }, { status: 400 });
       data.roleId = role.id;
 
@@ -117,7 +118,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (typeof body.statusCode === "string" && body.statusCode.trim() !== "") {
     const code = body.statusCode.trim().toLowerCase();
     if (code !== target.status.code) {
-      const st = await prisma.userStatusType.findUnique({ where: { code } });
+      const st = await getReferenceRow("userStatusType", code);
       if (!st) return NextResponse.json({ error: "Unknown statusCode" }, { status: 400 });
       if (target.id === actor.id && (code === "suspended" || code === "deactivated")) {
         return NextResponse.json(

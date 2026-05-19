@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SOVEREIGNTY_CHECKLIST_ITEMS } from "@airegistry/sdk";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Policies" };
 export const dynamic = "force-dynamic";
@@ -21,26 +22,11 @@ export const dynamic = "force-dynamic";
 export default async function AdminPoliciesPage() {
   const [lifecycle, trustKinds, sovereigntyBases, riskLevels, providerStatuses] = await Promise.all(
     [
-      prisma.lifecycleStatus.findMany({
-        where: { active: true },
-        orderBy: { sortOrder: "asc" }
-      }),
-      prisma.trustSignalType.findMany({
-        where: { active: true },
-        orderBy: { sortOrder: "asc" }
-      }),
-      prisma.sovereigntyBasis.findMany({
-        where: { active: true },
-        orderBy: { name: "asc" }
-      }),
-      prisma.riskLevel.findMany({
-        where: { active: true },
-        orderBy: { sortOrder: "asc" }
-      }),
-      prisma.providerStatusType.findMany({
-        where: { active: true },
-        orderBy: { sortOrder: "asc" }
-      })
+      listReferenceTable("lifecycleStatus"),
+      listReferenceTable("trustSignalType"),
+      listReferenceTable("sovereigntyBasis", { orderBy: "name" }),
+      listReferenceTable("riskLevel"),
+      listReferenceTable("providerStatusType")
     ]
   );
 
@@ -219,14 +205,4 @@ function Pill({
           fontFamily: "IBM Plex Mono, monospace",
           marginTop: 2
         }}
-      >
-        {code}
-      </div>
-      {description ? (
-        <div style={{ fontSize: 12, color: "var(--text-2)", marginTop: 6, lineHeight: 1.45 }}>
-          {description}
-        </div>
-      ) : null}
-    </div>
-  );
-}
+      

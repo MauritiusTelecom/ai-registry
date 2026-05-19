@@ -8,6 +8,7 @@ import {
 import { toRegistryCard, toRegistryCardDetail } from "@airegistry/sdk";
 import type { ResourceKind, WellKnownDocument } from "@airegistry/sdk";
 import { isAirId, parseAirId } from "@airegistry/sdk";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 /**
  * POST /api/mcp - Streamable HTTP MCP adapter (Phase 5 / T052).
@@ -188,35 +189,12 @@ async function callTool(
       const capability = asString(args.capability);
       if (!capability) throw mcpInvalidParams("`capability` is required");
       const tag = capability.toLowerCase();
-      const rows = await prisma.resource.findMany({
-        where: {
-          publicVisibility: true,
-          lifecycleStatus: { code: { in: ["listed", "needs_update", "deprecated"] } },
-          resourceTags: {
-            some: { tag: { name: { equals: tag, mode: "insensitive" } } }
-          }
-        },
-        include: {
-          resourceType: true,
-          provider: true,
-          primaryJurisdiction: true,
-          lifecycleStatus: true,
-          riskLevel: true,
-          resourceTags: { include: { tag: true } },
-          trustSignals: { include: { kind: true, status: true } },
-          endpoints: { include: { protocol: true } }
-        },
-        orderBy: [{ lifecycleStatus: { sortOrder: "asc" } }, { updatedAt: "desc" }],
-        take: 100
-      });
+      // Visibility-rule enforcement (constitution §5) and the include/orderBy
+      // shape live in `findResourcesByCapability` now — no raw prisma here.
+      const rows = await findResourcesByCapability(tag);
       return {
         capability: tag,
-        // toRegistryCard expects ResourceForCard rows. The include above is
-        // shaped for that path.
-        rows: rows.map((r) =>
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          toRegistryCard(r as any)
-        ),
+        rows,
         total: rows.length,
         generatedAt: new Date().toISOString()
       };
@@ -225,16 +203,8 @@ async function callTool(
       const cfg = getConfig();
       const apiBase = cfg.apiBaseUrl.replace(/\/+$/, "");
       const [resourceTypes, languages] = await Promise.all([
-        prisma.resourceType.findMany({
-          where: { active: true },
-          orderBy: { sortOrder: "asc" },
-          select: { code: true }
-        }),
-        prisma.language.findMany({
-          where: { active: true },
-          orderBy: { code: "asc" },
-          select: { code: true }
-        })
+        listReferenceTable("resourceType"),
+        listReferenceTable("language", { orderBy: "code" })
       ]);
       const doc: WellKnownDocument = {
         registryName: cfg.registryName,

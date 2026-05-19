@@ -5,6 +5,8 @@ import { getConfig } from "@airegistry/sdk";
 import { emailTemplates } from "@airegistry/sdk/server";
 import { sendTransactionalEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
+import { getReferenceRow } from "@airegistry/sdk/server";
+import { writeAudit } from "@airegistry/sdk";
 
 /**
  * POST /api/auth/reset-password
@@ -55,7 +57,7 @@ export async function POST(req: Request) {
   // reset.
   const activeStatus = user.emailVerified
     ? null
-    : await prisma.userStatusType.findUnique({ where: { code: "active" } });
+    : await getReferenceRow("userStatusType", "active");
 
   await prisma.user.update({
     where: { id: user.id },
@@ -70,13 +72,11 @@ export async function POST(req: Request) {
     }
   });
 
-  await prisma.auditLog.create({
-    data: {
-      actorUserId: user.id,
-      entityType: "user",
-      entityId: user.id,
-      action: "user.password_reset"
-    }
+  await writeAudit({
+    actorUserId: user.id,
+    entityType: "user",
+    entityId: user.id,
+    action: "user.password_reset"
   });
 
   const cfg = getConfig();

@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 /** GET /api/sectors - public read-only sector taxonomy. */
 export async function GET() {
-  const rows = await prisma.sector.findMany({
-    where: { active: true },
-    select: { code: true, name: true, description: true },
-    orderBy: { code: "asc" }
-  });
+  const all = await listReferenceTable("sector", { orderBy: "code" });
+  const rows = all.map((r) => ({
+    code: r.code,
+    name: r.name,
+    description: r.description
+  }));
   return NextResponse.json(
     { rows, total: rows.length, generatedAt: new Date().toISOString() },
     {

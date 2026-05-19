@@ -8,6 +8,7 @@ import { emailTemplates } from "@airegistry/sdk/server";
 import { uniqueValidEmails } from "@airegistry/sdk/server";
 import { sendTransactionalEmailAll } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
+import { getReferenceRow } from "@airegistry/sdk/server";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -101,7 +102,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (typeof body.typeCode === "string" && body.typeCode.trim() !== "") {
     const code = body.typeCode.trim().toLowerCase();
     if (code !== target.type.code) {
-      const t = await prisma.providerTypeRef.findUnique({ where: { code } });
+      const t = await getReferenceRow("providerTypeRef", code);
       if (!t) return NextResponse.json({ error: "Unknown typeCode" }, { status: 400 });
       data.typeId = t.id;
     }
@@ -109,7 +110,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (typeof body.jurisdictionCode === "string" && body.jurisdictionCode.trim() !== "") {
     const code = body.jurisdictionCode.trim().toUpperCase();
     if (code !== target.homeJurisdiction.code) {
-      const j = await prisma.jurisdiction.findUnique({ where: { code } });
+      const j = await getReferenceRow("jurisdiction", code);
       if (!j) return NextResponse.json({ error: "Unknown jurisdictionCode" }, { status: 400 });
       data.homeJurisdictionId = j.id;
     }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadVerifierQueue } from "@airegistry/sdk/server";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 import { StatusPill } from "@/components/portals/StatusPill";
 
@@ -25,26 +25,17 @@ const STATUS_DISPLAY: Record<string, string> = {
 };
 
 export default async function VerifierQueuePage() {
-  const rows = await prisma.review.findMany({
-    where: { status: { code: { in: ["open", "in_review"] } } },
-    include: {
-      reviewType: { select: { name: true } },
-      status: { select: { code: true, name: true } },
-      resource: { select: { slug: true, title: true, provider: { select: { displayName: true } } } },
-      provider: { select: { displayName: true } }
-    },
-    orderBy: { createdAt: "asc" }
-  });
+  const raw = await loadVerifierQueue();
 
-  const projected: Row[] = rows.map((r) => ({
+  const projected: Row[] = raw.map((r) => ({
     id: r.id,
-    resourceTitle: r.resource?.title ?? "(provider-scoped review)",
-    resourceSlug: r.resource?.slug ?? null,
-    provider: r.resource?.provider.displayName ?? r.provider?.displayName ?? "-",
-    reviewType: r.reviewType.name,
-    status: STATUS_DISPLAY[r.status.code] ?? "active",
-    startedAt: r.startedAt ? r.startedAt.toISOString().slice(0, 10) : null,
-    createdAt: r.createdAt.toISOString().slice(0, 10)
+    resourceTitle: r.resourceTitle,
+    resourceSlug: r.resourceSlug,
+    provider: r.provider,
+    reviewType: r.reviewType,
+    status: STATUS_DISPLAY[r.statusCode] ?? "active",
+    startedAt: r.startedAt,
+    createdAt: r.createdAt
   }));
 
   const columns: Column<Row>[] = [

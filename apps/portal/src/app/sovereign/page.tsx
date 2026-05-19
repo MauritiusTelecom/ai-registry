@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { getConfig } from "@airegistry/sdk";
-import { prisma } from "@/lib/prisma";
 import { StatCard } from "@/components/portals/StatCard";
+import {
+  countReferenceTable,
+  loadSovereignDashboardStats
+} from "@airegistry/sdk/server";
 
 export const metadata = { title: "Sovereign Ops · Dashboard" };
 export const dynamic = "force-dynamic";
@@ -10,26 +13,13 @@ export default async function SovereignDashboardPage() {
   const cfg = getConfig();
 
   const [
-    listedInJurisdiction,
-    providersInJurisdiction,
+    { listedInJurisdiction, providersInJurisdiction, openIncidents },
     sectorCount,
-    openIncidents,
     sovereignBases
   ] = await Promise.all([
-    prisma.resource.count({
-      where: {
-        primaryJurisdiction: { code: cfg.jurisdiction },
-        lifecycleStatus: { code: "listed" }
-      }
-    }),
-    prisma.provider.count({
-      where: { homeJurisdiction: { code: cfg.jurisdiction } }
-    }),
-    prisma.sector.count({ where: { active: true } }),
-    prisma.complaint.count({
-      where: { status: { code: { in: ["open", "investigating"] } } }
-    }),
-    prisma.sovereigntyBasis.count({ where: { active: true } })
+    loadSovereignDashboardStats(cfg.jurisdiction),
+    countReferenceTable("sector"),
+    countReferenceTable("sovereigntyBasis")
   ]);
 
   return (

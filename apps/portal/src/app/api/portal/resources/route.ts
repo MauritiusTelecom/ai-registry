@@ -5,6 +5,7 @@ import { getConfig } from "@airegistry/sdk";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { authoringGateForbiddenResponse } from "@/lib/portal/authoring-gate-response";
 import { writeAudit } from "@airegistry/sdk";
+import { getReferenceRow } from "@airegistry/sdk/server";
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -130,15 +131,15 @@ export async function POST(req: Request) {
 
   const [draft, listingLocal, riskLow, rType, basis, protocolRest, authApiKey, accessRegistered, healthUnknown] =
     await Promise.all([
-      prisma.lifecycleStatus.findUnique({ where: { code: "draft" } }),
-      prisma.listingOrigin.findUnique({ where: { code: "local" } }),
-      prisma.riskLevel.findUnique({ where: { code: "low" } }),
-      prisma.resourceType.findUnique({ where: { code: typeCode } }),
-      prisma.sovereigntyBasis.findUnique({ where: { code: "local_law" } }),
-      prisma.protocol.findUnique({ where: { code: "rest" } }),
-      prisma.authMethodType.findUnique({ where: { code: "api_key" } }),
-      prisma.accessModelType.findUnique({ where: { code: "registered" } }),
-      prisma.endpointHealthType.findUnique({ where: { code: "unknown" } })
+      getReferenceRow("lifecycleStatus", "draft"),
+      getReferenceRow("listingOrigin", "local"),
+      getReferenceRow("riskLevel", "low"),
+      getReferenceRow("resourceType", typeCode),
+      getReferenceRow("sovereigntyBasis", "local_law"),
+      getReferenceRow("protocol", "rest"),
+      getReferenceRow("authMethodType", "api_key"),
+      getReferenceRow("accessModelType", "registered"),
+      getReferenceRow("endpointHealthType", "unknown")
     ]);
 
   if (!draft || !listingLocal || !riskLow || !rType || !basis || !protocolRest || !authApiKey || !accessRegistered || !healthUnknown) {

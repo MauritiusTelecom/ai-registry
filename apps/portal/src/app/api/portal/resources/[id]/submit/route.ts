@@ -9,6 +9,7 @@ import { emailTemplates } from "@airegistry/sdk/server";
 import { uniqueValidEmails } from "@airegistry/sdk/server";
 import { sendTransactionalEmailAll } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
+import { getReferenceRow } from "@airegistry/sdk/server";
 
 /**
  * POST /api/portal/resources/:id/submit - draft|needs_update → submitted + open review.
@@ -36,9 +37,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   }
 
   const [submitted, openReview, sovereigntyReviewType] = await Promise.all([
-    prisma.lifecycleStatus.findUnique({ where: { code: "submitted" } }),
-    prisma.reviewStatusType.findUnique({ where: { code: "open" } }),
-    prisma.reviewType.findUnique({ where: { code: "sovereignty_review" } })
+    getReferenceRow("lifecycleStatus", "submitted"),
+    getReferenceRow("reviewStatusType", "open"),
+    getReferenceRow("reviewType", "sovereignty_review")
   ]);
   if (!submitted || !openReview || !sovereigntyReviewType) {
     return NextResponse.json({ error: "Reference data not seeded." }, { status: 503 });

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { ResourcesAdmin } from "@/components/admin/ResourcesAdmin";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Resources" };
 export const dynamic = "force-dynamic";
@@ -20,31 +21,15 @@ export default async function AdminResourcesPage() {
   if (!actor || !actor.roles.includes("admin")) notFound();
 
   const [kinds, lifecycles, providers, jurisdictions, riskLevels] = await Promise.all([
-    prisma.resourceType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.lifecycleStatus.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    }),
+    listReferenceTable("resourceType"),
+    listReferenceTable("lifecycleStatus"),
     prisma.provider.findMany({
       where: { adminSuspended: false },
       orderBy: { displayName: "asc" },
       select: { slug: true, displayName: true }
     }),
-    prisma.jurisdiction.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.riskLevel.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    })
+    listReferenceTable("jurisdiction", { orderBy: "name" }),
+    listReferenceTable("riskLevel")
   ]);
 
   return (

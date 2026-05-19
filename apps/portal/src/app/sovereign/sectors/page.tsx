@@ -1,5 +1,8 @@
-import { prisma } from "@/lib/prisma";
 import { getConfig } from "@airegistry/sdk";
+import {
+  listReferenceTable,
+  loadSovereignSectorMemberships
+} from "@airegistry/sdk/server";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 
 export const metadata = { title: "Sovereign · Sectors" };
@@ -25,23 +28,8 @@ export default async function SovereignSectorsPage() {
   // sovereign jurisdiction), then count by lifecycle + kind. Each Resource
   // joins ResourceSector on `sectorId`; we walk that index.
   const [sectors, memberships] = await Promise.all([
-    prisma.sector.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" }
-    }),
-    prisma.resourceSector.findMany({
-      where: {
-        resource: { primaryJurisdiction: { code: cfg.jurisdiction } }
-      },
-      include: {
-        resource: {
-          select: {
-            lifecycleStatus: { select: { code: true } },
-            resourceType: { select: { code: true } }
-          }
-        }
-      }
-    })
+    listReferenceTable("sector", { orderBy: "name" }),
+    loadSovereignSectorMemberships(cfg.jurisdiction)
   ]);
 
   const buckets = new Map<string, { total: number; listed: number; models: number; agents: number; tools: number; skills: number }>();
@@ -52,8 +40,8 @@ export default async function SovereignSectorsPage() {
     const b = buckets.get(m.sectorId);
     if (!b) continue;
     b.total += 1;
-    if (m.resource.lifecycleStatus.code === "listed") b.listed += 1;
-    const k = m.resource.resourceType.code;
+    if (m.resourceLifecycleCode === "listed") b.listed += 1;
+    const k = m.resourceTypeCode;
     if (k === "model") b.models += 1;
     else if (k === "agent") b.agents += 1;
     else if (k === "tool") b.tools += 1;

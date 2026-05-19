@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getConfig } from "@airegistry/sdk";
-import { prisma } from "@/lib/prisma";
+import { countReferenceTable } from "@airegistry/sdk/server";
+import { loadSovereignSettingsView } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Sovereign · Settings" };
 export const dynamic = "force-dynamic";
@@ -19,21 +20,9 @@ export default async function SovereignSettingsPage() {
 
   const [jurisdiction, providersHere, listedHere, sectorsActive, languagesActive] =
     await Promise.all([
-      prisma.jurisdiction.findUnique({
-        where: { code: cfg.jurisdiction },
-        include: { type: { select: { code: true, name: true } } }
-      }),
-      prisma.provider.count({
-        where: { homeJurisdiction: { code: cfg.jurisdiction } }
-      }),
-      prisma.resource.count({
-        where: {
-          primaryJurisdiction: { code: cfg.jurisdiction },
-          lifecycleStatus: { code: "listed" }
-        }
-      }),
-      prisma.sector.count({ where: { active: true } }),
-      prisma.language.count({ where: { active: true } })
+      loadSovereignSettingsView(cfg.jurisdiction),
+      countReferenceTable("sector"),
+      countReferenceTable("language")
     ]);
 
   return (

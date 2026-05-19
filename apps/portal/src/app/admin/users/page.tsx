@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { UsersAdmin } from "@/components/admin/UsersAdmin";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Users & roles" };
 export const dynamic = "force-dynamic";
@@ -16,16 +17,8 @@ export default async function AdminUsersPage() {
   if (!actor || !actor.roles.includes("admin")) notFound();
 
   const [roles, statuses, providers] = await Promise.all([
-    prisma.userRoleType.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.userStatusType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    }),
+    listReferenceTable("userRoleType", { orderBy: "name" }),
+    listReferenceTable("userStatusType"),
     prisma.provider.findMany({
       where: { adminSuspended: false },
       orderBy: { displayName: "asc" },

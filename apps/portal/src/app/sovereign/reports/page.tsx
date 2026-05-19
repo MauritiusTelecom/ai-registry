@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { getConfig } from "@airegistry/sdk";
+import { loadSovereignReportsSnapshot } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Sovereign · Reports" };
 export const dynamic = "force-dynamic";
@@ -31,46 +31,18 @@ export default async function SovereignReportsPage() {
     enforcementsThisQuarter,
     activeProviders,
     officialProviders
-  ] = await Promise.all([
-    prisma.resource.count({
-      where: { ...where, lifecycleStatus: { code: "listed" } }
-    }),
-    prisma.resource.count({
-      where: {
-        ...where,
-        lifecycleStatus: { code: "listed" },
-        listedAt: { gte: since90d }
-      }
-    }),
-    prisma.resource.count({
-      where: { ...where, lifecycleStatus: { code: "deprecated" } }
-    }),
-    prisma.review.count({
-      where: {
-        resource: where,
-        status: { code: "decided" },
-        completedAt: { gte: since90d }
-      }
-    }),
-    prisma.enforcementAction.count({
-      where: {
-        OR: [
-          { targetResource: { primaryJurisdiction: { code: cfg.jurisdiction } } },
-          { targetProvider: { homeJurisdiction: { code: cfg.jurisdiction } } }
-        ],
-        performedAt: { gte: since90d }
-      }
-    }),
-    prisma.provider.count({
-      where: { homeJurisdiction: { code: cfg.jurisdiction } }
-    }),
-    prisma.provider.count({
-      where: {
-        homeJurisdiction: { code: cfg.jurisdiction },
-        status: { code: "official_provider" }
-      }
-    })
-  ]);
+  ] = await (async () => {
+    const s = await loadSovereignReportsSnapshot(cfg.jurisdiction);
+    return [
+      s.listedTotal,
+      s.listedSince90d,
+      s.deprecated,
+      s.reviewsDecided90d,
+      s.enforcementActions90d,
+      s.providersTotal,
+      s.providersOfficial
+    ] as const;
+  })();
 
   return (
     <div className="p-content">

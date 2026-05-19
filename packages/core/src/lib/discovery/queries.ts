@@ -315,5 +315,40 @@ export async function findResourceForDetail(args: {
   return null;
 }
 
+// ─── Capability discovery (AIR-SPEC §13) ──────────────────────────────────
+
+/**
+ * Find publicly-listable resources whose tags include the given capability.
+ *
+ * Replaces the raw `prisma.resource.findMany({ ..., resourceTags: { some: ... } })`
+ * pattern in `/api/discover` and the MCP `registry.discover` tool. Matching
+ * is case-insensitive but exact-token (no fuzzy/substring): caller `mcp`
+ * returns rows tagged `mcp`, not `mcp-treasury`.
+ *
+ * Visibility-rule enforced (constitution §5): only rows with
+ * `publicVisibility: true` and a `listed`-class lifecycle code are returned.
+ */
+export async function findResourcesByCapability(
+  capability: string,
+  opts: { limit?: number } = {}
+): Promise<RegistryCard[]> {
+  const tag = capability.trim().toLowerCase();
+  if (!tag) return [];
+  const take = Math.min(Math.max(opts.limit ?? 100, 1), 200);
+  const rows = (await prisma.resource.findMany({
+    where: {
+      publicVisibility: true,
+      lifecycleStatus: { code: { in: PUBLIC_LIFECYCLE_CODES } },
+      resourceTags: {
+        some: { tag: { name: { equals: tag, mode: "insensitive" } } }
+      }
+    },
+    include: RESOURCE_INCLUDE,
+    orderBy: RESOURCE_ORDER_BY,
+    take
+  })) as ResourceForCard[];
+  return rows.map(toRegistryCard);
+}
+
 // Re-exports so callers don't need to import from two files.
 export { tallyCounts };

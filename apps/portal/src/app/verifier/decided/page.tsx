@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadVerifierDecided } from "@airegistry/sdk/server";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 import { StatusPill } from "@/components/portals/StatusPill";
 
@@ -24,31 +24,18 @@ const DECISION_DISPLAY: Record<string, string> = {
 };
 
 export default async function VerifierDecidedPage() {
-  const rows = await prisma.review.findMany({
-    where: { status: { code: { in: ["decided", "withdrawn"] } } },
-    include: {
-      reviewType: { select: { name: true } },
-      status: { select: { code: true, name: true } },
-      resource: {
-        select: { slug: true, title: true, provider: { select: { displayName: true } } }
-      },
-      provider: { select: { displayName: true } },
-      reviewer: { select: { name: true, email: true } }
-    },
-    orderBy: [{ completedAt: "desc" }, { createdAt: "desc" }],
-    take: 200
-  });
+  const raw = await loadVerifierDecided();
 
-  const projected: Row[] = rows.map((r) => ({
+  const projected: Row[] = raw.map((r) => ({
     id: r.id,
-    resourceTitle: r.resource?.title ?? "(provider-scoped review)",
-    resourceSlug: r.resource?.slug ?? null,
-    provider: r.resource?.provider.displayName ?? r.provider?.displayName ?? "-",
-    reviewType: r.reviewType.name,
-    decision: DECISION_DISPLAY[r.status.code] ?? "active",
-    decisionSummary: r.decisionSummary?.trim() || "-",
-    reviewer: r.reviewer?.name ?? r.reviewer?.email ?? "-",
-    completedAt: r.completedAt ? r.completedAt.toISOString().slice(0, 10) : null
+    resourceTitle: r.resourceTitle,
+    resourceSlug: r.resourceSlug,
+    provider: r.provider,
+    reviewType: r.reviewType,
+    decision: DECISION_DISPLAY[r.statusCode] ?? "active",
+    decisionSummary: r.decisionSummary,
+    reviewer: r.reviewer,
+    completedAt: r.completedAt
   }));
 
   const columns: Column<Row>[] = [

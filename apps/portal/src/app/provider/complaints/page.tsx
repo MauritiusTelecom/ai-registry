@@ -1,9 +1,10 @@
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import {
   ProviderComplaintsGrid,
   type ProviderComplaintRow
 } from "@/components/portals/provider/ProviderComplaintsGrid";
+import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadMyComplaints } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Provider · Complaints" };
 export const dynamic = "force-dynamic";
@@ -53,25 +54,8 @@ export default async function ProviderComplaintsPage() {
   }
 
   const [rows, types] = await Promise.all([
-    prisma.complaint.findMany({
-      where: {
-        OR: [{ targetProviderId: providerId }, { targetResource: { providerId } }]
-      },
-      include: {
-        complaintType: { select: { name: true } },
-        severity: { select: { code: true, name: true } },
-        status: { select: { code: true, name: true } },
-        targetResource: { select: { slug: true, title: true } },
-        targetProvider: { select: { displayName: true } }
-      },
-      orderBy: [{ status: { sortOrder: "asc" } }, { createdAt: "desc" }],
-      take: 200
-    }),
-    prisma.complaintType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { name: true }
-    })
+    loadMyComplaints(providerId),
+    listReferenceTable("complaintType")
   ]);
 
   const projected: ProviderComplaintRow[] = rows.map((c) => ({

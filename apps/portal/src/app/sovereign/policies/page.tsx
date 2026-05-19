@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { getConfig } from "@airegistry/sdk";
+import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadSovereignPoliciesView } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Sovereign · Policies" };
 export const dynamic = "force-dynamic";
@@ -21,32 +22,13 @@ export default async function SovereignPoliciesPage() {
   const cfg = getConfig();
 
   const [bases, basesUsage, authorities, evidenceCount] = await Promise.all([
-    prisma.sovereigntyBasis.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" }
-    }),
-    prisma.resourceSovereigntyBasis.groupBy({
-      by: ["sovereigntyBasisId"],
-      where: { resource: { primaryJurisdiction: { code: cfg.jurisdiction } } },
-      _count: { _all: true }
-    }),
-    prisma.officialAuthority.findMany({
-      where: {
-        active: true,
-        jurisdiction: { code: cfg.jurisdiction }
-      },
-      include: {
-        type: { select: { name: true } },
-        _count: { select: { authorisations: true } }
-      },
-      orderBy: { name: "asc" }
-    }),
-    prisma.sovereigntyEvidence.count({
-      where: { resource: { primaryJurisdiction: { code: cfg.jurisdiction } } }
-    })
+    listReferenceTable("sovereigntyBasis", { orderBy: "name" }),
+    loadSovereignPoliciesView(cfg.jurisdiction)
   ]);
 
-  const usage = new Map(basesUsage.map((g) => [g.sovereigntyBasisId, g._count._all]));
+  const usage = basesUsage.basisUsage;
+  const officialAuthorities = basesUsage.officialAuthorities;
+  const sovereigntyEvidenceCount = basesUsage.sovereigntyEvidenceCount;
 
   return (
     <div className="p-content">
@@ -218,14 +200,4 @@ export default async function SovereignPoliciesPage() {
                       color: "var(--text-2)"
                     }}
                   >
-                    {a.websiteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                  </Link>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </div>
-  );
-}
+            

@@ -1,11 +1,11 @@
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { GatedPublishButton } from "@/components/portals/GatedPublishButton";
-import { prisma } from "@/lib/prisma";
 import {
   ProviderSubmissionsGrid,
   type ProviderSubmissionRow
 } from "@/components/portals/provider/ProviderSubmissionsGrid";
-import { deriveDisplayStatus } from "@airegistry/sdk";
+import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadMySubmissions } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Provider · Submissions" };
 export const dynamic = "force-dynamic";
@@ -39,46 +39,15 @@ export default async function ProviderSubmissionsPage() {
     );
   }
 
-  const [rows, kinds, lifecycles] = await Promise.all([
-    prisma.resource.findMany({
-      where: {
-        providerId,
-        lifecycleStatus: { code: { in: [...PRE_LISTED] } }
-      },
-      include: {
-        resourceType: { select: { code: true } },
-        lifecycleStatus: true,
-        trustSignals: { include: { kind: true, status: true } }
-      },
-      orderBy: [{ lifecycleStatus: { sortOrder: "asc" } }, { updatedAt: "desc" }]
-    }),
-    prisma.resourceType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.lifecycleStatus.findMany({
-      where: { active: true, code: { in: [...PRE_LISTED] } },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    })
+  const allLifecycles = await listReferenceTable("lifecycleStatus");
+  const [projected, kinds] = await Promise.all([
+    loadMySubmissions(providerId),
+    listReferenceTable("resourceType")
   ]);
-
-  const projected: ProviderSubmissionRow[] = rows.map((r) => ({
-    id: r.id,
-    slug: r.slug,
-    title: r.title,
-    kind: r.resourceType.code,
-    lifecycle: r.lifecycleStatus.name,
-    lifecycleCode: r.lifecycleStatus.code,
-    status: deriveDisplayStatus({
-      ...r,
-      lifecycleStatus: r.lifecycleStatus,
-      trustSignals: r.trustSignals
-    }),
-    submittedAt: r.submittedAt ? r.submittedAt.toISOString().slice(0, 10) : null,
-    updatedAt: r.updatedAt.toISOString().slice(0, 10)
-  }));
+  // Filter lifecycle filter-dropdown to just the pre-listed codes.
+  const lifecycles = allLifecycles.filter((l) =>
+    (PRE_LISTED as readonly string[]).includes(l.code)
+  );
 
   return (
     <div className="p-content">

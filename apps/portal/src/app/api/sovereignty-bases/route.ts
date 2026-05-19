@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 /** GET /api/sovereignty-bases - AIR-SPEC §7 sovereignty basis vocabulary. */
 export async function GET() {
-  const rows = await prisma.sovereigntyBasis.findMany({
-    where: { active: true },
-    select: { code: true, name: true, description: true },
-    orderBy: { code: "asc" }
-  });
+  const all = await listReferenceTable("sovereigntyBasis", { orderBy: "code" });
+  const rows = all.map((r) => ({
+    code: r.code,
+    name: r.name,
+    description: r.description
+  }));
   return NextResponse.json(
     { rows, total: rows.length, generatedAt: new Date().toISOString() },
     {

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { hashTokenForLookup } from "@airegistry/sdk/server";
 import { AuthShell } from "@/components/public/auth/AuthShell";
 import { ResendVerificationForm } from "@/components/public/auth/ResendVerificationForm";
+import { writeAudit } from "@airegistry/sdk";
+import { consumeEmailVerificationToken } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Verify email" };
 
@@ -19,35 +19,11 @@ type VerifyResult =
   | { ok: true; email: string }
   | { ok: false; reason: "expired_or_invalid" | "missing" };
 
+// consumeEmailVerificationToken centralises the token-lookup / update /
+// status-promotion / audit flow shared with /api/auth/verify-email. The
+// service writes a single audit row through writeAudit (constitution §6).
 async function consumeVerificationToken(rawToken: string): Promise<VerifyResult> {
-  const tokenHash = hashTokenForLookup(rawToken);
-  const user = await prisma.user.findFirst({
-    where: { verificationToken: tokenHash }
-  });
-  if (!user || !user.verificationTokenExpiry || user.verificationTokenExpiry < new Date()) {
-    return { ok: false, reason: "expired_or_invalid" };
-  }
-  const activeStatus = await prisma.userStatusType.findUnique({
-    where: { code: "active" }
-  });
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      emailVerified: true,
-      verificationToken: null,
-      verificationTokenExpiry: null,
-      ...(activeStatus ? { statusId: activeStatus.id } : {})
-    }
-  });
-  await prisma.auditLog.create({
-    data: {
-      actorUserId: user.id,
-      entityType: "user",
-      entityId: user.id,
-      action: "user.email_verified"
-    }
-  });
-  return { ok: true, email: user.email };
+  return consumeEmailVerificationToken(rawToken);
 }
 
 export default async function VerifyEmailPage({

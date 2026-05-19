@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
+import { loadVerifierSettingsStats } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Verifier · Settings" };
 export const dynamic = "force-dynamic";
@@ -21,26 +21,10 @@ export default async function VerifierSettingsPage() {
   const user = await getCurrentUser();
   if (!user) return null;
 
-  const [decided30d, queued, conflicts] = await Promise.all([
-    prisma.review.count({
-      where: {
-        reviewerId: user.id,
-        status: { code: "decided" },
-        completedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
-      }
-    }),
-    prisma.review.count({
-      where: { status: { code: { in: ["open", "in_review"] } } }
-    }),
-    user.provider
-      ? prisma.review.count({
-          where: {
-            status: { code: { in: ["open", "in_review"] } },
-            resource: { providerId: user.provider.id }
-          }
-        })
-      : Promise.resolve(0)
-  ]);
+  const { decidedLast30Days: decided30d, queued, conflicts } =
+    await loadVerifierSettingsStats(user.id, {
+      providerId: user.provider?.id ?? null
+    });
 
   return (
     <div className="p-content">

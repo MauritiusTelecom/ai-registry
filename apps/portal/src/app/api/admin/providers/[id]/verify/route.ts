@@ -8,6 +8,7 @@ import { emailTemplates } from "@airegistry/sdk/server";
 import { uniqueValidEmails } from "@airegistry/sdk/server";
 import { sendTransactionalEmailAll } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
+import { getReferenceRow } from "@airegistry/sdk/server";
 
 /**
  * POST /api/admin/providers/:id/verify
@@ -105,13 +106,11 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   }
 
   const [target, signalKind, passed, failed, withdrawn] = await Promise.all([
-    prisma.providerStatusType.findUnique({ where: { code: status } }),
-    prisma.trustSignalType.findUnique({
-      where: { code: "provider_verification" }
-    }),
-    prisma.trustSignalStatusType.findUnique({ where: { code: "passed" } }),
-    prisma.trustSignalStatusType.findUnique({ where: { code: "failed" } }),
-    prisma.trustSignalStatusType.findUnique({ where: { code: "withdrawn" } })
+    getReferenceRow("providerStatusType", status),
+    getReferenceRow("trustSignalType", "provider_verification"),
+    getReferenceRow("trustSignalStatusType", "passed"),
+    getReferenceRow("trustSignalStatusType", "failed"),
+    getReferenceRow("trustSignalStatusType", "withdrawn")
   ]);
   if (!target || !signalKind || !passed || !failed || !withdrawn) {
     return NextResponse.json(

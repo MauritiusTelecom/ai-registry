@@ -56,7 +56,8 @@ export type {
 // Resource queries (visibility-rule enforced — see constitution §5).
 export {
   listPublicResources,
-  findResourceForDetail
+  findResourceForDetail,
+  findResourcesByCapability
 } from "./queries";
 export type {
   ListFilters,

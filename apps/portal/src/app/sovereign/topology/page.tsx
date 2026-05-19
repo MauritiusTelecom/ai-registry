@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadSovereignTopology } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 
 export const metadata = { title: "Sovereign · Topology" };
@@ -23,21 +23,7 @@ export default async function SovereignTopologyPage() {
   // Each provider node summarises its resources by lifecycle so the operator
   // can scan the deployment at a glance. v2 will overlay endpoint dependency
   // arrows once cross-resource references are first-class in schema.
-  const providers = await prisma.provider.findMany({
-    where: { homeJurisdiction: { code: cfg.jurisdiction } },
-    include: {
-      type: { select: { name: true, code: true } },
-      status: { select: { name: true, code: true } },
-      resources: {
-        include: {
-          resourceType: { select: { code: true } },
-          lifecycleStatus: { select: { code: true, name: true } }
-        },
-        orderBy: { title: "asc" }
-      }
-    },
-    orderBy: { displayName: "asc" }
-  });
+  const providers = await loadSovereignTopology(cfg.jurisdiction);
 
   const totalResources = providers.reduce((acc, p) => acc + p.resources.length, 0);
 
@@ -94,7 +80,7 @@ export default async function SovereignTopologyPage() {
                       marginTop: 2
                     }}
                   >
-                    {p.slug} · {p.type.name} · {p.status.name}
+                    {p.slug} · {p.typeName} · {p.statusName}
                   </div>
                 </div>
                 <span
@@ -137,7 +123,7 @@ export default async function SovereignTopologyPage() {
                         href={`/registry/${r.slug}`}
                         style={{
                           color:
-                            STATUS_COLOUR[r.lifecycleStatus.code] ?? "var(--text)",
+                            STATUS_COLOUR[r.lifecycleCode] ?? "var(--text)",
                           textDecoration: "none",
                           fontWeight: 500,
                           fontSize: 13
@@ -155,18 +141,8 @@ export default async function SovereignTopologyPage() {
                           fontFamily: "IBM Plex Mono, monospace"
                         }}
                       >
-                        <span>{r.resourceType.code}</span>
+                        <span>{r.resourceTypeCode}</span>
                         <span>·</span>
-                        <span>{r.lifecycleStatus.code}</span>
+                        <span>{r.lifecycleCode}</span>
                       </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+     

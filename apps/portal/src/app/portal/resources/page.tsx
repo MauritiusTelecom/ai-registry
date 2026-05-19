@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { PageHero } from "@/components/public/sections/PageHero";
+import { loadPortalResourceList } from "@airegistry/sdk/server";
 
 export const metadata = { title: "My resources" };
 
@@ -29,33 +29,7 @@ export default async function PortalResourcesPage({
 
   const providerId = await ensureUserProviderLinked(user.id);
 
-  const resources = await prisma.resource.findMany({
-    where: {
-      providerId,
-      ...(filter ? { lifecycleStatus: { code: filter } } : {})
-    },
-    orderBy: { updatedAt: "desc" },
-    include: {
-      lifecycleStatus: { select: { code: true, name: true } },
-      resourceType: { select: { code: true } }
-    }
-  });
-
-  const counts = await prisma.resource.groupBy({
-    by: ["lifecycleStatusId"],
-    where: { providerId },
-    _count: true
-  });
-  const statusRows = await prisma.lifecycleStatus.findMany({
-    where: { id: { in: counts.map((c) => c.lifecycleStatusId) } },
-    select: { id: true, code: true }
-  });
-  const idToCode = new Map(statusRows.map((s) => [s.id, s.code]));
-  const countsByLifecycle: Record<string, number> = {};
-  for (const c of counts) {
-    const code = idToCode.get(c.lifecycleStatusId) ?? c.lifecycleStatusId;
-    countsByLifecycle[code] = c._count;
-  }
+  const { resources, countsByLifecycle } = await loadPortalResourceList(providerId, filter);
 
   return (
     <div>
