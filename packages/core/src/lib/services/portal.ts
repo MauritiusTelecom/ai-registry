@@ -434,6 +434,42 @@ export type ProviderContactRequestRow = {
   linkedUserEmail: string | null;
 };
 
+// ─── Branding singleton ─────────────────────────────────────────────────
+
+export type BrandingRow = {
+  registryName: string | null;
+  logoUrl: string | null;
+  copyrightLine: string | null;
+  buildLine: string | null;
+  heroEyebrowText: string | null;
+  heroEyebrowIconUrl: string | null;
+};
+
+const BRANDING_SINGLETON_ID = "default";
+
+/**
+ * Read the site-branding singleton. Returns null if the row is missing or
+ * the DB is unreachable — callers fall back to env / defaults so the
+ * public site renders even on a config issue.
+ */
+export async function loadBrandingSingleton(): Promise<BrandingRow | null> {
+  try {
+    return await prisma.siteBranding.findUnique({
+      where: { id: BRANDING_SINGLETON_ID },
+      select: {
+        registryName: true,
+        logoUrl: true,
+        copyrightLine: true,
+        buildLine: true,
+        heroEyebrowText: true,
+        heroEyebrowIconUrl: true
+      }
+    });
+  } catch {
+    return null;
+  }
+}
+
 // ─── Authenticated /portal/* (logged-in user's own view) ────────────────
 
 export type PortalHomeView = {
@@ -843,6 +879,538 @@ export async function loadProviderAnalytics(
     })),
     decisionsRecent,
     complaintsRecent
+  };
+}
+
+// ─── Admin: detail pages + shared filter helpers ─────────────────────
+
+export type ActiveProviderForFilter = {
+  slug: string;
+  displayName: string;
+};
+
+/**
+ * Active (non-admin-suspended) providers used to populate filter dropdowns
+ * across admin/users, admin/resources, admin/resources/[id]/edit.
+ */
+export async function loadActiveProvidersForFilter(): Promise<ActiveProviderForFilter[]> {
+  const rows = await prisma.provider.findMany({
+    where: { adminSuspended: false },
+    orderBy: { displayName: "asc" },
+    select: { slug: true, displayName: true }
+  });
+  return rows.map((p) => ({ slug: p.slug, displayName: p.displayName }));
+}
+
+export type AdminBrandingView = {
+  registryName: string | null;
+  logoUrl: string | null;
+  copyrightLine: string | null;
+  buildLine: string | null;
+  heroEyebrowText: string | null;
+  heroEyebrowIconUrl: string | null;
+};
+
+/**
+ * The site branding singleton row, or null when the deployment hasn't
+ * overridden anything yet. /admin/branding renders a form on top of this.
+ */
+export async function loadAdminBrandingForm(
+  singletonId: string
+): Promise<AdminBrandingView | null> {
+  const row = await prisma.siteBranding.findUnique({
+    where: { id: singletonId }
+  });
+  if (!row) return null;
+  return {
+    registryName: row.registryName,
+    logoUrl: row.logoUrl,
+    copyrightLine: row.copyrightLine,
+    buildLine: row.buildLine,
+    heroEyebrowText: row.heroEyebrowText,
+    heroEyebrowIconUrl: row.heroEyebrowIconUrl
+  };
+}
+
+/**
+ * Reviews currently queued (open / in_review) with provider/resource joins
+ * for the /admin/reviews queue. Rich return — pages bind many fields.
+ */
+export async function loadAdminReviewQueue() {
+  return prisma.review.findMany({
+    where: {
+      resourceId: { not: null },
+      status: { code: { in: ["open", "in_review"] } }
+    },
+    orderBy: { createdAt: "asc" },
+    include: {
+      status: true,
+      resource: {
+        include: {
+          lifecycleStatus: true,
+          provider: { select: { slug: true, displayName: true } },
+          resourceType: { select: { code: true } }
+        }
+      }
+    }
+  });
+}
+
+/**
+ * One review by id with the deep include the /admin/reviews/[id] decide
+ * page needs.
+ */
+export async function loadAdminReviewForDecide(id: string) {
+  return prisma.review.findUnique({
+    where: { id },
+    include: {
+      status: { select: { code: true, name: true } },
+      reviewType: { select: { code: true, name: true } },
+      resource: {
+        include: {
+          lifecycleStatus: { select: { code: true, name: true } },
+          provider: { select: { slug: true, displayName: true } },
+          resourceType: { select: { code: true, name: true } }
+        }
+      },
+      provider: { select: { slug: true, displayName: true } },
+      reviewer: { select: { name: true, email: true } },
+      checklistItems: true
+    }
+  });
+}
+
+/**
+ * One contact submission by id for /admin/contacts/[id].
+ */
+export async function loadAdminContactDetail(id: string) {
+  return prisma.contact.findUnique({
+    where: { id },
+    include: {
+      linkedUser: { select: { id: true, name: true, email: true } }
+    }
+  });
+}
+
+export type AdminProviderDetail = {
+  provider: unknown; // Prisma row — bound by the page form
+  recentTrustSignals: unknown[];
+};
+
+/**
+ * Provider record + recent trust-signal feed for /admin/providers/[id].
+ */
+export async function loadAdminProviderDetail(id: string): Promise<AdminProviderDetail> {
+  const [provider, recentTrustSignals] = await Promise.all([
+    prisma.provider.findUnique({
+      where: { id },
+      include: {
+        type: { select: { code: true, name: true } },
+        status: { select: { code: true, name: true } },
+        homeJurisdiction: { select: { code: true, name: true } },
+        _count: { select: { resources: true } }
+      }
+    }),
+    prisma.trustSignal.findMany({
+      where: { providerId: id },
+      include: {
+        kind: { select: { code: true, name: true } },
+        status: { select: { code: true, name: true } }
+      },
+      orderBy: { decidedAt: "desc" },
+      take: 50
+    })
+  ]);
+  return { provider, recentTrustSignals };
+}
+
+/**
+ * Resource + active-provider list for /admin/resources/[id]/edit.
+ */
+export async function loadAdminResourceForEdit(id: string) {
+  const [resource, providers] = await Promise.all([
+    prisma.resource.findUnique({
+      where: { id },
+      include: {
+        resourceType: { select: { code: true, name: true } },
+        provider: { select: { slug: true, displayName: true } },
+        primaryJurisdiction: { select: { code: true, name: true } },
+        lifecycleStatus: { select: { code: true, name: true } },
+        riskLevel: { select: { code: true, name: true } },
+        resourceBases: {
+          include: { sovereigntyBasis: { select: { code: true, name: true } } }
+        },
+        resourceLanguages: { include: { language: { select: { code: true } } } },
+        resourceSectors: { include: { sector: { select: { code: true } } } },
+        evidence: {
+          include: {
+            sovereigntyBasis: { select: { code: true } },
+            evidenceType: { select: { code: true } }
+          },
+          orderBy: { createdAt: "asc" }
+        },
+        endpoints: { orderBy: { primary: "desc" } }
+      }
+    }),
+    prisma.provider.findMany({
+      where: { adminSuspended: false },
+      orderBy: { displayName: "asc" },
+      select: { slug: true, displayName: true }
+    })
+  ]);
+  return { resource, providers };
+}
+
+/**
+ * Complaint detail + assignee-candidates list (admin OR reviewer, by
+ * primary role or by extra UserRoleAssignment) used by
+ * /admin/complaints/[id]'s assignee dropdown.
+ */
+export async function loadAdminComplaintDetail(id: string) {
+  const [complaint, assigneeCandidates] = await Promise.all([
+    prisma.complaint.findUnique({
+      where: { id },
+      include: {
+        complaintType: { select: { code: true, name: true } },
+        severity: { select: { code: true, name: true } },
+        status: { select: { code: true, name: true } },
+        targetResource: {
+          select: {
+            slug: true,
+            title: true,
+            provider: { select: { displayName: true } }
+          }
+        },
+        targetProvider: { select: { slug: true, displayName: true } },
+        assignedTo: { select: { id: true, name: true, email: true } }
+      }
+    }),
+    prisma.user.findMany({
+      where: {
+        OR: [
+          { role: { code: { in: ["admin", "reviewer"] } } },
+          {
+            roleAssignments: {
+              some: { role: { code: { in: ["admin", "reviewer"] } } }
+            }
+          }
+        ]
+      },
+      select: { id: true, name: true, email: true },
+      orderBy: { name: "asc" }
+    })
+  ]);
+  return { complaint, assigneeCandidates };
+}
+
+/**
+ * Total provider count for /admin/settings.
+ */
+export async function loadAdminSettingsProviderCount(): Promise<number> {
+  return prisma.provider.count();
+}
+
+// ─── Admin server pages ───────────────────────────────────────────────
+
+export type AdminDashboardStats = {
+  resourceCount: number;
+  listedCount: number;
+  providerCount: number;
+  verifiedProviderCount: number;
+  userCount: number;
+  openReviewCount: number;
+  auditCount: number;
+  openComplaintCount: number;
+  /** Open complaints assigned to the current admin. */
+  myOpenComplaints: number;
+};
+
+/**
+ * Admin dashboard counts. `actorUserId` is the current admin's id, used for
+ * the "open complaints assigned to me" count.
+ */
+export async function loadAdminDashboardStats(
+  actorUserId: string | null
+): Promise<AdminDashboardStats> {
+  const [
+    resourceCount,
+    listedCount,
+    providerCount,
+    verifiedProviderCount,
+    userCount,
+    openReviewCount,
+    auditCount,
+    openComplaintCount,
+    myOpenComplaints
+  ] = await Promise.all([
+    prisma.resource.count(),
+    prisma.resource.count({ where: { lifecycleStatus: { code: "listed" } } }),
+    prisma.provider.count(),
+    prisma.provider.count({
+      where: {
+        OR: [
+          { status: { code: "verified" } },
+          { status: { code: "official_provider" } }
+        ]
+      }
+    }),
+    prisma.user.count(),
+    prisma.review.count({ where: { status: { code: { in: ["open", "in_review"] } } } }),
+    prisma.auditLog.count(),
+    prisma.complaint.count({
+      where: { status: { code: { in: ["open", "investigating"] } } }
+    }),
+    actorUserId
+      ? prisma.complaint.count({
+          where: {
+            assignedToId: actorUserId,
+            status: { code: { in: ["open", "investigating"] } }
+          }
+        })
+      : Promise.resolve(0)
+  ]);
+  return {
+    resourceCount,
+    listedCount,
+    providerCount,
+    verifiedProviderCount,
+    userCount,
+    openReviewCount,
+    auditCount,
+    openComplaintCount,
+    myOpenComplaints
+  };
+}
+
+export type AdminAuditLogRow = {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string;
+  actorName: string | null;
+  actorEmail: string | null;
+  ts: string;
+};
+
+/**
+ * Audit log feed for the admin audit page. Returns the most recent N rows.
+ */
+export async function loadAdminAuditLog(
+  opts: { limit?: number } = {}
+): Promise<AdminAuditLogRow[]> {
+  const rows = await prisma.auditLog.findMany({
+    include: { actor: { select: { name: true, email: true } } },
+    orderBy: { createdAt: "desc" },
+    take: opts.limit ?? 200
+  });
+  return rows.map((a) => ({
+    id: a.id,
+    action: a.action,
+    entityType: a.entityType,
+    entityId: a.entityId,
+    actorName: a.actor?.name ?? null,
+    actorEmail: a.actor?.email ?? null,
+    ts: a.createdAt.toISOString().replace("T", " ").slice(0, 19)
+  }));
+}
+
+export type AdminComplaintRow = {
+  id: string;
+  ts: string;
+  type: string;
+  severityCode: string;
+  severityName: string;
+  statusCode: string;
+  statusName: string;
+  target: string;
+  targetSlug: string | null;
+  targetProviderSlug: string | null;
+  assignedToName: string | null;
+  assignedToEmail: string | null;
+  /** Description from the original complaint (free-form text). */
+  description: string;
+  /** Public name the complainant gave when submitting (may be empty). */
+  complainantName: string | null;
+  /** Public email if the complainant agreed to be contacted. */
+  complainantEmail: string | null;
+};
+
+export type AdminComplaintsView = {
+  rows: AdminComplaintRow[];
+  /** statusCode → count across the full table (no filter), for filter chips. */
+  countsByStatusCode: Record<string, number>;
+  /** Open/investigating complaints assigned to the actor (for the "mine" tab badge). */
+  myAssignedOpenCount: number;
+};
+
+export type AdminComplaintsFilter =
+  | "all"
+  | "mine"
+  | "needs_action"
+  | "open"
+  | "investigating"
+  | "resolved"
+  | "rejected";
+
+/**
+ * Admin complaints feed.
+ *   - "all"          → unfiltered
+ *   - "mine"         → assigned to actor AND in open|investigating
+ *   - "needs_action" → open OR investigating (any assignee)
+ *   - others         → status.code equals the value
+ */
+export async function loadAdminComplaintsView(opts: {
+  statusFilter: AdminComplaintsFilter;
+  actorUserId: string | null;
+}): Promise<AdminComplaintsView> {
+  const where = (() => {
+    if (opts.statusFilter === "all") return undefined;
+    if (opts.statusFilter === "mine") {
+      return {
+        AND: [
+          { status: { code: { in: ["open", "investigating"] } } },
+          { assignedToId: opts.actorUserId ?? "__no_user__" }
+        ]
+      };
+    }
+    if (opts.statusFilter === "needs_action") {
+      return { status: { code: { in: ["open", "investigating"] } } };
+    }
+    return { status: { code: opts.statusFilter } };
+  })();
+  const [rows, allCounts, statusRefs, myAssignedOpenCount] = await Promise.all([
+    prisma.complaint.findMany({
+      where,
+      include: {
+        complaintType: { select: { name: true } },
+        severity: { select: { code: true, name: true } },
+        status: { select: { code: true, name: true } },
+        targetResource: {
+          select: {
+            slug: true,
+            title: true,
+            provider: { select: { displayName: true } }
+          }
+        },
+        targetProvider: { select: { slug: true, displayName: true } },
+        assignedTo: { select: { name: true, email: true } }
+      },
+      orderBy: [{ status: { sortOrder: "asc" } }, { createdAt: "desc" }],
+      take: 500
+    }),
+    prisma.complaint.groupBy({
+      by: ["statusId"],
+      _count: { _all: true }
+    }),
+    prisma.complaintStatusType.findMany({ select: { id: true, code: true } }),
+    opts.actorUserId
+      ? prisma.complaint.count({
+          where: {
+            assignedToId: opts.actorUserId,
+            status: { code: { in: ["open", "investigating"] } }
+          }
+        })
+      : Promise.resolve(0)
+  ]);
+  const idToCode = new Map(statusRefs.map((s) => [s.id, s.code] as const));
+  const countsByStatusCode: Record<string, number> = {};
+  for (const r of allCounts) {
+    const code = idToCode.get(r.statusId);
+    if (code) countsByStatusCode[code] = r._count._all;
+  }
+  return {
+    myAssignedOpenCount,
+    rows: rows.map((c) => ({
+      id: c.id,
+      ts: c.submittedAt.toISOString().slice(0, 10),
+      type: c.complaintType.name,
+      severityCode: c.severity.code,
+      severityName: c.severity.name,
+      statusCode: c.status.code,
+      statusName: c.status.name,
+      target: c.targetResource
+        ? `${c.targetResource.title} · ${c.targetResource.provider.displayName}`
+        : c.targetProvider
+          ? c.targetProvider.displayName
+          : "-",
+      targetSlug: c.targetResource?.slug ?? null,
+      targetProviderSlug: c.targetProvider?.slug ?? null,
+      assignedToName: c.assignedTo?.name ?? null,
+      assignedToEmail: c.assignedTo?.email ?? null,
+      description: c.description,
+      complainantName: c.complainantName,
+      complainantEmail: c.complainantEmail
+    })),
+    countsByStatusCode
+  };
+}
+
+export type AdminContactRow = {
+  id: string;
+  ts: string;
+  senderName: string;
+  organisationName: string | null;
+  email: string;
+  topicCode: string;
+  message: string;
+  emailVerified: boolean;
+  linkedUserName: string | null;
+  linkedUserEmail: string | null;
+};
+
+export type AdminContactsView = {
+  rows: AdminContactRow[];
+  totalCount: number;
+  verifiedCount: number;
+  unverifiedCount: number;
+};
+
+/**
+ * Admin contacts feed. `verifiedFilter` is one of "all" | "yes" | "no".
+ */
+export async function loadAdminContactsView(
+  verifiedFilter: "all" | "yes" | "no"
+): Promise<AdminContactsView> {
+  const where =
+    verifiedFilter === "all"
+      ? undefined
+      : { emailVerified: verifiedFilter === "yes" };
+  const [rows, totalCount, verifiedCount] = await Promise.all([
+    prisma.contact.findMany({
+      where,
+      select: {
+        id: true,
+        senderName: true,
+        organisationName: true,
+        email: true,
+        topic: true,
+        message: true,
+        emailVerified: true,
+        createdAt: true,
+        linkedUser: { select: { name: true, email: true } }
+      },
+      orderBy: { createdAt: "desc" },
+      take: 500
+    }),
+    prisma.contact.count(),
+    prisma.contact.count({ where: { emailVerified: true } })
+  ]);
+  return {
+    rows: rows.map((c) => ({
+      id: c.id,
+      ts: c.createdAt.toISOString().slice(0, 10),
+      senderName: c.senderName,
+      organisationName: c.organisationName,
+      email: c.email,
+      topicCode: c.topic,
+      message: c.message,
+      emailVerified: c.emailVerified,
+      linkedUserName: c.linkedUser?.name ?? null,
+      linkedUserEmail: c.linkedUser?.email ?? null
+    })),
+    totalCount,
+    verifiedCount,
+    unverifiedCount: totalCount - verifiedCount
   };
 }
 

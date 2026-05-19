@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import { PageHero } from "@/components/public/sections/PageHero";
+import { loadAdminReviewQueue } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Review queue" };
 
@@ -11,23 +11,7 @@ export default async function AdminReviewsPage() {
   if (!user) notFound();
   if (!user.roles.includes("admin") && !user.roles.includes("reviewer")) notFound();
 
-  const reviews = await prisma.review.findMany({
-    where: {
-      resourceId: { not: null },
-      status: { code: { in: ["open", "in_review"] } }
-    },
-    orderBy: { createdAt: "asc" },
-    include: {
-      status: true,
-      resource: {
-        include: {
-          lifecycleStatus: true,
-          provider: { select: { slug: true, displayName: true } },
-          resourceType: { select: { code: true } }
-        }
-      }
-    }
-  });
+  const reviews = await loadAdminReviewQueue();
 
   return (
     <div>

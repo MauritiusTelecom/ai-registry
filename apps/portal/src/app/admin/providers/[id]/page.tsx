@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import { ProviderVerifyForm } from "@/components/admin/ProviderVerifyForm";
 import { ProviderVisibilityPanel } from "@/components/admin/ProviderVisibilityPanel";
 import { ProviderEditForm } from "@/components/admin/ProviderEditForm";
 import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadAdminProviderDetail } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Provider" };
 export const dynamic = "force-dynamic";
@@ -26,15 +26,7 @@ export default async function AdminProviderDetailPage({
   if (!user || !user.roles.includes("admin")) notFound();
 
   const { id } = await params;
-  const provider = await prisma.provider.findUnique({
-    where: { id },
-    include: {
-      type: { select: { code: true, name: true } },
-      status: { select: { code: true, name: true } },
-      homeJurisdiction: { select: { code: true, name: true } },
-      _count: { select: { resources: true, users: true } }
-    }
-  });
+  const { provider, recentTrustSignals: recentSignals } = await loadAdminProviderDetail(id);
   if (!provider) notFound();
 
   const [providerTypes, jurisdictions] = await Promise.all([
@@ -63,21 +55,6 @@ export default async function AdminProviderDetailPage({
     oncallEmail: provider.oncallEmail,
     webhookUrl: provider.webhookUrl
   };
-
-  const recentSignals = await prisma.trustSignal.findMany({
-    where: {
-      targetProviderId: provider.id,
-      kind: { code: "provider_verification" }
-    },
-    orderBy: { createdAt: "desc" },
-    take: 5,
-    include: {
-      kind: { select: { code: true, name: true } },
-      status: { select: { code: true, name: true } },
-      decidedBy: { select: { name: true, email: true } }
-    }
-  });
-
   const isSelfProvider = user.provider?.id === provider.id;
 
   return (
