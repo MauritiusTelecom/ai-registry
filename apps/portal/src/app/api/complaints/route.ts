@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getConfig } from "@airegistry/sdk";
-import { emailTemplates } from "@/lib/email";
-import { sendTransactionalEmail } from "@/lib/email/transactional-send";
+import { emailTemplates } from "@airegistry/sdk/server";
+import { sendTransactionalEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
 
 /**

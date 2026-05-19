@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { getConfig } from "@airegistry/sdk";
 import { prisma } from "@/lib/prisma";
-import { hashPassword } from "@/lib/auth/password";
-import { generateRawToken, hashToken, verificationExpiry } from "@/lib/auth/tokens";
-import { emailTemplates, sendEmail } from "@/lib/email";
-import { linkContactsToUser } from "@/lib/contacts/link-to-user";
+import {
+  hashUserPassword,
+  prepareEmailVerificationToken
+} from "@airegistry/sdk/server";
+import { emailTemplates, sendEmail } from "@airegistry/sdk/server";
+import { linkContactsToUser } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
@@ -77,10 +79,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const passwordHash = await hashPassword(body.password as string);
-  const rawToken = generateRawToken();
-  const tokenHash = hashToken(rawToken);
-  const expiry = verificationExpiry();
+  const passwordHash = await hashUserPassword(body.password as string);
+  const { rawToken, hashedToken: tokenHash, expiry } = prepareEmailVerificationToken();
 
   const user = await prisma.user.create({
     data: {

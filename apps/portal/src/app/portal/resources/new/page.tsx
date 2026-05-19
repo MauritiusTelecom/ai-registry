@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 import { prisma } from "@/lib/prisma";
 import { PageHero } from "@/components/public/sections/PageHero";
@@ -43,8 +43,4 @@ export default async function PortalNewResourcePage() {
       <section className="section" style={{ paddingTop: 24, paddingBottom: 80 }}>
         <div className="glass" style={{ maxWidth: 560, margin: "0 auto", padding: 28 }}>
           <NewResourceForm allowedTypes={allowedTypes} />
-        </div>
-      </section>
-    </div>
-  );
-}
+     

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { refTablesByGroup } from "@/lib/admin/reference-tables";
+import { refTablesByGroup } from "@airegistry/sdk";
 
 export const metadata = { title: "Admin · Reference tables" };
 

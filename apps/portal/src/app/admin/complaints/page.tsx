@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 
 export const metadata = { title: "Admin · Complaints" };

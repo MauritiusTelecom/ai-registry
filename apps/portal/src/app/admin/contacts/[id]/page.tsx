@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { CONTACT_TOPIC_LABELS } from "@/lib/contacts/topics";
+import { CONTACT_TOPIC_LABELS } from "@airegistry/sdk";
 import { ContactAdminPanel } from "@/components/admin/ContactAdminPanel";
 
 export const metadata = { title: "Admin · Contact message" };

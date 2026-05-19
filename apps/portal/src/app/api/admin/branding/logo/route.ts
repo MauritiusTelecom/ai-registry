@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
 import { join, sep } from "node:path";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@airegistry/sdk";
 import { invalidateBrandingCache } from "@/lib/branding";

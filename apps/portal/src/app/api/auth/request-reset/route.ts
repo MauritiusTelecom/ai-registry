@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getConfig } from "@airegistry/sdk";
 import { prisma } from "@/lib/prisma";
-import { generateRawToken, hashToken, resetExpiry } from "@/lib/auth/tokens";
-import { emailTemplates, sendEmail } from "@/lib/email";
+import { preparePasswordResetToken } from "@airegistry/sdk/server";
+import { emailTemplates, sendEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
@@ -35,9 +35,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  const rawToken = generateRawToken();
-  const tokenHash = hashToken(rawToken);
-  const expiry = resetExpiry();
+  const { rawToken, hashedToken: tokenHash, expiry } = preparePasswordResetToken();
 
   await prisma.user.update({
     where: { id: user.id },

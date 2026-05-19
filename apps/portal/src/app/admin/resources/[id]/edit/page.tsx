@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { ResourceEditForm } from "@/components/admin/ResourceEditForm";
 import { ResourceLifecyclePanel } from "@/components/admin/ResourceLifecyclePanel";

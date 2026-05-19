@@ -23,7 +23,7 @@
  * very broad term like "a". Empty query short-circuits to an empty list.
  */
 import { prisma } from "@/lib/prisma";
-import type { SessionUser } from "@/lib/auth/current-user";
+import type { SessionUser } from "@airegistry/sdk";
 import type { PortalRole } from "./notifications";
 
 export type PortalSearchResult = {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@airegistry/sdk";
 
@@ -43,6 +43,3 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
       complainantEmail: existing.complainantEmail
     }
   });
-
-  return NextResponse.json({ ok: true });
-}

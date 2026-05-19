@@ -1,4 +1,4 @@
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { loadPortalNotifications } from "@/lib/portals/notifications";
 import { NotificationsBrowser } from "@/components/portals/NotificationsBrowser";
 
