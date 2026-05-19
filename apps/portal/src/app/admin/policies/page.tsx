@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { SOVEREIGNTY_CHECKLIST_ITEMS } from "@airegistry/sdk";
 import { listReferenceTable } from "@airegistry/sdk/server";
 
@@ -205,15 +204,4 @@ function Pill({
           fontFamily: "IBM Plex Mono, monospace",
           marginTop: 2
         }}
-      >
-        {code}
-        {description ? (
-          <>
-            <br />
-            <span style={{ color: "var(--text-3)" }}>{description}</span>
-          </>
-        ) : null}
-      </div>
-    </div>
-  );
-}
+      

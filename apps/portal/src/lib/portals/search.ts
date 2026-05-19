@@ -22,7 +22,14 @@
  * Returns are capped per source so the dropdown stays usable even on a
  * very broad term like "a". Empty query short-circuits to an empty list.
  */
-import { prisma } from "@/lib/prisma";
+import {
+  searchResourcesRows,
+  searchProvidersRows,
+  searchComplaintsRows,
+  searchReviewsRows,
+  searchIncidentsRows,
+  searchUsersRows
+} from "@airegistry/sdk/server";
 import type { SessionUser } from "@airegistry/sdk";
 import type { PortalRole } from "./notifications";
 
@@ -125,19 +132,7 @@ async function searchResources(
   }
   // admin: no extra scope
 
-  const rows = await prisma.resource.findMany({
-    where: baseWhere as never,
-    orderBy: { updatedAt: "desc" },
-    take: RESULTS_PER_GROUP,
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      airId: true,
-      lifecycleStatus: { select: { name: true, code: true } },
-      provider: { select: { slug: true, displayName: true } }
-    }
-  });
+  const rows = await searchResourcesRows(baseWhere, RESULTS_PER_GROUP);
 
   return rows.map((r) => ({
     id: `resource:${r.id}`,
@@ -188,8 +183,8 @@ async function searchProviders(
   // themselves. Skip the query entirely.
   if (role === "provider") return [];
 
-  const rows = await prisma.provider.findMany({
-    where: {
+  const rows = await searchProvidersRows(
+    {
       adminSuspended: false,
       OR: [
         { displayName: { contains: q, mode: "insensitive" } },
@@ -197,16 +192,8 @@ async function searchProviders(
         { slug: { contains: q, mode: "insensitive" } }
       ]
     },
-    orderBy: { displayName: "asc" },
-    take: RESULTS_PER_GROUP,
-    select: {
-      id: true,
-      slug: true,
-      displayName: true,
-      legalName: true,
-      status: { select: { name: true, code: true } }
-    }
-  });
+    RESULTS_PER_GROUP
+  );
 
   return rows.map((p) => ({
     id: `provider:${p.id}`,
@@ -281,21 +268,7 @@ async function searchComplaints(
     ];
   }
 
-  const rows = await prisma.complaint.findMany({
-    where: baseWhere as never,
-    orderBy: [{ status: { sortOrder: "asc" } }, { createdAt: "desc" }],
-    take: RESULTS_PER_GROUP,
-    select: {
-      id: true,
-      description: true,
-      submittedAt: true,
-      complaintType: { select: { name: true } },
-      severity: { select: { name: true } },
-      status: { select: { name: true, code: true } },
-      targetResource: { select: { title: true } },
-      targetProvider: { select: { displayName: true } }
-    }
-  });
+  const rows = await searchComplaintsRows(baseWhere, RESULTS_PER_GROUP);
 
   return rows.map((c) => ({
     id: `complaint:${c.id}`,
@@ -387,18 +360,7 @@ async function searchReviews(
     ];
   }
 
-  const rows = await prisma.review.findMany({
-    where: baseWhere as never,
-    orderBy: [{ status: { sortOrder: "asc" } }, { createdAt: "desc" }],
-    take: RESULTS_PER_GROUP,
-    select: {
-      id: true,
-      decisionSummary: true,
-      reviewType: { select: { name: true } },
-      status: { select: { name: true, code: true } },
-      resource: { select: { id: true, title: true, slug: true } }
-    }
-  });
+  const rows = await searchReviewsRows(baseWhere, RESULTS_PER_GROUP);
 
   return rows.map((r) => ({
     id: `review:${r.id}`,
@@ -481,20 +443,7 @@ async function searchIncidents(
     ];
   }
 
-  const rows = await prisma.enforcementAction.findMany({
-    where: baseWhere as never,
-    orderBy: { performedAt: "desc" },
-    take: RESULTS_PER_GROUP,
-    select: {
-      id: true,
-      reason: true,
-      publicNote: true,
-      performedAt: true,
-      actionType: { select: { name: true } },
-      targetResource: { select: { title: true } },
-      targetProvider: { select: { displayName: true } }
-    }
-  });
+  const rows = await searchIncidentsRows(baseWhere, RESULTS_PER_GROUP);
 
   return rows.map((a) => ({
     id: `incident:${a.id}`,
@@ -544,23 +493,15 @@ async function searchUsers(
   // an empty list so we don't risk leaking emails / names.
   if (role !== "admin") return [];
 
-  const rows = await prisma.user.findMany({
-    where: {
+  const rows = await searchUsersRows(
+    {
       OR: [
         { name: { contains: q, mode: "insensitive" } },
         { email: { contains: q, mode: "insensitive" } }
       ]
     },
-    orderBy: { name: "asc" },
-    take: RESULTS_PER_GROUP,
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: { select: { name: true } },
-      status: { select: { name: true } }
-    }
-  });
+    RESULTS_PER_GROUP
+  );
 
   return rows.map((u) => ({
     id: `user:${u.id}`,

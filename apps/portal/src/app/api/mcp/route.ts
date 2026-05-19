@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getConfig } from "@airegistry/sdk";
-import { prisma } from "@/lib/prisma";
 import {
   findResourceForDetail,
   listPublicResources

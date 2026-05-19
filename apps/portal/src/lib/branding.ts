@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
 import { getConfig } from "@airegistry/sdk";
+import { loadBrandingSingleton } from "@airegistry/sdk/server";
 
 export type Branding = {
   registryName: string;
@@ -12,7 +12,6 @@ export type Branding = {
 
 const DEFAULT_COPYRIGHT_LINE = "© 2026 Mauritius AI Registry · airegistry.mu";
 const DEFAULT_BUILD_LINE = "BUILD 2026.05.07-r3 · TZ:GMT+4";
-const SINGLETON_ID = "default";
 
 let cache: { value: Branding; expiresAt: number } | null = null;
 const CACHE_TTL_MS = 30_000;
@@ -27,31 +26,7 @@ export async function getBranding(): Promise<Branding> {
   if (cache && cache.expiresAt > now) return cache.value;
 
   const cfg = getConfig();
-  let row: {
-    registryName: string | null;
-    logoUrl: string | null;
-    copyrightLine: string | null;
-    buildLine: string | null;
-    heroEyebrowText: string | null;
-    heroEyebrowIconUrl: string | null;
-  } | null = null;
-  try {
-    row = await prisma.siteBranding.findUnique({
-      where: { id: SINGLETON_ID },
-      select: {
-        registryName: true,
-        logoUrl: true,
-        copyrightLine: true,
-        buildLine: true,
-        heroEyebrowText: true,
-        heroEyebrowIconUrl: true
-      }
-    });
-  } catch {
-    // DB not reachable or table missing - fall back to env/defaults so the
-    // public site keeps rendering instead of 500ing on a config issue.
-    row = null;
-  }
+  const row = await loadBrandingSingleton();
 
   const value: Branding = {
     registryName: row?.registryName?.trim() || cfg.registryName,

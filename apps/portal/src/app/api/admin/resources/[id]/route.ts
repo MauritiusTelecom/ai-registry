@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
-import { writeAudit } from "@airegistry/sdk";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  findReferenceRowsByCodes,
+  findProviderBySlugBasic,
+  loadAdminResourceForView,
+  loadAdminResourceForEditPrecheck,
+  applyAdminResourceUpdate,
+  loadAdminResourceForDeleteWithCount,
+  deleteAdminResource
+} from "@airegistry/sdk/server";
 import { isHttpUrl } from "@airegistry/sdk";
-import { getReferenceRow } from "@airegistry/sdk/server";
-import { findReferenceRowsByCodes } from "@airegistry/sdk/server";
 
 /**
  * GET /api/admin/resources/:id - full edit-shape payload for the admin edit
@@ -95,34 +101,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 
   const { id } = await ctx.params;
 
-  const r = await prisma.resource.findUnique({
-    where: { id },
-    include: {
-      resourceType: { select: { code: true, name: true } },
-      provider: { select: { slug: true, displayName: true } },
-      primaryJurisdiction: { select: { code: true, name: true } },
-      lifecycleStatus: { select: { code: true, name: true } },
-      riskLevel: { select: { code: true, name: true } },
-      listingOrigin: { select: { code: true } },
-      resourceBases: { include: { sovereigntyBasis: { select: { code: true } } } },
-      resourceLanguages: { include: { language: { select: { code: true, name: true } } } },
-      resourceSectors: { include: { sector: { select: { code: true, name: true } } } },
-      evidence: {
-        include: {
-          sovereigntyBasis: { select: { code: true } },
-          evidenceType: { select: { code: true } }
-        }
-      },
-      endpoints: {
-        include: {
-          protocol: { select: { code: true } },
-          authMethod: { select: { code: true } },
-          accessModel: { select: { code: true } },
-          lastCheckStatus: { select: { code: true } }
-        }
-      }
-    }
-  });
+  const r = await loadAdminResourceForView(id);
   if (!r) return NextResponse.json({ error: "Resource not found" }, { status: 404 });
 
   return NextResponse.json({
@@ -194,16 +173,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const target = await prisma.resource.findUnique({
-    where: { id },
-    include: {
-      riskLevel: { select: { code: true } },
-      primaryJurisdiction: { select: { code: true } },
-      resourceType: { select: { code: true } },
-      provider: { select: { slug: true } },
-      listingOrigin: { select: { code: true } }
-    }
-  });
+  const target = await loadAdminResourceForEditPrecheck(id);
   if (!target) {
     return NextResponse.json({ error: "Resource not found" }, { status: 404 });
   }
@@ -275,7 +245,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   if (typeof body.providerSlug === "string" && body.providerSlug.trim() !== "") {
     const slug = body.providerSlug.trim().toLowerCase();
     if (slug !== target.provider.slug) {
-      const p = await prisma.provider.findUnique({ where: { slug } });
+      const p = await findProviderBySlugBasic(slug);
       if (!p) {
         return NextResponse.json({ error: "Unknown providerSlug" }, { status: 400 });
       }
@@ -387,6 +357,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     referenceIdentifier: string | null;
     issuingBody: string | null;
     publicVisibility: boolean;
+    submittedById: string;
   };
   let evidenceResolved: EvidenceResolved[] | undefined;
   if (Array.isArray(body.evidence)) {
@@ -449,7 +420,8 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
         referenceUrl: refUrl,
         referenceIdentifier: nullable(r.referenceIdentifier) ?? null,
         issuingBody: nullable(r.issuingBody) ?? null,
-        publicVisibility: r.publicVisibility !== false
+        publicVisibility: r.publicVisibility !== false,
+        submittedById: actor.id
       });
     }
   }
@@ -562,61 +534,9 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
   }
 
-  await prisma.$transaction(async (tx) => {
-    if (Object.keys(data).length > 0) {
-      await tx.resource.update({ where: { id }, data });
-    }
-    if (basisCodes !== undefined) {
-      await tx.resourceSovereigntyBasis.deleteMany({ where: { resourceId: id } });
-      if (basisRows.length > 0) {
-        await tx.resourceSovereigntyBasis.createMany({
-          data: basisRows.map((b) => ({ resourceId: id, sovereigntyBasisId: b.id })),
-          skipDuplicates: true
-        });
-      }
-    }
-    if (languageCodes !== undefined) {
-      await tx.resourceLanguage.deleteMany({ where: { resourceId: id } });
-      if (languageRows.length > 0) {
-        await tx.resourceLanguage.createMany({
-          data: languageRows.map((l) => ({ resourceId: id, languageId: l.id })),
-          skipDuplicates: true
-        });
-      }
-    }
-    if (sectorCodes !== undefined) {
-      await tx.resourceSector.deleteMany({ where: { resourceId: id } });
-      if (sectorRows.length > 0) {
-        await tx.resourceSector.createMany({
-          data: sectorRows.map((s) => ({ resourceId: id, sectorId: s.id })),
-          skipDuplicates: true
-        });
-      }
-    }
-    if (evidenceResolved !== undefined) {
-      await tx.sovereigntyEvidence.deleteMany({ where: { resourceId: id } });
-      for (const row of evidenceResolved) {
-        await tx.sovereigntyEvidence.create({
-          data: { ...row, resourceId: id }
-        });
-      }
-    }
-    if (endpointsResolved !== undefined) {
-      await tx.resourceEndpoint.deleteMany({ where: { resourceId: id } });
-      for (const row of endpointsResolved) {
-        await tx.resourceEndpoint.create({
-          data: { ...row, resourceId: id }
-        });
-      }
-    }
-  });
-
-  await writeAudit({
-    actorUserId: actor.id,
-    entityType: "resource",
-    entityId: id,
-    action: "resource.updated",
-    previousValue: before,
+  await applyAdminResourceUpdate(actor.id, id, {
+    data,
+    before,
     newValue: {
       ...data,
       ...(basisCodes !== undefined ? { sovereigntyBasisCodes: basisCodes } : {}),
@@ -624,7 +544,16 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       ...(sectorCodes !== undefined ? { sectorCodes } : {}),
       ...(evidenceResolved !== undefined ? { evidenceCount: evidenceResolved.length } : {}),
       ...(endpointsResolved !== undefined ? { endpointCount: endpointsResolved.length } : {})
-    }
+    },
+    basisRows,
+    languageRows,
+    sectorRows,
+    evidenceResolved,
+    endpointsResolved,
+    basisCodes,
+    languageCodes,
+    sectorCodes,
+    action: "resource.updated"
   });
 
   return NextResponse.json({ ok: true });
@@ -638,22 +567,7 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   }
 
   const { id } = await ctx.params;
-  const target = await prisma.resource.findUnique({
-    where: { id },
-    select: {
-      slug: true,
-      title: true,
-      airId: true,
-      _count: {
-        select: {
-          reviews: true,
-          trustSignals: true,
-          complaints: true,
-          enforcementActions: true
-        }
-      }
-    }
-  });
+  const target = await loadAdminResourceForDeleteWithCount(id);
   if (!target) return NextResponse.json({ error: "Resource not found" }, { status: 404 });
 
   const blockers = Object.entries(target._count).filter(([, n]) => n > 0);
@@ -670,21 +584,16 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   }
 
   try {
-    await prisma.resource.delete({ where: { id } });
+    await deleteAdminResource(actor.id, id, {
+      slug: target.slug,
+      title: target.title
+    });
   } catch (e) {
     return NextResponse.json(
       { error: "Delete failed", detail: e instanceof Error ? e.message : String(e) },
       { status: 409 }
     );
   }
-
-  await writeAudit({
-    actorUserId: actor.id,
-    entityType: "resource",
-    entityId: id,
-    action: "resource.deleted",
-    previousValue: { slug: target.slug, title: target.title }
-  });
 
   return NextResponse.json({ ok: true });
 }

@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
-import { writeAudit } from "@airegistry/sdk";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  loadAdminUserForEdit,
+  findUserByEmailBasic,
+  findProviderBySlugForAssign,
+  countOtherActiveAdmins,
+  applyAdminUserUpdate,
+  deleteAdminUser,
+  emailTemplates,
+  sendTransactionalEmail
+} from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
-import { emailTemplates } from "@airegistry/sdk/server";
-import { sendTransactionalEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
-import { getReferenceRow } from "@airegistry/sdk/server";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -45,14 +51,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const target = await prisma.user.findUnique({
-    where: { id },
-    include: {
-      role: { select: { code: true, name: true } },
-      status: { select: { code: true, name: true } },
-      provider: { select: { slug: true } }
-    }
-  });
+  const target = await loadAdminUserForEdit(id);
   if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const data: Record<string, unknown> = {};
@@ -78,7 +77,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       return NextResponse.json({ error: "email must be a valid email" }, { status: 400 });
     }
     if (t !== target.email) {
-      const clash = await prisma.user.findUnique({ where: { email: t } });
+      const clash = await findUserByEmailBasic(t);
       if (clash) {
         return NextResponse.json({ error: "Email already registered" }, { status: 409 });
       }
@@ -99,9 +98,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
       // Refuse demoting the actor's own admin role; require a second admin
       // present (avoid lock-out).
       if (target.id === actor.id && target.role.code === "admin" && code !== "admin") {
-        const others = await prisma.user.count({
-          where: { id: { not: actor.id }, role: { code: "admin" } }
-        });
+        const others = await countOtherActiveAdmins(actor.id);
         if (others === 0) {
           return NextResponse.json(
             { error: "Refusing to demote the only admin." },
@@ -136,7 +133,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   } else if (typeof body.providerSlug === "string" && body.providerSlug.trim() !== "") {
     const slug = body.providerSlug.trim().toLowerCase();
     if (slug !== target.provider?.slug) {
-      const p = await prisma.provider.findUnique({ where: { slug } });
+      const p = await findProviderBySlugForAssign(slug);
       if (!p) return NextResponse.json({ error: "Unknown providerSlug" }, { status: 400 });
       data.providerId = p.id;
     }
@@ -146,16 +143,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
   }
 
-  await prisma.user.update({ where: { id }, data });
-
-  await writeAudit({
-    actorUserId: actor.id,
-    entityType: "user",
-    entityId: id,
-    action: "user.updated",
-    previousValue: before,
-    newValue: data
-  });
+  await applyAdminUserUpdate(actor.id, id, data, before);
 
   // Notify the user on a status change (suspend / reactivate / etc.).
   // Default ON; only an explicit `notifyByEmail: false` suppresses it.
@@ -204,16 +192,11 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
     );
   }
 
-  const target = await prisma.user.findUnique({
-    where: { id },
-    include: { role: { select: { code: true } } }
-  });
+  const target = await loadAdminUserForEdit(id);
   if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   if (target.role.code === "admin") {
-    const others = await prisma.user.count({
-      where: { id: { not: id }, role: { code: "admin" } }
-    });
+    const others = await countOtherActiveAdmins(id);
     if (others === 0) {
       return NextResponse.json(
         { error: "Refusing to delete the only admin." },
@@ -222,14 +205,11 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
     }
   }
 
-  // Detach audit references rather than block deletion - preserves history.
-  await prisma.auditLog.updateMany({
-    where: { actorUserId: id },
-    data: { actorUserId: null }
-  });
-
   try {
-    await prisma.user.delete({ where: { id } });
+    await deleteAdminUser(actor.id, id, {
+      email: target.email,
+      roleCode: target.role.code
+    });
   } catch (e) {
     return NextResponse.json(
       {
@@ -240,17 +220,6 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
       { status: 409 }
     );
   }
-
-  await writeAudit({
-    actorUserId: actor.id,
-    entityType: "user",
-    entityId: id,
-    action: "user.deleted",
-    previousValue: {
-      email: target.email,
-      role: target.role.code
-    }
-  });
 
   return NextResponse.json({ ok: true });
 }

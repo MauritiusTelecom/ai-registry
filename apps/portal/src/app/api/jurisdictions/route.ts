@@ -1,24 +1,16 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { loadPublicJurisdictionsList } from "@airegistry/sdk/server";
 
 /**
  * GET /api/jurisdictions
  *
  * Public read-only listing of the active jurisdictions seeded into this
  * deployment. Integrators populate filter UIs from this endpoint - see the
- * Phase 1 seed for the canonical entries.
+ * Phase 1 seed for the canonical entries. Nested type + parent joins are
+ * preserved in the service so the public JSON shape stays stable.
  */
 export async function GET() {
-  const rows = await prisma.jurisdiction.findMany({
-    where: { active: true },
-    select: {
-      code: true,
-      name: true,
-      type: { select: { code: true, name: true } },
-      parent: { select: { code: true, name: true } }
-    },
-    orderBy: [{ type: { sortOrder: "asc" } }, { code: "asc" }]
-  });
+  const rows = await loadPublicJurisdictionsList();
   return NextResponse.json(
     { rows, total: rows.length, generatedAt: new Date().toISOString() },
     {

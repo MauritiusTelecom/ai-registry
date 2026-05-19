@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import {
-  listNotificationKeysFor,
+  getCurrentUser,
+  listPortalNotificationKeys,
+  markNotificationsRead,
   type PortalRole
-} from "@/lib/portals/notifications";
+} from "@airegistry/sdk/server";
 
 /**
  * POST /api/portal/notifications/read-all
  *
  * Marks every notification currently visible to the user as read.
  *
- * The set of keys is re-derived on the server (via `listNotificationKeysFor`)
+ * The set of keys is re-derived on the server (via `listPortalNotificationKeys`)
  * rather than trusted from the request body, so a malicious client can't
  * persist arbitrary keys it shouldn't have visibility into.
  *
@@ -33,18 +33,7 @@ export async function POST() {
         ? "verifier"
         : "sovereign";
 
-  const keys = await listNotificationKeysFor(user, currentRole);
-  if (keys.length === 0) {
-    return NextResponse.json({ ok: true, written: 0 });
-  }
-
-  const result = await prisma.notificationRead.createMany({
-    data: keys.map((notificationKey) => ({
-      userId: user.id,
-      notificationKey
-    })),
-    skipDuplicates: true
-  });
-
-  return NextResponse.json({ ok: true, written: result.count });
+  const keys = await listPortalNotificationKeys(user, currentRole);
+  const { written } = await markNotificationsRead(user.id, keys);
+  return NextResponse.json({ ok: true, written });
 }

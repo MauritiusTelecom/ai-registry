@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
-import { writeAudit } from "@airegistry/sdk";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  listAdminProvidersWithCount,
+  findProviderBySlugBasic,
+  createAdminProvider
+} from "@airegistry/sdk/server";
 import type { Prisma } from "@airegistry/sdk/server";
 import { isSlug, isHttpUrl } from "@airegistry/sdk";
-import { getReferenceRow } from "@airegistry/sdk/server";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -14,27 +17,6 @@ const EMAIL_RE = /^\S+@\S+\.\S+$/;
  *
  * See `ai-registry-specs/shared/admin-crud.md` §5.2.
  */
-
-type ListResponse = {
-  rows: Array<{
-    id: string;
-    slug: string;
-    displayName: string;
-    typeCode: string;
-    typeName: string;
-    statusCode: string;
-    statusName: string;
-    jurisdictionCode: string;
-    contactEmail: string;
-    websiteUrl: string | null;
-    resourceCount: number;
-    createdAt: string;
-  }>;
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-};
 
 function adminGuard(actor: { roles: string[] } | null) {
   if (!actor) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -73,43 +55,18 @@ export async function GET(req: Request) {
   if (status) where.status = { code: status };
   if (jurisdiction) where.homeJurisdiction = { code: jurisdiction };
 
-  const [rows, total] = await Promise.all([
-    prisma.provider.findMany({
-      where,
-      include: {
-        type: { select: { code: true, name: true } },
-        status: { select: { code: true, name: true } },
-        homeJurisdiction: { select: { code: true } },
-        _count: { select: { resources: true } }
-      },
-      orderBy: [{ status: { sortOrder: "asc" } }, { displayName: "asc" }],
-      skip: (page - 1) * pageSize,
-      take: pageSize
-    }),
-    prisma.provider.count({ where })
-  ]);
-
-  const body: ListResponse = {
-    rows: rows.map((p) => ({
-      id: p.id,
-      slug: p.slug,
-      displayName: p.displayName,
-      typeCode: p.type.code,
-      typeName: p.type.name,
-      statusCode: p.status.code,
-      statusName: p.status.name,
-      jurisdictionCode: p.homeJurisdiction.code,
-      contactEmail: p.contactEmail,
-      websiteUrl: p.websiteUrl,
-      resourceCount: p._count.resources,
-      createdAt: p.createdAt.toISOString()
-    })),
+  const { rows, total } = await listAdminProvidersWithCount(
+    where as Record<string, unknown>,
+    page,
+    pageSize
+  );
+  return NextResponse.json({
+    rows,
     total,
     page,
     pageSize,
     hasMore: page * pageSize < total
-  };
-  return NextResponse.json(body);
+  });
 }
 
 type CreateBody = {
@@ -190,7 +147,7 @@ export async function POST(req: Request) {
     getReferenceRow("jurisdiction", jurisdictionCode),
     getReferenceRow("providerStatusType", "unverified"),
     getReferenceRow("submissionSourceType", "operator_added"),
-    prisma.provider.findUnique({ where: { slug } })
+    findProviderBySlugBasic(slug)
   ]);
 
   if (!type) return NextResponse.json({ error: "Unknown typeCode" }, { status: 400 });
@@ -203,36 +160,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Slug already taken" }, { status: 409 });
   }
 
-  const created = await prisma.provider.create({
-    data: {
-      slug,
-      displayName,
-      typeId: type.id,
-      homeJurisdictionId: jurisdiction.id,
-      contactEmail,
-      legalName,
-      registrationNumber,
-      websiteUrl,
-      description,
-      statusId: statusUnverified.id,
-      srcId: sourceOperator.id,
-      published: true,
-      adminSuspended: false
-    }
-  });
-
-  await writeAudit({
-    actorUserId: actor!.id,
-    entityType: "provider",
-    entityId: created.id,
-    action: "provider.created",
-    newValue: {
-      slug,
-      displayName,
-      type: typeCode,
-      jurisdiction: jurisdictionCode,
-      contactEmail
-    }
+  const created = await createAdminProvider(actor!.id, {
+    slug,
+    displayName,
+    typeId: type.id,
+    homeJurisdictionId: jurisdiction.id,
+    contactEmail,
+    legalName,
+    registrationNumber,
+    websiteUrl,
+    description,
+    statusId: statusUnverified.id,
+    srcId: sourceOperator.id,
+    typeCode,
+    jurisdictionCode
   });
 
   return NextResponse.json({ ok: true, id: created.id }, { status: 201 });

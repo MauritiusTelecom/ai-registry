@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
-import { writeAudit } from "@airegistry/sdk";
+import {
+  getCurrentUser,
+  deleteAdminComplaintIfExists
+} from "@airegistry/sdk/server";
 
 /**
  * DELETE /api/admin/complaints/:id
@@ -18,28 +19,7 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   }
 
   const { id } = await ctx.params;
-
-  const existing = await prisma.complaint.findUnique({ where: { id } });
-  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-  await prisma.$transaction(async (tx) => {
-    await tx.enforcementAction.updateMany({
-      where: { relatedComplaintId: id },
-      data: { relatedComplaintId: null }
-    });
-    await tx.complaint.delete({ where: { id } });
-  });
-
-  await writeAudit({
-    actorUserId: user.id,
-    entityType: "complaint",
-    entityId: id,
-    action: "complaint.deleted",
-    previousValue: {
-      complaintTypeId: existing.complaintTypeId,
-      severityId: existing.severityId,
-      statusId: existing.statusId,
-      description: existing.description,
-      complainantEmail: existing.complainantEmail
-    }
-  });
+  const ok = await deleteAdminComplaintIfExists(user.id, id);
+  if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json({ ok: true });
+}

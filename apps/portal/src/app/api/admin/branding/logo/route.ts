@@ -2,12 +2,14 @@ import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
 import { join, sep } from "node:path";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
-import { writeAudit } from "@airegistry/sdk";
+import {
+  getCurrentUser,
+  setAdminBrandingAsset,
+  clearAdminBrandingAsset
+} from "@airegistry/sdk/server";
+import type { AdminBrandingAssetSlot } from "@airegistry/sdk/server";
 import { invalidateBrandingCache } from "@/lib/branding";
 
-const SINGLETON_ID = "default";
 const MAX_BYTES = 1_000_000; // 1 MB
 const ALLOWED: Record<string, string> = {
   "image/png": "png",
@@ -23,19 +25,13 @@ const ALLOWED: Record<string, string> = {
  * Slot is read from a `slot` query param (defaults to "logo" for backward
  * compat with the original logo-only callers).
  */
-type Slot = "logo" | "hero";
 
-const SLOT_FIELDS: Record<Slot, "logoUrl" | "heroEyebrowIconUrl"> = {
-  logo: "logoUrl",
-  hero: "heroEyebrowIconUrl"
-};
-
-const SLOT_PREFIXES: Record<Slot, string> = {
+const SLOT_PREFIXES: Record<AdminBrandingAssetSlot, string> = {
   logo: "logo",
   hero: "hero"
 };
 
-function parseSlot(req: Request): Slot {
+function parseSlot(req: Request): AdminBrandingAssetSlot {
   const url = new URL(req.url);
   const raw = url.searchParams.get("slot");
   return raw === "hero" ? "hero" : "logo";
@@ -55,7 +51,6 @@ export async function POST(req: Request) {
   if (guard) return guard;
 
   const slot = parseSlot(req);
-  const field = SLOT_FIELDS[slot];
 
   let form: FormData;
   try {
@@ -94,12 +89,9 @@ export async function POST(req: Request) {
   await writeFile(join(dir, filename), bytes);
   const publicPath = `/branding/${filename}`;
 
-  const before = await prisma.siteBranding.findUnique({ where: { id: SINGLETON_ID } });
-  const previousPath = before ? before[field] : null;
-  const updated = await prisma.siteBranding.upsert({
-    where: { id: SINGLETON_ID },
-    update: { [field]: publicPath, updatedById: actor!.id },
-    create: { id: SINGLETON_ID, [field]: publicPath, updatedById: actor!.id }
+  const { previousPath } = await setAdminBrandingAsset(actor!.id, slot, publicPath, {
+    sizeBytes: bytes.byteLength,
+    mimeType: file.type
   });
 
   // Best-effort cleanup of the previous file. Skip if it points outside the
@@ -113,15 +105,6 @@ export async function POST(req: Request) {
 
   invalidateBrandingCache();
 
-  await writeAudit({
-    actorUserId: actor!.id,
-    entityType: "site_branding",
-    entityId: SINGLETON_ID,
-    action: `branding.${slot}_uploaded`,
-    previousValue: { [field]: previousPath },
-    newValue: { [field]: updated[field], sizeBytes: bytes.byteLength, mimeType: file.type }
-  });
-
   return NextResponse.json({ ok: true, slot, url: publicPath });
 }
 
@@ -131,15 +114,7 @@ export async function DELETE(req: Request) {
   if (guard) return guard;
 
   const slot = parseSlot(req);
-  const field = SLOT_FIELDS[slot];
-
-  const before = await prisma.siteBranding.findUnique({ where: { id: SINGLETON_ID } });
-  const previousPath = before ? before[field] : null;
-  await prisma.siteBranding.upsert({
-    where: { id: SINGLETON_ID },
-    update: { [field]: null, updatedById: actor!.id },
-    create: { id: SINGLETON_ID, [field]: null, updatedById: actor!.id }
-  });
+  const { previousPath } = await clearAdminBrandingAsset(actor!.id, slot);
 
   if (previousPath?.startsWith("/branding/")) {
     const dir = join(process.cwd(), "public", "branding");
@@ -150,15 +125,5 @@ export async function DELETE(req: Request) {
   }
 
   invalidateBrandingCache();
-
-  await writeAudit({
-    actorUserId: actor!.id,
-    entityType: "site_branding",
-    entityId: SINGLETON_ID,
-    action: `branding.${slot}_cleared`,
-    previousValue: { [field]: previousPath },
-    newValue: { [field]: null }
-  });
-
   return NextResponse.json({ ok: true, slot });
 }

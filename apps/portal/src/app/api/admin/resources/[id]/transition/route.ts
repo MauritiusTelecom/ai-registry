@@ -1,16 +1,18 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
-import { getReferenceRow } from "@airegistry/sdk/server";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  loadAdminResourceForTransition,
+  applyAdminResourceTransition,
+  emailTemplates,
+  uniqueValidEmails,
+  sendTransactionalEmailAll
+} from "@airegistry/sdk/server";
 import {
   assertCanReview,
   SeparationOfDutiesError
 } from "@airegistry/sdk";
-import { writeAudit } from "@airegistry/sdk";
 import { getConfig } from "@airegistry/sdk";
-import { emailTemplates } from "@airegistry/sdk/server";
-import { uniqueValidEmails } from "@airegistry/sdk/server";
-import { sendTransactionalEmailAll } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
@@ -56,10 +58,6 @@ const ALLOWED_FROM: Record<Action, Set<string>> = {
   approve: new Set(["draft", "submitted", "in_review", "needs_update"]),
   reject: new Set(["submitted", "in_review", "listed", "needs_update"]),
   suspend: new Set(["listed"]),
-  // Restore is the admin "revert to active" escape hatch and is intentionally
-  // permissive: any non-listed status (including `removed` tombstones) can be
-  // brought back to `listed`. Mints the AIR-ID when one was never issued, so
-  // resources that never reached `listed` can be promoted directly.
   restore: new Set([
     "suspended",
     "deprecated",
@@ -111,22 +109,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json({ error: "reason is required (min 4 chars)" }, { status: 400 });
   }
 
-  const resource = await prisma.resource.findUnique({
-    where: { id },
-    include: {
-      lifecycleStatus: { select: { code: true } },
-      provider: {
-        select: {
-          id: true,
-          slug: true,
-          displayName: true,
-          contactEmail: true,
-          legalContactEmail: true
-        }
-      },
-      resourceType: { select: { code: true } }
-    }
-  });
+  const resource = await loadAdminResourceForTransition(id);
   if (!resource) {
     return NextResponse.json({ error: "Resource not found" }, { status: 404 });
   }
@@ -176,10 +159,6 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     update.lastReviewedAt = new Date();
   }
   if (action === "restore") {
-    // Revert path. Promote the resource back to `listed`, restore public
-    // visibility, and — when restoring from a pre-approval state or a `removed`
-    // tombstone that never minted an AIR-ID — mint one now so the resource is
-    // publicly resolvable.
     if (!resource.airId) {
       update.airId = `air://${cfg.identityDomain}/${resource.resourceType.code}/${resource.provider.slug}/${resource.slug}`;
     }
@@ -189,12 +168,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   }
   if (action === "suspend" || action === "remove" || action === "deprecate") {
     if (action === "remove") update.publicVisibility = false;
-    // `deprecate` keeps the row publicly visible (carries its own lifecycle
-    // status code); the audit row records the timestamp via createdAt.
   }
 
-  // TrustSignal mapping: approve → passed, reject/suspend/remove → failed,
-  // restore → passed, deprecate → withdrawn.
   const trustStatusId =
     action === "approve" || action === "restore"
       ? passed.id
@@ -202,35 +177,25 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
         ? withdrawn.id
         : failed.id;
 
-  await prisma.$transaction(async (tx) => {
-    await tx.resource.update({ where: { id }, data: update });
-
-    await tx.trustSignal.create({
-      data: {
-        kindId: signalKind.id,
-        targetResourceId: id,
-        targetProviderId: resource.provider.id,
-        statusId: trustStatusId,
-        decisionSummary: reason,
-        publicNote: action === "approve" || action === "restore" ? reason : null,
-        internalNote: action === "approve" ? null : reason,
-        decidedById: actor.id,
-        decidedAt: new Date()
-      }
-    });
+  await applyAdminResourceTransition(actor.id, {
+    resourceId: id,
+    resourceData: update,
+    trustSignal: {
+      kindId: signalKind.id,
+      targetProviderId: resource.provider.id,
+      statusId: trustStatusId,
+      decisionSummary: reason,
+      publicNote: action === "approve" || action === "restore" ? reason : null,
+      internalNote: action === "approve" ? null : reason
+    },
+    audit: {
+      action: `resource.${action}`,
+      previousValue: { lifecycle: fromCode },
+      newValue: { lifecycle: toCode, reason }
+    }
   });
 
-  await writeAudit({
-    actorUserId: actor.id,
-    entityType: "resource",
-    entityId: id,
-    action: `resource.${action}`,
-    previousValue: { lifecycle: fromCode },
-    newValue: { lifecycle: toCode, reason }
-  });
-
-  // Notify the provider's contacts of the lifecycle transition. Default ON;
-  // only an explicit notifyByEmail: false skips it.
+  // Notify the provider's contacts of the lifecycle transition.
   const notifyByEmail = body.notifyByEmail !== false;
   const origin = getPublicOrigin(req);
   const recipients = uniqueValidEmails([

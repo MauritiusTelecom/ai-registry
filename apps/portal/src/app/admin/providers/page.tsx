@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import { ProvidersAdmin } from "@/components/admin/ProvidersAdmin";
 import { listReferenceTable } from "@airegistry/sdk/server";
 

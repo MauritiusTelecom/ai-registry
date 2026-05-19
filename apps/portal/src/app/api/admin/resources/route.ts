@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
-import { writeAudit } from "@airegistry/sdk";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  listAdminResourcesWithCount,
+  findResourceBySlugInProvider,
+  findProviderBySlugWithJurisdiction,
+  createAdminResource
+} from "@airegistry/sdk/server";
 import { isSlug } from "@airegistry/sdk";
 import type { Prisma } from "@airegistry/sdk/server";
-import { getReferenceRow } from "@airegistry/sdk/server";
 
 /**
  * GET /api/admin/resources - list with q + kind + lifecycle + provider filters.
@@ -12,28 +16,11 @@ import { getReferenceRow } from "@airegistry/sdk/server";
  *   normal review pipeline before listing.
  *
  * See `ai-registry-specs/shared/admin-crud.md` §5.1.
+ *
+ * NOTE on the provider lookup in POST: this route uses an include with
+ * homeJurisdiction so we still go through a small local fetch — but the
+ * actual creates go through the admin service.
  */
-
-type ListResponse = {
-  rows: Array<{
-    id: string;
-    slug: string;
-    title: string;
-    airId: string | null;
-    kindCode: string;
-    lifecycleCode: string;
-    lifecycleName: string;
-    providerSlug: string;
-    providerName: string;
-    riskCode: string;
-    publicVisibility: boolean;
-    updatedAt: string;
-  }>;
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-};
 
 function adminGuard(actor: { roles: string[] } | null) {
   if (!actor) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -71,24 +58,33 @@ export async function GET(req: Request) {
   if (lifecycle) where.lifecycleStatus = { code: lifecycle };
   if (provider) where.provider = { slug: provider };
 
-  const [rows, total] = await Promise.all([
-    prisma.resource.findMany({
-      where,
-      include: {
-        resourceType: { select: { code: true } },
-        lifecycleStatus: { select: { code: true, name: true } },
-        provider: { select: { slug: true, displayName: true } },
-        riskLevel: { select: { code: true } }
-      },
-      orderBy: [{ lifecycleStatus: { sortOrder: "asc" } }, { updatedAt: "desc" }],
-      skip: (page - 1) * pageSize,
-      take: pageSize
-    }),
-    prisma.resource.count({ where })
-  ]);
+  const { rows, total } = await listAdminResourcesWithCount(
+    where as Record<string, unknown>,
+    page,
+    pageSize,
+    {
+      resourceType: { select: { code: true } },
+      lifecycleStatus: { select: { code: true, name: true } },
+      provider: { select: { slug: true, displayName: true } },
+      riskLevel: { select: { code: true } }
+    }
+  );
 
-  const body: ListResponse = {
-    rows: rows.map((r) => ({
+  type Row = {
+    id: string;
+    slug: string;
+    title: string;
+    airId: string | null;
+    resourceType: { code: string };
+    lifecycleStatus: { code: string; name: string };
+    provider: { slug: string; displayName: string };
+    riskLevel: { code: string };
+    publicVisibility: boolean;
+    updatedAt: Date;
+  };
+
+  return NextResponse.json({
+    rows: (rows as unknown as Row[]).map((r) => ({
       id: r.id,
       slug: r.slug,
       title: r.title,
@@ -106,8 +102,7 @@ export async function GET(req: Request) {
     page,
     pageSize,
     hasMore: page * pageSize < total
-  };
-  return NextResponse.json(body);
+  });
 }
 
 type CreateBody = {
@@ -172,21 +167,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "providerSlug is required" }, { status: 400 });
   }
 
-  const [type, provider, jurisdiction, risk, draft, listingOrigin, clash] = await Promise.all([
+  const [type, provider, jurisdiction, risk, draft, listingOrigin] = await Promise.all([
     getReferenceRow("resourceType", typeCode),
-    prisma.provider.findUnique({
-      where: { slug: providerSlug },
-      include: { homeJurisdiction: { select: { id: true, code: true } } }
-    }),
+    findProviderBySlugWithJurisdiction(providerSlug),
     jurisdictionCode
       ? getReferenceRow("jurisdiction", jurisdictionCode)
       : Promise.resolve(null),
     getReferenceRow("riskLevel", riskCode),
     getReferenceRow("lifecycleStatus", "draft"),
-    getReferenceRow("listingOrigin", "local"),
-    prisma.resource.findFirst({
-      where: { provider: { slug: providerSlug }, slug }
-    })
+    getReferenceRow("listingOrigin", "local")
   ]);
 
   if (!type) return NextResponse.json({ error: "Unknown resourceTypeCode" }, { status: 400 });
@@ -201,6 +190,8 @@ export async function POST(req: Request) {
   if (!draft || !listingOrigin) {
     return NextResponse.json({ error: "Reference data not seeded." }, { status: 503 });
   }
+
+  const clash = await findResourceBySlugInProvider(provider.id, slug);
   if (clash) {
     return NextResponse.json(
       { error: "Slug already taken for this provider" },
@@ -210,28 +201,18 @@ export async function POST(req: Request) {
 
   const primaryJurisdictionId = jurisdiction?.id ?? provider.homeJurisdiction.id;
 
-  const created = await prisma.resource.create({
-    data: {
-      slug,
-      title,
-      shortDescription,
-      resourceTypeId: type.id,
-      providerId: provider.id,
-      primaryJurisdictionId,
-      listingOriginId: listingOrigin.id,
-      lifecycleStatusId: draft.id,
-      riskLevelId: risk.id,
-      publicVisibility: false,
-      airId: null
-    }
-  });
-
-  await writeAudit({
-    actorUserId: actor!.id,
-    entityType: "resource",
-    entityId: created.id,
-    action: "resource.created",
-    newValue: {
+  const created = await createAdminResource(actor!.id, {
+    slug,
+    title,
+    shortDescription,
+    providerId: provider.id,
+    resourceTypeId: type.id,
+    primaryJurisdictionId,
+    lifecycleStatusId: draft.id,
+    listingOriginId: listingOrigin.id,
+    riskLevelId: risk.id,
+    publicVisibility: false,
+    auditNewValue: {
       slug,
       title,
       kind: typeCode,
