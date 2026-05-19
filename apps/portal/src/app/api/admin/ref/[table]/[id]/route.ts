@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { Prisma } from "@/generated/prisma";
+import { Prisma } from "@airegistry/sdk/server";
 import { requireRole } from "@/lib/portals/auth-gate";
-import { getRefTable } from "@/lib/admin/reference-tables";
-import { modelFor } from "@/lib/admin/ref-prisma";
-import { projectInputs } from "@/lib/admin/ref-payload";
+import { getRefTable } from "@airegistry/sdk";
+import { modelFor } from "@airegistry/sdk/server";
+import { projectInputs } from "@airegistry/sdk";
 import { prisma } from "@/lib/prisma";
 import { prismaErrorResponse, projectRow } from "../route";
 

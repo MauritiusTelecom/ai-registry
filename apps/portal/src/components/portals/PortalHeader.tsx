@@ -1,4 +1,4 @@
-import type { SessionUser } from "@/lib/auth/current-user";
+import type { SessionUser } from "@airegistry/sdk";
 import { loadPortalNotifications } from "@/lib/portals/notifications";
 import { PortalSearch } from "./header/PortalSearch";
 // Palette is an operator/dev-only colour-token tool — removed from the

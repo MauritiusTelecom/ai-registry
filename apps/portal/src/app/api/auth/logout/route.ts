@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { sessionCookieAttributes } from "@/lib/auth/session";
+import { clearSessionCookie } from "@airegistry/sdk/server";
 
 /**
  * POST /api/auth/logout
@@ -9,14 +9,8 @@ import { sessionCookieAttributes } from "@/lib/auth/session";
  * still returns 200.
  */
 export async function POST() {
-  const attrs = sessionCookieAttributes();
+  const { name, value, ...cookieAttrs } = clearSessionCookie();
   const jar = await cookies();
-  jar.set(attrs.name, "", {
-    httpOnly: attrs.httpOnly,
-    secure: attrs.secure,
-    sameSite: attrs.sameSite,
-    path: attrs.path,
-    maxAge: 0
-  });
+  jar.set(name, value, cookieAttrs);
   return NextResponse.json({ ok: true });
 }

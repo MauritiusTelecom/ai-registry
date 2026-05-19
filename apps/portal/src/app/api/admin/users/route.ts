@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@airegistry/sdk";
-import { generateRawToken, hashToken, verificationExpiry } from "@/lib/auth/tokens";
-import { sendEmail, emailTemplates } from "@/lib/email";
+import { prepareEmailVerificationToken } from "@airegistry/sdk/server";
+import { sendEmail, emailTemplates } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
-import type { Prisma } from "@/generated/prisma";
+import type { Prisma } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
@@ -175,7 +175,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unknown providerSlug" }, { status: 400 });
   }
 
-  const verificationToken = sendInvite ? generateRawToken() : null;
+  const verificationBundle = sendInvite ? prepareEmailVerificationToken() : null;
   const created = await prisma.user.create({
     data: {
       name,
@@ -185,8 +185,8 @@ export async function POST(req: Request) {
       providerId: provider?.id ?? null,
       emailVerified: false,
       onboardingComplete: false,
-      verificationToken: verificationToken ? hashToken(verificationToken) : null,
-      verificationTokenExpiry: verificationToken ? verificationExpiry() : null
+      verificationToken: verificationBundle?.hashedToken ?? null,
+      verificationTokenExpiry: verificationBundle?.expiry ?? null
     }
   });
 
@@ -203,9 +203,9 @@ export async function POST(req: Request) {
     }
   });
 
-  if (sendInvite && verificationToken) {
+  if (sendInvite && verificationBundle) {
     const origin = getPublicOrigin(req);
-    const link = `${origin}/auth/verify?token=${encodeURIComponent(verificationToken)}`;
+    const link = `${origin}/auth/verify?token=${encodeURIComponent(verificationBundle.rawToken)}`;
     const tmpl = emailTemplates.verification({
       name,
       verifyUrl: link,

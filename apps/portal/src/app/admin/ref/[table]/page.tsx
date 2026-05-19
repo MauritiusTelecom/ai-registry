@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getRefTable } from "@/lib/admin/reference-tables";
+import { getRefTable } from "@airegistry/sdk";
 import { RefTableGrid } from "@/components/admin/RefTableGrid";
 
 export const dynamic = "force-dynamic";

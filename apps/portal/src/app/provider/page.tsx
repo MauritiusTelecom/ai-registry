@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { StatCard } from "@/components/portals/StatCard";
 import { GatedPublishButton } from "@/components/portals/GatedPublishButton";

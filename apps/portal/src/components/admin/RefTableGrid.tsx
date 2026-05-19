@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/public/Icon";
-import type { RefTableConfig } from "@/lib/admin/reference-tables";
+import type { RefTableConfig } from "@airegistry/sdk";
 import { withBase } from "@airegistry/sdk";
 
 /**
@@ -316,14 +316,4 @@ function renderCell(value: unknown) {
   if (typeof value === "boolean")
     return value ? (
       <span className="tag" style={{ color: "#10b981" }}>active</span>
-    ) : (
-      <span className="tag">inactive</span>
-    );
-  if (typeof value === "string" && value.length > 80) return value.slice(0, 77) + "…";
-  return String(value);
-}
-
-function labelFor(config: RefTableConfig, key: string): string {
-  const f = config.fields.find((x) => x.key === key);
-  return f?.label ?? key;
-}
+    ) 

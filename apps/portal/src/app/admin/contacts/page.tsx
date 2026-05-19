@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { DataTable, type Column } from "@/components/portals/DataTable";
-import { CONTACT_TOPIC_LABELS } from "@/lib/contacts/topics";
+import { CONTACT_TOPIC_LABELS } from "@airegistry/sdk";
 
 function labelFor(topic: string): string {
   return (CONTACT_TOPIC_LABELS as Record<string, string>)[topic] ?? topic;

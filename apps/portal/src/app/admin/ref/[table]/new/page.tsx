@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getRefTable } from "@/lib/admin/reference-tables";
+import { getRefTable } from "@airegistry/sdk";
 import { RefRowForm } from "@/components/admin/RefRowForm";
 
 export async function generateMetadata({ params }: { params: Promise<{ table: string }> }) {

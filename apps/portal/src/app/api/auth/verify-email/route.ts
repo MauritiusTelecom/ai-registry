@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashToken } from "@/lib/auth/tokens";
+import { hashTokenForLookup } from "@airegistry/sdk/server";
 
 /**
  * GET /api/auth/verify-email?token=<raw>
@@ -20,7 +20,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Missing token." }, { status: 400 });
   }
 
-  const tokenHash = hashToken(raw);
+  const tokenHash = hashTokenForLookup(raw);
   const user = await prisma.user.findFirst({
     where: { verificationToken: tokenHash }
   });

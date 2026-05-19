@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { RefTableConfig } from "@/lib/admin/reference-tables";
+import type { RefTableConfig } from "@airegistry/sdk";
 import { withBase } from "@airegistry/sdk";
 
 /**

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
-import { assertCanReview, SeparationOfDutiesError } from "@/lib/auth/separation-of-duties";
+import { assertCanReview, SeparationOfDutiesError } from "@airegistry/sdk";
 import { writeAudit } from "@airegistry/sdk";
 import { isHttpUrl } from "@airegistry/sdk";
 

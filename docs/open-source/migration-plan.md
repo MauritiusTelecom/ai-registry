@@ -70,6 +70,43 @@ Any match is a leak. Mechanical rewrite (Python or `jscodeshift`) handles them i
 
 If you skip this step, Phase 6.1 will surface the same error mid-PR. (It did the first time we ran the plan.)
 
+### 3.2 Why the SDK must re-export from core subpaths, not the main barrel
+
+A second issue surfaced after the first batch of Phase 6.1 PRs landed: importing **anything** from `@airegistry/sdk` from a **client** component (e.g. `apps/portal/src/components/public/TopNav.tsx` importing `withBase`) blew up the build with `Module not found: Can't resolve 'child_process'` — sourced from `nodemailer`, three levels deep in the import graph.
+
+The chain:
+
+```
+TopNav.tsx [client]
+  → @airegistry/sdk
+  → @airegistry/core              (main barrel)
+  → ./lib/email.ts                (top-level: import * as nodemailer)
+  → nodemailer
+  → child_process                 (Node-only — boom)
+```
+
+Root cause: `packages/core/package.json` does **not** declare `"sideEffects": false`. Without that flag, bundlers must conservatively assume every module imported by the barrel has side effects on load, and they cannot tree-shake unused re-exports. So `export { sendEmail } from "./lib/email"` in `packages/core/src/index.ts` causes `email.ts` to be evaluated whenever **anything** from `@airegistry/core` is loaded — even a client component asking only for `withBase`.
+
+Adding `"sideEffects": false` would be a lie: `config.ts` validates env at load, `prisma.ts` instantiates the client, `email.ts` requires nodemailer. The package genuinely has side effects.
+
+**The fix:** the SDK must re-export from `@airegistry/core` **subpaths**, never the main barrel. The package.json's `exports` field already declares per-module subpaths (`./config`, `./validators`, `./with-base`, `./audit`, `./discovery`, `./governance`, etc.); the SDK uses these so that loading `@airegistry/sdk` only evaluates the specific modules it actually re-exports.
+
+```ts
+// WRONG — pulls in email.ts, prisma.ts, etc. via the main barrel
+export { withBase } from "@airegistry/core";
+
+// RIGHT — only loads with-base.ts
+export { withBase } from "@airegistry/core/with-base";
+```
+
+**Watch for the Prisma version of the same problem.** The discovery barrel (`@airegistry/core/discovery`) re-exports the Prisma-using query functions (`listPublicResources`, `findResourceForDetail`, etc.). Importing it transitively loads `prisma.ts`. The Prisma client ships a browser shim (`index-browser.js`) that lets bundlers include it without erroring at compile time — but the shim throws if any query is actually executed in a browser context. This works today; if a future Prisma version drops the browser shim, the discovery barrel will need to be split into client-safe (types + pure serializers) and server-only (queries) halves.
+
+**Phase 6.0 deliverable:** add a CI lint that fails if `packages/sdk/src/index.ts` imports anything via the bare `"@airegistry/core"` specifier. The grep:
+
+```bash
+grep -nE 'from "@airegistry/core"' packages/sdk/src/ && exit 1
+```
+
 ## 4. Phase 6.1 — Boundary tightening (1–2 weeks)
 
 **Goal:** make `apps/portal` consume `packages/core` only through `@airegistry/sdk`. This is the precondition for every subsequent phase.

@@ -15,7 +15,7 @@
  *   - verifier / sovereign → empty for now (placeholders).
  */
 import { prisma } from "@/lib/prisma";
-import type { SessionUser } from "@/lib/auth/current-user";
+import type { SessionUser } from "@airegistry/sdk";
 
 export type PortalNotification = {
   id: string;

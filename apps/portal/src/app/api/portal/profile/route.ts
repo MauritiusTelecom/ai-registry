@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@airegistry/sdk";
 
@@ -60,6 +60,3 @@ export async function PATCH(req: Request) {
     previousValue: prev,
     newValue: { name: updated.name, organisationName: updated.organisationName }
   });
-
-  return NextResponse.json({ ok: true, user: updated });
-}

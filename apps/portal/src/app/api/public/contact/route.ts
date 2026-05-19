@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { Prisma } from "@/generated/prisma";
+import { Prisma } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { getConfig } from "@airegistry/sdk";
-import { getCurrentUser } from "@/lib/auth/current-user";
-import { generateRawToken, hashToken, verificationExpiry } from "@/lib/auth/tokens";
-import { emailTemplates, sendEmail } from "@/lib/email";
-import { normalizeContactEmail } from "@/lib/contacts/link-to-user";
-import { CONTACT_TOPIC_LABELS, CONTACT_TOPICS, type ContactTopicCode } from "@/lib/contacts/topics";
+import { getCurrentUser } from "@airegistry/sdk/server";
+import { prepareEmailVerificationToken } from "@airegistry/sdk/server";
+import { emailTemplates, sendEmail } from "@airegistry/sdk/server";
+import { normalizeContactEmail } from "@airegistry/sdk";
+import { CONTACT_TOPIC_LABELS, CONTACT_TOPICS, type ContactTopicCode } from "@airegistry/sdk";
 import { getPublicOrigin } from "@/lib/public-origin";
 
 type ContactPayload = {
@@ -83,9 +83,7 @@ export async function POST(req: Request) {
     linkToUserId = null;
   }
 
-  const rawVerify = generateRawToken();
-  const tokenHash = hashToken(rawVerify);
-  const tokenExpiry = verificationExpiry();
+  const { rawToken: rawVerify, hashedToken: tokenHash, expiry: tokenExpiry } = prepareEmailVerificationToken();
 
   const ipAddress = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
   const userAgent = req.headers.get("user-agent") ?? null;

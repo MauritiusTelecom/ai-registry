@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { portalForRole } from "@/lib/portals/auth-gate";
 import { AuthShell } from "@/components/public/auth/AuthShell";
 import { LoginForm } from "@/components/public/auth/LoginForm";
