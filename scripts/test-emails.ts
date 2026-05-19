@@ -33,8 +33,8 @@ import { config as loadDotenv } from "dotenv";
 
 loadDotenv();
 
-import { ConfigError, getConfig } from "../src/lib/config";
-import { emailTemplates, sendEmail } from "../src/lib/email";
+import { ConfigError, getConfig } from "../packages/core/src/lib/config";
+import { emailTemplates, sendEmail } from "../packages/core/src/lib/email";
 
 type TemplateKey =
   | "verification"

@@ -2,6 +2,13 @@
 # =============================================================================
 # deploy.sh — local pipeline for shipping ai-registry to the prod server.
 # -----------------------------------------------------------------------------
+# !!! MONOREPO MIGRATION NOTICE !!!
+# This script was written for the pre-monorepo layout. After the monorepo
+# split: .next is at apps/portal/.next; public/ is at apps/portal/public;
+# Prisma schema is at packages/core/prisma; package-lock.json is replaced by
+# pnpm-lock.yaml. Lines ~185-197 (the staging copy section) need updating
+# before re-running. See MIGRATION.md.
+# -----------------------------------------------------------------------------
 # Pipeline stages (each fails the deploy on non-zero exit):
 #
 #   1.  Pre-flight     check config, secrets, ssh

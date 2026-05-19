@@ -6,7 +6,7 @@
  */
 
 import { config as loadDotenv } from "dotenv";
-import { ConfigError, getConfig } from "../src/lib/config";
+import { ConfigError, getConfig } from "../packages/core/src/lib/config";
 
 // Load .env if it exists (silent if it doesn't - env vars may be supplied
 // via the shell or a deployment-time secret manager).

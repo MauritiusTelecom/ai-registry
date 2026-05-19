@@ -7,7 +7,7 @@
  */
 import { config as loadDotenv } from "dotenv";
 import { resolve } from "node:path";
-import { PrismaClient } from "../src/generated/prisma";
+import { PrismaClient } from "../packages/core/src/generated/prisma";
 
 loadDotenv({ path: resolve(process.cwd(), ".env") });
 

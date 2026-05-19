@@ -1,0 +1,23 @@
+{
+  "name": "@airegistry/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Public SDK for AI Registry extensions and third-party portals. Curated re-exports from @airegistry/core plus the plugin manifest types.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./plugin": "./src/plugin.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo"
+  },
+  "dependencies": {
+    "@airegistry/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

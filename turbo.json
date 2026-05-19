@@ -1,0 +1,74 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "stream",
+  "globalDependencies": [
+    ".env",
+    ".env.example",
+    "tsconfig.base.json"
+  ],
+  "globalEnv": [
+    "NODE_ENV",
+    "DATABASE_URL",
+    "NEXT_PUBLIC_BASE_PATH"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build", "prisma:generate"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^prisma:generate"]
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "typecheck": {
+      "dependsOn": ["^build", "prisma:generate"]
+    },
+    "prisma:generate": {
+      "inputs": ["prisma/schema.prisma"],
+      "outputs": ["src/generated/**"]
+    },
+    "prisma:validate": {
+      "inputs": ["prisma/schema.prisma"]
+    },
+    "prisma:format": {
+      "inputs": ["prisma/schema.prisma"]
+    },
+    "prisma:migrate": {
+      "cache": false
+    },
+    "db:push": {
+      "cache": false
+    },
+    "db:seed": {
+      "cache": false
+    },
+    "db:reset": {
+      "cache": false
+    },
+    "db:bootstrap": {
+      "cache": false
+    },
+    "deploy:db": {
+      "cache": false
+    },
+    "config:validate": {
+      "cache": false
+    },
+    "smoke": {
+      "cache": false
+    },
+    "test:emails": {
+      "cache": false
+    },
+    "test:smtp": {
+      "cache": false
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}

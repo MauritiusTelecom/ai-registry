@@ -5,7 +5,7 @@
  * created with published=false; this catches pre-existing rows.
  */
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../packages/core/src/lib/prisma";
 
 async function main() {
   const result = await prisma.provider.updateMany({

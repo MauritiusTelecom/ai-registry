@@ -1,6 +1,8 @@
 # AI Registry - Data model
 
-This document extracts **entities**, **fields**, and **relationships** for the AI Registry. It aligns the **normative conceptual model** ([`.speckit/specification.md`](.speckit/specification.md), AIR-SPEC 0.4) with the **reference relational implementation** in [`ai-registry/src/prisma/schema.prisma`](../ai-registry/src/prisma/schema.prisma) (PostgreSQL schema `registry`).
+This document extracts **entities**, **fields**, and **relationships** for the AI Registry. It aligns the **normative conceptual model** ([`.speckit/specification.md`](.speckit/specification.md), AIR-SPEC 0.4) with the **reference relational implementation** in [`packages/core/prisma/schema.prisma`](packages/core/prisma/schema.prisma) (PostgreSQL schema `registry`).
+
+> **Path note.** This document is kept in sync between the `ai-registry` repo (where it lives at the root) and `ai-registry-specs/`. Paths in this file are anchored to the **`ai-registry` repo root** — after the monorepo split, the authoritative Prisma schema lives at `packages/core/prisma/schema.prisma`. When viewing this file from the specs repo, prefix with `../ai-registry/`.
 
 **Normative vs implementation:** AIR-SPEC speaks in JSON-shaped aggregates (`governance`, `sovereignty_evidence`, `endpoints`). The reference implementation normalises many of those into tables (e.g. separate `TrustSignal`, `Review`, `SovereigntyEvidence` rows) so governance history, checklists, and queries remain auditable. Behavioural intent should match the specification; table names may differ in other stacks.
 
@@ -135,7 +137,7 @@ Each reference table follows the pattern: `id`, `code` (unique), `name`, `descri
 
 #### 3.1.1 National AI Registry (`nat-ai-registry`) - enum vocabulary as `Lookup*` tables
 
-The NAR app ships **physical reference tables** in schema `registry` that mirror every Prisma `enum` still used on entity columns. Each table uses the shared pattern (`id`, `code`, `name`, `description`, `sortOrder`, `active`, timestamps) and is populated by `src/prisma/seeds/enum-lookups.ts` (idempotent upserts). **Entity FK migration:** application models may still read/write Prisma enums until a follow-up change replaces those columns with `…Id` foreign keys pointing at these lookups; the tables are the canonical row-level vocabulary for admin UIs, reporting, and future migrations without PostgreSQL enum type churn.
+The NAR app ships **physical reference tables** in schema `registry` that mirror every Prisma `enum` still used on entity columns. Each table uses the shared pattern (`id`, `code`, `name`, `description`, `sortOrder`, `active`, timestamps) and is populated by `packages/core/prisma/seed.ts` (idempotent upserts). **Entity FK migration:** application models may still read/write Prisma enums until a follow-up change replaces those columns with `…Id` foreign keys pointing at these lookups; the tables are the canonical row-level vocabulary for admin UIs, reporting, and future migrations without PostgreSQL enum type churn.
 
 | Prisma `enum` (NAR) | Lookup model | `@@map` table |
 |---------------------|----------------|---------------|
@@ -642,4 +644,4 @@ Unique (`sourceRegistryId`, `sourceAirId`).
 | [`ai-registry/specs.md`](../ai-registry/specs.md) | Full operating specification for the reference Registry app. |
 | [`ai-registry/README.md`](../ai-registry/README.md) | Quick start, scripts, REST table, MCP tools list. |
 | [`ai-registry/specs/001-ai-registry/data-model.md`](../ai-registry/specs/001-ai-registry/data-model.md) | Feature-level implementation notes and code lists. |
-| [`ai-registry/src/prisma/schema.prisma`](../ai-registry/src/prisma/schema.prisma) | Authoritative DDL shape for the reference build. |
+| [`ai-registry/packages/core/prisma/schema.prisma`](../ai-registry/packages/core/prisma/schema.prisma) | Authoritative DDL shape for the reference build (under `@airegistry/core` after the monorepo split). |

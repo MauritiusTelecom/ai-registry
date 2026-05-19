@@ -2,9 +2,16 @@
 #
 # Mauritius AI Registry - one-command deployment pipeline.
 #
+# !!! MONOREPO MIGRATION NOTICE !!!
+# This script was written for the pre-monorepo layout where the Next.js app
+# lived at the repo root and Prisma lived at src/prisma. After the monorepo
+# split, the app is at apps/portal/ and Prisma is at packages/core/prisma/.
+# Update the rsync arglist (line ~78) and the build directory (line ~70)
+# before re-using this script. See MIGRATION.md for the path mapping.
+#
 # Usage:
-#     npm run deploy:v2          # production at https://www.airegistry.mu/
-#     npm run deploy:legacy      # legacy at specialprojects.telecom.mu/ui/ai-registry
+#     pnpm deploy:v2          # production at https://www.airegistry.mu/
+#     pnpm deploy:legacy      # legacy at specialprojects.telecom.mu/ui/ai-registry
 #
 # What it does, in order:
 #   1. Confirms target (v2 or legacy) and prints a summary

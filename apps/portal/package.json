@@ -1,0 +1,39 @@
+{
+  "name": "@airegistry/portal",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Default Next.js portal for the AI Registry reference implementation. Operators may fork, theme, or replace this app while continuing to depend on @airegistry/core.",
+  "scripts": {
+    "dev": "next dev -p 3002",
+    "build": "next build",
+    "start": "next start -p 3002",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "config:validate": "tsx ../../scripts/validate-config.ts",
+    "test:emails": "tsx ../../scripts/test-emails.ts",
+    "test:smtp": "tsx ../../scripts/test-smtp.ts",
+    "smoke": "tsx ../../scripts/smoke-public.ts",
+    "clean": "rm -rf .next .turbo"
+  },
+  "dependencies": {
+    "@airegistry/core": "workspace:*",
+    "@airegistry/sdk": "workspace:*",
+    "@airegistry/ui-kit": "workspace:*",
+    "@prisma/client": "^6.19.3",
+    "next": "^16.0.1",
+    "nodemailer": "^6.10.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "@types/nodemailer": "^6.4.17",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "dotenv": "^16.4.5",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^16.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5"
+  }
+}
