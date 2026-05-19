@@ -4,15 +4,28 @@
 
 AI Registry is an open specification and a generic open-source platform that any country, city, telco or trusted public digital infrastructure operator can deploy to create a sovereign registry of locally relevant AI resources. It lists, identifies, describes and helps discover those resources. It does not host, execute, authorise or intermediate them.
 
-The reference implementation is [airegistry.mu](https://www.airegistry.mu), operated by Mauritius Telecom.
+The reference implementation tracks [AIR-SPEC 0.4](../ai-registry-specs/.speckit/specification.md) as a **pnpm + Turborepo monorepo**: a stable `@airegistry/core`, a forkable `@airegistry/portal`, and forthcoming extension surfaces via `@airegistry/sdk`.
+
+The reference deployment is [airegistry.mu](https://www.airegistry.mu), operated by Mauritius Telecom.
+
+> **Listing ≠ endorsement.** The registry points; the provider operates; the hosting environment secures.
 
 ## What this is
 
 A national or municipal AI Registry tells people, developers and AI systems what sovereign AI resources exist, who provides them, why they are locally relevant, and where to find them. It exposes structured metadata and stable identifiers, but does not sit on the runtime path between consumer and provider.
 
-> The registry points. The provider operates. The hosting environment secures.
-
 Three resource types are covered: **models** (trained or tuned with local data, language or purpose), **agents** (AI systems that perform tasks in a local context) and **skills** (packaged local expertise that AI systems can load and use). Each must meet a published sovereignty test against local law, data, systems or language and culture.
+
+## Monorepo layout
+
+| Path | Package | Role |
+|---|---|---|
+| `packages/core/` | `@airegistry/core` | Prisma schema + migrations, deployment config, governance services, audit primitive, discovery queries, validators, transactional email. SemVer contract for downstream consumers. |
+| `packages/sdk/` | `@airegistry/sdk` | Public types and plugin manifest schema for extensions and third-party portals. |
+| `packages/ui-kit/` | `@airegistry/ui-kit` | Design tokens and headless components (placeholder; full kit lands later). |
+| `apps/portal/` | `@airegistry/portal` | Default Next.js portal: public site, admin/provider/verifier/sovereign workspaces, REST `/api/...`, MCP `/api/mcp`. Forkable; theme via CSS variables. |
+| `extensions/` | — | In-tree reference extensions (none yet). Third-party extensions install as workspace or npm packages following the manifest in `@airegistry/sdk/plugin`. |
+| `ai-registry-specs/` (sibling repo) | — | Normative AIR-SPEC + module specs. |
 
 ## Status
 
@@ -34,33 +47,42 @@ air://{identity_domain}/{resource_type}/{provider_slug}/{resource_slug}
 
 For example: `air://air.mu/skill/gov/mra-tax-calculator`. The `air://` URI scheme is dedicated to registry identifiers and is intentionally separate from SPIFFE's `spiffe://`, which remains reserved for runtime workload identity.
 
-## Quick start
+## Quickstart
 
-> The codebase is being open-sourced. This section describes the intended deployment shape; specific commands will land alongside the first tagged release.
+Prerequisites: Node 20+, pnpm 9+, PostgreSQL 14+ (bundled `docker-compose.yml` provisions one).
 
-A deployment is a single configurable application:
-
-1. Clone this repository.
-2. Create a country or city configuration in `configs/countries/<jurisdiction>.json` (see `mu.example.json` for the Mauritius reference).
-3. Build and run the platform with Docker. The default entry point is `apps/web`, which serves both the public portal and the discovery API at `/api/v1`.
-4. Configure provider authentication, set up reviewer roles, and seed your first three to five sovereign resources.
-
-A complete operator playbook will live under `docs/deployment/` once the repository is published.
-
-## Repository layout
-
-```
-apps/web              public portal and admin console
-apps/api              discovery API service (when split)
-packages/schema       AIR-SPEC JSON schemas
-packages/adapters     REST, MCP, A2A and future views
-configs/countries     per-jurisdiction configuration
-docs                  whitepapers, specification, deck
-examples              sample resources, providers, skills
-docker                container definitions
+```bash
+pnpm install
+cp .env.example .env             # edit DATABASE_URL + deployment config
+docker compose up -d postgres
+pnpm prisma:generate
+pnpm db:push                     # or `pnpm prisma:migrate` against an established DB
+pnpm db:seed
+pnpm --filter @airegistry/portal dev    # http://localhost:3002
 ```
 
-The codebase is generic. Country-specific values (identity domain, portal name, operator, languages) live in configuration, not in code. The Mauritius implementation is one configuration of the same platform.
+For a fuller walkthrough — prerequisites by OS, the full env-var list, postgres setup, smoke tests, troubleshooting — see [`INSTALL.md`](INSTALL.md).
+
+## Common tasks
+
+| Task | Command |
+|---|---|
+| Dev (portal + relevant deps) | `pnpm dev` |
+| Build everything | `pnpm build` |
+| Typecheck everything | `pnpm typecheck` |
+| Lint everything | `pnpm lint` |
+| Prisma generate / migrate / seed | `pnpm prisma:generate`, `pnpm prisma:migrate`, `pnpm db:seed` |
+| Validate `.env` | `pnpm config:validate` |
+| Smoke-test the public API | `pnpm smoke` |
+| Per-package tasks | `pnpm --filter @airegistry/<pkg> <script>` |
+
+## Three layers of customisation
+
+The repo is designed so operators can deploy without forking:
+
+1. **Configuration + branding (no code).** Set per-deployment values in `.env` (jurisdiction, identity domain, supported languages, etc.) and edit `SiteBranding` via `/admin/branding`. No defaults in code reference any specific deployment — the reference operator supplies them in their own environment.
+2. **Theming.** Override CSS variables from `@airegistry/ui-kit/tokens.css` in a deployment stylesheet. No new gradients or hex literals are allowed in `apps/portal/`; the kit owns the tokens.
+3. **Extensions / fork.** Drop a plugin under `extensions/` (manifest shape in `@airegistry/sdk/plugin`) for new REST routes, MCP tools, scheduled jobs, UI slots, or locale bundles. For deep redesigns, fork `apps/portal` and continue to depend on `@airegistry/core`.
 
 ## What is in scope
 
@@ -68,21 +90,32 @@ Public resource directory and search; resource detail pages; provider onboarding
 
 ## What is out of scope
 
-Hosting AI resources; runtime execution; AI Gateway or Agent Gateway; access control for third-party resources; marketplace, billing or commercial transactions; registry-operated SPIRE or runtime SVID issuance; legal certification or provider liability management. The registry-only boundary is part of the product.
+Hosting AI resources; runtime execution; AI Gateway or Agent Gateway; access control for third-party resources; marketplace, billing or commercial transactions; registry-operated SPIRE or runtime SVID issuance; legal certification or provider liability management. The registry-only boundary is part of the product — see [`GOVERNANCE.md`](GOVERNANCE.md) §3.
 
 ## Contributing
 
-Contributions are welcome from telcos, government digital agencies, sovereign cloud operators, public-interest technology foundations, regional standards bodies, and individual developers. See `CONTRIBUTING.md` for the contribution process and `GOVERNANCE.md` for the working-group structure (both arriving with the first tagged release).
+Contributions are welcome from telcos, government digital agencies, sovereign cloud operators, public-interest technology foundations, regional standards bodies, and individual developers. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the contribution process and [`GOVERNANCE.md`](GOVERNANCE.md) for the working-group structure.
 
-The project is governed under the principle of open code, local control and sovereign discovery. Code changes that breach the registry-only boundary will be declined.
+## Migrating from the pre-monorepo layout?
 
-## Licence
+See [`MIGRATION.md`](MIGRATION.md) for path mapping, the `@/lib/...` alias bridge, and deploy-script updates. For the component-library migration handoff, see [`docs/library-migration.md`](docs/library-migration.md).
 
-Intended licence: Apache 2.0. The final `LICENSE` file ships with the first tagged release.
+## Licence and links
 
-## Reference implementation
+- License: Apache-2.0 (see [`LICENSE`](LICENSE)).
+- Installation walkthrough: [`INSTALL.md`](INSTALL.md).
+- Security disclosure: [`SECURITY.md`](SECURITY.md).
+- Data model reference: [`data-model.md`](data-model.md). Authoritative schema is [`packages/core/prisma/schema.prisma`](packages/core/prisma/schema.prisma).
+- Per-package READMEs: [`packages/core/README.md`](packages/core/README.md), [`packages/sdk/README.md`](packages/sdk/README.md), [`packages/ui-kit/README.md`](packages/ui-kit/README.md), [`apps/portal/README.md`](apps/portal/README.md).
+- Specs are normative and live in [`../ai-registry-specs/`](../ai-registry-specs/).
 
-The Mauritius reference implementation is at [airegistry.mu](https://www.airegistry.mu), operated by Mauritius Telecom. It is one deployment of this codebase, configured for Mauritius. Other jurisdictions are encouraged to stand up their own.
+## What is _not_ in the monorepo yet
+
+- Plugin loader runtime (only the manifest types are scaffolded in `@airegistry/sdk`).
+- `<PluginSlot>` primitive in the portal.
+- Full design-token set in `@airegistry/ui-kit`.
+
+These land in v1.0 — see the roadmap in the open-source rollout plan.
 
 ## Acknowledgements
 

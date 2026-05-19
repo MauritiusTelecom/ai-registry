@@ -1,0 +1,18 @@
+/* @airegistry/ui-kit — design tokens (placeholder).
+ *
+ * Operators override these CSS variables to theme the portal without
+ * forking. The full token set will be lifted from ai-registry-prototype/
+ * once the prototype design.md §3 is canonicalised here.
+ */
+
+:root {
+  /* Color tokens — placeholder values; replace in next pass. */
+  --air-color-bg: #ffffff;
+  --air-color-fg: #0a0a0a;
+  --air-color-accent: #4a5cff;
+
+  /* Radii */
+  --air-radius-sm: 4px;
+  --air-radius-md: 8px;
+  --air-radius-lg: 16px;
+}
