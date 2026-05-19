@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { getConfig } from "@airegistry/sdk";
 import { ProviderOrganisationForm } from "@/components/portals/ProviderOrganisationForm";
+import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadProviderForSettings } from "@airegistry/sdk/server";
 // import { ProviderNotificationsForm } from "@/components/portals/ProviderNotificationsForm";
 
 export const metadata = { title: "Provider · Settings" };
@@ -54,24 +55,9 @@ export default async function ProviderSettingsPage() {
   const cfg = getConfig();
 
   const [provider, providerTypes, jurisdictions] = await Promise.all([
-    prisma.provider.findUnique({
-      where: { id: providerId },
-      include: { type: { select: { code: true } }, homeJurisdiction: { select: { code: true } } },
-      // Selecting via include omits scalars unless we list them - Prisma's
-      // include-with-default returns every scalar by default, so the new
-      // notification fields surface automatically. Kept the include shape so
-      // the form below picks them up without a second query.
-    }),
-    prisma.providerTypeRef.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.jurisdiction.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" },
-      select: { code: true, name: true }
-    })
+    loadProviderForSettings(providerId),
+    listReferenceTable("providerTypeRef", { orderBy: "name" }),
+    listReferenceTable("jurisdiction", { orderBy: "name" })
   ]);
 
   if (!provider) {

@@ -6,6 +6,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { getConfig } from "@airegistry/sdk";
+import { getReferenceRow } from "@airegistry/sdk/server";
+import { writeAudit } from "@airegistry/sdk";
 
 function slugifyLocalPart(email: string): string {
   const local = email.split("@")[0] ?? "provider";
@@ -45,10 +47,10 @@ export async function ensureUserProviderLinked(userId: string): Promise<string> 
 
   const cfg = getConfig();
   const [jurisdiction, type, status, src] = await Promise.all([
-    prisma.jurisdiction.findUnique({ where: { code: cfg.jurisdiction } }),
-    prisma.providerTypeRef.findUnique({ where: { code: "integrator" } }),
-    prisma.providerStatusType.findUnique({ where: { code: "unverified" } }),
-    prisma.submissionSourceType.findUnique({ where: { code: "self_submitted" } })
+    getReferenceRow("jurisdiction", cfg.jurisdiction),
+    getReferenceRow("providerTypeRef", "integrator"),
+    getReferenceRow("providerStatusType", "unverified"),
+    getReferenceRow("submissionSourceType", "self_submitted")
   ]);
   if (!jurisdiction || !type || !status || !src) {
     throw new Error("Reference data not seeded (run npm run db:seed).");
@@ -80,14 +82,12 @@ export async function ensureUserProviderLinked(userId: string): Promise<string> 
     return p;
   });
 
-  await prisma.auditLog.create({
-    data: {
-      actorUserId: userId,
-      entityType: "provider",
-      entityId: provider.id,
-      action: "provider.workspace_created",
-      newValue: { slug: provider.slug, displayName: provider.displayName }
-    }
+  await writeAudit({
+    actorUserId: userId,
+    entityType: "provider",
+    entityId: provider.id,
+    action: "provider.workspace_created",
+    newValue: { slug: provider.slug, displayName: provider.displayName }
   });
 
   return provider.id;

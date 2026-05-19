@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadSovereignPartners } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 import { StatusPill } from "@/components/portals/StatusPill";
@@ -32,27 +32,18 @@ export default async function SovereignPartnersPage() {
   // Sovereign partners == all providers anchored in the deployment's home
   // jurisdiction. Public registry gates remain (admin-suspended providers
   // are surfaced here so the operator can act on them).
-  const rows = await prisma.provider.findMany({
-    where: { homeJurisdiction: { code: cfg.jurisdiction } },
-    include: {
-      type: { select: { code: true, name: true } },
-      status: { select: { code: true, name: true } },
-      _count: { select: { resources: true } }
-    },
-    orderBy: [{ status: { sortOrder: "asc" } }, { displayName: "asc" }],
-    take: 200
-  });
+  const raw = await loadSovereignPartners(cfg.jurisdiction);
 
-  const projected: Row[] = rows.map((p) => ({
+  const projected: Row[] = raw.map((p) => ({
     id: p.id,
     slug: p.slug,
     displayName: p.displayName,
-    kind: p.type.name,
-    status: STATUS_DISPLAY[p.status.code] ?? "active",
-    resources: p._count.resources,
-    contact: p.contactEmail,
-    website: p.websiteUrl,
-    joined: p.createdAt.toISOString().slice(0, 10)
+    kind: p.kind,
+    status: STATUS_DISPLAY[p.statusCode] ?? "active",
+    resources: p.resources,
+    contact: p.contact,
+    website: p.website,
+    joined: p.joined
   }));
 
   const verified = projected.filter((r) => r.status === "verified" || r.status === "trusted").length;

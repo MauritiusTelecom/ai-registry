@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadVerifierRedteamFindings } from "@airegistry/sdk/server";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 
 export const metadata = { title: "Verifier · Red team" };
@@ -34,40 +34,17 @@ const SEVERITY_COLOUR: Record<string, string> = {
  * Module spec: `modules/verifier/redteam/product.md`.
  */
 export default async function VerifierRedteamPage() {
-  const findings = await prisma.complaint.findMany({
-    where: {
-      complaintType: { code: { in: ["safety", "policy"] } },
-      targetResource: {
-        lifecycleStatus: { code: { in: ["listed", "deprecated", "needs_update"] } }
-      }
-    },
-    include: {
-      complaintType: { select: { code: true, name: true } },
-      severity: { select: { code: true, name: true } },
-      status: { select: { code: true, name: true } },
-      targetResource: {
-        select: {
-          slug: true,
-          title: true,
-          provider: { select: { displayName: true } }
-        }
-      }
-    },
-    orderBy: [{ severity: { sortOrder: "desc" } }, { createdAt: "desc" }],
-    take: 200
-  });
+  const raw = await loadVerifierRedteamFindings();
 
-  const projected: Row[] = findings.map((c) => ({
+  const projected: Row[] = raw.map((c) => ({
     id: c.id,
-    type: c.complaintType.name,
-    severity: c.severity.code,
-    status: c.status.name,
-    target: c.targetResource
-      ? `${c.targetResource.title} · ${c.targetResource.provider.displayName}`
-      : "-",
-    targetSlug: c.targetResource?.slug ?? null,
+    type: c.type,
+    severity: c.severityCode,
+    status: c.statusName,
+    target: c.target,
+    targetSlug: c.targetSlug,
     description: c.description,
-    receivedAt: c.createdAt.toISOString().slice(0, 10)
+    receivedAt: c.receivedAt
   }));
 
   const open = projected.filter((r) => r.status.toLowerCase() === "open").length;

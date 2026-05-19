@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { PageHero } from "@/components/public/sections/PageHero";
 import { EditResourceForm } from "@/components/portal/EditResourceForm";
+import { loadPortalResourceForOwner } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Edit resource" };
 
@@ -16,15 +16,12 @@ export default async function PortalResourceEditPage({ params }: { params: Promi
   const { id } = await params;
   const providerId = await ensureUserProviderLinked(user.id);
 
-  const resource = await prisma.resource.findFirst({
-    where: { id, providerId },
-    include: { lifecycleStatus: { select: { code: true } } }
-  });
+  const resource = await loadPortalResourceForOwner(id, providerId);
   if (!resource) notFound();
 
-  const code = resource.lifecycleStatus.code;
-  const canEdit = code === "draft" || code === "needs_update";
-  const canSubmit = code === "draft" || code === "needs_update";
+  const code = resource.lifecycleCode;
+  const canEdit = resource.canEdit;
+  const canSubmit = resource.canSubmit;
 
   return (
     <div>

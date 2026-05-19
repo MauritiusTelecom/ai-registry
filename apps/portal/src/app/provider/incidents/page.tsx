@@ -1,9 +1,10 @@
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import {
   ProviderIncidentsGrid,
   type ProviderIncidentRow
 } from "@/components/portals/provider/ProviderIncidentsGrid";
+import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadMyIncidents } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Provider · Incidents" };
 export const dynamic = "force-dynamic";
@@ -38,23 +39,8 @@ export default async function ProviderIncidentsPage() {
   }
 
   const [rows, actionTypes] = await Promise.all([
-    prisma.enforcementAction.findMany({
-      where: {
-        OR: [{ targetProviderId: providerId }, { targetResource: { providerId } }]
-      },
-      include: {
-        actionType: { select: { name: true } },
-        targetResource: { select: { slug: true, title: true } },
-        targetProvider: { select: { displayName: true } }
-      },
-      orderBy: { performedAt: "desc" },
-      take: 200
-    }),
-    prisma.enforcementType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { name: true }
-    })
+    loadMyIncidents(providerId),
+    listReferenceTable("enforcementType")
   ]);
 
   const projected: ProviderIncidentRow[] = rows.map((a) => ({

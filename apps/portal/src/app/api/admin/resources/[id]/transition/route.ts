@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
+import { getReferenceRow } from "@airegistry/sdk/server";
 import {
   assertCanReview,
   SeparationOfDutiesError
@@ -152,11 +153,11 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   const toCode = TARGET_LIFECYCLE[action];
 
   const [toLifecycle, signalKind, passed, withdrawn, failed] = await Promise.all([
-    prisma.lifecycleStatus.findUnique({ where: { code: toCode } }),
-    prisma.trustSignalType.findUnique({ where: { code: "sovereignty_review" } }),
-    prisma.trustSignalStatusType.findUnique({ where: { code: "passed" } }),
-    prisma.trustSignalStatusType.findUnique({ where: { code: "withdrawn" } }),
-    prisma.trustSignalStatusType.findUnique({ where: { code: "failed" } })
+    getReferenceRow("lifecycleStatus", toCode),
+    getReferenceRow("trustSignalType", "sovereignty_review"),
+    getReferenceRow("trustSignalStatusType", "passed"),
+    getReferenceRow("trustSignalStatusType", "withdrawn"),
+    getReferenceRow("trustSignalStatusType", "failed")
   ]);
   if (!toLifecycle || !signalKind || !passed || !withdrawn || !failed) {
     return NextResponse.json({ error: "Reference data not seeded." }, { status: 503 });

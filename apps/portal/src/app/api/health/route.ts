@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getConfig } from "@airegistry/sdk";
+import { countReferenceTable } from "@airegistry/sdk/server";
 
 /**
  * GET /api/health
@@ -25,7 +26,7 @@ export async function GET() {
     // Cheap round-trip - counts the resource_type reference table which the
     // seed always populates. If the schema is missing the count call throws
     // and we surface a 503.
-    resourceTypes = await prisma.resourceType.count();
+    resourceTypes = await countReferenceTable("resourceType", { activeOnly: false });
     db = "ok";
   } catch (e) {
     db = "down";

@@ -21,6 +21,7 @@
     "./contacts/*": "./src/lib/contacts/*.ts",
     "./admin/*": "./src/lib/admin/*.ts",
     "./auth/*": "./src/lib/auth/*.ts",
+    "./services/*": "./src/lib/services/*.ts",
     "./generated/prisma": "./src/generated/prisma/index.js"
   },
   "scripts": {

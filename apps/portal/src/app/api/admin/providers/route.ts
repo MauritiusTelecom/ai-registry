@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@airegistry/sdk";
 import type { Prisma } from "@airegistry/sdk/server";
 import { isSlug, isHttpUrl } from "@airegistry/sdk";
+import { getReferenceRow } from "@airegistry/sdk/server";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -185,10 +186,10 @@ export async function POST(req: Request) {
   }
 
   const [type, jurisdiction, statusUnverified, sourceOperator, clash] = await Promise.all([
-    prisma.providerTypeRef.findUnique({ where: { code: typeCode } }),
-    prisma.jurisdiction.findUnique({ where: { code: jurisdictionCode } }),
-    prisma.providerStatusType.findUnique({ where: { code: "unverified" } }),
-    prisma.submissionSourceType.findUnique({ where: { code: "operator_added" } }),
+    getReferenceRow("providerTypeRef", typeCode),
+    getReferenceRow("jurisdiction", jurisdictionCode),
+    getReferenceRow("providerStatusType", "unverified"),
+    getReferenceRow("submissionSourceType", "operator_added"),
     prisma.provider.findUnique({ where: { slug } })
   ]);
 

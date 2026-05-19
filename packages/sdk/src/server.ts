@@ -33,11 +33,13 @@ export {
   NO_USER_PASSWORD_SENTINEL,
   prepareEmailVerificationToken,
   preparePasswordResetToken,
-  hashTokenForLookup
+  hashTokenForLookup,
+  consumeEmailVerificationToken
 } from "@airegistry/core/auth/services";
 export type {
   SessionCookieDirective,
-  OneShotTokenBundle
+  OneShotTokenBundle,
+  ConsumeEmailVerificationResult
 } from "@airegistry/core/auth/services";
 
 // Email surface — apps and extensions send transactional email through
@@ -74,6 +76,92 @@ export {
 // and is only called from login/register routes, so it lives on the
 // server surface.
 export { linkContactsToUser } from "@airegistry/core/contacts/link-to-user";
+
+// Reference-table catalog service (PR 13A). Apps and extensions MUST use
+// these helpers for reference reads instead of `prisma.<refTable>.*`;
+// the raw Prisma surface is internal and ~28 reference tables go through
+// one consistent shape here.
+export {
+  listReferenceTable,
+  getReferenceRow,
+  countReferenceTable,
+  findReferenceRowsByCodes,
+  REFERENCE_TABLE_NAMES
+} from "@airegistry/core/services/reference";
+export type {
+  ReferenceTableName,
+  ReferenceRow,
+  ListReferenceOptions
+} from "@airegistry/core/services/reference";
+
+// Portal-self read services (PR 13C). Dashboard loaders for the four role
+// portals (provider, verifier, sovereign, admin-of-self) bundle actor-scope
+// predicates and join logic in one place. Pages call one loader per
+// dashboard instead of issuing 5-10 inline prisma counts.
+export {
+  loadProviderDashboardStats,
+  loadVerifierDashboardStats,
+  loadSovereignDashboardStats,
+  loadMyResources,
+  loadMySubmissions,
+  loadMyReviews,
+  loadMyComplaints,
+  loadMyIncidents,
+  loadMyContactRequests,
+  loadVerifierQueue,
+  loadVerifierDecided,
+  loadVerifierEvalRuns,
+  loadVerifierRedteamFindings,
+  loadVerifierBenchmarkCorpus,
+  loadSovereignCatalog,
+  loadSovereignIncidents,
+  loadSovereignPartners,
+  loadSovereignResourcesForRisk,
+  loadSovereignSectorMemberships,
+  loadSovereignTopology,
+  loadPortalHome,
+  loadPortalResourceList,
+  loadPortalResourceForOwner,
+  loadProviderForSettings,
+  loadProviderResourceForEdit,
+  loadVerifierSettingsStats,
+  loadSovereignSettingsView,
+  loadSovereignPoliciesView,
+  loadProviderAnalytics,
+  loadSovereignReportsSnapshot,
+  loadVerifierReportsSnapshot
+} from "@airegistry/core/services/portal";
+export type {
+  ProviderDashboardStats,
+  VerifierDashboardStats,
+  SovereignDashboardStats,
+  ProviderResourceRow,
+  ProviderSubmissionRow,
+  ProviderReviewRow,
+  ProviderComplaintRow,
+  ProviderIncidentRow,
+  ProviderContactRequestRow,
+  VerifierReviewRow,
+  VerifierDecidedRow,
+  VerifierEvalRunRow,
+  VerifierRedteamFindingRow,
+  VerifierBenchmarkRow,
+  SovereignCatalogRow,
+  SovereignIncidentRow,
+  SovereignPartnerRow,
+  SovereignRiskResourceRow,
+  SovereignSectorMembershipRow,
+  SovereignTopologyProviderRow,
+  PortalHomeView,
+  PortalResourceListView,
+  PortalResourceOwnerView,
+  VerifierSettingsStats,
+  SovereignSettingsView,
+  SovereignPoliciesView,
+  ProviderAnalyticsView,
+  SovereignReportsSnapshot,
+  VerifierReportsSnapshot
+} from "@airegistry/core/services/portal";
 
 // Prisma namespace — exposed to apps so they can type filter-clauses
 // (Prisma.UserWhereInput, etc.) and catch typed errors

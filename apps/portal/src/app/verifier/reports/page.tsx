@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadVerifierReportsSnapshot } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Verifier · Reports" };
 export const dynamic = "force-dynamic";
@@ -16,25 +18,19 @@ export default async function VerifierReportsPage() {
   const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const since90d = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
 
-  const [open, decided30, decided90, withdrawn90, byType] = await Promise.all([
-    prisma.review.count({ where: { status: { code: { in: ["open", "in_review"] } } } }),
-    prisma.review.count({
-      where: { status: { code: "decided" }, completedAt: { gte: since30d } }
-    }),
-    prisma.review.count({
-      where: { status: { code: "decided" }, completedAt: { gte: since90d } }
-    }),
-    prisma.review.count({
-      where: { status: { code: "withdrawn" }, completedAt: { gte: since90d } }
-    }),
-    prisma.review.groupBy({
-      by: ["reviewTypeId"],
-      where: { status: { code: "decided" }, completedAt: { gte: since90d } },
-      _count: { _all: true }
-    })
-  ]);
+  const snap = await loadVerifierReportsSnapshot();
+  const open = snap.open;
+  const decided30 = snap.decided30;
+  const decided90 = snap.decided90;
+  const withdrawn90 = snap.withdrawn90;
+  // Reshape to match the original prisma.groupBy result shape so the
+  // downstream rendering code doesn't need to change.
+  const byType = snap.byTypeId.map((g) => ({
+    reviewTypeId: g.reviewTypeId,
+    _count: { _all: g.count }
+  }));
 
-  const types = await prisma.reviewType.findMany({ select: { id: true, name: true } });
+  const types = await listReferenceTable("reviewType", { activeOnly: false });
   const nameById = new Map(types.map((t) => [t.id, t.name]));
 
   return (

@@ -3,6 +3,7 @@ import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { writeAudit } from "@airegistry/sdk";
+import { getReferenceRow } from "@airegistry/sdk/server";
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -75,9 +76,9 @@ export async function PATCH(req: Request) {
   const providerId = await ensureUserProviderLinked(user.id);
 
   const [pType, jurisdiction, unverified] = await Promise.all([
-    prisma.providerTypeRef.findUnique({ where: { code: providerTypeCode } }),
-    prisma.jurisdiction.findUnique({ where: { code: jurisdictionCode } }),
-    prisma.providerStatusType.findUnique({ where: { code: "unverified" } })
+    getReferenceRow("providerTypeRef", providerTypeCode),
+    getReferenceRow("jurisdiction", jurisdictionCode),
+    getReferenceRow("providerStatusType", "unverified")
   ]);
   if (!pType) {
     return NextResponse.json({ error: "Unknown providerTypeCode" }, { status: 400 });

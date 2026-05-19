@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { ProviderVerifyForm } from "@/components/admin/ProviderVerifyForm";
 import { ProviderVisibilityPanel } from "@/components/admin/ProviderVisibilityPanel";
 import { ProviderEditForm } from "@/components/admin/ProviderEditForm";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Provider" };
 export const dynamic = "force-dynamic";
@@ -37,16 +38,8 @@ export default async function AdminProviderDetailPage({
   if (!provider) notFound();
 
   const [providerTypes, jurisdictions] = await Promise.all([
-    prisma.providerTypeRef.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.jurisdiction.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" },
-      select: { code: true, name: true }
-    })
+    listReferenceTable("providerTypeRef", { orderBy: "name" }),
+    listReferenceTable("jurisdiction", { orderBy: "name" })
   ]);
 
   const editInitial = {

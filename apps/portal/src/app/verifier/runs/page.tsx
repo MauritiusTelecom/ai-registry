@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadVerifierEvalRuns } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Verifier · Eval runs" };
 export const dynamic = "force-dynamic";
@@ -19,25 +19,7 @@ export const dynamic = "force-dynamic";
  * Module spec: `modules/verifier/runs/product.md`.
  */
 export default async function VerifierRunsPage() {
-  const recent = await prisma.review.findMany({
-    where: {
-      status: { code: { in: ["decided", "withdrawn"] } },
-      decisionSummary: { not: null }
-    },
-    include: {
-      reviewType: { select: { name: true } },
-      resource: {
-        select: {
-          slug: true,
-          title: true,
-          provider: { select: { displayName: true } }
-        }
-      },
-      reviewer: { select: { name: true, email: true } }
-    },
-    orderBy: { completedAt: "desc" },
-    take: 50
-  });
+  const recent = await loadVerifierEvalRuns({ limit: 50 });
 
   return (
     <div className="p-content">

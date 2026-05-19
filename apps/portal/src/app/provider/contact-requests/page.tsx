@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
+import { loadMyContactRequests } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Provider · Contact requests" };
 export const dynamic = "force-dynamic";
@@ -32,24 +32,7 @@ export default async function ProviderContactRequestsPage() {
     );
   }
 
-  const rows = await prisma.contact.findMany({
-    where: {
-      emailVerified: true,
-      linkedUser: { providerId }
-    },
-    select: {
-      id: true,
-      senderName: true,
-      organisationName: true,
-      email: true,
-      topic: true,
-      message: true,
-      createdAt: true,
-      linkedUser: { select: { name: true, email: true } }
-    },
-    orderBy: { createdAt: "desc" },
-    take: 200
-  });
+  const rows = await loadMyContactRequests(providerId);
 
   if (rows.length === 0) {
     return (

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { assertCanReview, SeparationOfDutiesError } from "@airegistry/sdk";
 import { writeAudit } from "@airegistry/sdk";
 import { isHttpUrl } from "@airegistry/sdk";
+import { getReferenceRow } from "@airegistry/sdk/server";
 
 /**
  * POST /api/admin/resources/:id/elevate
@@ -183,14 +184,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       where: { id: officialAuthorityId },
       include: { jurisdiction: { select: { code: true } } }
     }),
-    prisma.officialAuthorisationStatusType.findUnique({
-      where: { code: statusCode }
-    }),
-    prisma.trustSignalType.findUnique({
-      where: { code: "official_resource" }
-    }),
-    prisma.trustSignalStatusType.findUnique({ where: { code: "passed" } }),
-    prisma.trustSignalStatusType.findUnique({ where: { code: "withdrawn" } })
+    getReferenceRow("officialAuthorisationStatusType", statusCode),
+    getReferenceRow("trustSignalType", "official_resource"),
+    getReferenceRow("trustSignalStatusType", "passed"),
+    getReferenceRow("trustSignalStatusType", "withdrawn")
   ]);
   if (!statusRow || !signalKind || !passed || !withdrawn) {
     return NextResponse.json(

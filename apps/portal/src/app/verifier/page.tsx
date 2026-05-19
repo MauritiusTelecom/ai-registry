@@ -1,23 +1,15 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadVerifierDashboardStats } from "@airegistry/sdk/server";
 import { StatCard } from "@/components/portals/StatCard";
 
 export const metadata = { title: "Verifier · Dashboard" };
 export const dynamic = "force-dynamic";
 
 export default async function VerifierDashboardPage() {
-  const [openReviews, decided30d, redteamFindings, signedReports] = await Promise.all([
-    prisma.review.count({ where: { status: { code: { in: ["open", "in_review"] } } } }),
-    prisma.review.count({
-      where: {
-        status: { code: "decided" },
-        completedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
-      }
-    }),
-    // Phase 4 will populate these; keep zeros until then.
-    Promise.resolve(0),
-    Promise.resolve(0)
-  ]);
+  const { openReviews, decidedLast30Days: decided30d } = await loadVerifierDashboardStats();
+  // Phase 4 will populate these; keep zeros until then.
+  const redteamFindings = 0;
+  const signedReports = 0;
 
   return (
     <div className="p-content">

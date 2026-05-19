@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadSovereignIncidents } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 
@@ -30,44 +30,18 @@ export default async function SovereignIncidentsPage() {
   // Pull every enforcement action whose target (resource or provider) sits in
   // the configured sovereign jurisdiction. Sovereign view is jurisdictional -
   // operators outside the deployment's jurisdiction don't surface here.
-  const rows = await prisma.enforcementAction.findMany({
-    where: {
-      OR: [
-        { targetResource: { primaryJurisdiction: { code: cfg.jurisdiction } } },
-        { targetProvider: { homeJurisdiction: { code: cfg.jurisdiction } } }
-      ]
-    },
-    include: {
-      actionType: { select: { code: true, name: true } },
-      targetResource: {
-        select: {
-          slug: true,
-          title: true,
-          provider: { select: { displayName: true } }
-        }
-      },
-      targetProvider: { select: { displayName: true, slug: true } },
-      performedBy: { select: { name: true, email: true } }
-    },
-    orderBy: { performedAt: "desc" },
-    take: 200
-  });
+  const raw = await loadSovereignIncidents(cfg.jurisdiction);
 
-  const projected: Row[] = rows.map((e) => {
-    const target = e.targetResource
-      ? `${e.targetResource.title} · ${e.targetResource.provider.displayName}`
-      : e.targetProvider
-        ? e.targetProvider.displayName
-        : "-";
+  const projected: Row[] = raw.map((e) => {
     return {
       id: e.id,
-      actionType: e.actionType.name,
+      actionType: e.actionType,
       reason: e.reason,
       publicNote: e.publicNote,
-      target,
-      targetSlug: e.targetResource?.slug ?? null,
-      performedAt: e.performedAt.toISOString().slice(0, 16).replace("T", " "),
-      performedBy: e.performedBy?.name ?? e.performedBy?.email ?? "-"
+      target: e.target,
+      targetSlug: e.targetSlug,
+      performedAt: e.performedAt,
+      performedBy: e.performedBy
     };
   });
 

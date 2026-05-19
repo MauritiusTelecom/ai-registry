@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { DataTable, type Column } from "@/components/portals/DataTable";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Complaints" };
 export const dynamic = "force-dynamic";
@@ -145,9 +146,7 @@ export default async function AdminComplaintsPage({
     by: ["statusId"],
     _count: { _all: true }
   });
-  const statusRefs = await prisma.complaintStatusType.findMany({
-    select: { id: true, code: true, name: true }
-  });
+  const statusRefs = await listReferenceTable("complaintStatusType", { activeOnly: false });
   const countsByCode: Record<string, number> = {};
   for (const r of allCounts) {
     const ref = statusRefs.find((s) => s.id === r.statusId);

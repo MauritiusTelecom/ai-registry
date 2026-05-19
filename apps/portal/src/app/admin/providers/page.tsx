@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { ProvidersAdmin } from "@/components/admin/ProvidersAdmin";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Providers" };
 export const dynamic = "force-dynamic";
@@ -19,21 +20,9 @@ export default async function AdminProvidersPage() {
   if (!actor || !actor.roles.includes("admin")) notFound();
 
   const [types, statuses, jurisdictions] = await Promise.all([
-    prisma.providerTypeRef.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.providerStatusType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.jurisdiction.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" },
-      select: { code: true, name: true }
-    })
+    listReferenceTable("providerTypeRef", { orderBy: "name" }),
+    listReferenceTable("providerStatusType"),
+    listReferenceTable("jurisdiction", { orderBy: "name" })
   ]);
 
   return (

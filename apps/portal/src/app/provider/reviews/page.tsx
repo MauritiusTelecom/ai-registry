@@ -1,9 +1,10 @@
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import {
   ProviderReviewsGrid,
   type ProviderReviewRow
 } from "@/components/portals/provider/ProviderReviewsGrid";
+import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadMyReviews } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Provider · Reviews" };
 export const dynamic = "force-dynamic";
@@ -45,32 +46,17 @@ export default async function ProviderReviewsPage() {
     );
   }
 
-  const [rows, types] = await Promise.all([
-    prisma.review.findMany({
-      where: {
-        OR: [{ providerId }, { resource: { providerId } }]
-      },
-      include: {
-        reviewType: { select: { name: true } },
-        status: { select: { code: true, name: true } },
-        resource: { select: { slug: true, title: true } }
-      },
-      orderBy: [{ status: { sortOrder: "asc" } }, { createdAt: "desc" }],
-      take: 200
-    }),
-    prisma.reviewType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { name: true }
-    })
+  const [rawReviews, types] = await Promise.all([
+    loadMyReviews(providerId),
+    listReferenceTable("reviewType")
   ]);
 
-  const projected: ProviderReviewRow[] = rows.map((r) => ({
+  const projected: ProviderReviewRow[] = rawReviews.map((r) => ({
     id: r.id,
-    target: r.resource?.title ?? "Provider record",
-    targetSlug: r.resource?.slug ?? null,
-    type: r.reviewType.name,
-    status: STATUS_DISPLAY[r.status.code] ?? "active",
+    target: r.target,
+    targetSlug: r.targetSlug,
+    type: r.type,
+    status: STATUS_DISPLAY[r.statusCode] ?? "active",
     startedAt: r.startedAt ? r.startedAt.toISOString().slice(0, 10) : null,
     completedAt: r.completedAt ? r.completedAt.toISOString().slice(0, 10) : null,
     decisionSummary: r.decisionSummary

@@ -57,6 +57,7 @@ export {
   toPublicProviderCard,
   listPublicResources,
   findResourceForDetail,
+  findResourcesByCapability,
   listPublicProviders,
   findProviderForDetail
 } from "@airegistry/core/discovery";

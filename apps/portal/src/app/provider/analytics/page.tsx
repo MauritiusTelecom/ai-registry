@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
-import { prisma } from "@/lib/prisma";
+import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadProviderAnalytics } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Provider · Analytics" };
 export const dynamic = "force-dynamic";
@@ -22,40 +23,17 @@ export default async function ProviderAnalyticsPage() {
   const providerId = await ensureUserProviderLinked(user.id);
   const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-  const [resources, decisionsRecent, complaintsRecent, listingByKind] = await Promise.all([
-    prisma.resource.findMany({
-      where: { providerId },
-      include: {
-        resourceType: { select: { code: true } },
-        lifecycleStatus: { select: { code: true } }
-      }
-    }),
-    prisma.review.count({
-      where: {
-        resource: { providerId },
-        completedAt: { gte: since30d },
-        status: { code: "decided" }
-      }
-    }),
-    prisma.complaint.count({
-      where: {
-        OR: [{ targetProviderId: providerId }, { targetResource: { providerId } }],
-        createdAt: { gte: since30d }
-      }
-    }),
-    prisma.resource.groupBy({
-      by: ["resourceTypeId"],
-      where: { providerId, lifecycleStatus: { code: "listed" } },
-      _count: { _all: true }
-    })
-  ]);
+  const { lifecycle, listingByTypeId, decisionsRecent, complaintsRecent } =
+    await loadProviderAnalytics(providerId);
+  // Shape parity with the original Prisma groupBy result: each entry is
+  // { resourceTypeId, _count: { _all } }. Keep `listingByKind` as the
+  // downstream variable name.
+  const listingByKind = listingByTypeId.map((e) => ({
+    resourceTypeId: e.resourceTypeId,
+    _count: { _all: e.count }
+  }));
 
-  const lifecycle = resources.reduce<Record<string, number>>((acc, r) => {
-    acc[r.lifecycleStatus.code] = (acc[r.lifecycleStatus.code] ?? 0) + 1;
-    return acc;
-  }, {});
-
-  const types = await prisma.resourceType.findMany({ select: { id: true, code: true, name: true } });
+  const types = await listReferenceTable("resourceType", { activeOnly: false });
   const codeById = new Map(types.map((t) => [t.id, { code: t.code, name: t.name }]));
 
   return (
