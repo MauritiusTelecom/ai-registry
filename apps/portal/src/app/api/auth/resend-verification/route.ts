@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { getConfig } from "@airegistry/sdk";
-import { prisma } from "@/lib/prisma";
 import { prepareEmailVerificationToken } from "@airegistry/sdk/server";
 import { emailTemplates, sendEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
 import { writeAudit } from "@airegistry/sdk";
+import { findUserByEmail, setUserVerificationToken } from "@airegistry/sdk/server";
 
 /**
  * POST /api/auth/resend-verification
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
   }
 
   const email = body.email.toLowerCase().trim();
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await findUserByEmail(email);
 
   // Silently no-op for unknown emails or already-verified accounts so the
   // response shape never reveals account state.
@@ -44,13 +44,7 @@ export async function POST(req: Request) {
 
   const { rawToken, hashedToken: tokenHash, expiry } = prepareEmailVerificationToken();
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      verificationToken: tokenHash,
-      verificationTokenExpiry: expiry
-    }
-  });
+  await setUserVerificationToken(user.id, tokenHash, expiry);
 
   await writeAudit({
     actorUserId: user.id,

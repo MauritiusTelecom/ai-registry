@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
-import { writeAudit } from "@airegistry/sdk";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  loadAdminProviderForEdit,
+  applyAdminProviderUpdate,
+  loadAdminProviderForDelete,
+  deleteAdminProvider,
+  emailTemplates,
+  uniqueValidEmails,
+  sendTransactionalEmailAll
+} from "@airegistry/sdk/server";
 import { isHttpUrl } from "@airegistry/sdk";
 import { getConfig } from "@airegistry/sdk";
-import { emailTemplates } from "@airegistry/sdk/server";
-import { uniqueValidEmails } from "@airegistry/sdk/server";
-import { sendTransactionalEmailAll } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
-import { getReferenceRow } from "@airegistry/sdk/server";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -57,13 +61,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const target = await prisma.provider.findUnique({
-    where: { id },
-    include: {
-      type: { select: { code: true } },
-      homeJurisdiction: { select: { code: true } }
-    }
-  });
+  const target = await loadAdminProviderForEdit(id);
   if (!target) return NextResponse.json({ error: "Provider not found" }, { status: 404 });
   const beforePublished = target.published;
   const beforeAdminSuspended = target.adminSuspended;
@@ -190,16 +188,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
   }
 
-  await prisma.provider.update({ where: { id }, data });
-
-  await writeAudit({
-    actorUserId: actor.id,
-    entityType: "provider",
-    entityId: id,
-    action: "provider.updated",
-    previousValue: before,
-    newValue: data
-  });
+  await applyAdminProviderUpdate(actor.id, id, data, before);
 
   // Notify the provider when their visibility flags flip (published /
   // adminSuspended). Default ON; only an explicit notifyByEmail: false skips.
@@ -261,23 +250,7 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   }
 
   const { id } = await ctx.params;
-  const provider = await prisma.provider.findUnique({
-    where: { id },
-    select: {
-      slug: true,
-      displayName: true,
-      _count: {
-        select: {
-          resources: true,
-          users: true,
-          trustSignals: true,
-          reviews: true,
-          complaints: true,
-          enforcementActions: true
-        }
-      }
-    }
-  });
+  const provider = await loadAdminProviderForDelete(id);
   if (!provider) return NextResponse.json({ error: "Provider not found" }, { status: 404 });
 
   const blockers = Object.entries(provider._count).filter(([, n]) => n > 0);
@@ -292,21 +265,16 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   }
 
   try {
-    await prisma.provider.delete({ where: { id } });
+    await deleteAdminProvider(actor.id, id, {
+      slug: provider.slug,
+      displayName: provider.displayName
+    });
   } catch (e) {
     return NextResponse.json(
       { error: "Delete failed", detail: e instanceof Error ? e.message : String(e) },
       { status: 409 }
     );
   }
-
-  await writeAudit({
-    actorUserId: actor.id,
-    entityType: "provider",
-    entityId: id,
-    action: "provider.deleted",
-    previousValue: { slug: provider.slug, displayName: provider.displayName }
-  });
 
   return NextResponse.json({ ok: true });
 }

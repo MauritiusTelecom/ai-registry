@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
-import { writeAudit } from "@airegistry/sdk";
-import { prepareEmailVerificationToken } from "@airegistry/sdk/server";
-import { sendEmail, emailTemplates } from "@airegistry/sdk/server";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  prepareEmailVerificationToken,
+  sendEmail,
+  emailTemplates,
+  listAdminUsersWithCount,
+  findUserByEmailBasic,
+  findProviderBySlugForAssign,
+  createAdminUser
+} from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 import type { Prisma } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
-import { getReferenceRow } from "@airegistry/sdk/server";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -18,26 +23,6 @@ const EMAIL_RE = /^\S+@\S+\.\S+$/;
  *
  * See `ai-registry-specs/shared/admin-crud.md` §5.3.
  */
-
-type ListResponse = {
-  rows: Array<{
-    id: string;
-    name: string;
-    email: string;
-    roleCode: string;
-    roleName: string;
-    statusCode: string;
-    statusName: string;
-    emailVerified: boolean;
-    providerSlug: string | null;
-    providerName: string | null;
-    createdAt: string;
-  }>;
-  total: number;
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-};
 
 function adminOnly(user: { roles: string[] } | null) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -75,22 +60,13 @@ export async function GET(req: Request) {
   if (verified === "true") where.emailVerified = true;
   else if (verified === "false") where.emailVerified = false;
 
-  const [rows, total] = await Promise.all([
-    prisma.user.findMany({
-      where,
-      include: {
-        role: { select: { code: true, name: true } },
-        status: { select: { code: true, name: true } },
-        provider: { select: { slug: true, displayName: true } }
-      },
-      orderBy: [{ status: { sortOrder: "asc" } }, { createdAt: "desc" }],
-      skip: (page - 1) * pageSize,
-      take: pageSize
-    }),
-    prisma.user.count({ where })
-  ]);
+  const { rows, total } = await listAdminUsersWithCount(
+    where as Record<string, unknown>,
+    page,
+    pageSize
+  );
 
-  const body: ListResponse = {
+  return NextResponse.json({
     rows: rows.map((u) => ({
       id: u.id,
       name: u.name,
@@ -102,14 +78,13 @@ export async function GET(req: Request) {
       emailVerified: u.emailVerified,
       providerSlug: u.provider?.slug ?? null,
       providerName: u.provider?.displayName ?? null,
-      createdAt: u.createdAt.toISOString()
+      createdAt: u.createdAt
     })),
     total,
     page,
     pageSize,
     hasMore: page * pageSize < total
-  };
-  return NextResponse.json(body);
+  });
 }
 
 type CreateBody = {
@@ -161,10 +136,8 @@ export async function POST(req: Request) {
   const [role, status, existing, provider] = await Promise.all([
     getReferenceRow("userRoleType", roleCode),
     getReferenceRow("userStatusType", statusCode),
-    prisma.user.findUnique({ where: { email } }),
-    providerSlug
-      ? prisma.provider.findUnique({ where: { slug: providerSlug } })
-      : Promise.resolve(null)
+    findUserByEmailBasic(email),
+    providerSlug ? findProviderBySlugForAssign(providerSlug) : Promise.resolve(null)
   ]);
 
   if (!role) return NextResponse.json({ error: "Unknown roleCode" }, { status: 400 });
@@ -177,31 +150,20 @@ export async function POST(req: Request) {
   }
 
   const verificationBundle = sendInvite ? prepareEmailVerificationToken() : null;
-  const created = await prisma.user.create({
-    data: {
-      name,
-      email,
-      roleId: role.id,
-      statusId: status.id,
-      providerId: provider?.id ?? null,
-      emailVerified: false,
-      onboardingComplete: false,
-      verificationToken: verificationBundle?.hashedToken ?? null,
-      verificationTokenExpiry: verificationBundle?.expiry ?? null
-    }
-  });
-
-  await writeAudit({
-    actorUserId: actor!.id,
-    entityType: "user",
-    entityId: created.id,
-    action: "user.created",
-    newValue: {
-      email,
-      role: roleCode,
-      status: statusCode,
-      providerSlug
-    }
+  const created = await createAdminUser(actor!.id, {
+    email,
+    name,
+    passwordHash: null,
+    roleId: role.id,
+    statusId: status.id,
+    providerId: provider?.id ?? null,
+    emailVerified: false,
+    onboardingComplete: false,
+    verificationToken: verificationBundle?.hashedToken ?? null,
+    verificationTokenExpiry: verificationBundle?.expiry ?? null,
+    roleCode,
+    statusCode,
+    providerSlug
   });
 
   if (sendInvite && verificationBundle) {

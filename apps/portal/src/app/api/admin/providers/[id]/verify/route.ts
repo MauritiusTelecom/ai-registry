@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  loadAdminProviderForVerify,
+  applyAdminProviderVerification,
+  emailTemplates,
+  uniqueValidEmails,
+  sendTransactionalEmailAll
+} from "@airegistry/sdk/server";
 import { assertCanReview, SeparationOfDutiesError } from "@airegistry/sdk";
-import { writeAudit } from "@airegistry/sdk";
 import { getConfig } from "@airegistry/sdk";
-import { emailTemplates } from "@airegistry/sdk/server";
-import { uniqueValidEmails } from "@airegistry/sdk/server";
-import { sendTransactionalEmailAll } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
-import { getReferenceRow } from "@airegistry/sdk/server";
 
 /**
  * POST /api/admin/providers/:id/verify
@@ -88,10 +90,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       ? body.internalNote.trim()
       : null;
 
-  const provider = await prisma.provider.findUnique({
-    where: { id: providerId },
-    include: { status: { select: { code: true, name: true } } }
-  });
+  const provider = await loadAdminProviderForVerify(providerId);
   if (!provider) {
     return NextResponse.json({ error: "Provider not found" }, { status: 404 });
   }
@@ -126,8 +125,6 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
         ? failed.id
         : withdrawn.id;
 
-  const before = { status: provider.status.code };
-
   // Suspended status hides the provider from the public registry by also
   // flipping adminSuspended. Reverting to a non-suspended status clears it.
   const providerData: { statusId: string; adminSuspended?: boolean } = {
@@ -139,33 +136,18 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     providerData.adminSuspended = false;
   }
 
-  await prisma.$transaction(async (tx) => {
-    await tx.provider.update({
-      where: { id: provider.id },
-      data: providerData
-    });
-
-    await tx.trustSignal.create({
-      data: {
-        kindId: signalKind.id,
-        targetProviderId: provider.id,
-        statusId: signalStatusId,
-        decisionSummary: summary,
-        publicNote,
-        internalNote,
-        decidedById: user.id,
-        decidedAt: new Date()
-      }
-    });
-  });
-
-  await writeAudit({
-    actorUserId: user.id,
-    entityType: "provider",
-    entityId: provider.id,
-    action: `provider.verification.${status}`,
-    previousValue: before,
-    newValue: { status, summary }
+  await applyAdminProviderVerification(user.id, provider.id, {
+    providerData,
+    trustSignalData: {
+      kindId: signalKind.id,
+      statusId: signalStatusId,
+      decisionSummary: summary,
+      publicNote,
+      internalNote
+    },
+    beforeStatus: provider.status.code,
+    newStatusCode: status,
+    summary
   });
 
   // Email toggle. Default ON for backwards compatibility with older clients

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
-import { writeAudit } from "@airegistry/sdk";
+import {
+  getCurrentUser,
+  loadAdminBrandingFull,
+  updateAdminBrandingFields
+} from "@airegistry/sdk/server";
 import { invalidateBrandingCache } from "@/lib/branding";
-
-const SINGLETON_ID = "default";
 
 function adminOnly(user: { roles: string[] } | null) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -19,18 +19,8 @@ export async function GET() {
   const guard = adminOnly(actor);
   if (guard) return guard;
 
-  const row = await prisma.siteBranding.findUnique({
-    where: { id: SINGLETON_ID }
-  });
-  return NextResponse.json({
-    registryName: row?.registryName ?? null,
-    logoUrl: row?.logoUrl ?? null,
-    copyrightLine: row?.copyrightLine ?? null,
-    buildLine: row?.buildLine ?? null,
-    heroEyebrowText: row?.heroEyebrowText ?? null,
-    heroEyebrowIconUrl: row?.heroEyebrowIconUrl ?? null,
-    updatedAt: row?.updatedAt?.toISOString() ?? null
-  });
+  const view = await loadAdminBrandingFull();
+  return NextResponse.json(view);
 }
 
 type PatchPayload = {
@@ -77,35 +67,7 @@ export async function PATCH(req: Request) {
     if (v !== undefined) data.heroEyebrowText = v;
   }
 
-  const before = await prisma.siteBranding.findUnique({ where: { id: SINGLETON_ID } });
-  const updated = await prisma.siteBranding.upsert({
-    where: { id: SINGLETON_ID },
-    update: { ...data, updatedById: actor!.id },
-    create: { id: SINGLETON_ID, ...data, updatedById: actor!.id }
-  });
-
+  await updateAdminBrandingFields(actor!.id, data);
   invalidateBrandingCache();
-
-  await writeAudit({
-    actorUserId: actor!.id,
-    entityType: "site_branding",
-    entityId: SINGLETON_ID,
-    action: "branding.updated",
-    previousValue: before
-      ? {
-          registryName: before.registryName,
-          copyrightLine: before.copyrightLine,
-          buildLine: before.buildLine,
-          heroEyebrowText: before.heroEyebrowText
-        }
-      : null,
-    newValue: {
-      registryName: updated.registryName,
-      copyrightLine: updated.copyrightLine,
-      buildLine: updated.buildLine,
-      heroEyebrowText: updated.heroEyebrowText
-    }
-  });
-
   return NextResponse.json({ ok: true });
 }

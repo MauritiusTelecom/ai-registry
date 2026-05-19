@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser, listAdminReviewsQueue } from "@airegistry/sdk/server";
 
 function canGovern(roles: string[]) {
   return roles.includes("admin") || roles.includes("reviewer");
@@ -17,25 +16,7 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const reviews = await prisma.review.findMany({
-    where: {
-      resourceId: { not: null },
-      status: { code: { in: ["open", "in_review"] } }
-    },
-    orderBy: { createdAt: "asc" },
-    include: {
-      status: { select: { code: true, name: true } },
-      reviewType: { select: { code: true, name: true } },
-      resource: {
-        include: {
-          lifecycleStatus: { select: { code: true, name: true } },
-          provider: { select: { id: true, slug: true, displayName: true } },
-          resourceType: { select: { code: true } }
-        }
-      }
-    }
-  });
-
+  const reviews = await listAdminReviewsQueue();
   return NextResponse.json({
     reviews: reviews.map((r) => ({
       id: r.id,

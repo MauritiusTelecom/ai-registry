@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { getConfig } from "@airegistry/sdk";
-import { emailTemplates } from "@airegistry/sdk/server";
-import { sendTransactionalEmail } from "@airegistry/sdk/server";
+import {
+  emailTemplates,
+  sendTransactionalEmail,
+  getReferenceRow,
+  findResourceByAirId,
+  findProviderBySlugForComplaint,
+  findComplaintSeverityByCode,
+  createPublicComplaintRich,
+  loadResourceTitleById,
+  loadProviderSummaryById
+} from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
-import { getReferenceRow } from "@airegistry/sdk/server";
 import { writeAudit } from "@airegistry/sdk";
 
 /**
@@ -77,10 +84,7 @@ export async function POST(req: Request) {
   let targetResourceId: string | null = null;
   let targetProviderId: string | null = null;
   if (typeof body.targetAirId === "string") {
-    const r = await prisma.resource.findUnique({
-      where: { airId: body.targetAirId },
-      select: { id: true }
-    });
+    const r = await findResourceByAirId(body.targetAirId);
     if (!r) {
       return NextResponse.json(
         { error: `targetAirId "${body.targetAirId}" not found.` },
@@ -89,10 +93,7 @@ export async function POST(req: Request) {
     }
     targetResourceId = r.id;
   } else if (typeof body.targetProviderSlug === "string") {
-    const p = await prisma.provider.findUnique({
-      where: { slug: body.targetProviderSlug },
-      select: { id: true }
-    });
+    const p = await findProviderBySlugForComplaint(body.targetProviderSlug);
     if (!p) {
       return NextResponse.json(
         { error: `targetProviderSlug "${body.targetProviderSlug}" not found.` },
@@ -110,9 +111,7 @@ export async function POST(req: Request) {
   // Look up controlled-vocab ids.
   const [type, severity, openStatus] = await Promise.all([
     getReferenceRow("complaintType", body.complaintType as string),
-    prisma.complaintSeverityType.findUnique({
-      where: { code: body.severity as string }
-    }),
+    findComplaintSeverityByCode(body.severity as string),
     getReferenceRow("complaintStatusType", "open")
   ]);
   if (!type || !severity || !openStatus) {
@@ -122,23 +121,21 @@ export async function POST(req: Request) {
     );
   }
 
-  const created = await prisma.complaint.create({
-    data: {
-      targetResourceId,
-      targetProviderId,
-      complaintTypeId: type.id,
-      severityId: severity.id,
-      statusId: openStatus.id,
-      complainantName:
-        typeof body.complainantName === "string" && body.complainantName.trim() !== ""
-          ? body.complainantName.trim()
-          : null,
-      complainantEmail:
-        typeof body.complainantEmail === "string" && body.complainantEmail.trim() !== ""
-          ? body.complainantEmail.toLowerCase().trim()
-          : null,
-      description: (body.description as string).trim()
-    }
+  const created = await createPublicComplaintRich({
+    targetResourceId,
+    targetProviderId,
+    complaintTypeId: type.id,
+    severityId: severity.id,
+    statusId: openStatus.id,
+    complainantName:
+      typeof body.complainantName === "string" && body.complainantName.trim() !== ""
+        ? body.complainantName.trim()
+        : null,
+    complainantEmail:
+      typeof body.complainantEmail === "string" && body.complainantEmail.trim() !== ""
+        ? body.complainantEmail.toLowerCase().trim()
+        : null,
+    description: (body.description as string).trim()
   });
 
   await writeAudit({
@@ -158,16 +155,10 @@ export async function POST(req: Request) {
 
   let targetSummary = "-";
   if (targetResourceId) {
-    const r = await prisma.resource.findUnique({
-      where: { id: targetResourceId },
-      select: { title: true }
-    });
+    const r = await loadResourceTitleById(targetResourceId);
     targetSummary = r ? `Resource: ${r.title}` : targetResourceId;
   } else if (targetProviderId) {
-    const p = await prisma.provider.findUnique({
-      where: { id: targetProviderId },
-      select: { displayName: true, slug: true }
-    });
+    const p = await loadProviderSummaryById(targetProviderId);
     targetSummary = p ? `Provider: ${p.displayName} (${p.slug})` : targetProviderId;
   }
 

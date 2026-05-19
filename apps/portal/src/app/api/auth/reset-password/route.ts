@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { hashUserPassword, hashTokenForLookup } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 import { emailTemplates } from "@airegistry/sdk/server";
 import { sendTransactionalEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
-import { getReferenceRow } from "@airegistry/sdk/server";
 import { writeAudit } from "@airegistry/sdk";
+import { findUserByResetTokenHash, applyPasswordReset } from "@airegistry/sdk/server";
 
 /**
  * POST /api/auth/reset-password
@@ -39,9 +38,8 @@ export async function POST(req: Request) {
   }
 
   const tokenHash = hashTokenForLookup(body.token);
-  const user = await prisma.user.findFirst({ where: { resetToken: tokenHash } });
-
-  if (!user || !user.resetTokenExpiry || user.resetTokenExpiry < new Date()) {
+  const user = await findUserByResetTokenHash(tokenHash);
+  if (!user) {
     return NextResponse.json(
       { error: "This reset link is invalid or has expired. Request a new one." },
       { status: 400 }
@@ -49,35 +47,10 @@ export async function POST(req: Request) {
   }
 
   const passwordHash = await hashUserPassword(body.password);
-
   // Receiving the reset email proves ownership of the address, so completing
-  // a password reset doubles as email verification. Without this, an
-  // unverified user who resets their password is stuck in a loop: login keeps
-  // rejecting them with "Please verify your email" even after a successful
-  // reset.
-  const activeStatus = user.emailVerified
-    ? null
-    : await getReferenceRow("userStatusType", "active");
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      passwordHash,
-      resetToken: null,
-      resetTokenExpiry: null,
-      emailVerified: true,
-      verificationToken: null,
-      verificationTokenExpiry: null,
-      ...(activeStatus ? { statusId: activeStatus.id } : {})
-    }
-  });
-
-  await writeAudit({
-    actorUserId: user.id,
-    entityType: "user",
-    entityId: user.id,
-    action: "user.password_reset"
-  });
+  // a password reset doubles as email verification. The service writes the
+  // audit row internally (constitution §6).
+  await applyPasswordReset(user.id, passwordHash, { promoteToActive: !user.emailVerified });
 
   const cfg = getConfig();
   const firstName = user.name.trim().split(/\s+/)[0] || user.name;

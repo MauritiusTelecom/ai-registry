@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getConfig } from "@airegistry/sdk";
-import { prisma } from "@/lib/prisma";
 import { preparePasswordResetToken } from "@airegistry/sdk/server";
 import { emailTemplates, sendEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
+import { findUserByEmail, setUserResetToken } from "@airegistry/sdk/server";
 
 /**
  * POST /api/auth/request-reset
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   }
 
   const email = body.email.toLowerCase().trim();
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await findUserByEmail(email);
 
   if (!user) {
     return NextResponse.json({ ok: true });
@@ -37,10 +37,7 @@ export async function POST(req: Request) {
 
   const { rawToken, hashedToken: tokenHash, expiry } = preparePasswordResetToken();
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { resetToken: tokenHash, resetTokenExpiry: expiry }
-  });
+  await setUserResetToken(user.id, tokenHash, expiry);
 
   const cfg = getConfig();
   const origin = getPublicOrigin(req);

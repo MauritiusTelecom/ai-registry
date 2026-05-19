@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { getConfig } from "@airegistry/sdk";
 import { renderTemplate } from "@airegistry/sdk/server";
 import { sendTransactionalEmail } from "@airegistry/sdk/server";
 import { getReferenceRow } from "@airegistry/sdk/server";
 import { writeAudit } from "@airegistry/sdk";
+import { findResourceForPublicReport, createPublicComplaint } from "@airegistry/sdk/server";
 
 // Public report intake for the listing-detail "Report this listing" modal.
 //
@@ -88,10 +88,7 @@ export async function POST(req: Request) {
   }
 
   // Confirm the resource exists before opening a complaint against it.
-  const resource = await prisma.resource.findUnique({
-    where: { id: payload.resourceId as string },
-    select: { id: true, title: true, airId: true }
-  });
+  const resource = await findResourceForPublicReport(payload.resourceId as string);
   if (!resource) {
     return NextResponse.json(
       { error: `resourceId "${payload.resourceId}" not found.` },
@@ -116,15 +113,13 @@ export async function POST(req: Request) {
   }
 
   const complainantEmail = (payload.email as string).toLowerCase().trim();
-  const created = await prisma.complaint.create({
-    data: {
-      targetResourceId: resource.id,
-      complaintTypeId: complaintType.id,
-      severityId: severity.id,
-      statusId: openStatus.id,
-      complainantEmail,
-      description: (payload.notes as string).trim()
-    }
+  const created = await createPublicComplaint({
+    targetResourceId: resource.id,
+    complaintTypeId: complaintType.id,
+    severityId: severity.id,
+    statusId: openStatus.id,
+    complainantEmail,
+    description: (payload.notes as string).trim()
   });
 
   // Audit log preserves the original modal reason so reviewers can see

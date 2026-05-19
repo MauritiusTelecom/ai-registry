@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
-import { writeAudit } from "@airegistry/sdk";
 import { isHttpUrl } from "@airegistry/sdk";
+import { updateProviderNotificationsConfig } from "@airegistry/sdk/server";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -55,33 +54,16 @@ export async function PATCH(req: Request) {
 
   const providerId = await ensureUserProviderLinked(user.id);
 
-  const prev = await prisma.provider.findUnique({
-    where: { id: providerId },
-    select: { incidentChannel: true, oncallEmail: true, webhookUrl: true }
-  });
-  if (!prev) {
-    return NextResponse.json({ error: "Provider not found" }, { status: 404 });
-  }
-
-  const data: Record<string, string | null> = {};
-  if (incidentChannel !== undefined) data.incidentChannel = incidentChannel;
-  if (oncallEmail !== undefined) data.oncallEmail = oncallEmail;
-  if (webhookUrl !== undefined) data.webhookUrl = webhookUrl;
-
-  if (Object.keys(data).length === 0) {
+  const patch: Record<string, unknown> = {};
+  if (incidentChannel !== undefined) patch.incidentChannel = incidentChannel;
+  if (oncallEmail !== undefined) patch.oncallEmail = oncallEmail;
+  if (webhookUrl !== undefined) patch.webhookUrl = webhookUrl;
+  if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
   }
-
-  await prisma.provider.update({ where: { id: providerId }, data });
-
-  await writeAudit({
-    actorUserId: user.id,
-    entityType: "provider",
-    entityId: providerId,
-    action: "provider.notifications_updated",
-    previousValue: prev,
-    newValue: data
-  });
-
-  return NextResponse.json({ ok: true, ...data });
+  const result = await updateProviderNotificationsConfig(user.id, providerId, patch);
+  if (!result) {
+    return NextResponse.json({ error: "Provider not found" }, { status: 404 });
+  }
+  return NextResponse.json({ ok: true, ...result.updated });
 }

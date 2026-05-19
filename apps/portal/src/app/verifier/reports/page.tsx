@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadVerifierReportsSnapshot } from "@airegistry/sdk/server";
 
@@ -15,9 +14,6 @@ export const dynamic = "force-dynamic";
  * Module spec: `modules/verifier/reports/product.md`.
  */
 export default async function VerifierReportsPage() {
-  const since30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-  const since90d = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-
   const snap = await loadVerifierReportsSnapshot();
   const open = snap.open;
   const decided30 = snap.decided30;

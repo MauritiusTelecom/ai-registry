@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
-import { writeAudit } from "@airegistry/sdk";
+import { updateMyProfile } from "@airegistry/sdk/server";
 
 /**
  * PATCH /api/portal/profile
@@ -41,22 +40,5 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
   }
 
-  const prev = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { name: true, organisationName: true }
-  });
-
-  const updated = await prisma.user.update({
-    where: { id: user.id },
-    data: updates,
-    select: { id: true, name: true, organisationName: true, email: true }
-  });
-
-  await writeAudit({
-    actorUserId: user.id,
-    entityType: "user",
-    entityId: user.id,
-    action: "user.profile_updated",
-    previousValue: prev,
-    newValue: { name: updated.name, organisationName: updated.organisationName }
-  });
+  // Service handles read-before + atomic update + audit (constitution §6).
+  const updated = await updateMyProfile(user.id, updates);

@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  findReviewForDecide,
+  applyAdminReviewDecision,
+  emailTemplates,
+  uniqueValidEmails,
+  sendTransactionalEmailAll
+} from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 import { assertCanReview, SeparationOfDutiesError } from "@airegistry/sdk";
-import { writeAudit } from "@airegistry/sdk";
-import { emailTemplates } from "@airegistry/sdk/server";
-import { uniqueValidEmails } from "@airegistry/sdk/server";
-import { sendTransactionalEmailAll } from "@airegistry/sdk/server";
-import { getReferenceRow } from "@airegistry/sdk/server";
 import {
   SOVEREIGNTY_CHECKLIST_ITEMS,
   type ChecklistAnswerCode
@@ -60,28 +62,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   }
   const summary = body.decisionSummary.trim();
 
-  const review = await prisma.review.findUnique({
-    where: { id: reviewId },
-    include: {
-      status: true,
-      resource: {
-        include: {
-          provider: {
-            select: {
-              id: true,
-              slug: true,
-              displayName: true,
-              contactEmail: true,
-              legalContactEmail: true
-            }
-          },
-          lifecycleStatus: true,
-          resourceType: true
-        }
-      }
-    }
-  });
-
+  const review = await findReviewForDecide(reviewId);
   if (!review || !review.resourceId || !review.resource) {
     return NextResponse.json({ error: "Review not found" }, { status: 404 });
   }
@@ -155,64 +136,43 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   const typeCode = resource.resourceType.code;
   const airId = `air://${cfg.identityDomain}/${typeCode}/${resource.provider.slug}/${resource.slug}`;
 
-  await prisma.$transaction(async (tx) => {
-    const checklistCreates =
-      decision === "approve" && checklistRaw
-        ? SOVEREIGNTY_CHECKLIST_ITEMS.map((item) => ({
-            reviewId,
-            itemCode: item.itemCode,
-            question: item.question,
-            resultId: resultByCode[checklistRaw[item.itemCode] as ChecklistAnswerCode]
-          }))
-        : [];
+  const checklistCreates =
+    decision === "approve" && checklistRaw
+      ? SOVEREIGNTY_CHECKLIST_ITEMS.map((item) => ({
+          reviewId,
+          itemCode: item.itemCode,
+          question: item.question,
+          resultId: resultByCode[checklistRaw[item.itemCode] as ChecklistAnswerCode]
+        }))
+      : [];
 
-    if (checklistCreates.length) {
-      await tx.reviewChecklistItem.createMany({ data: checklistCreates });
-    }
-
-    if (decision === "approve") {
-      await tx.resource.update({
-        where: { id: resource.id },
-        data: {
+  const resourceData =
+    decision === "approve"
+      ? {
           lifecycleStatusId: listed.id,
           airId,
           listedAt: new Date(),
           publicVisibility: true,
           lastReviewedAt: new Date()
         }
-      });
-    } else {
-      await tx.resource.update({
-        where: { id: resource.id },
-        data: {
+      : {
           lifecycleStatusId: needsUpdate.id,
           lastProviderUpdateAt: new Date()
-        }
-      });
-    }
+        };
 
-    await tx.review.update({
-      where: { id: reviewId },
-      data: {
-        statusId: decidedStatus.id,
-        reviewerId: user.id,
-        completedAt: new Date(),
-        decisionSummary: summary,
-        startedAt: review.startedAt ?? new Date()
-      }
-    });
-  });
-
-  await writeAudit({
-    actorUserId: user.id,
-    entityType: "review",
-    entityId: reviewId,
-    action: `review.${decision}`,
-    newValue: {
-      resourceId: resource.id,
-      decision,
-      decisionSummary: summary
-    }
+  await applyAdminReviewDecision(user.id, reviewId, {
+    resourceId: resource.id,
+    resourceData,
+    reviewData: {
+      statusId: decidedStatus.id,
+      reviewerId: user.id,
+      completedAt: new Date(),
+      decisionSummary: summary,
+      startedAt: review.startedAt ?? new Date()
+    },
+    checklistCreates,
+    decision,
+    decisionSummary: summary
   });
 
   // Default ON for backwards compatibility — only an explicit false opts out.

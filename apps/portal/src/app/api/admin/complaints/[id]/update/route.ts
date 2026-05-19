@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
-import { writeAudit } from "@airegistry/sdk";
+import {
+  getCurrentUser,
+  loadComplaintForUpdate,
+  findComplaintStatusById,
+  findComplaintStatusByCode,
+  findUserBasicById,
+  applyAdminComplaintUpdate,
+  emailTemplates,
+  sendTransactionalEmail
+} from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
-import { emailTemplates } from "@airegistry/sdk/server";
-import { sendTransactionalEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
@@ -59,24 +64,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const current = await prisma.complaint.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      description: true,
-      statusId: true,
-      status: { select: { code: true, name: true } },
-      assignedToId: true,
-      resolutionSummary: true,
-      resolvedAt: true,
-      complaintType: { select: { name: true } },
-      severity: { select: { name: true } },
-      targetResource: {
-        select: { title: true, provider: { select: { displayName: true } } }
-      },
-      targetProvider: { select: { displayName: true } }
-    }
-  });
+  const current = await loadComplaintForUpdate(id);
   if (!current) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const data: {
@@ -91,10 +79,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   let newStatusName = current.status.name;
   let statusExplicitlyChanged = false;
   if (typeof body.statusId === "string" && body.statusId !== current.statusId) {
-    const s = await prisma.complaintStatusType.findUnique({
-      where: { id: body.statusId },
-      select: { id: true, code: true, name: true }
-    });
+    const s = await findComplaintStatusById(body.statusId);
     if (!s) return NextResponse.json({ error: "Invalid statusId" }, { status: 400 });
     data.statusId = s.id;
     newStatusCode = s.code;
@@ -114,10 +99,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     }
   } else if (typeof body.assignedToId === "string") {
     if (body.assignedToId !== current.assignedToId) {
-      const u = await prisma.user.findUnique({
-        where: { id: body.assignedToId },
-        select: { id: true, name: true, email: true }
-      });
+      const u = await findUserBasicById(body.assignedToId);
       if (!u) return NextResponse.json({ error: "Invalid assignedToId" }, { status: 400 });
       data.assignedToId = u.id;
       newAssigneeId = u.id;
@@ -152,10 +134,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     current.assignedToId === null &&
     current.status.code === "open"
   ) {
-    const investigating = await prisma.complaintStatusType.findUnique({
-      where: { code: "investigating" },
-      select: { id: true, code: true, name: true }
-    });
+    const investigating = await findComplaintStatusByCode("investigating");
     if (investigating) {
       data.statusId = investigating.id;
       newStatusCode = investigating.code;
@@ -175,18 +154,6 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json({ ok: true, changed: false });
   }
 
-  const updated = await prisma.complaint.update({
-    where: { id },
-    data,
-    select: {
-      id: true,
-      statusId: true,
-      assignedToId: true,
-      resolutionSummary: true,
-      resolvedAt: true
-    }
-  });
-
   // ─── Audit: pick the most specific action label ─────
   const statusActuallyChanged = statusExplicitlyChanged || autoBumped;
   const action = pickAuditAction({
@@ -198,24 +165,16 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     resolutionChanged
   });
 
-  await writeAudit({
-    actorUserId: user.id,
-    entityType: "complaint",
-    entityId: id,
-    action,
-    previousValue: {
+  await applyAdminComplaintUpdate(user.id, id, {
+    data,
+    before: {
       statusId: current.statusId,
       assignedToId: current.assignedToId,
       resolutionSummary: current.resolutionSummary,
       resolvedAt: current.resolvedAt
     },
-    newValue: {
-      statusId: updated.statusId,
-      assignedToId: updated.assignedToId,
-      resolutionSummary: updated.resolutionSummary,
-      resolvedAt: updated.resolvedAt,
-      autoBumped
-    }
+    action,
+    autoBumped
   });
 
   // ─── Notify the new assignee ────────────────────────

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
+import {
+  getCurrentUser,
+  loadContactForReply,
+  sendEmail
+} from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
-import { sendEmail } from "@airegistry/sdk/server";
 import { writeAudit } from "@airegistry/sdk";
 
 /**
@@ -42,10 +44,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   if (!subject) return NextResponse.json({ error: "Subject is required" }, { status: 400 });
   if (!message) return NextResponse.json({ error: "Message is required" }, { status: 400 });
 
-  const contact = await prisma.contact.findUnique({
-    where: { id },
-    select: { id: true, email: true, senderName: true }
-  });
+  const contact = await loadContactForReply(id);
   if (!contact) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const cfg = getConfig();
