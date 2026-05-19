@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import { PageHero } from "@/components/public/sections/PageHero";
 import { ReviewDecideForm } from "@/components/admin/ReviewDecideForm";
+import { loadAdminReviewForDecide } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Review decision" };
 
@@ -13,13 +13,7 @@ export default async function AdminReviewDetailPage({ params }: { params: Promis
   if (!user.roles.includes("admin") && !user.roles.includes("reviewer")) notFound();
 
   const { id } = await params;
-  const review = await prisma.review.findUnique({
-    where: { id },
-    include: {
-      status: true,
-      resource: { select: { id: true, title: true } }
-    }
-  });
+  const review = await loadAdminReviewForDecide(id);
   if (!review || !review.resourceId || !review.resource) notFound();
   if (review.status.code === "decided" || review.status.code === "withdrawn") {
     return (

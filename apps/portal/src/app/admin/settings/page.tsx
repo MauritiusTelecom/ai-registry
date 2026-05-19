@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getConfig } from "@airegistry/sdk";
-import { prisma } from "@/lib/prisma";
 import { countReferenceTable } from "@airegistry/sdk/server";
+import { loadAdminSettingsProviderCount } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Settings" };
 export const dynamic = "force-dynamic";
@@ -21,7 +21,7 @@ export default async function AdminSettingsPage() {
     countReferenceTable("resourceType"),
     countReferenceTable("language"),
     countReferenceTable("sector"),
-    prisma.provider.count(),
+    loadAdminSettingsProviderCount(),
     countReferenceTable("lifecycleStatus")
   ]);
 

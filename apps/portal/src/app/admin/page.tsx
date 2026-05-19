@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { StatCard } from "@/components/portals/StatCard";
+import { loadAdminDashboardStats } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Dashboard" };
 export const dynamic = "force-dynamic";
@@ -20,28 +20,20 @@ export default async function AdminDashboardPage() {
     auditCount,
     openComplaintCount,
     myOpenComplaintCount
-  ] = await Promise.all([
-    prisma.resource.count(),
-    prisma.resource.count({ where: { lifecycleStatus: { code: "listed" } } }),
-    prisma.provider.count(),
-    prisma.provider.count({
-      where: {
-        OR: [{ status: { code: "verified" } }, { status: { code: "official_provider" } }]
-      }
-    }),
-    prisma.user.count(),
-    prisma.review.count({ where: { status: { code: { in: ["open", "in_review"] } } } }),
-    prisma.auditLog.count(),
-    prisma.complaint.count({ where: { status: { code: { in: ["open", "investigating"] } } } }),
-    myId
-      ? prisma.complaint.count({
-          where: {
-            assignedToId: myId,
-            status: { code: { in: ["open", "investigating"] } }
-          }
-        })
-      : Promise.resolve(0)
-  ]);
+  ] = await (async () => {
+    const s = await loadAdminDashboardStats(myId);
+    return [
+      s.resourceCount,
+      s.listedCount,
+      s.providerCount,
+      s.verifiedProviderCount,
+      s.userCount,
+      s.openReviewCount,
+      s.auditCount,
+      s.openComplaintCount,
+      s.myOpenComplaints
+    ] as const;
+  })();
 
   return (
     <div className="p-content">

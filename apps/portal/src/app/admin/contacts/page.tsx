@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 import { CONTACT_TOPIC_LABELS } from "@airegistry/sdk";
+import { loadAdminContactsView } from "@airegistry/sdk/server";
 
 function labelFor(topic: string): string {
   return (CONTACT_TOPIC_LABELS as Record<string, string>)[topic] ?? topic;
@@ -46,25 +46,8 @@ export default async function AdminContactsPage({
   const verifiedFilter: VerifiedFilter =
     raw === "yes" || raw === "no" ? raw : "all";
 
-  const rows = await prisma.contact.findMany({
-    where:
-      verifiedFilter === "all"
-        ? undefined
-        : { emailVerified: verifiedFilter === "yes" },
-    select: {
-      id: true,
-      senderName: true,
-      organisationName: true,
-      email: true,
-      topic: true,
-      message: true,
-      emailVerified: true,
-      createdAt: true,
-      linkedUser: { select: { name: true, email: true } }
-    },
-    orderBy: { createdAt: "desc" },
-    take: 500
-  });
+  const view = await loadAdminContactsView(verifiedFilter);
+  const rows = view.rows;
 
   const projected: Row[] = rows.map((c) => ({
     id: c.id,
@@ -79,9 +62,9 @@ export default async function AdminContactsPage({
     linked: c.linkedUser ? `${c.linkedUser.name} (${c.linkedUser.email})` : null
   }));
 
-  const allCount = await prisma.contact.count();
-  const verifiedCount = await prisma.contact.count({ where: { emailVerified: true } });
-  const unverifiedCount = allCount - verifiedCount;
+  const allCount = view.totalCount;
+  const verifiedCount = view.verifiedCount;
+  const unverifiedCount = view.unverifiedCount;
 
   const columns: Column<Row>[] = [
     { key: "ts", label: "Received", render: (row) => row.ts, mono: true, width: "110px" },
