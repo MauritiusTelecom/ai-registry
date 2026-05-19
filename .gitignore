@@ -3,19 +3,26 @@ node_modules/
 .env.local
 .env.production
 .env.production.local
-src/generated/
+
+# Build artefacts
 .next/
 out/
+dist/
+.turbo/
+*.tsbuildinfo
+
+# Prisma generated client (output target lives in packages/core)
+packages/core/src/generated/
 
 # Logos uploaded via /admin/branding land here at runtime. Per-deployment
 # state, not source.
-public/branding/
+apps/portal/public/branding/
 
 # Local-only deploy machine config (host, user, paths). Real values live here.
 deploy/deploy.config.sh
 # Never commit anything dropped into deploy/secrets/. It is consumed by
 # deploy.sh and rsync'd to the server, but the contents are sensitive.
 deploy/secrets/
-# Release artefacts produced by `npm run deploy:build`.
+# Release artefacts produced by `pnpm deploy:build`.
 deploy/build/
 deploy/release-*.tar.gz
