@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
-import { prisma } from "@/lib/prisma";
 import { NewResourceForm } from "@/components/portal/NewResourceForm";
 import { StubPanel } from "@/components/portals/StubPanel";
 import { REGISTRATION_MSG } from "@/lib/portal/authoring-messages";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Provider · Publish" };
 export const dynamic = "force-dynamic";
@@ -15,11 +15,7 @@ export default async function ProviderPublishPage() {
   // Resource types must be active in the DB AND permitted by the env
   // `RESOURCE_TYPES` restriction. The intersection guarantees an admin can
   // hide a type (active=false) without redeploying.
-  const allowedTypes = await prisma.resourceType.findMany({
-    where: { active: true, code: { in: cfg.resourceTypes } },
-    orderBy: { sortOrder: "asc" },
-    select: { code: true, name: true }
-  });
+  const allowedTypes = await listReferenceTable("resourceType", { codes: cfg.resourceTypes });
 
   return (
     <div className="p-content">

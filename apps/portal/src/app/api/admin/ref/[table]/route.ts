@@ -5,6 +5,7 @@ import { getRefTable } from "@airegistry/sdk";
 import { isPrismaKnownError, modelFor, PrismaErrorCode } from "@airegistry/sdk/server";
 import { projectInputs } from "@airegistry/sdk";
 import { prisma } from "@/lib/prisma";
+import { writeAudit } from "@airegistry/sdk";
 
 /**
  * GET /api/admin/ref/[table]
@@ -108,13 +109,11 @@ export async function POST(
 
   try {
     const created = await modelFor(config).create({ data });
-    await prisma.auditLog.create({
-      data: {
-        entityType: `ref.${config.id}`,
-        entityId: (created as { id: string }).id,
-        action: "ref.created",
-        newValue: data as unknown as Prisma.InputJsonValue
-      }
+    await writeAudit({
+      entityType: `ref.${config.id}`,
+      entityId: (created as { id: string }).id,
+      action: "ref.created",
+      newValue: data as unknown as Prisma.InputJsonValue
     });
     return NextResponse.json(projectRow(config, created as Record<string, unknown>), {
       status: 201

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getConfig } from "@airegistry/sdk";
 import { prisma } from "@/lib/prisma";
 import type { WellKnownDocument } from "@airegistry/sdk";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 /**
  * GET /api/well-known/ai-registry
@@ -21,16 +22,8 @@ export async function GET(_req: Request) {
   const apiBase = cfg.apiBaseUrl.replace(/\/+$/, "");
 
   const [resourceTypes, languages] = await Promise.all([
-    prisma.resourceType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true }
-    }),
-    prisma.language.findMany({
-      where: { active: true },
-      orderBy: { code: "asc" },
-      select: { code: true }
-    })
+    listReferenceTable("resourceType"),
+    listReferenceTable("language", { orderBy: "code" })
   ]);
 
   const doc: WellKnownDocument = {

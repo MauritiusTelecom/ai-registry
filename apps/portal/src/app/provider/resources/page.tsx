@@ -1,11 +1,11 @@
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { GatedPublishButton } from "@/components/portals/GatedPublishButton";
-import { prisma } from "@/lib/prisma";
 import {
   ProviderResourcesGrid,
   type ProviderResourceRow
 } from "@/components/portals/provider/ProviderResourcesGrid";
-import { deriveDisplayStatus } from "@airegistry/sdk";
+import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadMyResources } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Provider · Resources" };
 export const dynamic = "force-dynamic";
@@ -33,43 +33,11 @@ export default async function ProviderResourcesPage() {
     );
   }
 
-  const [rows, kinds, lifecycles] = await Promise.all([
-    prisma.resource.findMany({
-      where: { providerId },
-      include: {
-        resourceType: { select: { code: true } },
-        lifecycleStatus: true,
-        trustSignals: { include: { kind: true, status: true } }
-      },
-      orderBy: [{ lifecycleStatus: { sortOrder: "asc" } }, { updatedAt: "desc" }]
-    }),
-    prisma.resourceType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.lifecycleStatus.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    })
+  const [projected, kinds, lifecycles] = await Promise.all([
+    loadMyResources(providerId),
+    listReferenceTable("resourceType"),
+    listReferenceTable("lifecycleStatus")
   ]);
-
-  const projected: ProviderResourceRow[] = rows.map((r) => ({
-    id: r.id,
-    airId: r.airId,
-    slug: r.slug,
-    title: r.title,
-    kind: r.resourceType.code,
-    status: deriveDisplayStatus({
-      ...r,
-      lifecycleStatus: r.lifecycleStatus,
-      trustSignals: r.trustSignals
-    }),
-    lifecycle: r.lifecycleStatus.name,
-    lifecycleCode: r.lifecycleStatus.code,
-    updatedAt: r.updatedAt.toISOString().slice(0, 10)
-  }));
 
   return (
     <div className="p-content">

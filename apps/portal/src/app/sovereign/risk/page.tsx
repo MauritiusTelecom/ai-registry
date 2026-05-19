@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import {
+  listReferenceTable,
+  loadSovereignResourcesForRisk
+} from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 
@@ -39,20 +42,8 @@ export default async function SovereignRiskPage() {
   // risk tier and lifecycle bucket; surface a flat list of high-risk rows
   // so the operator can drill in.
   const [riskLevels, resources] = await Promise.all([
-    prisma.riskLevel.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" }
-    }),
-    prisma.resource.findMany({
-      where: { primaryJurisdiction: { code: cfg.jurisdiction } },
-      include: {
-        provider: { select: { displayName: true, slug: true } },
-        resourceType: { select: { code: true } },
-        riskLevel: { select: { code: true, name: true } },
-        lifecycleStatus: { select: { code: true } }
-      },
-      orderBy: { updatedAt: "desc" }
-    })
+    listReferenceTable("riskLevel"),
+    loadSovereignResourcesForRisk(cfg.jurisdiction)
   ]);
 
   const tiers: Tier[] = riskLevels.map((rl) => ({
@@ -66,10 +57,10 @@ export default async function SovereignRiskPage() {
   const byCode = new Map(tiers.map((t) => [t.code, t]));
 
   for (const r of resources) {
-    const t = byCode.get(r.riskLevel.code);
+    const t = byCode.get(r.riskCode);
     if (!t) continue;
     t.total += 1;
-    const lc = r.lifecycleStatus.code;
+    const lc = r.lifecycleCode;
     if (lc === "listed") t.listed += 1;
     else if (lc === "submitted" || lc === "in_review" || lc === "needs_update") {
       t.experimental += 1;
@@ -79,17 +70,17 @@ export default async function SovereignRiskPage() {
   }
 
   const highRows: ResourceRow[] = resources
-    .filter((r) => r.riskLevel.code === "high")
+    .filter((r) => r.riskCode === "high")
     .slice(0, 100)
     .map((r) => ({
       id: r.id,
       slug: r.slug,
       title: r.title,
-      provider: r.provider.displayName,
-      kind: r.resourceType.code,
-      riskCode: r.riskLevel.code,
-      riskName: r.riskLevel.name,
-      lifecycle: r.lifecycleStatus.code
+      provider: r.providerName,
+      kind: r.resourceTypeCode,
+      riskCode: r.riskCode,
+      riskName: r.riskName,
+      lifecycle: r.lifecycleCode
     }));
 
   const tierCols: Column<Tier>[] = [
@@ -159,10 +150,3 @@ export default async function SovereignRiskPage() {
       </h2>
       <DataTable
         rows={highRows}
-        columns={resCols}
-        emptyState={`No high-risk resources currently in ${cfg.jurisdiction}.`}
-        keyOf={(r) => r.id}
-      />
-    </div>
-  );
-}

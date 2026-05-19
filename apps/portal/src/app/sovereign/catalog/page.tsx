@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { getConfig } from "@airegistry/sdk";
-import { prisma } from "@/lib/prisma";
+import { loadSovereignCatalog } from "@airegistry/sdk/server";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 import { StatusPill } from "@/components/portals/StatusPill";
-import { deriveDisplayStatus } from "@airegistry/sdk";
 
 export const metadata = { title: "Sovereign · National catalogue" };
 export const dynamic = "force-dynamic";
@@ -23,33 +22,7 @@ type Row = {
 export default async function SovereignCatalogPage() {
   const cfg = getConfig();
 
-  const rows = await prisma.resource.findMany({
-    where: { primaryJurisdiction: { code: cfg.jurisdiction } },
-    include: {
-      resourceType: { select: { code: true } },
-      provider: { select: { displayName: true } },
-      lifecycleStatus: true,
-      trustSignals: { include: { kind: true, status: true } },
-      resourceBases: { include: { sovereigntyBasis: { select: { code: true, name: true } } } }
-    },
-    orderBy: [{ lifecycleStatus: { sortOrder: "asc" } }, { title: "asc" }]
-  });
-
-  const projected: Row[] = rows.map((r) => ({
-    id: r.id,
-    airId: r.airId,
-    slug: r.slug,
-    title: r.title,
-    kind: r.resourceType.code,
-    provider: r.provider.displayName,
-    bases: r.resourceBases.map((rb) => rb.sovereigntyBasis.name),
-    status: deriveDisplayStatus({
-      ...r,
-      lifecycleStatus: r.lifecycleStatus,
-      trustSignals: r.trustSignals
-    }),
-    lifecycle: r.lifecycleStatus.name
-  }));
+  const projected: Row[] = await loadSovereignCatalog(cfg.jurisdiction);
 
   const columns: Column<Row>[] = [
     {

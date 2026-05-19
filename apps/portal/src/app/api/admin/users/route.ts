@@ -7,6 +7,7 @@ import { sendEmail, emailTemplates } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 import type { Prisma } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
+import { getReferenceRow } from "@airegistry/sdk/server";
 
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -158,8 +159,8 @@ export async function POST(req: Request) {
   }
 
   const [role, status, existing, provider] = await Promise.all([
-    prisma.userRoleType.findUnique({ where: { code: roleCode } }),
-    prisma.userStatusType.findUnique({ where: { code: statusCode } }),
+    getReferenceRow("userRoleType", roleCode),
+    getReferenceRow("userStatusType", statusCode),
     prisma.user.findUnique({ where: { email } }),
     providerSlug
       ? prisma.provider.findUnique({ where: { slug: providerSlug } })

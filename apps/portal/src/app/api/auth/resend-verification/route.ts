@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { prepareEmailVerificationToken } from "@airegistry/sdk/server";
 import { emailTemplates, sendEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
+import { writeAudit } from "@airegistry/sdk";
 
 /**
  * POST /api/auth/resend-verification
@@ -51,14 +52,12 @@ export async function POST(req: Request) {
     }
   });
 
-  await prisma.auditLog.create({
-    data: {
-      actorUserId: user.id,
-      entityType: "user",
-      entityId: user.id,
-      action: "user.verification_resent",
-      newValue: { email }
-    }
+  await writeAudit({
+    actorUserId: user.id,
+    entityType: "user",
+    entityId: user.id,
+    action: "user.verification_resent",
+    newValue: { email }
   });
 
   const cfg = getConfig();

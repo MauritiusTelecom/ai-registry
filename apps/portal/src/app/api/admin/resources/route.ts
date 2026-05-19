@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { writeAudit } from "@airegistry/sdk";
 import { isSlug } from "@airegistry/sdk";
 import type { Prisma } from "@airegistry/sdk/server";
+import { getReferenceRow } from "@airegistry/sdk/server";
 
 /**
  * GET /api/admin/resources - list with q + kind + lifecycle + provider filters.
@@ -172,17 +173,17 @@ export async function POST(req: Request) {
   }
 
   const [type, provider, jurisdiction, risk, draft, listingOrigin, clash] = await Promise.all([
-    prisma.resourceType.findUnique({ where: { code: typeCode } }),
+    getReferenceRow("resourceType", typeCode),
     prisma.provider.findUnique({
       where: { slug: providerSlug },
       include: { homeJurisdiction: { select: { id: true, code: true } } }
     }),
     jurisdictionCode
-      ? prisma.jurisdiction.findUnique({ where: { code: jurisdictionCode } })
+      ? getReferenceRow("jurisdiction", jurisdictionCode)
       : Promise.resolve(null),
-    prisma.riskLevel.findUnique({ where: { code: riskCode } }),
-    prisma.lifecycleStatus.findUnique({ where: { code: "draft" } }),
-    prisma.listingOrigin.findUnique({ where: { code: "local" } }),
+    getReferenceRow("riskLevel", riskCode),
+    getReferenceRow("lifecycleStatus", "draft"),
+    getReferenceRow("listingOrigin", "local"),
     prisma.resource.findFirst({
       where: { provider: { slug: providerSlug }, slug }
     })

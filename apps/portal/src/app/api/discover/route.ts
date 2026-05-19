@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { toRegistryCard, type ResourceForCard } from "@airegistry/sdk";
+import { findResourcesByCapability } from "@airegistry/sdk";
 import type { Problem } from "@airegistry/sdk";
 
 /**
@@ -12,10 +11,9 @@ import type { Problem } from "@airegistry/sdk";
  * caller asked for `mcp`, we return rows tagged `mcp`, not `mcp-treasury`.
  *
  * The response shape mirrors the list endpoint so callers can swap routes
- * without rewriting their consumer.
+ * without rewriting their consumer. Visibility-rule enforcement
+ * (constitution §5) is centralised in `findResourcesByCapability`.
  */
-
-const PUBLIC_LIFECYCLE_CODES = ["listed", "deprecated", "needs_update"];
 
 export async function GET(req: Request) {
   const capability = new URL(req.url).searchParams.get("capability");
@@ -30,33 +28,12 @@ export async function GET(req: Request) {
   }
 
   const tag = capability.trim().toLowerCase();
-  const rows = (await prisma.resource.findMany({
-    where: {
-      publicVisibility: true,
-      lifecycleStatus: { code: { in: PUBLIC_LIFECYCLE_CODES } },
-      resourceTags: { some: { tag: { name: { equals: tag, mode: "insensitive" } } } }
-    },
-    include: {
-      resourceType: true,
-      provider: true,
-      primaryJurisdiction: true,
-      lifecycleStatus: true,
-      riskLevel: true,
-      resourceTags: { include: { tag: true } },
-      trustSignals: { include: { kind: true, status: true } },
-      endpoints: { include: { protocol: true } }
-    },
-    orderBy: [
-      { lifecycleStatus: { sortOrder: "asc" } },
-      { updatedAt: "desc" }
-    ],
-    take: 100
-  })) as ResourceForCard[];
+  const rows = await findResourcesByCapability(tag);
 
   return NextResponse.json(
     {
       capability: tag,
-      rows: rows.map(toRegistryCard),
+      rows,
       total: rows.length,
       generatedAt: new Date().toISOString()
     },

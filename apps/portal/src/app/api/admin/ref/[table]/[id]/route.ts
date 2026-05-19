@@ -6,6 +6,7 @@ import { modelFor } from "@airegistry/sdk/server";
 import { projectInputs } from "@airegistry/sdk";
 import { prisma } from "@/lib/prisma";
 import { prismaErrorResponse, projectRow } from "../route";
+import { writeAudit } from "@airegistry/sdk";
 
 /**
  * GET    /api/admin/ref/[table]/[id]   - single row.
@@ -55,20 +56,18 @@ export async function PATCH(
     const before = await modelFor(config).findUnique({ where: { id } });
     if (!before) return notFoundRow();
     const updated = await modelFor(config).update({ where: { id }, data });
-    await prisma.auditLog.create({
-      data: {
-        entityType: `ref.${config.id}`,
-        entityId: id,
-        action: "ref.updated",
-        previousValue: projectRow(
-          config,
-          before as Record<string, unknown>
-        ) as unknown as Prisma.InputJsonValue,
-        newValue: projectRow(
-          config,
-          updated as Record<string, unknown>
-        ) as unknown as Prisma.InputJsonValue
-      }
+    await writeAudit({
+      entityType: `ref.${config.id}`,
+      entityId: id,
+      action: "ref.updated",
+      previousValue: projectRow(
+        config,
+        before as Record<string, unknown>
+      ) as unknown as Prisma.InputJsonValue,
+      newValue: projectRow(
+        config,
+        updated as Record<string, unknown>
+      ) as unknown as Prisma.InputJsonValue
     });
     return NextResponse.json(projectRow(config, updated as Record<string, unknown>));
   } catch (e) {
@@ -91,16 +90,14 @@ export async function DELETE(
     const before = await modelFor(config).findUnique({ where: { id } });
     if (!before) return notFoundRow();
     await modelFor(config).delete({ where: { id } });
-    await prisma.auditLog.create({
-      data: {
-        entityType: `ref.${config.id}`,
-        entityId: id,
-        action: "ref.deleted",
-        previousValue: projectRow(
-          config,
-          before as Record<string, unknown>
-        ) as unknown as Prisma.InputJsonValue
-      }
+    await writeAudit({
+      entityType: `ref.${config.id}`,
+      entityId: id,
+      action: "ref.deleted",
+      previousValue: projectRow(
+        config,
+        before as Record<string, unknown>
+      ) as unknown as Prisma.InputJsonValue
     });
     return new Response(null, { status: 204 });
   } catch (e) {

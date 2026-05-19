@@ -4,6 +4,7 @@ import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { ResourceEditForm } from "@/components/admin/ResourceEditForm";
 import { ResourceLifecyclePanel } from "@/components/admin/ResourceLifecyclePanel";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Edit resource" };
 export const dynamic = "force-dynamic";
@@ -71,66 +72,22 @@ export default async function AdminResourceEditPage({
     providers,
     listingOrigins
   ] = await Promise.all([
-    prisma.riskLevel.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.jurisdiction.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.sovereigntyBasis.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.evidenceType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.protocol.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.authMethodType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.accessModelType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.language.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.sector.findMany({
-      where: { active: true },
-      orderBy: { name: "asc" },
-      select: { code: true, name: true }
-    }),
-    prisma.resourceType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    }),
+    listReferenceTable("riskLevel"),
+    listReferenceTable("jurisdiction", { orderBy: "name" }),
+    listReferenceTable("sovereigntyBasis", { orderBy: "name" }),
+    listReferenceTable("evidenceType"),
+    listReferenceTable("protocol"),
+    listReferenceTable("authMethodType"),
+    listReferenceTable("accessModelType"),
+    listReferenceTable("language", { orderBy: "name" }),
+    listReferenceTable("sector", { orderBy: "name" }),
+    listReferenceTable("resourceType"),
     prisma.provider.findMany({
       where: { adminSuspended: false },
       orderBy: { displayName: "asc" },
       select: { slug: true, displayName: true }
     }),
-    prisma.listingOrigin.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { code: true, name: true }
-    })
+    listReferenceTable("listingOrigin")
   ]);
 
   const initial = {

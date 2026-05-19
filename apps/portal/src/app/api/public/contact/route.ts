@@ -8,6 +8,7 @@ import { emailTemplates, sendEmail } from "@airegistry/sdk/server";
 import { normalizeContactEmail } from "@airegistry/sdk";
 import { CONTACT_TOPIC_LABELS, CONTACT_TOPICS, type ContactTopicCode } from "@airegistry/sdk";
 import { getPublicOrigin } from "@/lib/public-origin";
+import { writeAudit } from "@airegistry/sdk";
 
 type ContactPayload = {
   name?: string;
@@ -160,23 +161,21 @@ export async function POST(req: Request) {
   }
 
   try {
-    await prisma.auditLog.create({
-      data: {
-        actorUserId: linkedForAudit,
-        entityType: "contact",
-        entityId: contactId,
-        action: "contact.created",
-        newValue: {
-          email,
-          topic,
-          senderName,
-          organisationName,
-          messageLength: message.length,
-          linkedUserId: linkedForAudit
-        },
-        ipAddress,
-        userAgent
-      }
+    await writeAudit({
+      actorUserId: linkedForAudit,
+      entityType: "contact",
+      entityId: contactId,
+      action: "contact.created",
+      newValue: {
+        email,
+        topic,
+        senderName,
+        organisationName,
+        messageLength: message.length,
+        linkedUserId: linkedForAudit
+      },
+      ipAddress,
+      userAgent
     });
   } catch (error) {
     console.error("public.contact.audit_log_failed", { contactId, error });

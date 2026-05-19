@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getConfig } from "@airegistry/sdk";
 import { renderTemplate } from "@airegistry/sdk/server";
 import { sendTransactionalEmail } from "@airegistry/sdk/server";
+import { getReferenceRow } from "@airegistry/sdk/server";
+import { writeAudit } from "@airegistry/sdk";
 
 // Public report intake for the listing-detail "Report this listing" modal.
 //
@@ -102,9 +104,9 @@ export async function POST(req: Request) {
   // admin queue picks the new complaint up immediately.
   const typeCode = REASON_TO_TYPE[payload.reason as string] ?? "other";
   const [complaintType, severity, openStatus] = await Promise.all([
-    prisma.complaintType.findUnique({ where: { code: typeCode } }),
-    prisma.complaintSeverityType.findUnique({ where: { code: "medium" } }),
-    prisma.complaintStatusType.findUnique({ where: { code: "open" } })
+    getReferenceRow("complaintType", typeCode),
+    getReferenceRow("complaintSeverityType", "medium"),
+    getReferenceRow("complaintStatusType", "open")
   ]);
   if (!complaintType || !severity || !openStatus) {
     return NextResponse.json(
@@ -128,18 +130,16 @@ export async function POST(req: Request) {
   // Audit log preserves the original modal reason so reviewers can see
   // exactly which option the reporter picked (the Complaint row only keeps
   // the mapped ComplaintType).
-  await prisma.auditLog.create({
-    data: {
-      entityType: "complaint",
-      entityId: created.id,
-      action: "public.report.received",
-      newValue: {
-        reason: payload.reason as string,
-        complaintType: typeCode,
-        severity: "medium",
-        targetResourceId: resource.id,
-        source: "listing-report-modal"
-      }
+  await writeAudit({
+    entityType: "complaint",
+    entityId: created.id,
+    action: "public.report.received",
+    newValue: {
+      reason: payload.reason as string,
+      complaintType: typeCode,
+      severity: "medium",
+      targetResourceId: resource.id,
+      source: "listing-report-modal"
     }
   });
 

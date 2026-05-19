@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getConfig } from "@airegistry/sdk";
 import { prisma } from "@/lib/prisma";
+import { getReferenceRow } from "@airegistry/sdk/server";
 import {
   hashUserPassword,
   prepareEmailVerificationToken
@@ -8,6 +9,7 @@ import {
 import { emailTemplates, sendEmail } from "@airegistry/sdk/server";
 import { linkContactsToUser } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
+import { writeAudit } from "@airegistry/sdk";
 
 /**
  * POST /api/auth/register
@@ -60,8 +62,8 @@ export async function POST(req: Request) {
 
   // Look up canonical role + status ids (seeded by Phase 1).
   const [providerRole, invitedStatus] = await Promise.all([
-    prisma.userRoleType.findUnique({ where: { code: "provider" } }),
-    prisma.userStatusType.findUnique({ where: { code: "invited" } })
+    getReferenceRow("userRoleType", "provider"),
+    getReferenceRow("userStatusType", "invited")
   ]);
   if (!providerRole || !invitedStatus) {
     return NextResponse.json(
@@ -99,26 +101,22 @@ export async function POST(req: Request) {
 
   // Audit (Phase 4 will add a richer wrapper; for Phase 2 we write a raw row
   // through the existing AuditLog model so the trail starts on day one).
-  await prisma.auditLog.create({
-    data: {
-      actorUserId: user.id,
-      entityType: "user",
-      entityId: user.id,
-      action: "user.registered",
-      newValue: { email, name, organisationName, role: "provider" }
-    }
+  await writeAudit({
+    actorUserId: user.id,
+    entityType: "user",
+    entityId: user.id,
+    action: "user.registered",
+    newValue: { email, name, organisationName, role: "provider" }
   });
 
   const linkedContacts = await linkContactsToUser(prisma, email, user.id);
   if (linkedContacts > 0) {
-    await prisma.auditLog.create({
-      data: {
-        actorUserId: user.id,
-        entityType: "user",
-        entityId: user.id,
-        action: "user.contact_submissions_linked",
-        newValue: { count: linkedContacts, email }
-      }
+    await writeAudit({
+      actorUserId: user.id,
+      entityType: "user",
+      entityId: user.id,
+      action: "user.contact_submissions_linked",
+      newValue: { count: linkedContacts, email }
     });
   }
 

@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser, loadProviderDashboardStats } from "@airegistry/sdk/server";
 import { StatCard } from "@/components/portals/StatCard";
 import { GatedPublishButton } from "@/components/portals/GatedPublishButton";
 
@@ -13,52 +12,14 @@ export default async function ProviderDashboardPage() {
   // Layout already enforced auth; this is the canonical lookup for provider scoping.
   const providerId = user?.provider?.id ?? null;
 
-  const stats = providerId
-    ? await Promise.all([
-        // Catalogue
-        prisma.resource.count({ where: { providerId } }),
-        prisma.resource.count({
-          where: { providerId, lifecycleStatus: { code: "listed" } }
-        }),
-        prisma.resource.count({
-          where: {
-            providerId,
-            lifecycleStatus: {
-              code: { in: ["draft", "submitted", "in_review", "needs_update"] }
-            }
-          }
-        }),
-        // Inbox: complaints filed at me or my resources
-        prisma.complaint.count({
-          where: {
-            OR: [{ targetProviderId: providerId }, { targetResource: { providerId } }],
-            status: { code: { in: ["open", "investigating"] } }
-          }
-        }),
-        // Inbox: reviews of my stuff
-        prisma.review.count({
-          where: {
-            OR: [{ providerId }, { resource: { providerId } }],
-            status: { code: { in: ["open", "in_review"] } }
-          }
-        }),
-        // Inbox: enforcement actions on my stuff
-        prisma.enforcementAction.count({
-          where: {
-            OR: [{ targetProviderId: providerId }, { targetResource: { providerId } }]
-          }
-        })
-      ])
-    : [0, 0, 0, 0, 0, 0];
-
-  const [
-    resources,
-    listed,
-    openSubs,
+  const {
+    totalResources: resources,
+    listedResources: listed,
+    openSubmissions: openSubs,
     openComplaints,
     openReviews,
     enforcementActions
-  ] = stats;
+  } = await loadProviderDashboardStats(providerId);
 
   return (
     <div className="p-content">

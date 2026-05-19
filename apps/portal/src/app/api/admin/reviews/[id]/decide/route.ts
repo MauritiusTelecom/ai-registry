@@ -7,6 +7,7 @@ import { writeAudit } from "@airegistry/sdk";
 import { emailTemplates } from "@airegistry/sdk/server";
 import { uniqueValidEmails } from "@airegistry/sdk/server";
 import { sendTransactionalEmailAll } from "@airegistry/sdk/server";
+import { getReferenceRow } from "@airegistry/sdk/server";
 import {
   SOVEREIGNTY_CHECKLIST_ITEMS,
   type ChecklistAnswerCode
@@ -107,12 +108,12 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   }
 
   const [decidedStatus, listed, needsUpdate, yesR, noR, naR] = await Promise.all([
-    prisma.reviewStatusType.findUnique({ where: { code: "decided" } }),
-    prisma.lifecycleStatus.findUnique({ where: { code: "listed" } }),
-    prisma.lifecycleStatus.findUnique({ where: { code: "needs_update" } }),
-    prisma.checklistResultType.findUnique({ where: { code: "yes" } }),
-    prisma.checklistResultType.findUnique({ where: { code: "no" } }),
-    prisma.checklistResultType.findUnique({ where: { code: "n_a" } })
+    getReferenceRow("reviewStatusType", "decided"),
+    getReferenceRow("lifecycleStatus", "listed"),
+    getReferenceRow("lifecycleStatus", "needs_update"),
+    getReferenceRow("checklistResultType", "yes"),
+    getReferenceRow("checklistResultType", "no"),
+    getReferenceRow("checklistResultType", "n_a")
   ]);
   if (!decidedStatus || !listed || !needsUpdate || !yesR || !noR || !naR) {
     return NextResponse.json({ error: "Reference data not seeded." }, { status: 503 });

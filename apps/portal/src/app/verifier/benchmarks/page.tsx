@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { loadVerifierBenchmarkCorpus } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 
 export const metadata = { title: "Verifier · Benchmarks" };
@@ -18,33 +18,9 @@ export default async function VerifierBenchmarksPage() {
   const cfg = getConfig();
 
   // Tags shared across multiple listed resources are the closest proxy for
-  // "benchmarked capability". Hide unique-tag noise.
-  const tagUsage = await prisma.resourceTag.groupBy({
-    by: ["tagId"],
-    where: {
-      resource: {
-        publicVisibility: true,
-        lifecycleStatus: { code: { in: ["listed", "needs_update"] } }
-      }
-    },
-    _count: { _all: true }
-  });
-
-  const tags = await prisma.tag.findMany({
-    where: { id: { in: tagUsage.map((g) => g.tagId) } },
-    select: { id: true, name: true }
-  });
-  const nameById = new Map(tags.map((t) => [t.id, t.name]));
-
-  const corpus = tagUsage
-    .map((g) => ({
-      tagId: g.tagId,
-      tag: nameById.get(g.tagId) ?? "-",
-      coverage: g._count._all
-    }))
-    .filter((row) => row.coverage >= 2)
-    .sort((a, b) => b.coverage - a.coverage)
-    .slice(0, 60);
+  // "benchmarked capability". The service hides the two-step group-by +
+  // tag-name-lookup behind a single call.
+  const corpus = await loadVerifierBenchmarkCorpus({ minCoverage: 2, limit: 60 });
 
   return (
     <div className="p-content">

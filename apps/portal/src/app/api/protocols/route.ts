@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 /** GET /api/protocols - endpoint protocol vocabulary (REST/MCP/A2A/gRPC). */
 export async function GET() {
-  const rows = await prisma.protocol.findMany({
-    where: { active: true },
-    select: { code: true, name: true, description: true },
-    orderBy: { sortOrder: "asc" }
-  });
+  const all = await listReferenceTable("protocol");
+  const rows = all.map((r) => ({
+    code: r.code,
+    name: r.name,
+    description: r.description
+  }));
   return NextResponse.json(
     { rows, total: rows.length, generatedAt: new Date().toISOString() },
     {

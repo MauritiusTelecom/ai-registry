@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import { PageHero } from "@/components/public/sections/PageHero";
 import { LogoutButton } from "@/components/public/auth/LogoutButton";
 import { PortalProfileForm } from "@/components/portal/PortalProfileForm";
 import { CONTACT_TOPIC_LABELS, type ContactTopicCode } from "@airegistry/sdk";
+import { loadPortalHome } from "@airegistry/sdk/server";
 
 function isStaff(roles: string[]) {
   return roles.includes("admin") || roles.includes("reviewer");
@@ -21,24 +21,11 @@ export default async function PortalPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login?next=/portal");
 
-  const [profile, verifiedContacts] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: user.id },
-      select: { organisationName: true }
-    }),
-    prisma.contact.findMany({
-    where: { linkedUserId: user.id, emailVerified: true },
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      topic: true,
-      message: true,
-      senderName: true,
-      organisationName: true,
-      createdAt: true
-    }
-  })
-  ]);
+  const homeView = await loadPortalHome(user.id);
+  const { organisationName, verifiedContacts } = homeView;
+  // Keep the legacy `profile` shape for downstream code that references
+  // `profile?.organisationName`.
+  const profile = { organisationName } as const;
 
   return (
     <div>

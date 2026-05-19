@@ -4,6 +4,8 @@ import { getConfig } from "@airegistry/sdk";
 import { emailTemplates } from "@airegistry/sdk/server";
 import { sendTransactionalEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
+import { getReferenceRow } from "@airegistry/sdk/server";
+import { writeAudit } from "@airegistry/sdk";
 
 /**
  * POST /api/complaints
@@ -107,11 +109,11 @@ export async function POST(req: Request) {
 
   // Look up controlled-vocab ids.
   const [type, severity, openStatus] = await Promise.all([
-    prisma.complaintType.findUnique({ where: { code: body.complaintType as string } }),
+    getReferenceRow("complaintType", body.complaintType as string),
     prisma.complaintSeverityType.findUnique({
       where: { code: body.severity as string }
     }),
-    prisma.complaintStatusType.findUnique({ where: { code: "open" } })
+    getReferenceRow("complaintStatusType", "open")
   ]);
   if (!type || !severity || !openStatus) {
     return NextResponse.json(
@@ -139,17 +141,15 @@ export async function POST(req: Request) {
     }
   });
 
-  await prisma.auditLog.create({
-    data: {
-      entityType: "complaint",
-      entityId: created.id,
-      action: "complaint.received",
-      newValue: {
-        complaintType: body.complaintType as string,
-        severity: body.severity as string,
-        targetResourceId,
-        targetProviderId
-      }
+  await writeAudit({
+    entityType: "complaint",
+    entityId: created.id,
+    action: "complaint.received",
+    newValue: {
+      complaintType: body.complaintType as string,
+      severity: body.severity as string,
+      targetResourceId,
+      targetProviderId
     }
   });
 

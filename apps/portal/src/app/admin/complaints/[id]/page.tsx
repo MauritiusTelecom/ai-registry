@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ComplaintAdminPanel } from "@/components/admin/ComplaintAdminPanel";
+import { listReferenceTable } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Complaint" };
 export const dynamic = "force-dynamic";
@@ -43,11 +44,7 @@ export default async function AdminComplaintDetailPage({
   if (!complaint) notFound();
 
   const [statusOptions, adminUsers] = await Promise.all([
-    prisma.complaintStatusType.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: { id: true, code: true, name: true }
-    }),
+    listReferenceTable("complaintStatusType"),
     prisma.user.findMany({
       where: {
         OR: [

@@ -161,3 +161,56 @@ export function preparePasswordResetToken(): OneShotTokenBundle {
 export function hashTokenForLookup(raw: string): string {
   return hashToken(raw);
 }
+
+// ─── Email verification token consumption (governance write) ────────────
+
+import { prisma } from "../prisma";
+import { writeAudit } from "../audit/write-audit";
+
+export type ConsumeEmailVerificationResult =
+  | { ok: true; email: string }
+  | { ok: false; reason: "expired_or_invalid" };
+
+/**
+ * Consume an email-verification token. If the token matches a non-expired
+ * user row, mark `emailVerified = true`, clear the token, promote status
+ * from `invited` to `active` (when that ref-row exists), and write an
+ * audit row. Idempotent in the sense that a second call returns
+ * "expired_or_invalid" because the token is cleared.
+ *
+ * Used by:
+ *   - GET /api/auth/verify-email
+ *   - The inline /auth/verify/page.tsx server page (which performs the same
+ *     transition so the user sees the outcome on the first paint).
+ */
+export async function consumeEmailVerificationToken(
+  rawToken: string
+): Promise<ConsumeEmailVerificationResult> {
+  const tokenHash = hashToken(rawToken);
+  const user = await prisma.user.findFirst({
+    where: { verificationToken: tokenHash }
+  });
+  if (!user || !user.verificationTokenExpiry || user.verificationTokenExpiry < new Date()) {
+    return { ok: false, reason: "expired_or_invalid" };
+  }
+  // Promote status from `invited` → `active` if the active ref-row exists.
+  const activeStatus = await prisma.userStatusType.findUnique({
+    where: { code: "active" }
+  });
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      emailVerified: true,
+      verificationToken: null,
+      verificationTokenExpiry: null,
+      ...(activeStatus ? { statusId: activeStatus.id } : {})
+    }
+  });
+  await writeAudit({
+    actorUserId: user.id,
+    entityType: "user",
+    entityId: user.id,
+    action: "user.email_verified"
+  });
+  return { ok: true, email: user.email };
+}
