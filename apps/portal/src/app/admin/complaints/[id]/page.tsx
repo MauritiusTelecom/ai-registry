@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { ComplaintAdminPanel } from "@/components/admin/ComplaintAdminPanel";
 import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadAdminComplaintDetail } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Complaint" };
 export const dynamic = "force-dynamic";
@@ -20,42 +20,12 @@ export default async function AdminComplaintDetailPage({
 }) {
   const { id } = await params;
 
-  const complaint = await prisma.complaint.findUnique({
-    where: { id },
-    include: {
-      complaintType: { select: { code: true, name: true } },
-      severity: { select: { code: true, name: true } },
-      status: { select: { id: true, code: true, name: true } },
-      targetResource: {
-        select: { slug: true, title: true, provider: { select: { displayName: true } } }
-      },
-      targetProvider: { select: { slug: true, displayName: true } },
-      assignedTo: { select: { id: true, name: true, email: true } },
-      enforcementActions: {
-        include: {
-          actionType: { select: { name: true } },
-          performedBy: { select: { name: true } }
-        },
-        orderBy: { performedAt: "desc" }
-      }
-    }
-  });
+  const { complaint, assigneeCandidates } = await loadAdminComplaintDetail(id);
 
   if (!complaint) notFound();
 
-  const [statusOptions, adminUsers] = await Promise.all([
-    listReferenceTable("complaintStatusType"),
-    prisma.user.findMany({
-      where: {
-        OR: [
-          { role: { code: { in: ["admin", "reviewer"] } } },
-          { roleAssignments: { some: { role: { code: { in: ["admin", "reviewer"] } } } } }
-        ]
-      },
-      select: { id: true, name: true, email: true },
-      orderBy: { name: "asc" }
-    })
-  ]);
+  const statusOptions = await listReferenceTable("complaintStatusType");
+  const adminUsers = assigneeCandidates;
 
   const target = complaint.targetResource
     ? `${complaint.targetResource.title} · ${complaint.targetResource.provider.displayName}`

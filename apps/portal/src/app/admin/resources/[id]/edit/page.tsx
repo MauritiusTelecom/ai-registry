@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import { ResourceEditForm } from "@/components/admin/ResourceEditForm";
 import { ResourceLifecyclePanel } from "@/components/admin/ResourceLifecyclePanel";
 import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadAdminResourceForEdit } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Edit resource" };
 export const dynamic = "force-dynamic";
@@ -27,35 +27,7 @@ export default async function AdminResourceEditPage({
 
   const { id } = await params;
 
-  const resource = await prisma.resource.findUnique({
-    where: { id },
-    include: {
-      resourceType: { select: { code: true, name: true } },
-      provider: { select: { slug: true, displayName: true } },
-      primaryJurisdiction: { select: { code: true, name: true } },
-      lifecycleStatus: { select: { code: true, name: true } },
-      listingOrigin: { select: { code: true, name: true } },
-      riskLevel: { select: { code: true } },
-      resourceBases: { include: { sovereigntyBasis: { select: { code: true } } } },
-      resourceLanguages: { include: { language: { select: { code: true } } } },
-      resourceSectors: { include: { sector: { select: { code: true } } } },
-      evidence: {
-        include: {
-          sovereigntyBasis: { select: { code: true } },
-          evidenceType: { select: { code: true } }
-        },
-        orderBy: { createdAt: "asc" }
-      },
-      endpoints: {
-        include: {
-          protocol: { select: { code: true } },
-          authMethod: { select: { code: true } },
-          accessModel: { select: { code: true } }
-        },
-        orderBy: [{ primary: "desc" }, { createdAt: "asc" }]
-      }
-    }
-  });
+  const { resource, providers } = await loadAdminResourceForEdit(id);
   if (!resource) notFound();
 
   const [
@@ -69,7 +41,6 @@ export default async function AdminResourceEditPage({
     languages,
     sectors,
     resourceTypes,
-    providers,
     listingOrigins
   ] = await Promise.all([
     listReferenceTable("riskLevel"),
@@ -82,11 +53,6 @@ export default async function AdminResourceEditPage({
     listReferenceTable("language", { orderBy: "name" }),
     listReferenceTable("sector", { orderBy: "name" }),
     listReferenceTable("resourceType"),
-    prisma.provider.findMany({
-      where: { adminSuspended: false },
-      orderBy: { displayName: "asc" },
-      select: { slug: true, displayName: true }
-    }),
     listReferenceTable("listingOrigin")
   ]);
 

@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
 import { ResourcesAdmin } from "@/components/admin/ResourcesAdmin";
 import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadActiveProvidersForFilter } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Resources" };
 export const dynamic = "force-dynamic";
@@ -23,11 +23,7 @@ export default async function AdminResourcesPage() {
   const [kinds, lifecycles, providers, jurisdictions, riskLevels] = await Promise.all([
     listReferenceTable("resourceType"),
     listReferenceTable("lifecycleStatus"),
-    prisma.provider.findMany({
-      where: { adminSuspended: false },
-      orderBy: { displayName: "asc" },
-      select: { slug: true, displayName: true }
-    }),
+    loadActiveProvidersForFilter(),
     listReferenceTable("jurisdiction", { orderBy: "name" }),
     listReferenceTable("riskLevel")
   ]);

@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 import { listReferenceTable } from "@airegistry/sdk/server";
+import { loadAdminComplaintsView } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Complaints" };
 export const dynamic = "force-dynamic";
@@ -102,56 +102,26 @@ export default async function AdminComplaintsPage({
   const me = await getCurrentUser();
   const myId = me?.id ?? null;
 
-  const rows = await prisma.complaint.findMany({
-    where: whereForStatus(status, myId),
-    include: {
-      complaintType: { select: { name: true } },
-      severity: { select: { code: true, name: true } },
-      status: { select: { code: true, name: true } },
-      targetResource: {
-        select: { slug: true, title: true, provider: { select: { displayName: true } } }
-      },
-      targetProvider: { select: { slug: true, displayName: true } },
-      assignedTo: { select: { name: true, email: true } }
-    },
-    orderBy: [{ status: { sortOrder: "asc" } }, { createdAt: "desc" }],
-    take: 500
-  });
+  const view = await loadAdminComplaintsView({ statusFilter: status, actorUserId: myId });
+  const rows = view.rows;
 
-  const projected: Row[] = rows.map((c) => {
-    const target = c.targetResource
-      ? `${c.targetResource.title} · ${c.targetResource.provider.displayName}`
-      : c.targetProvider
-        ? c.targetProvider.displayName
-        : "-";
-    return {
-      id: c.id,
-      ts: c.submittedAt.toISOString().slice(0, 10),
-      type: c.complaintType.name,
-      severity: c.severity.code,
-      statusCode: c.status.code,
-      statusName: c.status.name,
-      target,
-      targetSlug: c.targetResource?.slug ?? null,
-      complainant: c.complainantName ?? (c.complainantEmail ?? "(anonymous)"),
-      complainantEmail: c.complainantEmail,
-      excerpt:
-        c.description.length > 110 ? `${c.description.slice(0, 110)}…` : c.description,
-      assignedTo: c.assignedTo ? c.assignedTo.name : null
-    };
-  });
+  const projected: Row[] = rows.map((c) => ({
+    id: c.id,
+    ts: c.ts,
+    type: c.type,
+    severity: c.severityCode,
+    statusCode: c.statusCode,
+    statusName: c.statusName,
+    target: c.target,
+    targetSlug: c.targetSlug,
+    complainant: c.complainantName ?? c.complainantEmail ?? "(anonymous)",
+    complainantEmail: c.complainantEmail,
+    excerpt:
+      c.description.length > 110 ? `${c.description.slice(0, 110)}…` : c.description,
+    assignedTo: c.assignedToName
+  }));
 
-  // Group counts for the filter chips - one query covers it; cheap.
-  const allCounts = await prisma.complaint.groupBy({
-    by: ["statusId"],
-    _count: { _all: true }
-  });
-  const statusRefs = await listReferenceTable("complaintStatusType", { activeOnly: false });
-  const countsByCode: Record<string, number> = {};
-  for (const r of allCounts) {
-    const ref = statusRefs.find((s) => s.id === r.statusId);
-    if (ref) countsByCode[ref.code] = r._count._all;
-  }
+  const countsByCode = view.countsByStatusCode;
   const totalAll = Object.values(countsByCode).reduce((a, b) => a + b, 0);
 
   const columns: Column<Row>[] = [
@@ -241,15 +211,9 @@ export default async function AdminComplaintsPage({
   const needsActionCount =
     (countsByCode["open"] ?? 0) + (countsByCode["investigating"] ?? 0);
 
-  // Personal queue count - only meaningful when we have a current user.
-  const mineCount = myId
-    ? await prisma.complaint.count({
-        where: {
-          assignedToId: myId,
-          status: { code: { in: ["open", "investigating"] } }
-        }
-      })
-    : 0;
+  // Personal queue count — service already computed it from the same
+  // actor context so we don't pay for a second round-trip.
+  const mineCount = view.myAssignedOpenCount;
 
   const tabs: { code: StatusFilter; label: string; count: number }[] = [
     { code: "mine", label: "Assigned to me", count: mineCount },

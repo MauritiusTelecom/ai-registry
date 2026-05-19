@@ -129,7 +129,21 @@ export {
   loadSovereignPoliciesView,
   loadProviderAnalytics,
   loadSovereignReportsSnapshot,
-  loadVerifierReportsSnapshot
+  loadVerifierReportsSnapshot,
+  loadAdminDashboardStats,
+  loadAdminAuditLog,
+  loadAdminComplaintsView,
+  loadAdminContactsView,
+  loadActiveProvidersForFilter,
+  loadAdminBrandingForm,
+  loadAdminReviewQueue,
+  loadAdminReviewForDecide,
+  loadAdminContactDetail,
+  loadAdminProviderDetail,
+  loadAdminResourceForEdit,
+  loadAdminComplaintDetail,
+  loadAdminSettingsProviderCount,
+  loadBrandingSingleton
 } from "@airegistry/core/services/portal";
 export type {
   ProviderDashboardStats,
@@ -160,7 +174,18 @@ export type {
   SovereignPoliciesView,
   ProviderAnalyticsView,
   SovereignReportsSnapshot,
-  VerifierReportsSnapshot
+  VerifierReportsSnapshot,
+  AdminDashboardStats,
+  AdminAuditLogRow,
+  AdminComplaintRow,
+  AdminComplaintsView,
+  AdminComplaintsFilter,
+  AdminContactRow,
+  AdminContactsView,
+  ActiveProviderForFilter,
+  AdminBrandingView,
+  AdminProviderDetail,
+  BrandingRow
 } from "@airegistry/core/services/portal";
 
 // Prisma namespace — exposed to apps so they can type filter-clauses

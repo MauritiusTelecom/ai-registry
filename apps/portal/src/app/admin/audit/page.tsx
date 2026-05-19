@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
 import { DataTable, type Column } from "@/components/portals/DataTable";
+import { loadAdminAuditLog } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Audit log" };
 export const dynamic = "force-dynamic";
@@ -14,21 +14,14 @@ type Row = {
 };
 
 export default async function AdminAuditPage() {
-  const rows = await prisma.auditLog.findMany({
-    include: {
-      actor: { select: { name: true, email: true } }
-    },
-    orderBy: { createdAt: "desc" },
-    take: 200
-  });
-
-  const projected: Row[] = rows.map((a) => ({
+  const raw = await loadAdminAuditLog({ limit: 200 });
+  const projected: Row[] = raw.map((a) => ({
     id: a.id,
     action: a.action,
     entityType: a.entityType,
     entityId: a.entityId,
-    actor: a.actor ? `${a.actor.name} (${a.actor.email})` : "system",
-    ts: a.createdAt.toISOString().replace("T", " ").slice(0, 19)
+    actor: a.actorName ? `${a.actorName} (${a.actorEmail})` : "system",
+    ts: a.ts
   }));
 
   const columns: Column<Row>[] = [

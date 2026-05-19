@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
 import { getConfig } from "@airegistry/sdk";
 import { BrandingForm } from "@/components/admin/BrandingForm";
+import { loadAdminBrandingForm } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Branding" };
 export const dynamic = "force-dynamic";
@@ -11,9 +11,7 @@ const DEFAULT_BUILD_LINE = "BUILD 2026.05.07-r3 · TZ:GMT+4";
 
 export default async function AdminBrandingPage() {
   const cfg = getConfig();
-  const row = await prisma.siteBranding.findUnique({
-    where: { id: SINGLETON_ID }
-  });
+  const row = await loadAdminBrandingForm(SINGLETON_ID);
 
   return (
     <div className="p-content">

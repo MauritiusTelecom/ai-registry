@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { CONTACT_TOPIC_LABELS } from "@airegistry/sdk";
 import { ContactAdminPanel } from "@/components/admin/ContactAdminPanel";
+import { loadAdminContactDetail } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Admin · Contact message" };
 export const dynamic = "force-dynamic";
@@ -24,12 +24,7 @@ export default async function AdminContactDetailPage({
 }) {
   const { id } = await params;
 
-  const contact = await prisma.contact.findUnique({
-    where: { id },
-    include: {
-      linkedUser: { select: { id: true, name: true, email: true } }
-    }
-  });
+  const contact = await loadAdminContactDetail(id);
 
   if (!contact) notFound();
 
