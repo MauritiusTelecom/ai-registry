@@ -205,4 +205,15 @@ function Pill({
           fontFamily: "IBM Plex Mono, monospace",
           marginTop: 2
         }}
-      
+      >
+        {code}
+        {description ? (
+          <>
+            <br />
+            <span style={{ color: "var(--text-3)" }}>{description}</span>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
