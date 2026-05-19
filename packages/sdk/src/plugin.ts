@@ -1,21 +1,5 @@
 /**
  * Plugin manifest shape (DRAFT — not stable until v1.0).
- *
- * Every AI Registry extension ships an `airegistry-plugin.json` at its
- * package root that conforms to PluginManifest. The core loader reads the
- * manifest, validates it, and installs the declared hooks into the running
- * registry.
- *
- * Scope rules enforced at load time (mirror of GOVERNANCE.md §3 for plugins):
- *
- *   - REST routes are namespaced under /api/ext/<plugin-id>/...; the core
- *     /api surface is never extensible.
- *   - MCP tools are namespaced ext.<plugin-id>.*; the core registry.* tools
- *     are never extensible.
- *   - Schema additions land in a dedicated `ext_<plugin-id>` PostgreSQL
- *     schema; the core `registry` schema is never mutated by a plugin.
- *   - Governance writes must go through the core audit primitive; plugins
- *     cannot write to AuditLog directly.
  */
 
 export type SemVer = `${number}.${number}.${number}` | `${number}.${number}.${number}-${string}`;
@@ -49,7 +33,7 @@ export type PluginManifest = {
   permissions?: PluginPermission[];
   /** Additional BCP-47 locale dictionaries layered over SUPPORTED_LANGUAGES. */
   locales?: PluginLocaleBundle[];
-  /** Audit event subscriptions (e.g. "resource.published", "provider.verified"). */
+  /** Audit event subscriptions. */
   events?: string[];
 };
 

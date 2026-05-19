@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
+import { getCurrentUser, markNotificationsRead } from "@airegistry/sdk/server";
 
 /**
  * POST /api/portal/notifications/read
@@ -50,16 +49,6 @@ export async function POST(req: Request) {
     );
   }
 
-  // Persist as a single createMany with skipDuplicates so a re-post (two
-  // tabs, slow network) doesn't trip the unique constraint. The composite
-  // unique on (userId, notificationKey) does the dedupe.
-  const result = await prisma.notificationRead.createMany({
-    data: ids.map((notificationKey) => ({
-      userId: user.id,
-      notificationKey
-    })),
-    skipDuplicates: true
-  });
-
-  return NextResponse.json({ ok: true, written: result.count });
+  const { written } = await markNotificationsRead(user.id, ids);
+  return NextResponse.json({ ok: true, written });
 }

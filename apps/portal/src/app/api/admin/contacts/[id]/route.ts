@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
-import { writeAudit } from "@airegistry/sdk";
+import { getCurrentUser, deleteAdminContactIfExists } from "@airegistry/sdk/server";
 
 /**
  * DELETE /api/admin/contacts/:id
@@ -18,24 +16,7 @@ export async function DELETE(_req: Request, ctx: { params: Promise<{ id: string 
   }
 
   const { id } = await ctx.params;
-
-  const existing = await prisma.contact.findUnique({ where: { id } });
-  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
-
-  await prisma.contact.delete({ where: { id } });
-
-  await writeAudit({
-    actorUserId: user.id,
-    entityType: "contact",
-    entityId: id,
-    action: "contact.deleted",
-    previousValue: {
-      email: existing.email,
-      topic: existing.topic,
-      messageLength: existing.message.length,
-      emailVerified: existing.emailVerified
-    }
-  });
-
+  const ok = await deleteAdminContactIfExists(user.id, id);
+  if (!ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

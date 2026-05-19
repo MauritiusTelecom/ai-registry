@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getConfig } from "@airegistry/sdk";
 import { prisma } from "@/lib/prisma";
-import { getReferenceRow } from "@airegistry/sdk/server";
 import {
   hashUserPassword,
   prepareEmailVerificationToken
@@ -10,6 +9,7 @@ import { emailTemplates, sendEmail } from "@airegistry/sdk/server";
 import { linkContactsToUser } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
 import { writeAudit } from "@airegistry/sdk";
+import { findUserByEmail, createSelfRegisteredUser } from "@airegistry/sdk/server";
 
 /**
  * POST /api/auth/register
@@ -60,21 +60,10 @@ export async function POST(req: Request) {
       ? body.organisationName.trim()
       : null;
 
-  // Look up canonical role + status ids (seeded by Phase 1).
-  const [providerRole, invitedStatus] = await Promise.all([
-    getReferenceRow("userRoleType", "provider"),
-    getReferenceRow("userStatusType", "invited")
-  ]);
-  if (!providerRole || !invitedStatus) {
-    return NextResponse.json(
-      { error: "Reference data not seeded (run npm run db:seed)." },
-      { status: 503 }
-    );
-  }
-
-  const existing = await prisma.user.findUnique({ where: { email } });
+  // Pre-flight dup check before creating — lets us return a precise 409
+  // separately from the "ref data not seeded" 503 the service raises.
+  const existing = await findUserByEmail(email);
   if (existing) {
-    // Don't leak the registration state - but do let the user try to log in.
     return NextResponse.json(
       { error: "An account with this email already exists. Try logging in." },
       { status: 409 }
@@ -84,20 +73,22 @@ export async function POST(req: Request) {
   const passwordHash = await hashUserPassword(body.password as string);
   const { rawToken, hashedToken: tokenHash, expiry } = prepareEmailVerificationToken();
 
-  const user = await prisma.user.create({
-    data: {
+  let user: { id: string; email: string; name: string };
+  try {
+    user = await createSelfRegisteredUser({
       email,
+      passwordHash,
       name,
       organisationName,
-      passwordHash,
-      roleId: providerRole.id,
-      statusId: invitedStatus.id,
-      emailVerified: false,
-      verificationToken: tokenHash,
-      verificationTokenExpiry: expiry,
-      onboardingComplete: false
-    }
-  });
+      verificationTokenHash: tokenHash,
+      verificationTokenExpiry: expiry
+    });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : String(e) },
+      { status: 503 }
+    );
+  }
 
   // Audit (Phase 4 will add a richer wrapper; for Phase 2 we write a raw row
   // through the existing AuditLog model so the trail starts on day one).

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { hashTokenForLookup } from "@airegistry/sdk/server";
+import { verifyContactSubmissionToken } from "@airegistry/sdk/server";
 
 /**
  * GET /api/public/contact/verify?token=<raw>
@@ -19,42 +19,13 @@ export async function GET(req: Request) {
   }
 
   const tokenHash = hashTokenForLookup(raw);
-  const contact = await prisma.contact.findFirst({
-    where: { emailVerificationToken: tokenHash }
-  });
-
-  if (
-    !contact ||
-    !contact.emailVerificationExpiry ||
-    contact.emailVerificationExpiry < new Date()
-  ) {
-    return NextResponse.json({ ok: false, reason: "expired_or_invalid" }, { status: 400 });
+  const result = await verifyContactSubmissionToken(tokenHash);
+  if (!result.ok) {
+    return NextResponse.json({ ok: false, reason: result.reason }, { status: 400 });
   }
-
-  if (contact.emailVerified) {
-    return NextResponse.json({ ok: true, email: contact.email, alreadyVerified: true });
-  }
-
-  await prisma.$transaction([
-    prisma.contact.update({
-      where: { id: contact.id },
-      data: {
-        emailVerified: true,
-        emailVerificationToken: null,
-        emailVerificationExpiry: null
-      }
-    }),
-    prisma.auditLog.create({
-      data: {
-        actorUserId: contact.linkedUserId,
-        entityType: "contact",
-        entityId: contact.id,
-        action: "contact.email_verified",
-        previousValue: { emailVerified: false },
-        newValue: { emailVerified: true, email: contact.email }
-      }
-    })
-  ]);
-
-  return NextResponse.json({ ok: true, email: contact.email });
+  return NextResponse.json(
+    result.alreadyVerified
+      ? { ok: true, email: result.email, alreadyVerified: true }
+      : { ok: true, email: result.email }
+  );
 }

@@ -434,6 +434,377 @@ export type ProviderContactRequestRow = {
   linkedUserEmail: string | null;
 };
 
+// ─── Portal: self-service profile + provider notifications ─────────────
+
+export type ProfileUpdatePatch = {
+  name?: string;
+  organisationName?: string | null;
+};
+
+export type ProfileUpdateResult = {
+  id: string;
+  name: string;
+  organisationName: string | null;
+  email: string;
+};
+
+/**
+ * Apply the actor's own profile update and write the audit row atomically.
+ * The before-snapshot lives inside the service so the route can't forget
+ * the previousValue field.
+ */
+export async function updateMyProfile(
+  userId: string,
+  patch: ProfileUpdatePatch
+): Promise<ProfileUpdateResult> {
+  const prev = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true, organisationName: true }
+  });
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: patch,
+    select: { id: true, name: true, organisationName: true, email: true }
+  });
+  await writeAuditFromCore({
+    actorUserId: userId,
+    entityType: "user",
+    entityId: userId,
+    action: "user.profile_updated",
+    previousValue: prev,
+    newValue: { name: updated.name, organisationName: updated.organisationName }
+  });
+  return updated;
+}
+
+export type ProviderNotificationsPatch = {
+  incidentChannel?: string | null;
+  oncallEmail?: string | null;
+  webhookUrl?: string | null;
+};
+
+/**
+ * Update the provider's notification routing config + audit. Returns null
+ * if the provider doesn't exist (the route returns 404 for that case).
+ */
+export async function updateProviderNotificationsConfig(
+  actorUserId: string,
+  providerId: string,
+  patch: ProviderNotificationsPatch
+): Promise<{ updated: Record<string, string | null> } | null> {
+  const prev = await prisma.provider.findUnique({
+    where: { id: providerId },
+    select: { incidentChannel: true, oncallEmail: true, webhookUrl: true }
+  });
+  if (!prev) return null;
+  const data: Record<string, string | null> = {};
+  if (patch.incidentChannel !== undefined) data.incidentChannel = patch.incidentChannel;
+  if (patch.oncallEmail !== undefined) data.oncallEmail = patch.oncallEmail;
+  if (patch.webhookUrl !== undefined) data.webhookUrl = patch.webhookUrl;
+  await prisma.provider.update({ where: { id: providerId }, data });
+  await writeAuditFromCore({
+    actorUserId,
+    entityType: "provider",
+    entityId: providerId,
+    action: "provider.notifications_updated",
+    previousValue: prev,
+    newValue: data
+  });
+  return { updated: data };
+}
+
+// Local writeAudit reference (the SDK barrel can't be imported here due to
+// circular-dep risk; pull straight from the primitive).
+async function writeAuditFromCore(input: {
+  actorUserId: string | null;
+  entityType: string;
+  entityId: string;
+  action: string;
+  previousValue?: unknown;
+  newValue?: unknown;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+}): Promise<void> {
+  const { writeAudit } = await import("../audit/write-audit");
+  return writeAudit(input);
+}
+
+// ─── Public submit / verify flows ────────────────────────────────────────
+
+/**
+ * Return true if a user with this id still exists. Cheap projection
+ * (only `id`) used by the contact-submit flow to verify the session
+ * user before linking the contact row to it.
+ */
+export async function userExistsById(userId: string): Promise<boolean> {
+  const u = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true }
+  });
+  return !!u;
+}
+
+export type SubmitContactInput = {
+  senderName: string;
+  organisationName: string;
+  email: string;
+  topic: string;
+  message: string;
+  emailVerificationTokenHash: string;
+  emailVerificationExpiry: Date;
+  linkedUserId: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+};
+
+export type SubmitContactResult = {
+  id: string;
+  linkedUserId: string | null;
+};
+
+/**
+ * Persist a public contact submission. If `linkedUserId` is provided and
+ * the FK fails (P2003 — stale session?), retries once without the link so
+ * anonymous submission succeeds even when the session resolution races.
+ *
+ * Throws prisma errors for the caller to translate to HTTP responses
+ * (P1000 / P2021 / P1001 each have specific user-facing messages).
+ */
+export async function submitContactRecord(
+  input: SubmitContactInput
+): Promise<SubmitContactResult> {
+  // Lazy-load Prisma error class to keep the SDK barrel happy.
+  const { Prisma: PrismaNs } = await import("../../generated/prisma");
+  const createData = {
+    senderName: input.senderName,
+    organisationName: input.organisationName,
+    email: input.email,
+    topic: input.topic,
+    message: input.message,
+    emailVerified: false,
+    emailVerificationToken: input.emailVerificationTokenHash,
+    emailVerificationExpiry: input.emailVerificationExpiry,
+    linkedUserId: input.linkedUserId,
+    ipAddress: input.ipAddress,
+    userAgent: input.userAgent
+  };
+  try {
+    const row = await prisma.contact.create({ data: createData });
+    return { id: row.id, linkedUserId: row.linkedUserId };
+  } catch (first) {
+    const code = (first as { code?: string }).code;
+    if (
+      input.linkedUserId &&
+      code === "P2003" &&
+      first instanceof PrismaNs.PrismaClientKnownRequestError
+    ) {
+      const row = await prisma.contact.create({
+        data: { ...createData, linkedUserId: null }
+      });
+      return { id: row.id, linkedUserId: row.linkedUserId };
+    }
+    throw first;
+  }
+}
+
+export type VerifyContactTokenResult =
+  | { ok: true; email: string; alreadyVerified?: boolean }
+  | { ok: false; reason: "expired_or_invalid" };
+
+/**
+ * Consume a contact-verification token atomically: looks up by hash,
+ * marks the row verified, clears the token, and writes the audit row
+ * inside a single `prisma.$transaction([...])`.
+ *
+ * Returns `{ ok: true, alreadyVerified: true }` when the token matches a
+ * row that's already verified (idempotent).
+ */
+export async function verifyContactSubmissionToken(
+  hashedToken: string
+): Promise<VerifyContactTokenResult> {
+  const contact = await prisma.contact.findFirst({
+    where: { emailVerificationToken: hashedToken }
+  });
+  if (
+    !contact ||
+    !contact.emailVerificationExpiry ||
+    contact.emailVerificationExpiry < new Date()
+  ) {
+    return { ok: false, reason: "expired_or_invalid" };
+  }
+  if (contact.emailVerified) {
+    return { ok: true, email: contact.email, alreadyVerified: true };
+  }
+  await prisma.$transaction([
+    prisma.contact.update({
+      where: { id: contact.id },
+      data: {
+        emailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpiry: null
+      }
+    }),
+    prisma.auditLog.create({
+      data: {
+        actorUserId: contact.linkedUserId,
+        entityType: "contact",
+        entityId: contact.id,
+        action: "contact.email_verified",
+        previousValue: { emailVerified: false },
+        newValue: { emailVerified: true, email: contact.email }
+      }
+    })
+  ]);
+  return { ok: true, email: contact.email };
+}
+
+/**
+ * Existence check + slim projection for a resource targeted by a public
+ * complaint report. Used by /api/public/report.
+ */
+export async function findResourceForPublicReport(
+  resourceId: string
+): Promise<{ id: string; title: string; airId: string | null } | null> {
+  const r = await prisma.resource.findUnique({
+    where: { id: resourceId },
+    select: { id: true, title: true, airId: true }
+  });
+  return r ?? null;
+}
+
+export type CreatePublicComplaintInput = {
+  targetResourceId: string;
+  complaintTypeId: string;
+  severityId: string;
+  statusId: string;
+  complainantEmail: string;
+  description: string;
+};
+
+/**
+ * Create a public-facing complaint row. The caller is /api/public/report;
+ * it resolves the ref-table ids upstream and passes them in so this
+ * helper stays simple. The route writes its own audit row afterwards
+ * (with the original modal reason) so reviewers see precisely which
+ * option the reporter picked.
+ */
+export async function createPublicComplaint(
+  input: CreatePublicComplaintInput
+): Promise<{ id: string }> {
+  const row = await prisma.complaint.create({
+    data: {
+      targetResourceId: input.targetResourceId,
+      complaintTypeId: input.complaintTypeId,
+      severityId: input.severityId,
+      statusId: input.statusId,
+      complainantEmail: input.complainantEmail,
+      description: input.description
+    }
+  });
+  return { id: row.id };
+}
+
+// ─── Public complaints route helpers ─────────────────────────────────────
+
+export async function findResourceByAirId(
+  airId: string
+): Promise<{ id: string } | null> {
+  return prisma.resource.findUnique({
+    where: { airId },
+    select: { id: true }
+  });
+}
+
+export async function findProviderBySlugForComplaint(
+  slug: string
+): Promise<{ id: string } | null> {
+  return prisma.provider.findUnique({
+    where: { slug },
+    select: { id: true }
+  });
+}
+
+export async function findComplaintSeverityByCode(
+  code: string
+): Promise<{ id: string } | null> {
+  return prisma.complaintSeverityType.findUnique({
+    where: { code },
+    select: { id: true }
+  });
+}
+
+export type CreatePublicComplaintRichInput = {
+  targetResourceId: string | null;
+  targetProviderId: string | null;
+  complaintTypeId: string;
+  severityId: string;
+  statusId: string;
+  complainantName: string | null;
+  complainantEmail: string | null;
+  description: string;
+};
+
+export async function createPublicComplaintRich(
+  input: CreatePublicComplaintRichInput
+): Promise<{ id: string; complainantEmail: string | null }> {
+  const created = await prisma.complaint.create({
+    data: input
+  });
+  return { id: created.id, complainantEmail: created.complainantEmail };
+}
+
+export async function loadResourceTitleById(
+  id: string
+): Promise<{ title: string } | null> {
+  return prisma.resource.findUnique({
+    where: { id },
+    select: { title: true }
+  });
+}
+
+export async function loadProviderSummaryById(
+  id: string
+): Promise<{ displayName: string; slug: string } | null> {
+  return prisma.provider.findUnique({
+    where: { id },
+    select: { displayName: true, slug: true }
+  });
+}
+
+// ─── Public jurisdictions catalogue (nested type+parent joins) ──────────
+
+export type PublicJurisdictionRow = {
+  code: string;
+  name: string;
+  type: { code: string; name: string } | null;
+  parent: { code: string; name: string } | null;
+};
+
+/**
+ * Public jurisdictions list — exposed at GET /api/jurisdictions. Unlike
+ * the flat `listReferenceTable("jurisdiction")` catalog, this surface
+ * includes nested type + parent joins per AIR-SPEC §8 jurisdictional
+ * taxonomy.
+ */
+export async function loadPublicJurisdictionsList(): Promise<PublicJurisdictionRow[]> {
+  const rows = await prisma.jurisdiction.findMany({
+    where: { active: true },
+    select: {
+      code: true,
+      name: true,
+      type: { select: { code: true, name: true } },
+      parent: { select: { code: true, name: true } }
+    },
+    orderBy: [{ type: { sortOrder: "asc" } }, { code: "asc" }]
+  });
+  return rows.map((j) => ({
+    code: j.code,
+    name: j.name,
+    type: j.type ? { code: j.type.code, name: j.type.name } : null,
+    parent: j.parent ? { code: j.parent.code, name: j.parent.name } : null
+  }));
+}
+
 // ─── Branding singleton ─────────────────────────────────────────────────
 
 export type BrandingRow = {
@@ -2080,4 +2451,683 @@ export async function loadMyContactRequests(
     linkedUserName: c.linkedUser?.name ?? null,
     linkedUserEmail: c.linkedUser?.email ?? null
   }));
+}
+
+// ─── Portal: provider organisation profile ───────────────────────────────
+
+export type UpdateProviderOrganisationInput = {
+  displayName: string;
+  slug: string;
+  contactEmail: string;
+  legalName: string | null;
+  description: string | null;
+  providerTypeId: string;
+  jurisdictionId: string;
+  unverifiedStatusId: string;
+  /** Echoed back into the audit payload so the route's reference codes
+   * remain readable in the audit log. */
+  providerTypeCode: string;
+  jurisdictionCode: string;
+};
+
+export type UpdateProviderOrganisationResult =
+  | {
+      ok: true;
+      provider: { id: string; slug: string; displayName: string; contactEmail: string };
+    }
+  | { ok: false; code: "provider_not_found" | "slug_taken" };
+
+/**
+ * Apply the provider-portal "complete your organisation profile" update
+ * inside a single transaction. Sets User.onboardingComplete=true and writes
+ * the audit row with the before-snapshot.
+ *
+ * Reference rows (provider type, jurisdiction, unverified status) MUST be
+ * resolved by the caller via the reference catalog service. This keeps the
+ * service signature flat (no nested reference-code validation).
+ */
+export async function updateProviderOrganisation(
+  actorUserId: string,
+  providerId: string,
+  input: UpdateProviderOrganisationInput
+): Promise<UpdateProviderOrganisationResult> {
+  const existing = await prisma.provider.findUnique({
+    where: { id: providerId },
+    select: { slug: true }
+  });
+  if (!existing) return { ok: false, code: "provider_not_found" };
+
+  if (input.slug !== existing.slug) {
+    const clash = await prisma.provider.findUnique({ where: { slug: input.slug } });
+    if (clash) return { ok: false, code: "slug_taken" };
+  }
+
+  const prev = await prisma.provider.findUnique({
+    where: { id: providerId },
+    select: {
+      slug: true,
+      displayName: true,
+      contactEmail: true,
+      homeJurisdictionId: true,
+      typeId: true
+    }
+  });
+
+  await prisma.$transaction([
+    prisma.provider.update({
+      where: { id: providerId },
+      data: {
+        slug: input.slug,
+        displayName: input.displayName,
+        contactEmail: input.contactEmail,
+        legalName: input.legalName,
+        description: input.description,
+        typeId: input.providerTypeId,
+        homeJurisdictionId: input.jurisdictionId,
+        statusId: input.unverifiedStatusId
+      }
+    }),
+    prisma.user.update({
+      where: { id: actorUserId },
+      data: { onboardingComplete: true }
+    })
+  ]);
+
+  const updated = await prisma.provider.findUniqueOrThrow({
+    where: { id: providerId },
+    select: { id: true, slug: true, displayName: true, contactEmail: true }
+  });
+
+  await writeAuditFromCore({
+    actorUserId,
+    entityType: "provider",
+    entityId: providerId,
+    action: "provider.organisation_profile_completed",
+    previousValue: prev,
+    newValue: {
+      slug: input.slug,
+      displayName: input.displayName,
+      contactEmail: input.contactEmail,
+      providerTypeCode: input.providerTypeCode,
+      jurisdictionCode: input.jurisdictionCode,
+      onboardingComplete: true
+    }
+  });
+
+  return { ok: true, provider: updated };
+}
+
+// ─── Portal: provider workspace resources ────────────────────────────────
+
+export type MyResourceListRow = {
+  id: string;
+  slug: string;
+  title: string;
+  shortDescription: string;
+  type: string;
+  lifecycle: string;
+  lifecycleName: string;
+  airId: string | null;
+  updatedAt: string;
+};
+
+export type MyResourcesList = {
+  resources: MyResourceListRow[];
+  countsByLifecycle: Record<string, number>;
+};
+
+/**
+ * Provider-workspace resource list, optionally filtered by lifecycle code.
+ * Drives GET /api/portal/resources.
+ */
+export async function loadMyResourcesList(
+  providerId: string,
+  lifecycleCode?: string | null
+): Promise<MyResourcesList> {
+  const resources = await prisma.resource.findMany({
+    where: {
+      providerId,
+      ...(lifecycleCode ? { lifecycleStatus: { code: lifecycleCode } } : {})
+    },
+    orderBy: [{ updatedAt: "desc" }],
+    include: {
+      resourceType: { select: { code: true, name: true } },
+      lifecycleStatus: { select: { code: true, name: true } }
+    }
+  });
+  const counts: Record<string, number> = {};
+  for (const r of resources) {
+    counts[r.lifecycleStatus.code] = (counts[r.lifecycleStatus.code] ?? 0) + 1;
+  }
+  return {
+    resources: resources.map((r) => ({
+      id: r.id,
+      slug: r.slug,
+      title: r.title,
+      shortDescription: r.shortDescription,
+      type: r.resourceType.code,
+      lifecycle: r.lifecycleStatus.code,
+      lifecycleName: r.lifecycleStatus.name,
+      airId: r.airId,
+      updatedAt: r.updatedAt.toISOString()
+    })),
+    countsByLifecycle: counts
+  };
+}
+
+export type CreateMyResourceDraftInput = {
+  resourceTypeCode: string;
+  slug: string;
+  title: string;
+  shortDescription: string;
+  /** Resolved reference rows from the reference catalog. */
+  resourceTypeId: string;
+  draftStatusId: string;
+  listingLocalId: string;
+  riskLowId: string;
+  sovereigntyBasisId: string;
+  protocolRestId: string;
+  authApiKeyId: string;
+  accessRegisteredId: string;
+  endpointHealthUnknownId: string;
+};
+
+export type CreateMyResourceDraftResult =
+  | {
+      ok: true;
+      resource: { id: string; slug: string; title: string };
+    }
+  | { ok: false; code: "slug_taken" | "provider_not_found" };
+
+/**
+ * Create a draft Resource for the provider's workspace inside a single
+ * transaction. Also seeds one ResourceSovereigntyBasis row and one
+ * primary ResourceEndpoint row.
+ */
+export async function createMyResourceDraft(
+  actorUserId: string,
+  providerId: string,
+  input: CreateMyResourceDraftInput
+): Promise<CreateMyResourceDraftResult> {
+  const existingSlug = await prisma.resource.findUnique({
+    where: { providerId_slug: { providerId, slug: input.slug } }
+  });
+  if (existingSlug) return { ok: false, code: "slug_taken" };
+
+  const provider = await prisma.provider.findUnique({
+    where: { id: providerId },
+    select: { slug: true, homeJurisdictionId: true }
+  });
+  if (!provider) return { ok: false, code: "provider_not_found" };
+
+  const resource = await prisma.$transaction(async (tx) => {
+    const res = await tx.resource.create({
+      data: {
+        slug: input.slug,
+        title: input.title,
+        shortDescription: input.shortDescription,
+        resourceTypeId: input.resourceTypeId,
+        providerId,
+        primaryJurisdictionId: provider.homeJurisdictionId,
+        listingOriginId: input.listingLocalId,
+        lifecycleStatusId: input.draftStatusId,
+        riskLevelId: input.riskLowId,
+        publicVisibility: false,
+        airId: null
+      }
+    });
+
+    await tx.resourceSovereigntyBasis.create({
+      data: {
+        resourceId: res.id,
+        sovereigntyBasisId: input.sovereigntyBasisId,
+        submittedById: actorUserId
+      }
+    });
+
+    await tx.resourceEndpoint.create({
+      data: {
+        resourceId: res.id,
+        protocolId: input.protocolRestId,
+        endpointUrl: `https://${provider.slug}.example/api/${input.slug}`,
+        authMethodId: input.authApiKeyId,
+        accessModelId: input.accessRegisteredId,
+        primary: true,
+        active: true,
+        lastCheckStatusId: input.endpointHealthUnknownId
+      }
+    });
+
+    return res;
+  });
+
+  await writeAuditFromCore({
+    actorUserId,
+    entityType: "resource",
+    entityId: resource.id,
+    action: "resource.draft_created",
+    newValue: { slug: input.slug, title: input.title, type: input.resourceTypeCode }
+  });
+
+  return {
+    ok: true,
+    resource: { id: resource.id, slug: resource.slug, title: resource.title }
+  };
+}
+
+export type MyResourceEditView = {
+  id: string;
+  airId: string | null;
+  slug: string;
+  title: string;
+  shortDescription: string;
+  longDescription: string | null;
+  kindCode: string;
+  kindName: string;
+  providerSlug: string;
+  providerName: string;
+  jurisdictionCode: string;
+  jurisdictionName: string;
+  lifecycleCode: string;
+  lifecycleName: string;
+  riskCode: string;
+  publicVisibility: boolean;
+  license: string | null;
+  versionLabel: string | null;
+  versionNumber: string | null;
+  latencyTier: string | null;
+  accessUrl: string | null;
+  sourceCodeUrl: string | null;
+  documentationUrl: string | null;
+  termsUrl: string | null;
+  sovereigntyBasisCodes: string[];
+  languageCodes: string[];
+  sectorCodes: string[];
+  evidence: Array<{
+    id: string;
+    evidenceTypeCode: string;
+    sovereigntyBasisCode: string;
+    title: string;
+    description: string | null;
+    referenceUrl: string | null;
+    referenceIdentifier: string | null;
+    issuingBody: string | null;
+    publicVisibility: boolean;
+  }>;
+  endpoints: Array<{
+    id: string;
+    protocolCode: string;
+    endpointUrl: string;
+    documentationUrl: string | null;
+    authMethodCode: string;
+    accessModelCode: string;
+    primary: boolean;
+    active: boolean;
+  }>;
+};
+
+/**
+ * Read the actor's resource as the GET shape for the provider edit form.
+ * Returns null when the resource doesn't exist or doesn't belong to the actor.
+ */
+export async function loadMyResourceForEdit(
+  providerId: string,
+  resourceId: string
+): Promise<MyResourceEditView | null> {
+  const r = await prisma.resource.findFirst({
+    where: { id: resourceId, providerId },
+    include: {
+      resourceType: { select: { code: true, name: true } },
+      provider: { select: { slug: true, displayName: true } },
+      primaryJurisdiction: { select: { code: true, name: true } },
+      lifecycleStatus: { select: { code: true, name: true } },
+      riskLevel: { select: { code: true, name: true } },
+      resourceBases: { include: { sovereigntyBasis: { select: { code: true } } } },
+      resourceLanguages: { include: { language: { select: { code: true, name: true } } } },
+      resourceSectors: { include: { sector: { select: { code: true, name: true } } } },
+      evidence: {
+        include: {
+          sovereigntyBasis: { select: { code: true } },
+          evidenceType: { select: { code: true } }
+        }
+      },
+      endpoints: {
+        include: {
+          protocol: { select: { code: true } },
+          authMethod: { select: { code: true } },
+          accessModel: { select: { code: true } },
+          lastCheckStatus: { select: { code: true } }
+        }
+      }
+    }
+  });
+  if (!r) return null;
+  return {
+    id: r.id,
+    airId: r.airId,
+    slug: r.slug,
+    title: r.title,
+    shortDescription: r.shortDescription,
+    longDescription: r.longDescription,
+    kindCode: r.resourceType.code,
+    kindName: r.resourceType.name,
+    providerSlug: r.provider.slug,
+    providerName: r.provider.displayName,
+    jurisdictionCode: r.primaryJurisdiction.code,
+    jurisdictionName: r.primaryJurisdiction.name,
+    lifecycleCode: r.lifecycleStatus.code,
+    lifecycleName: r.lifecycleStatus.name,
+    riskCode: r.riskLevel.code,
+    publicVisibility: r.publicVisibility,
+    license: r.license,
+    versionLabel: r.versionLabel,
+    versionNumber: r.versionNumber,
+    latencyTier: r.latencyTier,
+    accessUrl: r.accessUrl,
+    sourceCodeUrl: r.sourceCodeUrl,
+    documentationUrl: r.documentationUrl,
+    termsUrl: r.termsUrl,
+    sovereigntyBasisCodes: r.resourceBases.map((b) => b.sovereigntyBasis.code),
+    languageCodes: r.resourceLanguages.map((l) => l.language.code),
+    sectorCodes: r.resourceSectors.map((s) => s.sector.code),
+    evidence: r.evidence.map((e) => ({
+      id: e.id,
+      evidenceTypeCode: e.evidenceType.code,
+      sovereigntyBasisCode: e.sovereigntyBasis.code,
+      title: e.title,
+      description: e.description,
+      referenceUrl: e.referenceUrl,
+      referenceIdentifier: e.referenceIdentifier,
+      issuingBody: e.issuingBody,
+      publicVisibility: e.publicVisibility
+    })),
+    endpoints: r.endpoints.map((ep) => ({
+      id: ep.id,
+      protocolCode: ep.protocol.code,
+      endpointUrl: ep.endpointUrl,
+      documentationUrl: ep.documentationUrl,
+      authMethodCode: ep.authMethod.code,
+      accessModelCode: ep.accessModel.code,
+      primary: ep.primary,
+      active: ep.active
+    }))
+  };
+}
+
+export type MyResourceLifecycleSnapshot =
+  | {
+      found: true;
+      target: {
+        id: string;
+        title: string;
+        shortDescription: string;
+        longDescription: string | null;
+        versionLabel: string | null;
+        versionNumber: string | null;
+        latencyTier: string | null;
+        license: string | null;
+        accessUrl: string | null;
+        documentationUrl: string | null;
+        sourceCodeUrl: string | null;
+        termsUrl: string | null;
+        lifecycleCode: string;
+      };
+    }
+  | { found: false };
+
+/**
+ * Pre-PATCH lookup: returns the editable fields + current lifecycle code,
+ * scoped to the provider. Used by PATCH /api/portal/resources/:id to gate
+ * lifecycle and build the before-snapshot.
+ */
+export async function loadMyResourceLifecycle(
+  providerId: string,
+  resourceId: string
+): Promise<MyResourceLifecycleSnapshot> {
+  const r = await prisma.resource.findFirst({
+    where: { id: resourceId, providerId },
+    select: {
+      id: true,
+      title: true,
+      shortDescription: true,
+      longDescription: true,
+      versionLabel: true,
+      versionNumber: true,
+      latencyTier: true,
+      license: true,
+      accessUrl: true,
+      documentationUrl: true,
+      sourceCodeUrl: true,
+      termsUrl: true,
+      lifecycleStatus: { select: { code: true } }
+    }
+  });
+  if (!r) return { found: false };
+  return {
+    found: true,
+    target: {
+      id: r.id,
+      title: r.title,
+      shortDescription: r.shortDescription,
+      longDescription: r.longDescription,
+      versionLabel: r.versionLabel,
+      versionNumber: r.versionNumber,
+      latencyTier: r.latencyTier,
+      license: r.license,
+      accessUrl: r.accessUrl,
+      documentationUrl: r.documentationUrl,
+      sourceCodeUrl: r.sourceCodeUrl,
+      termsUrl: r.termsUrl,
+      lifecycleCode: r.lifecycleStatus.code
+    }
+  };
+}
+
+export type ApplyMyResourceUpdateInput = {
+  data: Record<string, unknown>;
+  before: Record<string, unknown>;
+  basisRows?: { id: string; code: string }[];
+  languageRows?: { id: string; code: string }[];
+  sectorRows?: { id: string; code: string }[];
+  evidenceResolved?: Array<{
+    sovereigntyBasisId: string;
+    evidenceTypeId: string;
+    title: string;
+    description: string | null;
+    referenceUrl: string | null;
+    referenceIdentifier: string | null;
+    issuingBody: string | null;
+    publicVisibility: boolean;
+    submittedById: string;
+  }>;
+  endpointsResolved?: Array<{
+    protocolId: string;
+    endpointUrl: string;
+    documentationUrl: string | null;
+    authMethodId: string;
+    accessModelId: string;
+    primary: boolean;
+    active: boolean;
+    lastCheckStatusId: string;
+  }>;
+  basisCodes?: string[];
+  languageCodes?: string[];
+  sectorCodes?: string[];
+};
+
+/**
+ * Apply a draft / needs_update resource patch as a single transaction:
+ * top-level fields, plus N-N replacements for bases/languages/sectors and
+ * full-replace for evidence + endpoints. Audit row is written outside the
+ * transaction with the caller's before-snapshot.
+ *
+ * The caller resolves reference codes -> id rows via the reference catalog
+ * service before calling this — the service deliberately doesn't reach
+ * back into ref tables.
+ */
+export async function applyMyResourceUpdate(
+  actorUserId: string,
+  resourceId: string,
+  input: ApplyMyResourceUpdateInput
+): Promise<void> {
+  const {
+    data,
+    before,
+    basisRows,
+    languageRows,
+    sectorRows,
+    evidenceResolved,
+    endpointsResolved,
+    basisCodes,
+    languageCodes,
+    sectorCodes
+  } = input;
+
+  await prisma.$transaction(async (tx) => {
+    if (Object.keys(data).length > 0) {
+      await tx.resource.update({ where: { id: resourceId }, data });
+    }
+    if (basisCodes !== undefined) {
+      await tx.resourceSovereigntyBasis.deleteMany({ where: { resourceId } });
+      if (basisRows && basisRows.length > 0) {
+        await tx.resourceSovereigntyBasis.createMany({
+          data: basisRows.map((b) => ({
+            resourceId,
+            sovereigntyBasisId: b.id,
+            submittedById: actorUserId
+          })),
+          skipDuplicates: true
+        });
+      }
+    }
+    if (languageCodes !== undefined) {
+      await tx.resourceLanguage.deleteMany({ where: { resourceId } });
+      if (languageRows && languageRows.length > 0) {
+        await tx.resourceLanguage.createMany({
+          data: languageRows.map((l) => ({ resourceId, languageId: l.id })),
+          skipDuplicates: true
+        });
+      }
+    }
+    if (sectorCodes !== undefined) {
+      await tx.resourceSector.deleteMany({ where: { resourceId } });
+      if (sectorRows && sectorRows.length > 0) {
+        await tx.resourceSector.createMany({
+          data: sectorRows.map((s) => ({ resourceId, sectorId: s.id })),
+          skipDuplicates: true
+        });
+      }
+    }
+    if (evidenceResolved !== undefined) {
+      await tx.sovereigntyEvidence.deleteMany({ where: { resourceId } });
+      for (const row of evidenceResolved) {
+        await tx.sovereigntyEvidence.create({
+          data: { ...row, resourceId }
+        });
+      }
+    }
+    if (endpointsResolved !== undefined) {
+      await tx.resourceEndpoint.deleteMany({ where: { resourceId } });
+      for (const row of endpointsResolved) {
+        await tx.resourceEndpoint.create({
+          data: { ...row, resourceId }
+        });
+      }
+    }
+  });
+
+  await writeAuditFromCore({
+    actorUserId,
+    entityType: "resource",
+    entityId: resourceId,
+    action: "resource.draft_updated",
+    previousValue: before,
+    newValue: {
+      ...data,
+      ...(basisCodes !== undefined ? { sovereigntyBasisCodes: basisCodes } : {}),
+      ...(languageCodes !== undefined ? { languageCodes } : {}),
+      ...(sectorCodes !== undefined ? { sectorCodes } : {}),
+      ...(evidenceResolved !== undefined ? { evidenceCount: evidenceResolved.length } : {}),
+      ...(endpointsResolved !== undefined ? { endpointCount: endpointsResolved.length } : {})
+    }
+  });
+}
+
+export type MyResourceSubmitResult =
+  | {
+      ok: true;
+      resourceId: string;
+      reviewId: string;
+      resourceTitle: string;
+      providerContactEmail: string | null;
+      providerLegalContactEmail: string | null;
+    }
+  | { ok: false; code: "not_found" | "invalid_lifecycle" };
+
+/**
+ * Apply the draft|needs_update → submitted lifecycle transition + create a
+ * new open Review row in a single transaction. Audit is written with the
+ * actor's id. Returns enough info for the route to compose the notification
+ * email body.
+ *
+ * Reference rows for `submitted`, `open` review status, and the
+ * sovereignty review type are resolved by the caller.
+ */
+export async function submitMyResourceForReview(
+  actorUserId: string,
+  providerId: string,
+  resourceId: string,
+  refs: {
+    submittedLifecycleId: string;
+    openReviewStatusId: string;
+    sovereigntyReviewTypeId: string;
+  }
+): Promise<MyResourceSubmitResult> {
+  const resource = await prisma.resource.findFirst({
+    where: { id: resourceId, providerId },
+    include: {
+      lifecycleStatus: { select: { code: true } },
+      provider: { select: { contactEmail: true, legalContactEmail: true } }
+    }
+  });
+  if (!resource) return { ok: false, code: "not_found" };
+  const code = resource.lifecycleStatus.code;
+  if (code !== "draft" && code !== "needs_update") {
+    return { ok: false, code: "invalid_lifecycle" };
+  }
+
+  const review = await prisma.$transaction(async (tx) => {
+    await tx.resource.update({
+      where: { id: resourceId },
+      data: {
+        lifecycleStatusId: refs.submittedLifecycleId,
+        submittedAt: new Date(),
+        lastProviderUpdateAt: new Date()
+      }
+    });
+    return tx.review.create({
+      data: {
+        resourceId,
+        reviewTypeId: refs.sovereigntyReviewTypeId,
+        statusId: refs.openReviewStatusId
+      }
+    });
+  });
+
+  await writeAuditFromCore({
+    actorUserId,
+    entityType: "resource",
+    entityId: resourceId,
+    action: "resource.submitted_for_review",
+    newValue: { reviewId: review.id, lifecycle: "submitted" }
+  });
+
+  return {
+    ok: true,
+    resourceId,
+    reviewId: review.id,
+    resourceTitle: resource.title,
+    providerContactEmail: resource.provider.contactEmail,
+    providerLegalContactEmail: resource.provider.legalContactEmail
+  };
 }

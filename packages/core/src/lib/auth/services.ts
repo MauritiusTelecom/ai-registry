@@ -166,6 +166,11 @@ export function hashTokenForLookup(raw: string): string {
 
 import { prisma } from "../prisma";
 import { writeAudit } from "../audit/write-audit";
+import { getConfig } from "../config";
+import {
+  listReferenceTable,
+  getReferenceRow
+} from "../services/reference";
 
 export type ConsumeEmailVerificationResult =
   | { ok: true; email: string }
@@ -213,4 +218,305 @@ export async function consumeEmailVerificationToken(
     action: "user.email_verified"
   });
   return { ok: true, email: user.email };
+}
+
+// ─── Provider workspace creation (Phase 4 governance write) ────────────
+
+function slugifyLocalPart(email: string): string {
+  const local = email.split("@")[0] ?? "provider";
+  const s = local
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+  return s.length >= 2 ? s : "provider";
+}
+
+async function uniqueProviderSlug(base: string): Promise<string> {
+  let candidate = base;
+  let n = 0;
+  for (;;) {
+    const clash = await prisma.provider.findUnique({ where: { slug: candidate } });
+    if (!clash) return candidate;
+    n += 1;
+    candidate = `${base}-${n}`;
+  }
+}
+
+/**
+ * Link a self-registered provider-role user to a Provider row, creating one
+ * if missing. Idempotent — returns the user's existing providerId when
+ * already linked. The Provider row is created in `unverified` /
+ * `self_submitted` status (constitution §7: providers self-submit, only
+ * authorised governance grants elevation).
+ *
+ * The Provider create + User.providerId update run inside a single
+ * `prisma.$transaction` so a partial link can never strand the user.
+ */
+export async function ensureProviderWorkspace(userId: string): Promise<string> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { role: true }
+  });
+  if (!user) throw new Error("User not found");
+  if (user.role.code !== "provider") {
+    throw new Error("Only provider-role users can be linked to a provider organisation");
+  }
+  if (user.providerId) return user.providerId;
+
+  const cfg = getConfig();
+  const [jurisdiction, type, status, src] = await Promise.all([
+    getReferenceRow("jurisdiction", cfg.jurisdiction),
+    getReferenceRow("providerTypeRef", "integrator"),
+    getReferenceRow("providerStatusType", "unverified"),
+    getReferenceRow("submissionSourceType", "self_submitted")
+  ]);
+  if (!jurisdiction || !type || !status || !src) {
+    throw new Error("Reference data not seeded (run npm run db:seed).");
+  }
+
+  const displayName = user.organisationName?.trim() || user.name || user.email;
+  const baseSlug = slugifyLocalPart(user.email);
+  const slug = await uniqueProviderSlug(baseSlug);
+
+  const provider = await prisma.$transaction(async (tx) => {
+    const p = await tx.provider.create({
+      data: {
+        slug,
+        displayName,
+        legalName: displayName,
+        typeId: type.id,
+        homeJurisdictionId: jurisdiction.id,
+        contactEmail: user.email,
+        statusId: status.id,
+        srcId: src.id,
+        published: false,
+        description: `Self-registered provider workspace for ${user.email}.`
+      }
+    });
+    await tx.user.update({
+      where: { id: userId },
+      data: { providerId: p.id }
+    });
+    return p;
+  });
+
+  await writeAudit({
+    actorUserId: userId,
+    entityType: "provider",
+    entityId: provider.id,
+    action: "provider.workspace_created",
+    newValue: { slug: provider.slug, displayName: provider.displayName }
+  });
+
+  return provider.id;
+}
+
+// Silence unused-import warning when `listReferenceTable` isn't called
+// elsewhere in this file — kept for future helpers.
+void listReferenceTable;
+
+// ─── User lookup + write helpers (PR 13E auth routes) ──────────────────
+
+export type UserForLogin = {
+  id: string;
+  email: string;
+  name: string;
+  passwordHash: string;
+  emailVerified: boolean;
+  roleCode: string;
+  statusCode: string;
+};
+
+/**
+ * Look up a user by email, returning the minimal projection the login flow
+ * needs (role + status codes flattened). Returns null when the email is
+ * unknown — the route applies a timing-safe sentinel hash before reporting
+ * a generic error to avoid account-enumeration.
+ */
+export async function findUserForLogin(email: string): Promise<UserForLogin | null> {
+  const u = await prisma.user.findUnique({
+    where: { email },
+    include: { role: true, status: true }
+  });
+  if (!u) return null;
+  return {
+    id: u.id,
+    email: u.email,
+    name: u.name,
+    passwordHash: u.passwordHash ?? "",
+    emailVerified: u.emailVerified,
+    roleCode: u.role.code,
+    statusCode: u.status.code
+  };
+}
+
+/**
+ * Lookup by email, used by self-registration dup-check + password-reset /
+ * resend-verification flows. Returns the minimal projection — `id`,
+ * `email`, `name`, `emailVerified`.
+ */
+export async function findUserByEmail(email: string): Promise<{
+  id: string;
+  email: string;
+  name: string;
+  emailVerified: boolean;
+} | null> {
+  const u = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true, email: true, name: true, emailVerified: true }
+  });
+  return u ?? null;
+}
+
+/**
+ * Lookup a user by reset-token hash. Returns null if not found or if the
+ * expiry has passed.
+ */
+export async function findUserByResetTokenHash(tokenHash: string): Promise<{
+  id: string;
+  email: string;
+  name: string;
+  emailVerified: boolean;
+} | null> {
+  const u = await prisma.user.findFirst({
+    where: { resetToken: tokenHash },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      emailVerified: true,
+      resetTokenExpiry: true
+    }
+  });
+  if (!u || !u.resetTokenExpiry || u.resetTokenExpiry < new Date()) return null;
+  return {
+    id: u.id,
+    email: u.email,
+    name: u.name,
+    emailVerified: u.emailVerified
+  };
+}
+
+export type CreateSelfRegisteredUserInput = {
+  email: string;
+  passwordHash: string;
+  name: string;
+  organisationName?: string | null;
+  /** Hashed verification token (the raw form goes into the verification link). */
+  verificationTokenHash: string;
+  verificationTokenExpiry: Date;
+};
+
+/**
+ * Create a self-registered user. Looks up the `provider` role and
+ * `invited` status references internally and applies them. Returns the new
+ * user's minimal envelope. Throws if the reference data isn't seeded.
+ *
+ * The caller (register route) handles the dup-email check separately so it
+ * can return a precise 409.
+ */
+export async function createSelfRegisteredUser(
+  input: CreateSelfRegisteredUserInput
+): Promise<{ id: string; email: string; name: string }> {
+  const [providerRole, invitedStatus] = await Promise.all([
+    prisma.userRoleType.findUnique({ where: { code: "provider" } }),
+    prisma.userStatusType.findUnique({ where: { code: "invited" } })
+  ]);
+  if (!providerRole || !invitedStatus) {
+    throw new Error("Reference data not seeded (run npm run db:seed).");
+  }
+  const user = await prisma.user.create({
+    data: {
+      email: input.email,
+      name: input.name,
+      organisationName: input.organisationName ?? null,
+      passwordHash: input.passwordHash,
+      roleId: providerRole.id,
+      statusId: invitedStatus.id,
+      emailVerified: false,
+      verificationToken: input.verificationTokenHash,
+      verificationTokenExpiry: input.verificationTokenExpiry,
+      onboardingComplete: false
+    }
+  });
+  return { id: user.id, email: user.email, name: user.name };
+}
+
+/**
+ * Persist a fresh verification token on a user (rotating any previous one).
+ */
+export async function setUserVerificationToken(
+  userId: string,
+  hashedToken: string,
+  expiry: Date
+): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      verificationToken: hashedToken,
+      verificationTokenExpiry: expiry
+    }
+  });
+}
+
+/**
+ * Persist a fresh reset token on a user (rotating any previous one).
+ */
+export async function setUserResetToken(
+  userId: string,
+  hashedToken: string,
+  expiry: Date
+): Promise<void> {
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      resetToken: hashedToken,
+      resetTokenExpiry: expiry
+    }
+  });
+}
+
+/**
+ * Complete a password reset atomically:
+ *
+ *   - set new passwordHash
+ *   - clear both verification + reset tokens
+ *   - mark emailVerified = true (the reset email proved address ownership)
+ *   - optionally promote status from invited → active
+ *   - write an audit row
+ *
+ * The status promotion is opt-in because the caller knows whether the user
+ * was previously verified.
+ */
+export async function applyPasswordReset(
+  userId: string,
+  newPasswordHash: string,
+  opts: { promoteToActive?: boolean } = {}
+): Promise<void> {
+  let activeStatusId: string | undefined;
+  if (opts.promoteToActive) {
+    const activeStatus = await prisma.userStatusType.findUnique({
+      where: { code: "active" }
+    });
+    activeStatusId = activeStatus?.id;
+  }
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      passwordHash: newPasswordHash,
+      resetToken: null,
+      resetTokenExpiry: null,
+      emailVerified: true,
+      verificationToken: null,
+      verificationTokenExpiry: null,
+      ...(activeStatusId ? { statusId: activeStatusId } : {})
+    }
+  });
+  await writeAudit({
+    actorUserId: userId,
+    entityType: "user",
+    entityId: userId,
+    action: "user.password_reset"
+  });
 }

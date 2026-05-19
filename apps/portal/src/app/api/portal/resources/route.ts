@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  loadMyResourcesList,
+  createMyResourceDraft
+} from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { authoringGateForbiddenResponse } from "@/lib/portal/authoring-gate-response";
-import { writeAudit } from "@airegistry/sdk";
-import { getReferenceRow } from "@airegistry/sdk/server";
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -29,43 +31,8 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const lifecycleCode = url.searchParams.get("lifecycle")?.trim() || null;
 
-  const resources = await prisma.resource.findMany({
-    where: {
-      providerId,
-      ...(lifecycleCode
-        ? { lifecycleStatus: { code: lifecycleCode } }
-        : {})
-    },
-    orderBy: [{ updatedAt: "desc" }],
-    include: {
-      resourceType: { select: { code: true, name: true } },
-      lifecycleStatus: { select: { code: true, name: true } }
-    }
-  });
-
-  const byStatus = new Map<string, typeof resources>();
-  for (const r of resources) {
-    const code = r.lifecycleStatus.code;
-    if (!byStatus.has(code)) byStatus.set(code, []);
-    byStatus.get(code)!.push(r);
-  }
-
-  return NextResponse.json({
-    resources: resources.map((r) => ({
-      id: r.id,
-      slug: r.slug,
-      title: r.title,
-      shortDescription: r.shortDescription,
-      type: r.resourceType.code,
-      lifecycle: r.lifecycleStatus.code,
-      lifecycleName: r.lifecycleStatus.name,
-      airId: r.airId,
-      updatedAt: r.updatedAt.toISOString()
-    })),
-    countsByLifecycle: Object.fromEntries(
-      [...byStatus.entries()].map(([k, v]) => [k, v.length])
-    )
-  });
+  const view = await loadMyResourcesList(providerId, lifecycleCode);
+  return NextResponse.json(view);
 }
 
 type CreateBody = {
@@ -122,13 +89,6 @@ export async function POST(req: Request) {
 
   const providerId = await ensureUserProviderLinked(user.id);
 
-  const existingSlug = await prisma.resource.findUnique({
-    where: { providerId_slug: { providerId, slug } }
-  });
-  if (existingSlug) {
-    return NextResponse.json({ error: "slug already used for this provider" }, { status: 409 });
-  }
-
   const [draft, listingLocal, riskLow, rType, basis, protocolRest, authApiKey, accessRegistered, healthUnknown] =
     await Promise.all([
       getReferenceRow("lifecycleStatus", "draft"),
@@ -155,67 +115,40 @@ export async function POST(req: Request) {
     );
   }
 
-  const provider = await prisma.provider.findUniqueOrThrow({
-    where: { id: providerId },
-    select: { slug: true, homeJurisdictionId: true }
+  const result = await createMyResourceDraft(user.id, providerId, {
+    resourceTypeCode: typeCode,
+    slug,
+    title,
+    shortDescription,
+    resourceTypeId: rType.id,
+    draftStatusId: draft.id,
+    listingLocalId: listingLocal.id,
+    riskLowId: riskLow.id,
+    sovereigntyBasisId: basis.id,
+    protocolRestId: protocolRest.id,
+    authApiKeyId: authApiKey.id,
+    accessRegisteredId: accessRegistered.id,
+    endpointHealthUnknownId: healthUnknown.id
   });
 
-  const resource = await prisma.$transaction(async (tx) => {
-    const res = await tx.resource.create({
-      data: {
-        slug,
-        title,
-        shortDescription,
-        resourceTypeId: rType.id,
-        providerId,
-        primaryJurisdictionId: provider.homeJurisdictionId,
-        listingOriginId: listingLocal.id,
-        lifecycleStatusId: draft.id,
-        riskLevelId: riskLow.id,
-        publicVisibility: false,
-        airId: null
-      }
-    });
-
-    await tx.resourceSovereigntyBasis.create({
-      data: {
-        resourceId: res.id,
-        sovereigntyBasisId: basis.id,
-        submittedById: user.id
-      }
-    });
-
-    await tx.resourceEndpoint.create({
-      data: {
-        resourceId: res.id,
-        protocolId: protocolRest.id,
-        endpointUrl: `https://${provider.slug}.example/api/${slug}`,
-        authMethodId: authApiKey.id,
-        accessModelId: accessRegistered.id,
-        primary: true,
-        active: true,
-        lastCheckStatusId: healthUnknown.id
-      }
-    });
-
-    return res;
-  });
-
-  await writeAudit({
-    actorUserId: user.id,
-    entityType: "resource",
-    entityId: resource.id,
-    action: "resource.draft_created",
-    newValue: { slug, title, type: typeCode }
-  });
+  if (!result.ok) {
+    if (result.code === "slug_taken") {
+      return NextResponse.json(
+        { error: "slug already used for this provider" },
+        { status: 409 }
+      );
+    }
+    // provider_not_found — shouldn't really happen after ensureUserProviderLinked
+    return NextResponse.json({ error: "Provider not found" }, { status: 404 });
+  }
 
   return NextResponse.json(
     {
       ok: true,
       resource: {
-        id: resource.id,
-        slug: resource.slug,
-        title: resource.title,
+        id: result.resource.id,
+        slug: result.resource.slug,
+        title: result.resource.title,
         type: typeCode,
         lifecycle: "draft"
       }

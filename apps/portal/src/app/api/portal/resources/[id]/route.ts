@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  findReferenceRowsByCodes,
+  loadMyResourceForEdit,
+  loadMyResourceLifecycle,
+  applyMyResourceUpdate
+} from "@airegistry/sdk/server";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
-import { writeAudit } from "@airegistry/sdk";
 import { isHttpUrl } from "@airegistry/sdk";
-import { getReferenceRow } from "@airegistry/sdk/server";
-import { findReferenceRowsByCodes } from "@airegistry/sdk/server";
 
 const EDITABLE = new Set(["draft", "needs_update"]);
 
@@ -87,85 +90,10 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   const { id } = await ctx.params;
   const providerId = await ensureUserProviderLinked(user.id);
 
-  const r = await prisma.resource.findFirst({
-    where: { id, providerId },
-    include: {
-      resourceType: { select: { code: true, name: true } },
-      provider: { select: { slug: true, displayName: true } },
-      primaryJurisdiction: { select: { code: true, name: true } },
-      lifecycleStatus: { select: { code: true, name: true } },
-      riskLevel: { select: { code: true, name: true } },
-      resourceBases: { include: { sovereigntyBasis: { select: { code: true } } } },
-      resourceLanguages: { include: { language: { select: { code: true, name: true } } } },
-      resourceSectors: { include: { sector: { select: { code: true, name: true } } } },
-      evidence: {
-        include: {
-          sovereigntyBasis: { select: { code: true } },
-          evidenceType: { select: { code: true } }
-        }
-      },
-      endpoints: {
-        include: {
-          protocol: { select: { code: true } },
-          authMethod: { select: { code: true } },
-          accessModel: { select: { code: true } },
-          lastCheckStatus: { select: { code: true } }
-        }
-      }
-    }
-  });
-  if (!r) return NextResponse.json({ error: "Resource not found" }, { status: 404 });
+  const view = await loadMyResourceForEdit(providerId, id);
+  if (!view) return NextResponse.json({ error: "Resource not found" }, { status: 404 });
 
-  return NextResponse.json({
-    id: r.id,
-    airId: r.airId,
-    slug: r.slug,
-    title: r.title,
-    shortDescription: r.shortDescription,
-    longDescription: r.longDescription,
-    kindCode: r.resourceType.code,
-    kindName: r.resourceType.name,
-    providerSlug: r.provider.slug,
-    providerName: r.provider.displayName,
-    jurisdictionCode: r.primaryJurisdiction.code,
-    jurisdictionName: r.primaryJurisdiction.name,
-    lifecycleCode: r.lifecycleStatus.code,
-    lifecycleName: r.lifecycleStatus.name,
-    riskCode: r.riskLevel.code,
-    publicVisibility: r.publicVisibility,
-    license: r.license,
-    versionLabel: r.versionLabel,
-    versionNumber: r.versionNumber,
-    latencyTier: r.latencyTier,
-    accessUrl: r.accessUrl,
-    sourceCodeUrl: r.sourceCodeUrl,
-    documentationUrl: r.documentationUrl,
-    termsUrl: r.termsUrl,
-    sovereigntyBasisCodes: r.resourceBases.map((b) => b.sovereigntyBasis.code),
-    languageCodes: r.resourceLanguages.map((l) => l.language.code),
-    sectorCodes: r.resourceSectors.map((s) => s.sector.code),
-    evidence: r.evidence.map((e) => ({
-      id: e.id,
-      evidenceTypeCode: e.evidenceType.code,
-      sovereigntyBasisCode: e.sovereigntyBasis.code,
-      title: e.title,
-      description: e.description,
-      referenceUrl: e.referenceUrl,
-      referenceIdentifier: e.referenceIdentifier,
-      issuingBody: e.issuingBody,
-      publicVisibility: e.publicVisibility
-    })),
-    endpoints: r.endpoints.map((ep) => ({
-      id: ep.id,
-      protocolCode: ep.protocol.code,
-      endpointUrl: ep.endpointUrl,
-      documentationUrl: ep.documentationUrl,
-      authMethodCode: ep.authMethod.code,
-      accessModelCode: ep.accessModel.code,
-      primary: ep.primary,
-      active: ep.active
-    }))
-  });
+  return NextResponse.json(view);
 }
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -186,19 +114,17 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   const providerId = await ensureUserProviderLinked(user.id);
 
-  const target = await prisma.resource.findFirst({
-    where: { id, providerId },
-    include: { lifecycleStatus: { select: { code: true } } }
-  });
-  if (!target) {
+  const snapshot = await loadMyResourceLifecycle(providerId, id);
+  if (!snapshot.found) {
     return NextResponse.json({ error: "Resource not found" }, { status: 404 });
   }
-  if (!EDITABLE.has(target.lifecycleStatus.code)) {
+  if (!EDITABLE.has(snapshot.target.lifecycleCode)) {
     return NextResponse.json(
       { error: "Only draft or needs_update resources can be edited here" },
       { status: 409 }
     );
   }
+  const target = snapshot.target;
 
   const data: Record<string, unknown> = {};
   const before: Record<string, unknown> = {};
@@ -492,73 +418,17 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
   }
 
-  await prisma.$transaction(async (tx) => {
-    if (Object.keys(data).length > 0) {
-      await tx.resource.update({ where: { id }, data });
-    }
-    if (basisCodes !== undefined) {
-      await tx.resourceSovereigntyBasis.deleteMany({ where: { resourceId: id } });
-      if (basisRows.length > 0) {
-        await tx.resourceSovereigntyBasis.createMany({
-          data: basisRows.map((b) => ({
-            resourceId: id,
-            sovereigntyBasisId: b.id,
-            submittedById: user.id
-          })),
-          skipDuplicates: true
-        });
-      }
-    }
-    if (languageCodes !== undefined) {
-      await tx.resourceLanguage.deleteMany({ where: { resourceId: id } });
-      if (languageRows.length > 0) {
-        await tx.resourceLanguage.createMany({
-          data: languageRows.map((l) => ({ resourceId: id, languageId: l.id })),
-          skipDuplicates: true
-        });
-      }
-    }
-    if (sectorCodes !== undefined) {
-      await tx.resourceSector.deleteMany({ where: { resourceId: id } });
-      if (sectorRows.length > 0) {
-        await tx.resourceSector.createMany({
-          data: sectorRows.map((s) => ({ resourceId: id, sectorId: s.id })),
-          skipDuplicates: true
-        });
-      }
-    }
-    if (evidenceResolved !== undefined) {
-      await tx.sovereigntyEvidence.deleteMany({ where: { resourceId: id } });
-      for (const row of evidenceResolved) {
-        await tx.sovereigntyEvidence.create({
-          data: { ...row, resourceId: id }
-        });
-      }
-    }
-    if (endpointsResolved !== undefined) {
-      await tx.resourceEndpoint.deleteMany({ where: { resourceId: id } });
-      for (const row of endpointsResolved) {
-        await tx.resourceEndpoint.create({
-          data: { ...row, resourceId: id }
-        });
-      }
-    }
-  });
-
-  await writeAudit({
-    actorUserId: user.id,
-    entityType: "resource",
-    entityId: id,
-    action: "resource.draft_updated",
-    previousValue: before,
-    newValue: {
-      ...data,
-      ...(basisCodes !== undefined ? { sovereigntyBasisCodes: basisCodes } : {}),
-      ...(languageCodes !== undefined ? { languageCodes } : {}),
-      ...(sectorCodes !== undefined ? { sectorCodes } : {}),
-      ...(evidenceResolved !== undefined ? { evidenceCount: evidenceResolved.length } : {}),
-      ...(endpointsResolved !== undefined ? { endpointCount: endpointsResolved.length } : {})
-    }
+  await applyMyResourceUpdate(user.id, id, {
+    data,
+    before,
+    basisRows,
+    languageRows,
+    sectorRows,
+    evidenceResolved,
+    endpointsResolved,
+    basisCodes,
+    languageCodes,
+    sectorCodes
   });
 
   return NextResponse.json({ ok: true });

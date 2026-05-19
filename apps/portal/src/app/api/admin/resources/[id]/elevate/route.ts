@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  loadAdminResourceForElevate,
+  findOfficialAuthorityFull,
+  applyAdminResourceElevate
+} from "@airegistry/sdk/server";
 import { assertCanReview, SeparationOfDutiesError } from "@airegistry/sdk";
-import { writeAudit } from "@airegistry/sdk";
 import { isHttpUrl } from "@airegistry/sdk";
-import { getReferenceRow } from "@airegistry/sdk/server";
 
 /**
  * POST /api/admin/resources/:id/elevate
@@ -15,25 +18,6 @@ import { getReferenceRow } from "@airegistry/sdk/server";
  * `OfficialAuthority` to a publicly-listed resource and writes a paired
  * `TrustSignal` of kind `official_resource` so the public detail page can
  * surface the authorisation.
- *
- * Body: {
- *   officialAuthorityId: string;
- *   statusCode?: "pending" | "authorised" | "withdrawn"  (default "authorised");
- *   reference?: string;
- *   documentUrl?: string;
- *   publicNote?: string;
- *   internalNote?: string;
- *   validFrom?: string (ISO);
- *   validUntil?: string (ISO);
- *   summary: string;
- * }
- *
- * Policy gates:
- *  - Resource must currently be `listed` (no draft/needs_update elevation).
- *  - Authority must be `active` and bound to a jurisdiction.
- *  - Document URL, if present, must be an http(s) URL.
- *  - Caller cannot belong to the same provider as the resource (separation
- *    of duties via `assertCanReview`).
  */
 
 type Body = {
@@ -153,13 +137,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     );
   }
 
-  const resource = await prisma.resource.findUnique({
-    where: { id: resourceId },
-    include: {
-      lifecycleStatus: { select: { code: true } },
-      provider: { select: { id: true } }
-    }
-  });
+  const resource = await loadAdminResourceForElevate(resourceId);
   if (!resource) {
     return NextResponse.json({ error: "Resource not found" }, { status: 404 });
   }
@@ -180,10 +158,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   }
 
   const [authority, statusRow, signalKind, passed, withdrawn] = await Promise.all([
-    prisma.officialAuthority.findUnique({
-      where: { id: officialAuthorityId },
-      include: { jurisdiction: { select: { code: true } } }
-    }),
+    findOfficialAuthorityFull(officialAuthorityId),
     getReferenceRow("officialAuthorisationStatusType", statusCode),
     getReferenceRow("trustSignalType", "official_resource"),
     getReferenceRow("trustSignalStatusType", "passed"),
@@ -209,61 +184,47 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
         ? withdrawn.id
         : passed.id; // "pending" still surfaces as positive trust during review
 
-  const created = await prisma.$transaction(async (tx) => {
-    const auth = await tx.officialResourceAuthorisation.create({
-      data: {
-        resourceId: resource.id,
-        officialAuthorityId: authority.id,
-        statusId: statusRow.id,
-        authorisationReference: reference,
-        authorisationDocumentUrl: documentUrl,
-        publicNote,
-        internalNote,
-        validFrom: validFrom ?? null,
-        validUntil: validUntil ?? null,
-        decidedById: user.id,
-        decidedAt: new Date()
+  const result = await applyAdminResourceElevate(user.id, {
+    authorisation: {
+      resourceId: resource.id,
+      officialAuthorityId: authority.id,
+      statusId: statusRow.id,
+      authorisationReference: reference,
+      authorisationDocumentUrl: documentUrl,
+      publicNote,
+      internalNote,
+      validFrom: validFrom ?? null,
+      validUntil: validUntil ?? null,
+      decidedAt: new Date()
+    },
+    trustSignal: {
+      kindId: signalKind.id,
+      targetResourceId: resource.id,
+      targetProviderId: resource.provider.id,
+      statusId: signalStatusId,
+      decisionSummary: summary,
+      publicNote,
+      internalNote,
+      validFrom: validFrom ?? null,
+      validUntil: validUntil ?? null,
+      decidedAt: new Date(),
+      authorityOrganisation: authority.name
+    },
+    audit: {
+      action: `resource.official.${statusCode}`,
+      newValue: {
+        authorityId: authority.id,
+        authorityName: authority.name,
+        statusCode,
+        summary
       }
-    });
-
-    await tx.trustSignal.create({
-      data: {
-        kindId: signalKind.id,
-        targetResourceId: resource.id,
-        targetProviderId: resource.provider.id,
-        statusId: signalStatusId,
-        decisionSummary: summary,
-        publicNote,
-        internalNote,
-        validFrom: validFrom ?? null,
-        validUntil: validUntil ?? null,
-        decidedById: user.id,
-        decidedAt: new Date(),
-        authorityOrganisation: authority.name
-      }
-    });
-
-    return auth;
-  });
-
-  await writeAudit({
-    actorUserId: user.id,
-    entityType: "resource",
-    entityId: resource.id,
-    action: `resource.official.${statusCode}`,
-    newValue: {
-      authorisationId: created.id,
-      authorityId: authority.id,
-      authorityName: authority.name,
-      statusCode,
-      summary
     }
   });
 
   return NextResponse.json({
     ok: true,
     resourceId: resource.id,
-    authorisationId: created.id,
+    authorisationId: result.authorisationId,
     authorityId: authority.id,
     statusCode
   });

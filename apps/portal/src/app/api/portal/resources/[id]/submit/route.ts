@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  submitMyResourceForReview,
+  emailTemplates,
+  uniqueValidEmails,
+  sendTransactionalEmailAll
+} from "@airegistry/sdk/server";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { authoringGateForbiddenResponse } from "@/lib/portal/authoring-gate-response";
-import { writeAudit } from "@airegistry/sdk";
 import { getConfig } from "@airegistry/sdk";
-import { emailTemplates } from "@airegistry/sdk/server";
-import { uniqueValidEmails } from "@airegistry/sdk/server";
-import { sendTransactionalEmailAll } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
-import { getReferenceRow } from "@airegistry/sdk/server";
 
 /**
  * POST /api/portal/resources/:id/submit - draft|needs_update → submitted + open review.
@@ -45,67 +46,35 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     return NextResponse.json({ error: "Reference data not seeded." }, { status: 503 });
   }
 
-  const resource = await prisma.resource.findFirst({
-    where: { id, providerId },
-    include: {
-      lifecycleStatus: { select: { code: true } },
-      provider: { select: { contactEmail: true, legalContactEmail: true } }
-    }
+  const result = await submitMyResourceForReview(user.id, providerId, id, {
+    submittedLifecycleId: submitted.id,
+    openReviewStatusId: openReview.id,
+    sovereigntyReviewTypeId: sovereigntyReviewType.id
   });
-  if (!resource) {
-    return NextResponse.json({ error: "Resource not found" }, { status: 404 });
-  }
 
-  const code = resource.lifecycleStatus.code;
-  if (code !== "draft" && code !== "needs_update") {
+  if (!result.ok) {
+    if (result.code === "not_found") {
+      return NextResponse.json({ error: "Resource not found" }, { status: 404 });
+    }
     return NextResponse.json(
       { error: "Only draft or needs_update resources can be submitted" },
       { status: 409 }
     );
   }
 
-  const review = await prisma.$transaction(async (tx) => {
-    const r = await tx.resource.update({
-      where: { id },
-      data: {
-        lifecycleStatusId: submitted.id,
-        submittedAt: new Date(),
-        lastProviderUpdateAt: new Date()
-      }
-    });
-
-    const rev = await tx.review.create({
-      data: {
-        resourceId: id,
-        reviewTypeId: sovereigntyReviewType.id,
-        statusId: openReview.id
-      }
-    });
-
-    return { resource: r, review: rev };
-  });
-
-  await writeAudit({
-    actorUserId: user.id,
-    entityType: "resource",
-    entityId: id,
-    action: "resource.submitted_for_review",
-    newValue: { reviewId: review.review.id, lifecycle: "submitted" }
-  });
-
   const cfg = getConfig();
   const origin = getPublicOrigin(req);
   const recipients = uniqueValidEmails([
     user.email,
-    resource.provider.contactEmail,
-    resource.provider.legalContactEmail
+    result.providerContactEmail,
+    result.providerLegalContactEmail
   ]);
   let emailNotified = false;
   if (notifyByEmail && recipients.length > 0) {
     const tmpl = emailTemplates.resourceSubmittedForReview({
       registryName: cfg.registryName,
-      resourceTitle: resource.title,
-      reviewId: review.review.id,
+      resourceTitle: result.resourceTitle,
+      reviewId: result.reviewId,
       portalResourcesUrl: `${origin}/provider/resources`,
       portalReviewsUrl: `${origin}/provider/reviews`
     });
@@ -119,8 +88,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
   return NextResponse.json({
     ok: true,
-    resourceId: id,
-    reviewId: review.review.id,
+    resourceId: result.resourceId,
+    reviewId: result.reviewId,
     lifecycle: "submitted",
     emailNotified
   });

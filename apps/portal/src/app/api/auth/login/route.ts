@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 import {
   verifyUserPassword,
   NO_USER_PASSWORD_SENTINEL,
-  signSessionCookie
+  signSessionCookie,
+  findUserForLogin
 } from "@airegistry/sdk/server";
 import { linkContactsToUser } from "@airegistry/sdk/server";
 import { portalForRole } from "@/lib/portals/auth-gate";
@@ -39,17 +40,14 @@ export async function POST(req: Request) {
   }
 
   const email = body.email.toLowerCase().trim();
-  const user = await prisma.user.findUnique({
-    where: { email },
-    include: { role: true, status: true }
-  });
+  const user = await findUserForLogin(email);
 
   // Always attempt a hash compare even when the user doesn't exist, so the
   // observable timing is similar in both branches.
   const stored = user?.passwordHash ?? NO_USER_PASSWORD_SENTINEL;
   const ok = await verifyUserPassword(body.password, stored);
 
-  if (!user || !ok || user.status.code === "deactivated" || user.status.code === "suspended") {
+  if (!user || !ok || user.statusCode === "deactivated" || user.statusCode === "suspended") {
     return NextResponse.json({ error: GENERIC_ERROR }, { status: 401 });
   }
 
@@ -98,12 +96,12 @@ export async function POST(req: Request) {
         email: user.email,
         name: user.name,
         emailVerified: user.emailVerified,
-        role: user.role.code,
-        status: user.status.code
+        role: user.roleCode,
+        status: user.statusCode
       },
       // Role-based default landing - clients use this when no `next=` query
       // param was set on the /login page.
-      redirectTo: portalForRole(user.role.code)
+      redirectTo: portalForRole(user.roleCode)
     },
     { status: 200 }
   );

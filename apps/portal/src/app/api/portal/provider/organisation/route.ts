@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { prisma } from "@/lib/prisma";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  updateProviderOrganisation
+} from "@airegistry/sdk/server";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
-import { writeAudit } from "@airegistry/sdk";
-import { getReferenceRow } from "@airegistry/sdk/server";
+
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 
@@ -90,86 +92,32 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Reference data not seeded." }, { status: 503 });
   }
 
-  const existing = await prisma.provider.findUnique({
-    where: { id: providerId },
-    select: { slug: true }
+  const result = await updateProviderOrganisation(user.id, providerId, {
+    displayName,
+    slug,
+    contactEmail,
+    legalName,
+    description,
+    providerTypeId: pType.id,
+    jurisdictionId: jurisdiction.id,
+    unverifiedStatusId: unverified.id,
+    providerTypeCode,
+    jurisdictionCode
   });
-  if (!existing) {
-    return NextResponse.json({ error: "Provider not found" }, { status: 404 });
+
+  if (!result.ok) {
+    if (result.code === "provider_not_found") {
+      return NextResponse.json({ error: "Provider not found" }, { status: 404 });
+    }
+    return NextResponse.json(
+      { error: "This organisation slug is already taken" },
+      { status: 409 }
+    );
   }
-
-  if (slug !== existing.slug) {
-    const clash = await prisma.provider.findUnique({ where: { slug } });
-    if (clash) {
-      return NextResponse.json({ error: "This organisation slug is already taken" }, { status: 409 });
-    }
-  }
-
-  const prev = await prisma.provider.findUnique({
-    where: { id: providerId },
-    select: {
-      slug: true,
-      displayName: true,
-      contactEmail: true,
-      homeJurisdictionId: true,
-      typeId: true
-    }
-  });
-
-  await prisma.$transaction([
-    prisma.provider.update({
-      where: { id: providerId },
-      data: {
-        slug,
-        displayName,
-        contactEmail,
-        legalName,
-        description,
-        typeId: pType.id,
-        homeJurisdictionId: jurisdiction.id,
-        statusId: unverified.id
-      }
-    }),
-    prisma.user.update({
-      where: { id: user.id },
-      data: { onboardingComplete: true }
-    })
-  ]);
-
-  const updated = await prisma.provider.findUniqueOrThrow({
-    where: { id: providerId },
-    select: {
-      id: true,
-      slug: true,
-      displayName: true,
-      contactEmail: true
-    }
-  });
-
-  await writeAudit({
-    actorUserId: user.id,
-    entityType: "provider",
-    entityId: providerId,
-    action: "provider.organisation_profile_completed",
-    previousValue: prev,
-    newValue: {
-      slug,
-      displayName,
-      contactEmail,
-      providerTypeCode,
-      jurisdictionCode,
-      onboardingComplete: true
-    }
-  });
 
   return NextResponse.json({
     ok: true,
-    provider: {
-      id: updated.id,
-      slug: updated.slug,
-      displayName: updated.displayName,
-      contactEmail: updated.contactEmail
-    },
+    provider: result.provider,
     onboardingComplete: true
   });
 }

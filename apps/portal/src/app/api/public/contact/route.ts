@@ -9,6 +9,7 @@ import { normalizeContactEmail } from "@airegistry/sdk";
 import { CONTACT_TOPIC_LABELS, CONTACT_TOPICS, type ContactTopicCode } from "@airegistry/sdk";
 import { getPublicOrigin } from "@/lib/public-origin";
 import { writeAudit } from "@airegistry/sdk";
+import { userExistsById, submitContactRecord } from "@airegistry/sdk/server";
 
 type ContactPayload = {
   name?: string;
@@ -73,11 +74,9 @@ export async function POST(req: Request) {
   try {
     const sessionUser = await getCurrentUser();
     if (sessionUser && normalizeContactEmail(sessionUser.email) === email) {
-      const stillThere = await prisma.user.findUnique({
-        where: { id: sessionUser.id },
-        select: { id: true }
-      });
-      if (stillThere) linkToUserId = sessionUser.id;
+      if (await userExistsById(sessionUser.id)) {
+        linkToUserId = sessionUser.id;
+      }
     }
   } catch {
     // Anonymous submit must succeed even if session resolution hits a DB glitch.
@@ -106,24 +105,20 @@ export async function POST(req: Request) {
       userAgent
     };
 
-    let row;
-    try {
-      row = await prisma.contact.create({ data: createData });
-    } catch (first) {
-      if (
-        linkToUserId &&
-        prismaErrorCode(first) === "P2003" &&
-        first instanceof Prisma.PrismaClientKnownRequestError
-      ) {
-        row = await prisma.contact.create({
-          data: { ...createData, linkedUserId: null }
-        });
-      } else {
-        throw first;
-      }
-    }
-    contactId = row.id;
-    linkedForAudit = row.linkedUserId;
+    const result = await submitContactRecord({
+      senderName: createData.senderName,
+      organisationName: createData.organisationName,
+      email: createData.email,
+      topic: createData.topic,
+      message: createData.message,
+      emailVerificationTokenHash: createData.emailVerificationToken!,
+      emailVerificationExpiry: createData.emailVerificationExpiry!,
+      linkedUserId: createData.linkedUserId,
+      ipAddress: createData.ipAddress,
+      userAgent: createData.userAgent
+    });
+    contactId = result.id;
+    linkedForAudit = result.linkedUserId;
   } catch (error) {
     console.error("public.contact.persist_failed", error);
 
