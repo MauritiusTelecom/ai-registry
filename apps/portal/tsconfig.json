@@ -7,12 +7,6 @@
       "@/*": ["./src/*"],
 
       "@/lib/prisma": ["../../packages/core/src/lib/prisma"],
-      "@/lib/email": ["../../packages/core/src/lib/email"],
-      "@/lib/email/*": ["../../packages/core/src/lib/email/*"],
-      "@/lib/contacts/*": ["../../packages/core/src/lib/contacts/*"],
-      "@/lib/admin/*": ["../../packages/core/src/lib/admin/*"],
-      "@/lib/auth/*": ["../../packages/core/src/lib/auth/*"],
-      "@/generated/*": ["../../packages/core/src/generated/*"],
 
       "@/lib/branding": ["./src/lib/branding"],
       "@/lib/theme-cookie": ["./src/lib/theme-cookie"],

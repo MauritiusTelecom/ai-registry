@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { executeSearch } from "@/lib/portals/search";
 import type { PortalRole } from "@/lib/portals/notifications";
 

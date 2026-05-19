@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 
 /**
  * GET /api/auth/me

@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { PageHero } from "@/components/public/sections/PageHero";
 import { LogoutButton } from "@/components/public/auth/LogoutButton";
 import { PortalProfileForm } from "@/components/portal/PortalProfileForm";
-import { CONTACT_TOPIC_LABELS, type ContactTopicCode } from "@/lib/contacts/topics";
+import { CONTACT_TOPIC_LABELS, type ContactTopicCode } from "@airegistry/sdk";
 
 function isStaff(roles: string[]) {
   return roles.includes("admin") || roles.includes("reviewer");

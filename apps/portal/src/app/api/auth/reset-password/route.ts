@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashPassword } from "@/lib/auth/password";
-import { hashToken } from "@/lib/auth/tokens";
+import { hashUserPassword, hashTokenForLookup } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
-import { emailTemplates } from "@/lib/email";
-import { sendTransactionalEmail } from "@/lib/email/transactional-send";
+import { emailTemplates } from "@airegistry/sdk/server";
+import { sendTransactionalEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
@@ -37,7 +36,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const tokenHash = hashToken(body.token);
+  const tokenHash = hashTokenForLookup(body.token);
   const user = await prisma.user.findFirst({ where: { resetToken: tokenHash } });
 
   if (!user || !user.resetTokenExpiry || user.resetTokenExpiry < new Date()) {
@@ -47,7 +46,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const passwordHash = await hashPassword(body.password);
+  const passwordHash = await hashUserPassword(body.password);
 
   // Receiving the reset email proves ownership of the address, so completing
   // a password reset doubles as email verification. Without this, an

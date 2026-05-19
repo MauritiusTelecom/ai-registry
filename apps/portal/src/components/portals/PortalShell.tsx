@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import type { SessionUser } from "@/lib/auth/current-user";
+import type { SessionUser } from "@airegistry/sdk";
 import type { PortalConfig } from "@/lib/portals/nav-config";
 import { getBranding } from "@/lib/branding";
 import { LogoutButton } from "@/components/public/auth/LogoutButton";

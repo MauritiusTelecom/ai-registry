@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 import { prisma } from "@/lib/prisma";
 import { NewResourceForm } from "@/components/portal/NewResourceForm";

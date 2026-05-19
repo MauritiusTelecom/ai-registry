@@ -1,4 +1,4 @@
-import { REF_TABLES } from "@/lib/admin/reference-tables";
+import { REF_TABLES } from "@airegistry/sdk";
 
 /**
  * Sidebar navigation configuration per portal role.

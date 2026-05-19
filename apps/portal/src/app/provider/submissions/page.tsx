@@ -1,4 +1,4 @@
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { GatedPublishButton } from "@/components/portals/GatedPublishButton";
 import { prisma } from "@/lib/prisma";
 import {

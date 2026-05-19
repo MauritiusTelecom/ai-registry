@@ -9,7 +9,7 @@ import {
   type EntityFormFieldDef,
   type EntityFormFieldKind
 } from "@/components/library";
-import type { RefTableConfig, RefFieldKind } from "@/lib/admin/reference-tables";
+import type { RefTableConfig, RefFieldKind } from "@airegistry/sdk";
 
 /**
  * Form used by both /new and /[id]/edit routes for any reference table.

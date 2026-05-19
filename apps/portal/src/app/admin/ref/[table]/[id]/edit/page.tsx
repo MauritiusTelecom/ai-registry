@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getRefTable } from "@/lib/admin/reference-tables";
-import { modelFor } from "@/lib/admin/ref-prisma";
+import { getRefTable } from "@airegistry/sdk";
+import { modelFor } from "@airegistry/sdk/server";
 import { RefRowForm } from "@/components/admin/RefRowForm";
 
 export const dynamic = "force-dynamic";

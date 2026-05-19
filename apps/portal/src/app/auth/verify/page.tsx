@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { hashToken } from "@/lib/auth/tokens";
+import { hashTokenForLookup } from "@airegistry/sdk/server";
 import { AuthShell } from "@/components/public/auth/AuthShell";
 import { ResendVerificationForm } from "@/components/public/auth/ResendVerificationForm";
 
@@ -20,7 +20,7 @@ type VerifyResult =
   | { ok: false; reason: "expired_or_invalid" | "missing" };
 
 async function consumeVerificationToken(rawToken: string): Promise<VerifyResult> {
-  const tokenHash = hashToken(rawToken);
+  const tokenHash = hashTokenForLookup(rawToken);
   const user = await prisma.user.findFirst({
     where: { verificationToken: tokenHash }
   });

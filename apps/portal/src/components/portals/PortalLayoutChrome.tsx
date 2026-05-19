@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import type { PortalConfig } from "@/lib/portals/nav-config";
-import type { SessionUser } from "@/lib/auth/current-user";
+import type { SessionUser } from "@airegistry/sdk";
 import { getBranding } from "@/lib/branding";
 import { PortalSidebar } from "./PortalSidebar";
 import { PortalHeader } from "./PortalHeader";

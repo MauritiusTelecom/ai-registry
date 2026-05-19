@@ -16,7 +16,8 @@
  */
 
 import { notFound, redirect } from "next/navigation";
-import { getCurrentUser, type SessionUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
+import type { SessionUser } from "@airegistry/sdk";
 import type { PortalRole } from "./nav-config";
 
 /**

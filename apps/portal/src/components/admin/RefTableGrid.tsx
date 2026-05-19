@@ -9,7 +9,7 @@ import {
   type EntityFilter,
   type EntityRowAction
 } from "@/components/library";
-import type { RefTableConfig } from "@/lib/admin/reference-tables";
+import type { RefTableConfig } from "@airegistry/sdk";
 import { withBase } from "@airegistry/sdk";
 
 /**

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getConfig } from "@airegistry/sdk";
-import { renderTemplate } from "@/lib/email";
-import { sendTransactionalEmail } from "@/lib/email/transactional-send";
+import { renderTemplate } from "@airegistry/sdk/server";
+import { sendTransactionalEmail } from "@airegistry/sdk/server";
 
 // Public report intake for the listing-detail "Report this listing" modal.
 //

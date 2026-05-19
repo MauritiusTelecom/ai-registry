@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth/current-user";
+import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@/lib/prisma";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { authoringGateForbiddenResponse } from "@/lib/portal/authoring-gate-response";
 import { writeAudit } from "@airegistry/sdk";
 import { getConfig } from "@airegistry/sdk";
-import { emailTemplates } from "@/lib/email";
-import { uniqueValidEmails } from "@/lib/email/recipients";
-import { sendTransactionalEmailAll } from "@/lib/email/transactional-send";
+import { emailTemplates } from "@airegistry/sdk/server";
+import { uniqueValidEmails } from "@airegistry/sdk/server";
+import { sendTransactionalEmailAll } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
 
 /**
