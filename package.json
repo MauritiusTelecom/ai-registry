@@ -29,6 +29,7 @@
     "deploy": "bash deploy/deploy.sh",
     "deploy:dry": "DRY_RUN=1 bash deploy/deploy.sh",
     "deploy:db:remote": "bash deploy/deploy-db.sh",
+    "deploy:v2": "bash scripts/deploy-v2.sh",
     "backup:prod": "bash scripts/backup-prod.sh"
   },
   "devDependencies": {
