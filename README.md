@@ -35,6 +35,13 @@ This repository is at **v0.4 (working draft)**. The specification is stable enou
 
 ## Documentation
 
+| Topic | Document |
+|-------|----------|
+| **Customize the public portal** (structure, when to change what, step-by-step) | [`CUSTOMIZATION.md`](CUSTOMIZATION.md) |
+| Install and bootstrap | [`INSTALL.md`](INSTALL.md) |
+| Public UI package layout | [`packages/public/README.md`](packages/public/README.md) |
+| Next.js portal host | [`apps/portal/README.md`](apps/portal/README.md) |
+
 The illustrated whitepaper is the canonical introduction: what the registry is, why it matters, how it works, and what is in and out of scope.
 
 - [`docs/AI_Registry_Whitepaper_Illustrated_v0.4.docx`](docs/AI_Registry_Whitepaper_Illustrated_v0.4.docx)
@@ -78,13 +85,22 @@ For a fuller walkthrough — prerequisites by OS, the full env-var list, postgre
 | Smoke-test the public API | `pnpm smoke` |
 | Per-package tasks | `pnpm --filter @airegistry/<pkg> <script>` |
 
-## Three layers of customisation
+## Customising the public portal
 
-The repo is designed so operators can deploy without forking:
+The repo is designed so operators can deploy without forking. Customisation is **layered** — not a single switch. Full structure, route map, phased checklist, and limitations: **[`CUSTOMIZATION.md`](CUSTOMIZATION.md)**.
 
-1. **Configuration + branding (no code).** Set per-deployment values in `.env` (jurisdiction, identity domain, supported languages, etc.) and edit `SiteBranding` via `/admin/branding`. No defaults in code reference any specific deployment — the reference operator supplies them in their own environment.
-2. **Theming.** Override CSS variables from `@airegistry/ui-kit/tokens.css` in a deployment stylesheet. No new gradients or hex literals are allowed in `apps/portal/`; the kit owns the tokens.
-3. **Extensions / fork.** Drop a plugin under `extensions/` (manifest shape in `@airegistry/sdk/plugin`) for new REST routes, MCP tools, scheduled jobs, UI slots, or locale bundles. For deep redesigns, fork `packages/public` or `apps/portal` and continue to depend on `@airegistry/core`. See [`CUSTOMIZATION.md`](CUSTOMIZATION.md).
+| Layer | What | When |
+|-------|------|------|
+| 1 | **Config + branding** — `.env` + `/admin/branding` | First deploy; operator identity and heroes |
+| 2 | **Public CMS** — FAQ, how-it-works, listing criteria, promo | Home marketing content pass |
+| 3 | **Theme** — CSS token overrides | Visual branding pass |
+| 4 | **Extensions** — `extensions/` + `PLUGINS_ENABLED` | Optional features (set `PLUGINS_ENABLED=false` to hide the hello demo) |
+| 5 | **Fork `@airegistry/public`** | Deep marketing copy, nav, home layout |
+| 6 | **Fork `apps/portal`** | Admin/provider/verifier UX changes |
+
+### How a request reaches the home page
+
+`Browser → apps/portal/(public)/page.tsx shim → @airegistry/public HomePage → getBranding() / public CMS → PostgreSQL`. Route groups `(public)` and `(workspaces)` are layout-only and do not appear in URLs. See [`CUSTOMIZATION.md`](CUSTOMIZATION.md) for the full diagram and per-route customization table.
 
 ## What is in scope
 
@@ -106,9 +122,10 @@ See [`MIGRATION.md`](MIGRATION.md) for path mapping, the `@/lib/...` alias bridg
 
 - License: Apache-2.0 (see [`LICENSE`](LICENSE)).
 - Installation walkthrough: [`INSTALL.md`](INSTALL.md).
+- Portal customization: [`CUSTOMIZATION.md`](CUSTOMIZATION.md).
 - Security disclosure: [`SECURITY.md`](SECURITY.md).
 - Data model reference: [`data-model.md`](data-model.md). Authoritative schema is [`packages/core/prisma/schema.prisma`](packages/core/prisma/schema.prisma).
-- Per-package READMEs: [`packages/core/README.md`](packages/core/README.md), [`packages/sdk/README.md`](packages/sdk/README.md), [`packages/ui-kit/README.md`](packages/ui-kit/README.md), [`apps/portal/README.md`](apps/portal/README.md).
+- Per-package READMEs: [`packages/core/README.md`](packages/core/README.md), [`packages/public/README.md`](packages/public/README.md), [`packages/sdk/README.md`](packages/sdk/README.md), [`packages/ui-kit/README.md`](packages/ui-kit/README.md), [`apps/portal/README.md`](apps/portal/README.md).
 - Specs are normative and live in [`../ai-registry-specs/`](../ai-registry-specs/).
 
 ## What is _not_ in the monorepo yet
