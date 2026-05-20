@@ -49,6 +49,9 @@ export type AdminBrandingFullView = {
   operatorOfficeName: string | null;
   operatorOfficeAddress: string | null;
   operatorContactHours: string | null;
+  jurisdictionDisplayName: string | null;
+  privacyDataProtectionAct: string | null;
+  openSourceRepoUrl: string | null;
   updatedAt: string | null;
 };
 
@@ -68,6 +71,9 @@ export async function loadAdminBrandingFull(): Promise<AdminBrandingFullView> {
     operatorOfficeName: row?.operatorOfficeName ?? null,
     operatorOfficeAddress: row?.operatorOfficeAddress ?? null,
     operatorContactHours: row?.operatorContactHours ?? null,
+    jurisdictionDisplayName: row?.jurisdictionDisplayName ?? null,
+    privacyDataProtectionAct: row?.privacyDataProtectionAct ?? null,
+    openSourceRepoUrl: row?.openSourceRepoUrl ?? null,
     updatedAt: row?.updatedAt?.toISOString() ?? null
   };
 }
@@ -99,7 +105,10 @@ export async function updateAdminBrandingFields(
           operatorContactEmail: before.operatorContactEmail,
           operatorOfficeName: before.operatorOfficeName,
           operatorOfficeAddress: before.operatorOfficeAddress,
-          operatorContactHours: before.operatorContactHours
+          operatorContactHours: before.operatorContactHours,
+          jurisdictionDisplayName: before.jurisdictionDisplayName,
+          privacyDataProtectionAct: before.privacyDataProtectionAct,
+          openSourceRepoUrl: before.openSourceRepoUrl
         }
       : null,
     newValue: {
@@ -111,7 +120,10 @@ export async function updateAdminBrandingFields(
       operatorContactEmail: updated.operatorContactEmail,
       operatorOfficeName: updated.operatorOfficeName,
       operatorOfficeAddress: updated.operatorOfficeAddress,
-      operatorContactHours: updated.operatorContactHours
+      operatorContactHours: updated.operatorContactHours,
+      jurisdictionDisplayName: updated.jurisdictionDisplayName,
+      privacyDataProtectionAct: updated.privacyDataProtectionAct,
+      openSourceRepoUrl: updated.openSourceRepoUrl
     }
   });
 }

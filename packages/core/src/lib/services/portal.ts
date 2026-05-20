@@ -820,6 +820,9 @@ export type BrandingRow = {
   operatorOfficeName: string | null;
   operatorOfficeAddress: string | null;
   operatorContactHours: string | null;
+  jurisdictionDisplayName: string | null;
+  privacyDataProtectionAct: string | null;
+  openSourceRepoUrl: string | null;
 };
 
 const BRANDING_SINGLETON_ID = "default";
@@ -844,7 +847,10 @@ export async function loadBrandingSingleton(): Promise<BrandingRow | null> {
         operatorContactEmail: true,
         operatorOfficeName: true,
         operatorOfficeAddress: true,
-        operatorContactHours: true
+        operatorContactHours: true,
+        jurisdictionDisplayName: true,
+        privacyDataProtectionAct: true,
+        openSourceRepoUrl: true
       }
     });
   } catch {
@@ -1312,6 +1318,9 @@ export type AdminBrandingView = {
   operatorOfficeName: string | null;
   operatorOfficeAddress: string | null;
   operatorContactHours: string | null;
+  jurisdictionDisplayName: string | null;
+  privacyDataProtectionAct: string | null;
+  openSourceRepoUrl: string | null;
 };
 
 /**
@@ -1336,7 +1345,10 @@ export async function loadAdminBrandingForm(
     operatorContactEmail: row.operatorContactEmail,
     operatorOfficeName: row.operatorOfficeName,
     operatorOfficeAddress: row.operatorOfficeAddress,
-    operatorContactHours: row.operatorContactHours
+    operatorContactHours: row.operatorContactHours,
+    jurisdictionDisplayName: row.jurisdictionDisplayName,
+    privacyDataProtectionAct: row.privacyDataProtectionAct,
+    openSourceRepoUrl: row.openSourceRepoUrl
   };
 }
 

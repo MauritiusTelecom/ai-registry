@@ -8,7 +8,7 @@ export async function generateMetadata() {
 }
 
 export default async function PrivacyPage() {
-  const { registryName, operatorName } = await getBranding();
+  const { registryName, operatorName, privacyDataProtectionAct } = await getBranding();
   return (
     <DocPage
       crumb={
@@ -42,7 +42,7 @@ export default async function PrivacyPage() {
 
       <DocPanel title="Lawful basis">
         <p>
-          Account data is held under the Mauritius Data Protection Act 2017. The lawful
+          Account data is held under the {privacyDataProtectionAct}. The lawful
           basis is either contract performance (we cannot run your provider account
           without it) or legitimate interest (operating a public registry of national
           interest).

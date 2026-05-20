@@ -6,6 +6,7 @@ import type { PublicProviderCard, PublicProvidersListResponse } from "@airegistr
 import { Icon, type IconName } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";
 import { withBase } from "@airegistry/sdk";
+import { usePublicBranding } from "../lib/branding-context";
 
 /** @deprecated Use `PublicProviderCard` from discovery types; kept for mock-mode rows. */
 export type Provider = PublicProviderCard;
@@ -124,6 +125,7 @@ export function ProvidersSection({
   dataSource?: "api" | "mock";
   pageSize?: number;
 }) {
+  const { jurisdictionDisplayName } = usePublicBranding();
   const [activeKind, setActiveKind] = useState<(typeof KINDS)[number]["id"]>("all");
   const [activeStatus, setActiveStatus] = useState<PublicProviderCard["status"] | null>(null);
   const [search, setSearch] = useState("");
@@ -252,7 +254,8 @@ export function ProvidersSection({
             <span>Providers</span>
           </div>
           <h2>
-            Meet the organisations <span className="gradient-text">Mauritius already trusts</span>.
+            Meet the organisations{" "}
+            <span className="gradient-text">{jurisdictionDisplayName} already trusts</span>.
           </h2>
           <p>
             Every listing in the registry traces back to a verifiable provider. Browse who hosts,

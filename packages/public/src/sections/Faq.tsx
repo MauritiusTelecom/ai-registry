@@ -1,14 +1,9 @@
+import { getBranding } from "@airegistry/core/branding";
 import { listActiveFaqEntries } from "@airegistry/core/services/public-cms";
 import { FaqClient, type FaqClientItem } from "./Faq.client";
 
-/**
- * Hardcoded fallback used when the `cms_faq_entry` table is empty - e.g. a
- * fresh deploy that hasn't run `pnpm db:seed` yet. The seed script populates
- * the same entries on bootstrap so this fallback is only seen during the
- * first request after a brand-new deploy, but keeping it as defence-in-depth
- * means the section never renders empty.
- */
-const FALLBACK_FAQS: FaqClientItem[] = [
+function fallbackFaqs(portalDomain: string): FaqClientItem[] {
+  return [
   {
     question: "Does the registry host any AI?",
     answer:
@@ -32,14 +27,15 @@ const FALLBACK_FAQS: FaqClientItem[] = [
   {
     question: "Is the platform open source?",
     answer:
-      "Yes. The reference implementation at airegistry.mu and the AIR-SPEC are openly licensed. Each jurisdiction operates its own instance with local governance."
+      `Yes. The reference implementation at ${portalDomain} and the AIR-SPEC are openly licensed. Each jurisdiction operates its own instance with local governance.`
   },
   {
     question: "How are listings resolved at runtime?",
     answer:
       "AIR-IDs (under air://) resolve to provider endpoints described in the listing metadata. Optionally, hosting environments issue SPIFFE/SPIRE SVIDs for runtime identity."
   }
-];
+  ];
+}
 
 /**
  * FAQ section. Server-rendered: reads from the `cms_faq_entry` table via
@@ -51,15 +47,17 @@ const FALLBACK_FAQS: FaqClientItem[] = [
  * Edited from the admin workspace at /admin/site/faq.
  */
 export async function Faq() {
+  const { portalDomain } = await getBranding();
+  const fallback = fallbackFaqs(portalDomain);
   let items: FaqClientItem[];
   try {
     const rows = await listActiveFaqEntries();
     items = rows.length
       ? rows.map((r) => ({ question: r.question, answer: r.answer }))
-      : FALLBACK_FAQS;
+      : fallback;
   } catch {
     // Defensive: a DB outage shouldn't break the marketing page.
-    items = FALLBACK_FAQS;
+    items = fallback;
   }
   return <FaqClient items={items} />;
 }

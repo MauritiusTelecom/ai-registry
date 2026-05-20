@@ -1,3 +1,4 @@
+import { getBranding } from "@airegistry/core/branding";
 import { Reveal } from "../shell/Reveal";
 import { PageHero } from "@airegistry/ui-kit";
 
@@ -29,7 +30,8 @@ const SECTIONS = [
   }
 ];
 
-export function DocsContent() {
+export async function DocsContent() {
+  const { portalDomain } = await getBranding();
   return (
     <div>
       <PageHero
@@ -39,7 +41,7 @@ export function DocsContent() {
             The technical <span className="gradient-text">specification</span>.
           </>
         }
-        subtitle="Everything you need to publish, resolve and audit listings against the v0.4 reference implementation at airegistry.mu."
+        subtitle={`Everything you need to publish, resolve and audit listings against the v0.4 reference implementation at ${portalDomain}.`}
       />
       <section className="section" style={{ paddingTop: 40 }}>
         <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 48 }}>

@@ -47,6 +47,12 @@ export type RegistryConfig = {
   operatorOfficeAddress: string;
   /** Office hours line on /contact. */
   operatorContactHours: string;
+  /** Jurisdiction name for marketing copy (e.g. Mauritius on /registry, home hero). */
+  jurisdictionDisplayName: string;
+  /** Privacy page: data-protection law name (e.g. Mauritius Data Protection Act 2017). */
+  privacyDataProtectionAct: string;
+  /** Open-source monorepo URL for footer and ecosystem links. */
+  openSourceRepoUrl: string;
   /** BCP-47 language codes the deployment serves. */
   supportedLanguages: string[];
   /** Default language; always present in `supportedLanguages`. */
@@ -163,6 +169,15 @@ type RequiredKey = (typeof REQUIRED_KEYS)[number];
 
 const KNOWN_RESOURCE_TYPES = new Set(["model", "agent", "tool", "skill"]);
 
+/** Reference defaults when JURISDICTION_DISPLAY_NAME is unset. */
+const JURISDICTION_DISPLAY_DEFAULTS: Record<string, string> = {
+  MU: "Mauritius"
+};
+
+function defaultJurisdictionDisplayName(code: string): string {
+  return JURISDICTION_DISPLAY_DEFAULTS[code.toUpperCase()] ?? code;
+}
+
 let cached: RegistryConfig | null = null;
 let cachedError: Error | null = null;
 
@@ -274,6 +289,17 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
   const operatorContactHoursRaw = readOptional(env, "OPERATOR_CONTACT_HOURS");
   const operatorContactHours =
     operatorContactHoursRaw || "Mon-Fri · 09:00-17:30 · GMT+4";
+
+  const jurisdictionDisplayName =
+    readOptional(env, "JURISDICTION_DISPLAY_NAME") ||
+    defaultJurisdictionDisplayName(jurisdiction);
+  const privacyDataProtectionActRaw = readOptional(env, "PRIVACY_DATA_PROTECTION_ACT");
+  const privacyDataProtectionAct =
+    privacyDataProtectionActRaw ||
+    `${jurisdictionDisplayName} Data Protection Act 2017`;
+  const openSourceRepoUrlRaw = readOptional(env, "OPEN_SOURCE_REPO_URL");
+  const openSourceRepoUrl =
+    openSourceRepoUrlRaw || "https://github.com/MauritiusTelecom/ai-registry";
 
   const supportedLanguages = splitCsv(readRequired(env, "SUPPORTED_LANGUAGES")).map(
     validateLanguageCode
@@ -642,6 +668,9 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
     operatorOfficeName,
     operatorOfficeAddress,
     operatorContactHours,
+    jurisdictionDisplayName,
+    privacyDataProtectionAct,
+    openSourceRepoUrl,
     supportedLanguages,
     defaultLanguage,
     resourceTypes,
