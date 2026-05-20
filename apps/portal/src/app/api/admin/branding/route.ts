@@ -28,6 +28,11 @@ type PatchPayload = {
   copyrightLine?: string | null;
   buildLine?: string | null;
   heroEyebrowText?: string | null;
+  operatorName?: string | null;
+  operatorContactEmail?: string | null;
+  operatorOfficeName?: string | null;
+  operatorOfficeAddress?: string | null;
+  operatorContactHours?: string | null;
 };
 
 function clean(value: unknown): string | null {
@@ -65,6 +70,26 @@ export async function PATCH(req: Request) {
   if ("heroEyebrowText" in body) {
     const v = clean(body.heroEyebrowText);
     if (v !== undefined) data.heroEyebrowText = v;
+  }
+  if ("operatorName" in body) {
+    const v = clean(body.operatorName);
+    if (v !== undefined) data.operatorName = v;
+  }
+  if ("operatorContactEmail" in body) {
+    const v = clean(body.operatorContactEmail);
+    if (v !== undefined) data.operatorContactEmail = v;
+  }
+  if ("operatorOfficeName" in body) {
+    const v = clean(body.operatorOfficeName);
+    if (v !== undefined) data.operatorOfficeName = v;
+  }
+  if ("operatorOfficeAddress" in body) {
+    const v = clean(body.operatorOfficeAddress);
+    if (v !== undefined) data.operatorOfficeAddress = v;
+  }
+  if ("operatorContactHours" in body) {
+    const v = clean(body.operatorContactHours);
+    if (v !== undefined) data.operatorContactHours = v;
   }
 
   await updateAdminBrandingFields(actor!.id, data);

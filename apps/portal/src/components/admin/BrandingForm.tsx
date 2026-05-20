@@ -11,6 +11,11 @@ type Initial = {
   buildLine: string;
   heroEyebrowText: string;
   heroEyebrowIconUrl: string | null;
+  operatorName: string;
+  operatorContactEmail: string;
+  operatorOfficeName: string;
+  operatorOfficeAddress: string;
+  operatorContactHours: string;
 };
 
 type Defaults = {
@@ -18,6 +23,11 @@ type Defaults = {
   copyrightLine: string;
   buildLine: string;
   heroEyebrowText: string;
+  operatorName: string;
+  operatorContactEmail: string;
+  operatorOfficeName: string;
+  operatorOfficeAddress: string;
+  operatorContactHours: string;
 };
 
 type UploadSlot = "logo" | "hero";
@@ -42,6 +52,11 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
   const [copyrightLine, setCopyrightLine] = useState(initial.copyrightLine);
   const [buildLine, setBuildLine] = useState(initial.buildLine);
   const [heroEyebrowText, setHeroEyebrowText] = useState(initial.heroEyebrowText);
+  const [operatorName, setOperatorName] = useState(initial.operatorName);
+  const [operatorContactEmail, setOperatorContactEmail] = useState(initial.operatorContactEmail);
+  const [operatorOfficeName, setOperatorOfficeName] = useState(initial.operatorOfficeName);
+  const [operatorOfficeAddress, setOperatorOfficeAddress] = useState(initial.operatorOfficeAddress);
+  const [operatorContactHours, setOperatorContactHours] = useState(initial.operatorContactHours);
 
   const [logoUrl, setLogoUrl] = useState<string | null>(initial.logoUrl);
   const [heroIconUrl, setHeroIconUrl] = useState<string | null>(initial.heroEyebrowIconUrl);
@@ -57,7 +72,17 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
       const res = await fetch(withBase("/api/admin/branding"), {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ registryName, copyrightLine, buildLine, heroEyebrowText })
+        body: JSON.stringify({
+          registryName,
+          copyrightLine,
+          buildLine,
+          heroEyebrowText,
+          operatorName,
+          operatorContactEmail,
+          operatorOfficeName,
+          operatorOfficeAddress,
+          operatorContactHours
+        })
       });
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string };
@@ -146,6 +171,60 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
           help={defaults.buildLine}
         />
 
+        <div style={{ borderTop: "1px dashed var(--border)", paddingTop: 18, marginTop: 4 }}>
+          <h3 className="p-card-title" style={{ fontSize: 14, marginBottom: 12 }}>
+            Operator &amp; contact
+          </h3>
+          <p style={{ fontSize: 13, color: "var(--text-2)", marginTop: 0, marginBottom: 14 }}>
+            Shown on /contact, legal pages, and other public copy that references the operator.
+          </p>
+        </div>
+
+        <TextField
+          id="b-operator-name"
+          label="Operator name"
+          value={operatorName}
+          onChange={setOperatorName}
+          placeholder={defaults.operatorName}
+          help={defaults.operatorName}
+        />
+
+        <TextField
+          id="b-operator-email"
+          label="Contact email"
+          value={operatorContactEmail}
+          onChange={setOperatorContactEmail}
+          placeholder={defaults.operatorContactEmail}
+          help={defaults.operatorContactEmail}
+        />
+
+        <TextField
+          id="b-operator-office-name"
+          label="Office name (line 1)"
+          value={operatorOfficeName}
+          onChange={setOperatorOfficeName}
+          placeholder={defaults.operatorOfficeName}
+          help={defaults.operatorOfficeName}
+        />
+
+        <TextAreaField
+          id="b-operator-office-address"
+          label="Office address (lines 2+)"
+          value={operatorOfficeAddress}
+          onChange={setOperatorOfficeAddress}
+          placeholder={defaults.operatorOfficeAddress}
+          help={defaults.operatorOfficeAddress}
+        />
+
+        <TextField
+          id="b-operator-hours"
+          label="Contact hours"
+          value={operatorContactHours}
+          onChange={setOperatorContactHours}
+          placeholder={defaults.operatorContactHours}
+          help={defaults.operatorContactHours}
+        />
+
         {message ? (
           <div
             role={message.kind === "error" ? "alert" : "status"}
@@ -164,6 +243,38 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
           </button>
         </div>
       </form>
+    </div>
+  );
+}
+
+function TextAreaField({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+  help
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  help: string;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <label htmlFor={id} style={labelStyle}>{label}</label>
+      <textarea
+        id={id}
+        className="auth-input"
+        rows={3}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        style={{ resize: "vertical", minHeight: 72 }}
+      />
+      <span style={helpStyle}>Default: <code>{help}</code></span>
     </div>
   );
 }

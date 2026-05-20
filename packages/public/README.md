@@ -10,7 +10,7 @@ The public-portal layer for AI Registry deployments. This package owns the publi
 | `src/sections/` | Section components used inside pages: `Hero`, `RegistrySection`, `WhatGetsListed`, `ListingCriteria`, `HowItWorks`, `Promo`, `Faq`, `ProvidersSection`, `GovernanceSection`, `EcosystemContent`, `Orchestration`, `ContactContent`, `DocsContent`, `DocPage`, `AirIdCopy`. |
 | `src/shell/` | Public site chrome: `SiteShell`, `TopNav`, `Footer`, `Modal`, `ReportModal`, `ReportContext`, `Reveal`, `TweaksPanel`, `ProviderPortalFooterLink`, `PrototypeHtmlPage`, `PrototypeHtmlRuntime`, `ResourceReportButton`. |
 | `src/auth-ui/` | Public-facing auth forms: `AuthShell`, `LoginForm`, `RegisterForm`, `RequestResetForm`, `ResendVerificationForm`, `ResetPasswordForm`. (Note: `LogoutButton` lives in `@airegistry/ui-kit` because the role portals use it too.) |
-| `src/lib/` | Public-only helpers: `public-hrefs.ts` (formerly under `apps/portal/src/lib/portals/`), public-CMS readers added in PR 6. |
+| `src/lib/` | `branding-context.tsx` (`usePublicBranding` for client sections), `page-metadata.ts`, `public-hrefs.ts`, public-CMS readers. |
 | `src/theme/` | Public-site theming layered on top of `@airegistry/ui-kit/tokens.css`. |
 
 ## What does NOT live here
@@ -23,7 +23,7 @@ The public-portal layer for AI Registry deployments. This package owns the publi
 
 Operators have four tiers of customisation, in increasing scope:
 
-1. **Configuration + branding.** No code: set the deployment `.env` and edit `SiteBranding` via `/admin/branding` in the admin workspace.
+1. **Configuration + branding.** No code: set `OPERATOR_NAME` and optional `OPERATOR_CONTACT_*` in `.env`, then edit `SiteBranding` via `/admin/branding`. Public pages read merged values from `getBranding()` (server) or `usePublicBranding()` (client sections under `SiteShell`).
 2. **Theming.** Override CSS variables from `@airegistry/ui-kit/tokens.css` in a deployment stylesheet loaded after the kit's tokens, or layer on `@airegistry/public/theme.css`.
 3. **Slot overrides.** Drop an extension that contributes to `<PluginSlot id="...">` slots in the public site (slots ship in a future kit pass).
 4. **Fork.** Replace this package with your own under the same name and `pnpm install`. The role workspaces in `@airegistry/portal` continue to work unchanged because they only depend on `@airegistry/core` and `@airegistry/ui-kit`.

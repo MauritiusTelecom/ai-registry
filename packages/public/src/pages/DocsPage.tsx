@@ -1,8 +1,9 @@
 import { DocsContent } from "../sections/DocsContent";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = {
-  title: "Documentation · Mauritius AI Registry"
-};
+export async function generateMetadata() {
+  return publicPageMetadata("Documentation");
+}
 
 export default function DocsPage() {
   return <DocsContent />;

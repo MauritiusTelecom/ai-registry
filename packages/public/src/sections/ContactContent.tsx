@@ -5,6 +5,7 @@ import { Icon } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";
 import { PageHero } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
+import { usePublicBranding } from "../lib/branding-context";
 
 type Form = {
   name: string;
@@ -28,6 +29,18 @@ type Errors = Partial<Record<"name" | "org" | "email" | "message" | "submit", st
 const EMPTY_FORM: Form = { name: "", org: "", email: "", topic: "general", message: "" };
 
 export function ContactContent() {
+  const {
+    operatorName,
+    operatorContactEmail,
+    operatorOfficeName,
+    operatorOfficeAddress,
+    operatorContactHours
+  } = usePublicBranding();
+  const officeLines = operatorOfficeAddress
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
   const [form, setForm] = useState<Form>(EMPTY_FORM);
   const [errors, setErrors] = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
@@ -80,13 +93,13 @@ export function ContactContent() {
   return (
     <div>
       <PageHero
-        crumb="Contact · Talk to Mauritius Telecom"
+        crumb={`Contact · Talk to ${operatorName}`}
         title={
           <>
             Get in <span className="gradient-text">touch</span>.
           </>
         }
-        subtitle="Submit a resource, request review, report an issue, or talk to the Mauritius Telecom team about standing up a registry in your jurisdiction."
+        subtitle={`Submit a resource, request review, report an issue, or talk to the ${operatorName} team about standing up a registry in your jurisdiction.`}
       />
       <section className="section" style={{ paddingTop: 40 }}>
         <div className="contact-grid">
@@ -98,7 +111,7 @@ export function ContactContent() {
                 </div>
                 <div>
                   <div className="contact-info-label">Email</div>
-                  <div className="contact-info-value">airegistry@telecom.mu</div>
+                  <div className="contact-info-value">{operatorContactEmail}</div>
                 </div>
               </div>
               <div className="contact-info-row">
@@ -108,18 +121,22 @@ export function ContactContent() {
                 <div>
                   <div className="contact-info-label">Office</div>
                   <div className="contact-info-value">
-                    Mauritius Telecom
-                    <br />
-                    Telecom Tower, Edith Cavell Street
-                    <br />
-                    Port Louis, Republic of Mauritius
+                    {operatorOfficeName}
+                    {officeLines.length > 0
+                      ? officeLines.map((line) => (
+                          <span key={line}>
+                            <br />
+                            {line}
+                          </span>
+                        ))
+                      : null}
                   </div>
                 </div>
               </div>
               <div style={{ paddingTop: 8, borderTop: "1px dashed var(--border)" }}>
                 <div className="contact-info-label">Hours</div>
                 <div style={{ fontSize: 13.5, color: "var(--text-2)", marginTop: 6 }}>
-                  Mon-Fri · 09:00-17:30 · GMT+4
+                  {operatorContactHours}
                 </div>
               </div>
             </div>

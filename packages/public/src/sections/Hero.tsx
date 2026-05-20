@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { usePublicBranding } from "../lib/branding-context";
 import type {
   PublicRegistryListResponse,
   RegistryCard,
@@ -62,25 +63,25 @@ const CARD_SLOTS: CSSProperties[] = [
   { bottom: "6%", left: "4%" }
 ];
 
-// Fallback shown before the fetch resolves, or if the API errors / returns
-// zero rows. Keeps the existing Mauritius Telecom branding as a safe default.
-const FALLBACK_CARDS: FloatCardData[] = [
-  {
-    title: "MytGPT Enterprise",
-    subtitle: "Verified · Mauritius Telecom · Chat",
-    dot: "#10b981"
-  },
-  {
-    title: "my.t Vision AI",
-    subtitle: "Verified · Mauritius Telecom · Vision",
-    dot: "#a855f7"
-  },
-  {
-    title: "my.t Document AI",
-    subtitle: "Verified · Mauritius Telecom · OCR",
-    dot: "#22d3ee"
-  }
-];
+function buildFallbackCards(operatorName: string): FloatCardData[] {
+  return [
+    {
+      title: "MytGPT Enterprise",
+      subtitle: `Verified · ${operatorName} · Chat`,
+      dot: "#10b981"
+    },
+    {
+      title: "my.t Vision AI",
+      subtitle: `Verified · ${operatorName} · Vision`,
+      dot: "#a855f7"
+    },
+    {
+      title: "my.t Document AI",
+      subtitle: `Verified · ${operatorName} · OCR`,
+      dot: "#22d3ee"
+    }
+  ];
+}
 
 // Maps display-status badge -> dot colour. Mirrors the original hard-coded palette
 // so the visual rhythm stays consistent regardless of which resources land here.
@@ -127,14 +128,14 @@ function shuffle<T>(arr: T[]): T[] {
   return out;
 }
 
-function pickThree(rows: RegistryCard[]): FloatCardData[] {
+function pickThree(rows: RegistryCard[], fallback: FloatCardData[]): FloatCardData[] {
   const eligible = rows.filter((r) =>
     ALLOWED_STATUSES.includes(r.status as DisplayStatus)
   );
-  if (eligible.length === 0) return FALLBACK_CARDS;
+  if (eligible.length === 0) return fallback;
   const chosen = shuffle(eligible).slice(0, 3).map(cardToFloat);
   // Pad with fallback entries if the registry has fewer than 3 eligible rows.
-  while (chosen.length < 3) chosen.push(FALLBACK_CARDS[chosen.length]);
+  while (chosen.length < 3) chosen.push(fallback[chosen.length]!);
   return chosen;
 }
 
@@ -149,7 +150,13 @@ export function Hero({
   /** Optional custom icon for the hero chip. When set, replaces the Mauritius flag SVG. */
   eyebrowIconUrl?: string | null;
 }) {
-  const [cards, setCards] = useState<FloatCardData[]>(FALLBACK_CARDS);
+  const { operatorName } = usePublicBranding();
+  const fallbackCards = useMemo(() => buildFallbackCards(operatorName), [operatorName]);
+  const [cards, setCards] = useState<FloatCardData[]>(fallbackCards);
+
+  useEffect(() => {
+    setCards(fallbackCards);
+  }, [fallbackCards]);
 
   // Fetch once on mount. `cache: "no-store"` ensures every page load gets a
   // fresh sample - we want the three cards to rotate across visits.
@@ -164,7 +171,7 @@ export function Hero({
         if (!res.ok) return; // silent fallback - hero never surfaces API errors
         const data = (await res.json()) as PublicRegistryListResponse;
         if (Array.isArray(data.rows) && data.rows.length > 0) {
-          setCards(pickThree(data.rows));
+          setCards(pickThree(data.rows, fallbackCards));
         }
       } catch (e) {
         if ((e as Error)?.name === "AbortError") return;
@@ -172,7 +179,7 @@ export function Hero({
       }
     })();
     return () => ac.abort();
-  }, []);
+  }, [fallbackCards]);
 
   return (
     <section className="hero">

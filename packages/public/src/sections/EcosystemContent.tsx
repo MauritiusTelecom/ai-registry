@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Icon, type IconName } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";
 import { PageHero } from "@airegistry/ui-kit";
+import { usePublicBranding } from "../lib/branding-context";
 
 // ============================================================
 // Section content - sourced from AI_Registry_Decision_Makers_Guide.html
@@ -369,6 +370,8 @@ function ThePlatform() {
 }
 
 function WhoRunsIt() {
+  const { operatorName, portalDomain } = usePublicBranding();
+  const portalUrl = `https://${portalDomain}`;
   return (
     <section className="section" id="operators" style={{ scrollMarginTop: 120 }}>
       <Reveal className="section-header">
@@ -384,14 +387,14 @@ function WhoRunsIt() {
           national-scale digital services on behalf of broader ecosystems - the
           legitimacy, capability and convening power matter as much as the technology.{" "}
           <strong style={{ color: "var(--text)" }}>
-            Mauritius Telecom operates the reference instance at{" "}
+            {operatorName} operates the reference instance at{" "}
             <a
-              href="https://airegistry.mu"
+              href={portalUrl}
               target="_blank"
               rel="noopener noreferrer"
               style={{ color: "var(--primary)", textDecoration: "none" }}
             >
-              airegistry.mu
+              {portalDomain}
             </a>
             .
           </strong>
@@ -772,6 +775,7 @@ function ForWhom() {
 }
 
 function LongTermVision() {
+  const { registryName } = usePublicBranding();
   return (
     <section className="section" id="federation" style={{ scrollMarginTop: 120 }}>
       <Reveal className="section-header">
@@ -817,7 +821,7 @@ function LongTermVision() {
             >
               air://air.mu
             </div>
-            <div style={{ fontSize: 12, color: "var(--text-2)" }}>Mauritius Registry</div>
+            <div style={{ fontSize: 12, color: "var(--text-2)" }}>{registryName}</div>
           </div>
 
           <div
@@ -939,6 +943,7 @@ function LongTermVision() {
 }
 
 function GetInvolved() {
+  const { operatorName } = usePublicBranding();
   return (
     <section className="section" id="engage" style={{ scrollMarginTop: 120 }}>
       <Reveal className="section-header">
@@ -951,7 +956,7 @@ function GetInvolved() {
         </h2>
         <p>
           Intentionally small, open and sovereign. The value comes from <em>restraint</em>
-          {" "}- and from others deploying and governing their own. Mauritius Telecom is
+          {" "}- and from others deploying and governing their own. {operatorName} is
           building the reference; the next steps are adoption, contribution and partnership.
         </p>
       </Reveal>

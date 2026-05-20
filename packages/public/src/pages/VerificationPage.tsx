@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { DocPage, DocPanel } from "../sections/DocPage";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = { title: "Verification proofs · Mauritius AI Registry" };
+export async function generateMetadata() {
+  return publicPageMetadata("Verification proofs");
+}
 
 export default function VerificationPage() {
   return (

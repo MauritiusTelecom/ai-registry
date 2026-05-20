@@ -1,9 +1,14 @@
 import Link from "next/link";
+import { getBranding } from "@airegistry/core/branding";
 import { DocPage, DocPanel } from "../sections/DocPage";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = { title: "Pricing · Mauritius AI Registry" };
+export async function generateMetadata() {
+  return publicPageMetadata("Pricing");
+}
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const { operatorName, portalDomain } = await getBranding();
   return (
     <DocPage
       crumb={
@@ -44,8 +49,8 @@ export default function PricingPage() {
 
       <DocPanel title="Operator costs">
         <p>
-          Operating the registry is funded by its operator (Mauritius Telecom for
-          airegistry.mu) as part of its digital public infrastructure mandate. Other
+          Operating the registry is funded by its operator ({operatorName} for{" "}
+          {portalDomain}) as part of its digital public infrastructure mandate. Other
           jurisdictions stand up their own instance, configured for their identity domain
           and reviewer pool, with operating costs absorbed by their own DPI enabler.
         </p>
@@ -54,7 +59,7 @@ export default function PricingPage() {
           <Link href="/whitepaper" style={{ color: "var(--text-2)" }}>
             the whitepaper
           </Link>{" "}
-          for the operating model.
+          for the full economic model.
         </p>
       </DocPanel>
     </DocPage>

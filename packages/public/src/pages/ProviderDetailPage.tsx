@@ -8,8 +8,11 @@ import {
   publicProviderKind
 } from "@airegistry/sdk";
 import { PageHero } from "@airegistry/ui-kit";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = { title: "Provider · Mauritius AI Registry" };
+export async function generateMetadata() {
+  return publicPageMetadata("Provider");
+}
 export const dynamic = "force-dynamic";
 
 export default async function ProviderDetailPage({

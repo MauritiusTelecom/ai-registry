@@ -8,6 +8,12 @@ export type Branding = {
   buildLine: string;
   heroEyebrowText: string;
   heroEyebrowIconUrl: string | null;
+  portalDomain: string;
+  operatorName: string;
+  operatorContactEmail: string;
+  operatorOfficeName: string;
+  operatorOfficeAddress: string;
+  operatorContactHours: string;
 };
 
 const DEFAULT_COPYRIGHT_LINE = "(c) 2026 Mauritius AI Registry - airegistry.mu";
@@ -19,6 +25,11 @@ const CACHE_TTL_MS = 30_000;
 /** Clear the in-memory branding cache; call from admin write paths. */
 export function invalidateBrandingCache() {
   cache = null;
+}
+
+function pick(rowVal: string | null | undefined, envVal: string): string {
+  const trimmed = rowVal?.trim();
+  return trimmed ? trimmed : envVal;
 }
 
 /**
@@ -41,7 +52,13 @@ export async function getBranding(): Promise<Branding> {
     copyrightLine: row?.copyrightLine?.trim() || DEFAULT_COPYRIGHT_LINE,
     buildLine: row?.buildLine?.trim() || DEFAULT_BUILD_LINE,
     heroEyebrowText: row?.heroEyebrowText?.trim() || cfg.portalDomain,
-    heroEyebrowIconUrl: row?.heroEyebrowIconUrl?.trim() || null
+    heroEyebrowIconUrl: row?.heroEyebrowIconUrl?.trim() || null,
+    portalDomain: cfg.portalDomain,
+    operatorName: pick(row?.operatorName, cfg.operatorName),
+    operatorContactEmail: pick(row?.operatorContactEmail, cfg.operatorContactEmail),
+    operatorOfficeName: pick(row?.operatorOfficeName, cfg.operatorOfficeName),
+    operatorOfficeAddress: pick(row?.operatorOfficeAddress, cfg.operatorOfficeAddress),
+    operatorContactHours: pick(row?.operatorContactHours, cfg.operatorContactHours)
   };
 
   cache = { value, expiresAt: now + CACHE_TTL_MS };

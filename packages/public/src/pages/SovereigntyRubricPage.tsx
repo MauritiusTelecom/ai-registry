@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { DocPage, DocPanel } from "../sections/DocPage";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = { title: "Sovereignty rubric · Mauritius AI Registry" };
+export async function generateMetadata() {
+  return publicPageMetadata("Sovereignty rubric");
+}
 
 const BASES: { code: string; name: string; meaning: string; evidence: string }[] = [
   {
