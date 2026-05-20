@@ -4,4 +4,5 @@
  * Route segment config + the default export are re-exported here so
  * Next.js's static analysis sees them at the route file location.
  */
-export { default, metadata, dynamic } from "@airegistry/public/pages/RegistryDetailPage";
+export { default, metadata } from "@airegistry/public/pages/RegistryDetailPage";
+export const dynamic = "force-dynamic";
