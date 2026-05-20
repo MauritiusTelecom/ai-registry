@@ -3,10 +3,21 @@
  */
 
 export { getCurrentUser } from "@airegistry/core/auth/current-user";
+export { exposeDevAuthLinks } from "@airegistry/core/auth/dev-links";
+
+export {
+  checkRateLimit,
+  clientIpFromRequest,
+  rateLimitJsonResponse,
+  type RateLimitBucket,
+  type RateLimitResult
+} from "@airegistry/core/rate-limit";
 
 export {
   signSessionCookie,
   clearSessionCookie,
+  signCsrfCookie,
+  clearCsrfCookieDirective,
   hashUserPassword,
   verifyUserPassword,
   NO_USER_PASSWORD_SENTINEL,
@@ -23,8 +34,11 @@ export {
   setUserResetToken,
   applyPasswordReset
 } from "@airegistry/core/auth/services";
+export type { CsrfCookieDirective } from "@airegistry/core/auth/csrf";
+
 export type {
   SessionCookieDirective,
+  SignSessionCookieOptions,
   OneShotTokenBundle,
   ConsumeEmailVerificationResult,
   UserForLogin,

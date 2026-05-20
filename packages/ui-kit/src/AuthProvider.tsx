@@ -9,6 +9,7 @@ import {
   type ReactNode
 } from "react";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 /**
  * Real-session AuthProvider shared by every portal that mounts ui-kit chrome.
@@ -79,7 +80,7 @@ function firstNameFrom(name: string): string {
 
 async function fetchMe(): Promise<AuthUser | null> {
   try {
-    const res = await fetch(withBase("/api/auth/me"), { credentials: "same-origin" });
+    const res = await registryFetch(withBase("/api/auth/me"), { credentials: "same-origin" });
     if (!res.ok) return null;
     const data = (await res.json()) as MeResponse;
     if (!data.user) return null;
@@ -115,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(
     async (email: string, password: string) => {
       try {
-        const res = await fetch(withBase("/api/auth/login"), {
+        const res = await registryFetch(withBase("/api/auth/login"), {
           method: "POST",
           headers: { "content-type": "application/json" },
           credentials: "same-origin",
@@ -134,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch(withBase("/api/auth/logout"), { method: "POST", credentials: "same-origin" });
+      await registryFetch(withBase("/api/auth/logout"), { method: "POST", credentials: "same-origin" });
     } finally {
       setUser(null);
     }
@@ -150,3 +151,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
+

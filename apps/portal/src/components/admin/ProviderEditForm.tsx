@@ -1,6 +1,7 @@
 "use client";
 
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
@@ -118,7 +119,7 @@ export function ProviderEditForm({
         oncallEmail: nullableTrim(oncallEmail),
         webhookUrl: nullableTrim(webhookUrl)
       };
-      const res = await fetch(withBase(`/api/admin/providers/${initial.id}`), {
+const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

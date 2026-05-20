@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 export function RegisterForm() {
   const [name, setName] = useState("");
@@ -20,7 +21,7 @@ export function RegisterForm() {
     setError(null);
     setDevVerifyUrl(null);
     try {
-      const res = await fetch(withBase("/api/auth/register"), {
+      const res = await registryFetch(withBase("/api/auth/register"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name, organisationName, email, password })
@@ -30,7 +31,7 @@ export function RegisterForm() {
         verifyUrl?: string;
         redirectTo?: string;
       };
-      if (!res.ok) {
+      if (res.status !== 201) {
         setError(data.error ?? "Registration failed.");
         return;
       }
@@ -171,3 +172,4 @@ function FormField({
     </div>
   );
 }
+

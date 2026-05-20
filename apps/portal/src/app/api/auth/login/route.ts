@@ -5,10 +5,12 @@ import {
   verifyUserPassword,
   NO_USER_PASSWORD_SENTINEL,
   signSessionCookie,
+  signCsrfCookie,
   findUserForLogin
 } from "@airegistry/sdk/server";
 import { linkContactsToUser } from "@airegistry/sdk/server";
 import { portalForRole } from "@/lib/portals/auth-gate";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { writeAudit } from "@airegistry/sdk";
 
 /**
@@ -28,6 +30,9 @@ type LoginPayload = { email?: unknown; password?: unknown };
 const GENERIC_ERROR = "Email or password is incorrect.";
 
 export async function POST(req: Request) {
+  const limited = enforceRateLimit(req, "auth");
+  if (limited) return limited;
+
   let body: LoginPayload;
   try {
     body = (await req.json()) as LoginPayload;
@@ -58,16 +63,26 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error: "Please verify your email address to sign in.",
-        code: "email_not_verified",
-        email: user.email
+        code: "email_not_verified"
       },
       { status: 403 }
     );
   }
 
-  const { name, value, ...cookieAttrs } = signSessionCookie(user.id);
+  const { name, value, ...cookieAttrs } = signSessionCookie(user.id, new Date(), {
+    sessionEpoch: user.sessionEpoch,
+    roleCodes: user.roleCodes
+  });
   const jar = await cookies();
   jar.set(name, value, cookieAttrs);
+  const csrf = signCsrfCookie(cookieAttrs.maxAge);
+  jar.set(csrf.name, csrf.value, {
+    httpOnly: csrf.httpOnly,
+    secure: csrf.secure,
+    sameSite: csrf.sameSite,
+    path: csrf.path,
+    maxAge: csrf.maxAge
+  });
 
   await writeAudit({
     actorUserId: user.id,

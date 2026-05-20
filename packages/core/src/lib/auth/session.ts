@@ -11,8 +11,10 @@
  *   - userId  - UUID of the User row
  *   - iat     - issued-at (unix seconds)
  *   - exp     - expires-at (unix seconds)
+ *   - epoch   - matches User.sessionEpoch; bumped on password reset
  *
- * The cookie is HTTP-only, SameSite=Lax, Path=/, Secure when NODE_ENV=production.
+ * The cookie is HTTP-only, SameSite=Strict (production) or Lax (dev), Path=/,
+ * Secure when NODE_ENV=production.
  */
 
 import { createHmac, timingSafeEqual } from "node:crypto";
@@ -22,6 +24,7 @@ export type SessionPayload = {
   userId: string;
   iat: number;
   exp: number;
+  epoch: number;
 };
 
 const enc = new TextEncoder();
@@ -40,12 +43,23 @@ function sign(payloadB64: string, secret: string): string {
   return b64url(mac);
 }
 
+export type IssueSessionOptions = {
+  sessionEpoch?: number;
+  ttlSeconds?: number;
+};
+
 /** Issue a new session token for the given user id. */
-export function issueSessionToken(userId: string, now: Date = new Date()): string {
+export function issueSessionToken(
+  userId: string,
+  now: Date = new Date(),
+  opts: IssueSessionOptions = {}
+): string {
   const cfg = getConfig();
   const iat = Math.floor(now.getTime() / 1000);
-  const exp = iat + cfg.auth.sessionTtlSeconds;
-  const payload: SessionPayload = { userId, iat, exp };
+  const ttl = opts.ttlSeconds ?? cfg.auth.sessionTtlSeconds;
+  const exp = iat + ttl;
+  const epoch = opts.sessionEpoch ?? 0;
+  const payload: SessionPayload = { userId, iat, exp, epoch };
   const payloadB64 = b64url(enc.encode(JSON.stringify(payload)));
   const sig = sign(payloadB64, cfg.auth.secret);
   return `${payloadB64}.${sig}`;
@@ -86,6 +100,9 @@ export function verifySessionToken(token: string | undefined, now: Date = new Da
   ) {
     return null;
   }
+  if (typeof payload.epoch !== "number") {
+    payload.epoch = 0;
+  }
 
   const nowSec = Math.floor(now.getTime() / 1000);
   if (payload.exp <= nowSec) return null;
@@ -94,15 +111,22 @@ export function verifySessionToken(token: string | undefined, now: Date = new Da
 }
 
 /** Cookie attributes shared by /set/ and /clear/ helpers. */
-export function sessionCookieAttributes() {
+export function sessionCookieAttributes(maxAgeSeconds?: number) {
   const cfg = getConfig();
   const isProd = process.env.NODE_ENV === "production";
   return {
     name: cfg.auth.sessionCookieName,
     httpOnly: true as const,
     secure: isProd,
-    sameSite: "lax" as const,
+    sameSite: isProd ? ("strict" as const) : ("lax" as const),
     path: "/" as const,
-    maxAge: cfg.auth.sessionTtlSeconds
+    maxAge: maxAgeSeconds ?? cfg.auth.sessionTtlSeconds
   };
+}
+
+/** Shorter session lifetime for operator roles (admin / reviewer). */
+export function sessionTtlForRoles(roleCodes: string[]): number {
+  const cfg = getConfig();
+  const privileged = roleCodes.some((r) => r === "admin" || r === "reviewer");
+  return privileged ? cfg.auth.sessionTtlAdminSeconds : cfg.auth.sessionTtlSeconds;
 }

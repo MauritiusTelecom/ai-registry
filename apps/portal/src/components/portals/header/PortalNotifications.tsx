@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 type PortalRoleProp = "admin" | "provider" | "verifier" | "sovereign";
 
@@ -76,7 +77,7 @@ export function PortalNotifications({
       ns.map((n) => (ids.includes(n.id) ? { ...n, unread: false } : n))
     );
     try {
-      const res = await fetch(withBase("/api/portal/notifications/read"), {
+      const res = await registryFetch(withBase("/api/portal/notifications/read"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
@@ -98,7 +99,7 @@ export function PortalNotifications({
     const previousUnread = new Set(allIds);
     setNotifs((ns) => ns.map((n) => ({ ...n, unread: false })));
     try {
-      const res = await fetch(withBase("/api/portal/notifications/read-all"), {
+      const res = await registryFetch(withBase("/api/portal/notifications/read-all"), {
         method: "POST",
         credentials: "same-origin"
       });

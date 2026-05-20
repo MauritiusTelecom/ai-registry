@@ -25,5 +25,5 @@ export async function GET(req: Request) {
       { status: 400 }
     );
   }
-  return NextResponse.json({ ok: true, email: result.email });
+  return NextResponse.json({ ok: true });
 }

@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/components/public/AuthProvider";
 import { Button, Field, Input, Select, TextArea } from "@/components/library";
+import { useAuth } from "@airegistry/ui-kit";
+import { registryFetch } from "@airegistry/ui-kit";
 
 export type OrgFormOption = { code: string; name: string };
 
@@ -53,7 +55,7 @@ export function ProviderOrganisationForm({
     setError(null);
     setOk(null);
     try {
-      const res = await fetch(withBase("/api/portal/provider/organisation"), {
+      const res = await registryFetch(withBase("/api/portal/provider/organisation"), {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         credentials: "same-origin",

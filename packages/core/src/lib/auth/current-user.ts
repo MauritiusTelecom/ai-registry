@@ -57,6 +57,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   });
 
   if (!user) return null;
+  if (payload.epoch !== user.sessionEpoch) return null;
   if (user.status.code === "deactivated" || user.status.code === "suspended") {
     return null;
   }

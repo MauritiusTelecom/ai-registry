@@ -11,10 +11,10 @@ import type { AdminBrandingAssetSlot } from "@airegistry/sdk/server";
 import { invalidateBrandingCache } from "@/lib/branding";
 
 const MAX_BYTES = 1_000_000; // 1 MB
+/** Raster only — SVG rejected to prevent stored XSS in public branding assets. */
 const ALLOWED: Record<string, string> = {
   "image/png": "png",
   "image/jpeg": "jpg",
-  "image/svg+xml": "svg",
   "image/webp": "webp"
 };
 
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
   const ext = ALLOWED[file.type];
   if (!ext) {
     return NextResponse.json(
-      { error: "Unsupported image type. Use PNG, JPEG, SVG, or WebP." },
+      { error: "Unsupported image type. Use PNG, JPEG, or WebP." },
       { status: 400 }
     );
   }

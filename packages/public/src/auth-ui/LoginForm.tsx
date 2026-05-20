@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 /**
  * `redirect` carries the URL the user should land on if they were deep-linked
@@ -26,7 +27,7 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
     setNeedsVerification(null);
     setResent(false);
     try {
-      const res = await fetch(withBase("/api/auth/login"), {
+      const res = await registryFetch(withBase("/api/auth/login"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email, password })
@@ -39,7 +40,7 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
       };
       if (!res.ok) {
         if (data.code === "email_not_verified") {
-          setNeedsVerification(data.email ?? email);
+          setNeedsVerification(email);
           return;
         }
         setError(data.error ?? "Login failed.");
@@ -61,7 +62,7 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
     if (!needsVerification) return;
     setResendBusy(true);
     try {
-      await fetch(withBase("/api/auth/resend-verification"), {
+      await registryFetch(withBase("/api/auth/resend-verification"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: needsVerification })
@@ -181,3 +182,4 @@ function FormField({
     </div>
   );
 }
+

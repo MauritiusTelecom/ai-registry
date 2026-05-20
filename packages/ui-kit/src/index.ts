@@ -27,3 +27,4 @@ export {
   themeFromCookie,
   type ThemeMode
 } from "./theme-cookie";
+export { registryFetch } from "./registryFetch";

@@ -8,6 +8,7 @@ import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
 import { RowActionMenu, type RowMenuItem } from "./RowActionMenu";
 import { StatusPill } from "@/components/portals/StatusPill";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 export type ProviderRow = {
   id: string;
@@ -168,7 +169,7 @@ function ProviderRowActions({
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(withBase(`/api/admin/providers/${row.id}`), { method: "DELETE" });
+      const res = await registryFetch(withBase(`/api/admin/providers/${row.id}`), { method: "DELETE" });
       const data = (await res.json()) as { error?: string; detail?: string };
       if (!res.ok) {
         setError(data.error ?? data.detail ?? "Delete failed");

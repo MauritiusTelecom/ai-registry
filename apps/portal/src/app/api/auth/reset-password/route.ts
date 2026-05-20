@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
-import { hashUserPassword, hashTokenForLookup } from "@airegistry/sdk/server";
+import { cookies } from "next/headers";
+import {
+  hashUserPassword,
+  hashTokenForLookup,
+  clearSessionCookie,
+  clearCsrfCookieDirective
+} from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 import { emailTemplates } from "@airegistry/sdk/server";
 import { sendTransactionalEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
 import { writeAudit } from "@airegistry/sdk";
 import { findUserByResetTokenHash, applyPasswordReset } from "@airegistry/sdk/server";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/auth/reset-password
@@ -19,6 +26,9 @@ import { findUserByResetTokenHash, applyPasswordReset } from "@airegistry/sdk/se
 type ResetPayload = { token?: unknown; password?: unknown };
 
 export async function POST(req: Request) {
+  const limited = enforceRateLimit(req, "auth");
+  if (limited) return limited;
+
   const origin = getPublicOrigin(req);
   let body: ResetPayload;
   try {
@@ -63,6 +73,24 @@ export async function POST(req: Request) {
     to: user.email,
     subject: tmpl.subject,
     text: tmpl.text
+  });
+
+  const jar = await cookies();
+  const cleared = clearSessionCookie();
+  jar.set(cleared.name, cleared.value, {
+    httpOnly: cleared.httpOnly,
+    secure: cleared.secure,
+    sameSite: cleared.sameSite,
+    path: cleared.path,
+    maxAge: cleared.maxAge
+  });
+  const csrf = clearCsrfCookieDirective();
+  jar.set(csrf.name, csrf.value, {
+    httpOnly: csrf.httpOnly,
+    secure: csrf.secure,
+    sameSite: csrf.sameSite,
+    path: csrf.path,
+    maxAge: csrf.maxAge
   });
 
   return NextResponse.json({ ok: true });

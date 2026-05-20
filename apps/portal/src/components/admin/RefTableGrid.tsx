@@ -11,6 +11,7 @@ import {
 } from "@/components/library";
 import type { RefTableConfig } from "@airegistry/sdk";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 /**
  * CRUD grid for one reference table. Now a thin adapter that translates a
@@ -44,7 +45,7 @@ export function RefTableGrid({ config }: { config: RefTableConfig }) {
     [config]
   );
 
-  // The grid surfaces an `active` filter when the table has the column.
+// The grid surfaces an `active` filter when the table has the column.
   const filters: EntityFilter[] | undefined = useMemo(() => {
     if (!config.hasActive) return undefined;
     return [
@@ -64,10 +65,9 @@ export function RefTableGrid({ config }: { config: RefTableConfig }) {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch(
-        withBase(`/api/admin/ref/${config.id}/${deleting.id}`),
-        { method: "DELETE" }
-      );
+const res = await registryFetch(withBase(`/api/admin/ref/${config.id}/${deleting.id}`), {
+        method: "DELETE"
+      });
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as {
           detail?: string;

@@ -5,6 +5,7 @@ import { sendTransactionalEmail } from "@airegistry/sdk/server";
 import { getReferenceRow } from "@airegistry/sdk/server";
 import { writeAudit } from "@airegistry/sdk";
 import { findResourceForPublicReport, createPublicComplaint } from "@airegistry/sdk/server";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 // Public report intake for the listing-detail "Report this listing" modal.
 //
@@ -58,6 +59,9 @@ function isEmail(value: unknown): value is string {
 }
 
 export async function POST(req: Request) {
+  const limited = enforceRateLimit(req, "public-write");
+  if (limited) return limited;
+
   let payload: ReportPayload;
   try {
     payload = (await req.json()) as ReportPayload;

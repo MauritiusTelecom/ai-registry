@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 /**
  * Sign-out button. Calls POST /api/auth/logout and then hard-navigates to
@@ -13,7 +14,7 @@ export function LogoutButton({ next = "/" }: { next?: string }) {
   async function onClick() {
     setBusy(true);
     try {
-      await fetch(withBase("/api/auth/logout"), { method: "POST" });
+      await registryFetch(withBase("/api/auth/logout"), { method: "POST" });
     } finally {
       window.location.assign(withBase(next));
     }
@@ -29,3 +30,4 @@ export function LogoutButton({ next = "/" }: { next?: string }) {
     </button>
   );
 }
+
