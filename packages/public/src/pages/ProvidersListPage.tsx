@@ -1,3 +1,4 @@
+import { getBranding } from "@airegistry/core/branding";
 import { PageHero } from "@airegistry/ui-kit";
 import { ProvidersSection } from "../sections/ProvidersSection";
 import { publicPageMetadata } from "../lib/page-metadata";
@@ -6,7 +7,8 @@ export async function generateMetadata() {
   return publicPageMetadata("Providers");
 }
 
-export default function ProvidersPage() {
+export default async function ProvidersPage() {
+  const { jurisdictionDisplayName } = await getBranding();
   return (
     <div>
       <PageHero
@@ -14,7 +16,7 @@ export default function ProvidersPage() {
         title={
           <>
             Meet the organisations{" "}
-            <span className="gradient-text">Mauritius already trusts</span>.
+            <span className="gradient-text">{jurisdictionDisplayName} already trusts</span>.
           </>
         }
         subtitle="Browse the sovereign operators, model labs, hosting partners and accredited integrators behind every listing in the registry. Each provider carries a verifiable status and a public profile."

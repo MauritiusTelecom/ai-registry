@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getBranding } from "@airegistry/core/branding";
 import { DocPage, DocPanel } from "../sections/DocPage";
 import { publicPageMetadata } from "../lib/page-metadata";
 
@@ -6,7 +7,8 @@ export async function generateMetadata() {
   return publicPageMetadata("Acceptable use");
 }
 
-export default function AcceptableUsePage() {
+export default async function AcceptableUsePage() {
+  const { portalDomain } = await getBranding();
   return (
     <DocPage
       crumb={
@@ -44,7 +46,7 @@ export default function AcceptableUsePage() {
           <li>Do not scrape aggressively or attempt denial-of-service.</li>
           <li>
             If you redistribute registry metadata, attribute back to the operating
-            instance (e.g. airegistry.mu).
+            instance (e.g. {portalDomain}).
           </li>
         </ul>
       </DocPanel>

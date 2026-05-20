@@ -36,7 +36,10 @@ export default async function AdminBrandingPage() {
           operatorContactEmail: row?.operatorContactEmail ?? "",
           operatorOfficeName: row?.operatorOfficeName ?? "",
           operatorOfficeAddress: row?.operatorOfficeAddress ?? "",
-          operatorContactHours: row?.operatorContactHours ?? ""
+          operatorContactHours: row?.operatorContactHours ?? "",
+          jurisdictionDisplayName: row?.jurisdictionDisplayName ?? "",
+          privacyDataProtectionAct: row?.privacyDataProtectionAct ?? "",
+          openSourceRepoUrl: row?.openSourceRepoUrl ?? ""
         }}
         defaults={{
           registryName: cfg.registryName,
@@ -47,7 +50,10 @@ export default async function AdminBrandingPage() {
           operatorContactEmail: cfg.operatorContactEmail,
           operatorOfficeName: cfg.operatorOfficeName,
           operatorOfficeAddress: cfg.operatorOfficeAddress || "(unset in .env)",
-          operatorContactHours: cfg.operatorContactHours
+          operatorContactHours: cfg.operatorContactHours,
+          jurisdictionDisplayName: cfg.jurisdictionDisplayName,
+          privacyDataProtectionAct: cfg.privacyDataProtectionAct,
+          openSourceRepoUrl: cfg.openSourceRepoUrl
         }}
       />
     </div>

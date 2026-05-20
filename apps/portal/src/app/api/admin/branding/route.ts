@@ -33,6 +33,9 @@ type PatchPayload = {
   operatorOfficeName?: string | null;
   operatorOfficeAddress?: string | null;
   operatorContactHours?: string | null;
+  jurisdictionDisplayName?: string | null;
+  privacyDataProtectionAct?: string | null;
+  openSourceRepoUrl?: string | null;
 };
 
 function clean(value: unknown): string | null {
@@ -90,6 +93,18 @@ export async function PATCH(req: Request) {
   if ("operatorContactHours" in body) {
     const v = clean(body.operatorContactHours);
     if (v !== undefined) data.operatorContactHours = v;
+  }
+  if ("jurisdictionDisplayName" in body) {
+    const v = clean(body.jurisdictionDisplayName);
+    if (v !== undefined) data.jurisdictionDisplayName = v;
+  }
+  if ("privacyDataProtectionAct" in body) {
+    const v = clean(body.privacyDataProtectionAct);
+    if (v !== undefined) data.privacyDataProtectionAct = v;
+  }
+  if ("openSourceRepoUrl" in body) {
+    const v = clean(body.openSourceRepoUrl);
+    if (v !== undefined) data.openSourceRepoUrl = v;
   }
 
   await updateAdminBrandingFields(actor!.id, data);

@@ -8,6 +8,7 @@ This guide helps operators change branding, marketing content, visuals, or behav
 |------------------------|----------|--------------|
 | Registry name, jurisdiction, languages, API URLs | Root [`.env`](.env.example) + `pnpm config:validate` | No |
 | Operator name, contact email, office, hours on `/contact` and legal copy | `OPERATOR_NAME` (+ optional `OPERATOR_CONTACT_*` in `.env`) and `/admin/branding` | No |
+| Jurisdiction name on heroes (`/`, `/registry`, `/providers`), privacy act, repo URL | `JURISDICTION_DISPLAY_NAME`, `PRIVACY_DATA_PROTECTION_ACT`, `OPEN_SOURCE_REPO_URL` and `/admin/branding` | No |
 | Logos, footer copy, hero eyebrow | `/admin/branding` (DB `SiteBranding` + env fallbacks) | No |
 | FAQ, how-it-works, listing criteria, promo banner | `/admin/site/*` (public CMS) | No |
 | Colors, typography, spacing | Override [`@airegistry/ui-kit/tokens.css`](packages/ui-kit/src/tokens.css) | No |
@@ -24,6 +25,9 @@ This guide helps operators change branding, marketing content, visuals, or behav
    - `OPERATOR_OFFICE_NAME` — defaults to `OPERATOR_NAME`
    - `OPERATOR_OFFICE_ADDRESS` — multiline; use `\n` between lines in `.env`
    - `OPERATOR_CONTACT_HOURS`
+   - `JURISDICTION_DISPLAY_NAME` — e.g. `Mauritius` on list-page heroes and home H1
+   - `PRIVACY_DATA_PROTECTION_ACT` — privacy page (defaults to `{jurisdiction} Data Protection Act 2017`)
+   - `OPEN_SOURCE_REPO_URL` — footer and ecosystem GitHub links
 3. Run `pnpm config:validate`.
 4. Sign in as admin and open **`/admin/branding`** for DB overrides (registry name, logo, footer, hero chip, and operator/contact fields). Values merge in `getBranding()` as **DB → `.env` → built-in default**.
 5. After pulling schema changes that extend `SiteBranding`, run `pnpm db:push`.
