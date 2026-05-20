@@ -42,3 +42,6 @@ export async function PATCH(req: Request) {
 
   // Service handles read-before + atomic update + audit (constitution §6).
   const updated = await updateMyProfile(user.id, updates);
+
+  return NextResponse.json({ ok: true, user: updated });
+}

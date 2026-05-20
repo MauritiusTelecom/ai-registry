@@ -105,6 +105,22 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         ]
       },
       {
+        // ─── Site content (public-portal CMS) ────────────────────
+        // Editable rows in the `public_cms` Postgres schema that drive
+        // the marketing surface in @airegistry/public. Operators tune
+        // copy here instead of forking the portal. Schema + service
+        // layer ships in @airegistry/core/services/public-cms.
+        id: "site",
+        label: "Site content",
+        items: [
+          { id: "site-home", label: "Overview", href: "/admin/site", icon: "home-alt" },
+          { id: "site-faq", label: "FAQ", href: "/admin/site/faq", icon: "doc" },
+          { id: "site-how", label: "How it works", href: "/admin/site/how-it-works", icon: "flow" },
+          { id: "site-criteria", label: "Listing criteria", href: "/admin/site/listing-criteria", icon: "check" },
+          { id: "site-promo", label: "Promo banner", href: "/admin/site/promo", icon: "zap" }
+        ]
+      },
+      {
         id: "ref-tables",
         label: "Reference Tables",
         // The full registry - one row per controlled vocabulary the schema

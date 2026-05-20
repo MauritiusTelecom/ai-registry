@@ -1,21 +1,9 @@
-"use client";
-
-import { Icon } from "./Icon";
-import { useReport, type ReportTarget } from "./ReportContext";
-
-// Standalone Report button for the resource detail page. Cards used to
-// carry it too; now reporting only happens once you've opened the listing,
-// so it lives here instead.
-
-export function ResourceReportButton({ target }: { target: ReportTarget }) {
-  const { open } = useReport();
-  return (
-    <button
-      type="button"
-      className="btn btn-secondary btn-report-listing"
-      onClick={() => open(target)}
-    >
-      <Icon name="flag" size={14} /> Report this listing
-    </button>
-  );
-}
+/**
+ * DEPRECATED location - this module moved to `@airegistry/public/shell/ResourceReportButton`.
+ *
+ * Re-export shim left behind so any importer still using `@/components/public/...`
+ * or a relative sibling path keeps resolving during the deprecation window. The
+ * portal codebase will be rewired to `@airegistry/public/...` in the same PR;
+ * remove this file once the deprecation window closes.
+ */
+export * from "@airegistry/public/shell/ResourceReportButton";

@@ -1,12 +1,9 @@
-"use client";
-
-import Link from "next/link";
-import { useAuth } from "./AuthProvider";
-import { resolveProviderPortalPublicHref } from "@/lib/portals/public-hrefs";
-
-/** Footer "Provider portal" - href depends on session (see `resolveProviderPortalPublicHref`). */
-export function ProviderPortalFooterLink() {
-  const { user, loading } = useAuth();
-  const href = resolveProviderPortalPublicHref(user, loading);
-  return <Link href={href}>Provider portal</Link>;
-}
+/**
+ * DEPRECATED location - this module moved to `@airegistry/public/shell/ProviderPortalFooterLink`.
+ *
+ * Re-export shim left behind so any importer still using `@/components/public/...`
+ * or a relative sibling path keeps resolving during the deprecation window. The
+ * portal codebase will be rewired to `@airegistry/public/...` in the same PR;
+ * remove this file once the deprecation window closes.
+ */
+export * from "@airegistry/public/shell/ProviderPortalFooterLink";

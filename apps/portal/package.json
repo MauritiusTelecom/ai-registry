@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@airegistry/core": "workspace:*",
+    "@airegistry/public": "workspace:*",
     "@airegistry/sdk": "workspace:*",
     "@airegistry/ui-kit": "workspace:*",
     "@prisma/client": "^6.19.3",

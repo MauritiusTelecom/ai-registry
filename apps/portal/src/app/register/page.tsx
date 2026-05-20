@@ -1,35 +1,7 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getCurrentUser } from "@airegistry/sdk/server";
-import { AuthShell } from "@/components/public/auth/AuthShell";
-import { RegisterForm } from "@/components/public/auth/RegisterForm";
-
-export const metadata = { title: "Create an account" };
-
-export default async function RegisterPage() {
-  const user = await getCurrentUser();
-  if (user) redirect("/portal");
-
-  return (
-    <AuthShell
-      eyebrow="Create account"
-      title={
-        <>
-          Register as a{" "}
-          <span className="gradient-text">Sovereign AI provider</span>.
-        </>
-      }
-      subtitle="Provider accounts can publish, maintain, and request reviews on the resources they operate."
-      footer={
-        <>
-          Already have an account?{" "}
-          <Link href="/login" style={{ color: "var(--text-2)" }}>
-            Sign in
-          </Link>
-        </>
-      }
-    >
-      <RegisterForm />
-    </AuthShell>
-  );
-}
+/**
+ * Route shim. The page body lives in `@airegistry/public/pages/RegisterPage` so the public site
+ * can be customised or replaced without forking apps/portal.
+ * Route segment config + the default export are re-exported here so
+ * Next.js's static analysis sees them at the route file location.
+ */
+export { default, metadata } from "@airegistry/public/pages/RegisterPage";

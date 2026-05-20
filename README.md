@@ -18,8 +18,9 @@ An AI Registry is a jurisdiction-configured catalogue: it **lists, identifies, d
 |---|---|---|
 | `packages/core/` | `@airegistry/core` | Prisma schema + migrations, deployment config, governance services, audit primitive, discovery queries, validators, transactional email. SemVer contract for downstream consumers. |
 | `packages/sdk/` | `@airegistry/sdk` | Public types and plugin manifest schema for extensions and third-party portals. |
-| `packages/ui-kit/` | `@airegistry/ui-kit` | Design tokens and headless components (placeholder; full kit lands later). |
-| `apps/portal/` | `@airegistry/portal` | Default Next.js portal: public site, admin/provider/verifier/sovereign workspaces, REST `/api/...`, MCP `/api/mcp`. Forkable; theme via CSS variables. |
+| `packages/ui-kit/` | `@airegistry/ui-kit` | Design tokens and shared headless components (`Icon`, `PageHero`, `AuthProvider`, `ThemeProvider`, `LogoutButton`) used by both the public site and the role workspaces. |
+| `packages/public/` | `@airegistry/public` | Public-portal layer: marketing pages, registry browse + discovery surface, governance/docs/ecosystem pages, auth flows, site shell. Forkable independently of the role workspaces. |
+| `apps/portal/` | `@airegistry/portal` | Default Next.js app. Mounts `@airegistry/public` at the public route group and serves the admin/provider/verifier/sovereign workspaces plus REST `/api/...` and MCP `/api/mcp`. Forkable; theme via CSS variables. |
 | `extensions/` | — | In-tree reference extensions (none yet). Third-party extensions install as workspace or npm packages following the manifest in `@airegistry/sdk/plugin`. |
 | `ai-registry-specs/` (sibling repo) | — | Normative AIR-SPEC + module specs. |
 

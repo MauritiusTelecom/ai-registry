@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { PageHero } from "@/components/public/sections/PageHero";
+import { PageHero } from "@airegistry/ui-kit";
 import { loadAdminReviewQueue } from "@airegistry/sdk/server";
 
 export const metadata = { title: "Review queue" };
