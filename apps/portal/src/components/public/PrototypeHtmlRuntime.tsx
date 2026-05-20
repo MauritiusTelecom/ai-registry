@@ -1,7 +1,9 @@
-// Deprecated. Replaced by native React components for the public portal.
-
-"use client";
-
-export function PrototypeHtmlRuntime(): null {
-  return null;
-}
+/**
+ * DEPRECATED location - this module moved to `@airegistry/public/shell/PrototypeHtmlRuntime`.
+ *
+ * Re-export shim left behind so any importer still using `@/components/public/...`
+ * or a relative sibling path keeps resolving during the deprecation window. The
+ * portal codebase will be rewired to `@airegistry/public/...` in the same PR;
+ * remove this file once the deprecation window closes.
+ */
+export * from "@airegistry/public/shell/PrototypeHtmlRuntime";

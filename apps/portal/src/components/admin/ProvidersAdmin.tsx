@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Icon } from "@/components/public/Icon";
+import { Icon } from "@airegistry/ui-kit";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
 import { RowActionMenu, type RowMenuItem } from "./RowActionMenu";
 import { StatusPill } from "@/components/portals/StatusPill";

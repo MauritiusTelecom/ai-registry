@@ -1,71 +1,7 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { AuthShell } from "@/components/public/auth/AuthShell";
-import { ResendVerificationForm } from "@/components/public/auth/ResendVerificationForm";
-import { writeAudit } from "@airegistry/sdk";
-import { consumeEmailVerificationToken } from "@airegistry/sdk/server";
-
-export const metadata = { title: "Verify email" };
-
 /**
- * Server-side verification page. Performs the same DB transition as
- * /api/auth/verify-email, but inline so the user sees the outcome on the
- * very first paint without an internal HTTP round-trip.
- *
- * The matching API route is preserved for programmatic clients.
+ * Route shim. The page body lives in `@airegistry/public/pages/AuthVerifyPage` so the public site
+ * can be customised or replaced without forking apps/portal.
+ * Route segment config + the default export are re-exported here so
+ * Next.js's static analysis sees them at the route file location.
  */
-
-type VerifyResult =
-  | { ok: true; email: string }
-  | { ok: false; reason: "expired_or_invalid" | "missing" };
-
-// consumeEmailVerificationToken centralises the token-lookup / update /
-// status-promotion / audit flow shared with /api/auth/verify-email. The
-// service writes a single audit row through writeAudit (constitution §6).
-async function consumeVerificationToken(rawToken: string): Promise<VerifyResult> {
-  return consumeEmailVerificationToken(rawToken);
-}
-
-export default async function VerifyEmailPage({
-  searchParams
-}: {
-  searchParams: Promise<{ token?: string }>;
-}) {
-  const { token } = await searchParams;
-  const result: VerifyResult = token
-    ? await consumeVerificationToken(token)
-    : { ok: false, reason: "missing" };
-
-  if (result.ok) {
-    // Email is now verified. Send the user to sign in — no session is
-    // issued on this page, so they must authenticate before reaching the
-    // portal. ?verified=1 lets /login show a confirmation banner.
-    redirect("/login?verified=1");
-  }
-
-  if (result.reason === "missing") {
-    return (
-      <AuthShell
-        eyebrow="Email verification"
-        title={<>Missing verification link.</>}
-        subtitle="Open the link sent to your inbox after registration."
-      >
-        <div style={{ textAlign: "center" }}>
-          <Link href="/login" className="btn btn-primary">
-            Back to sign in
-          </Link>
-        </div>
-      </AuthShell>
-    );
-  }
-
-  return (
-    <AuthShell
-      eyebrow="Email verification"
-      title={<>This link is no longer valid.</>}
-      subtitle="It may have expired or already been used. Enter your email below and we'll send you a fresh verification link."
-    >
-      <ResendVerificationForm />
-    </AuthShell>
-  );
-}
+export { default, metadata } from "@airegistry/public/pages/AuthVerifyPage";

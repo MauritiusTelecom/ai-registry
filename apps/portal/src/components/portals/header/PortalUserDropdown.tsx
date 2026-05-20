@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Icon } from "@/components/public/Icon";
+import { Icon } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
 
 /**

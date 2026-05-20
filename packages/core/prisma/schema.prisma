@@ -15,7 +15,14 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["registry"]
+  // `registry` holds the core domain: providers, resources, reviews, audit,
+  // users, etc. `public_cms` holds operator-editable public-site content
+  // (FAQ, "how it works" steps, listing criteria, promo banner) so the
+  // marketing / discovery surface can be customised from /admin/site/* without
+  // touching code or env. Branding (registry name, logo, eyebrow text) stays
+  // in `registry.SiteBranding` because it's also consumed by role-portal
+  // chrome, not just the public site.
+  schemas  = ["registry", "public_cms"]
 }
 
 // ─── Reference tables (replace former enums) ────────────
@@ -1155,4 +1162,94 @@ model SiteBranding {
   updatedById        String?  @db.Uuid
 
   @@schema("registry")
+}
+
+// ─── public_cms ────────────────────────────────────────────────
+//
+// Editable content for the public site (@airegistry/public). These tables
+// power /admin/site/* so an operator can edit the marketing copy without
+// shipping code. Section components in `@airegistry/public/sections/` read
+// from these rows; if a table is empty the section falls back to its
+// hardcoded defaults (seeded into the same tables on bootstrap).
+//
+// Naming convention: all tables in this schema are prefixed `Cms` to
+// disambiguate from the `registry` domain.
+
+/// One row per question in the home-page FAQ. Order by `sortOrder` ascending.
+/// Soft delete via `active = false` so a row can be hidden without losing
+/// edit history.
+model CmsFaqEntry {
+  id          String   @id @default(uuid())
+  /// Stable string key (e.g. "hosting", "sovereignty-definition") used in
+  /// admin URLs and seed idempotency. UNIQUE across the table.
+  code        String   @unique
+  question    String
+  answer      String
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedById String?  @db.Uuid
+
+  @@index([active, sortOrder])
+  @@schema("public_cms")
+}
+
+/// One row per step in the "How it works" section. Order by `sortOrder`.
+/// `highlight = true` marks the runtime-off-registry callout step.
+model CmsHowItWorksStep {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  title       String
+  description String
+  /// 1-indexed step number rendered next to the title. Doesn't have to match
+  /// sortOrder (operator may want to renumber without re-sorting).
+  stepNumber  Int      @default(1)
+  highlight   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedById String?  @db.Uuid
+
+  @@index([active, sortOrder])
+  @@schema("public_cms")
+}
+
+/// One row per criterion in the "What gets listed" / "Listing criteria"
+/// section. Order by `sortOrder`.
+model CmsListingCriterion {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  title       String
+  description String
+  /// Name of an Icon from @airegistry/ui-kit (e.g. "shield", "globe",
+  /// "check"). Null = no icon. The renderer falls back to a neutral marker.
+  iconName    String?
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedById String?  @db.Uuid
+
+  @@index([active, sortOrder])
+  @@schema("public_cms")
+}
+
+/// Singleton holding the home-page promo banner copy + CTA. `enabled = false`
+/// hides the section entirely. Enforced singleton via fixed id = "default".
+model CmsPromoBanner {
+  id          String   @id @default("default")
+  enabled     Boolean  @default(false)
+  /// Short headline rendered first in the banner.
+  heading     String?
+  /// One- or two-sentence body shown under the heading.
+  body        String?
+  /// Optional call-to-action: shown only if both label and href are set.
+  ctaLabel    String?
+  ctaHref     String?
+  updatedAt   DateTime @updatedAt
+  updatedById String?  @db.Uuid
+
+  @@schema("public_cms")
 }

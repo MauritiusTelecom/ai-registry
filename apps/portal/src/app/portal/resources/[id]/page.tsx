@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
-import { PageHero } from "@/components/public/sections/PageHero";
+import { PageHero } from "@airegistry/ui-kit";
 import { EditResourceForm } from "@/components/portal/EditResourceForm";
 import { loadPortalResourceForOwner } from "@airegistry/sdk/server";
 

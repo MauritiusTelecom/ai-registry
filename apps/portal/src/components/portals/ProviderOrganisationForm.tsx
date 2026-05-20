@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useAuth } from "@/components/public/AuthProvider";
+import { useAuth } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
 
 export type OrgFormOption = { code: string; name: string };

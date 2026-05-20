@@ -1,7 +1,7 @@
 "use client";
 
-import { Icon } from "@/components/public/Icon";
-import { useTheme } from "@/components/public/ThemeProvider";
+import { Icon } from "@airegistry/ui-kit";
+import { useTheme } from "@airegistry/ui-kit";
 
 /**
  * Sun / moon theme toggle. Integrates with the existing root-level

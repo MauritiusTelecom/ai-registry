@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Icon } from "@/components/public/Icon";
+import { Icon } from "@airegistry/ui-kit";
 import type { RefTableConfig } from "@airegistry/sdk";
 import { withBase } from "@airegistry/sdk";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Icon } from "@/components/public/Icon";
+import { Icon } from "@airegistry/ui-kit";
 
 /**
  * Accent-palette switcher - mirrors the prototype's 4-palette dropdown. The

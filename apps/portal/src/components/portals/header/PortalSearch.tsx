@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Icon, type IconName } from "@/components/public/Icon";
+import { Icon, type IconName } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
 
 /**
@@ -282,7 +282,7 @@ export function PortalSearch({
           </div>
         </div>,
         document.body
-          )
+      )
         : null}
     </>
   );

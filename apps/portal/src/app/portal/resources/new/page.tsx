@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
-import { PageHero } from "@/components/public/sections/PageHero";
+import { PageHero } from "@airegistry/ui-kit";
 import { NewResourceForm } from "@/components/portal/NewResourceForm";
 import { listReferenceTable } from "@airegistry/sdk/server";
 

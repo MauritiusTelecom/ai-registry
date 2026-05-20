@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { SessionUser } from "@airegistry/sdk";
 import type { PortalConfig } from "@/lib/portals/nav-config";
 import { getBranding } from "@/lib/branding";
-import { LogoutButton } from "@/components/public/auth/LogoutButton";
+import { LogoutButton } from "@airegistry/ui-kit";
 import { PortalSidebar } from "./PortalSidebar";
 
 /**

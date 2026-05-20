@@ -1,30 +1,9 @@
-"use client";
-
-import { useState } from "react";
-import { withBase } from "@airegistry/sdk";
-
 /**
- * Sign-out button. Calls POST /api/auth/logout and then hard-navigates to /
- * so the server reads the cleared cookie on the next request.
+ * DEPRECATED — `LogoutButton` has moved to `@airegistry/ui-kit`.
+ *
+ * This file is a re-export shim left behind because the workspace sandbox
+ * could not delete files during the PR-1 migration (see MIGRATION.md). The
+ * portal codebase no longer imports from this path; remove this file when
+ * the deprecation window closes.
  */
-export function LogoutButton({ next = "/" }: { next?: string }) {
-  const [busy, setBusy] = useState(false);
-  async function onClick() {
-    setBusy(true);
-    try {
-      await fetch(withBase("/api/auth/logout"), { method: "POST" });
-    } finally {
-      window.location.assign(withBase(next));
-    }
-  }
-  return (
-    <button
-      type="button"
-      className="btn btn-secondary"
-      onClick={onClick}
-      disabled={busy}
-    >
-      {busy ? "Signing out…" : "Sign out"}
-    </button>
-  );
-}
+export { LogoutButton } from "@airegistry/ui-kit";
