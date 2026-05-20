@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getConfig } from "@airegistry/sdk";
 import {
   findResourceForDetail,
+  findResourcesByCapability,
   listPublicResources
 } from "@airegistry/sdk";
 import { toRegistryCard, toRegistryCardDetail } from "@airegistry/sdk";

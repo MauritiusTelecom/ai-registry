@@ -1,3 +1,4 @@
+import { PluginSlot } from "@airegistry/plugin-host/slot";
 import { Hero } from "../sections/Hero";
 import { RegistrySection } from "../sections/RegistrySection";
 import { WhatGetsListed } from "../sections/WhatGetsListed";
@@ -17,6 +18,7 @@ export default async function HomePage() {
         eyebrowText={branding.heroEyebrowText}
         eyebrowIconUrl={branding.heroEyebrowIconUrl}
       />
+      <PluginSlot id="public.home.hero.below" />
       <RegistrySection />
       <WhatGetsListed />
       <ListingCriteria />

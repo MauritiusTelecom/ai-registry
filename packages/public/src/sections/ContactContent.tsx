@@ -221,4 +221,15 @@ export function ContactContent() {
                       We reply within 2 working days.
                     </span>
                     <button type="submit" className="btn btn-primary" disabled={submitting}>
-                      {submitting ? "Sending…" : "Send message"} 
+                      {submitting ? "Sending…" : "Send message"} <Icon name="arrow-right" size={13} />
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    </div>
+  );
+}

@@ -20,6 +20,12 @@ importers:
       '@airegistry/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@airegistry/extension-hello':
+        specifier: workspace:*
+        version: link:../../extensions/examples/hello
+      '@airegistry/plugin-host':
+        specifier: workspace:*
+        version: link:../../packages/plugin-host
       '@airegistry/public':
         specifier: workspace:*
         version: link:../../packages/public
@@ -73,6 +79,25 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  extensions/examples/hello:
+    dependencies:
+      '@airegistry/sdk':
+        specifier: workspace:*
+        version: link:../../../packages/sdk
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.2
+        version: 19.2.14
+      next:
+        specifier: ^16.0.1
+        version: 16.2.6(@babel/core@7.29.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      react:
+        specifier: ^19.2.0
+        version: 19.2.6
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
   packages/core:
     dependencies:
       '@prisma/client':
@@ -97,9 +122,46 @@ importers:
       dotenv-cli:
         specifier: ^7.4.2
         version: 7.4.4
+      next:
+        specifier: ^16.0.1
+        version: 16.2.6(@babel/core@7.29.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       tsx:
         specifier: ^4.19.2
         version: 4.22.2
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
+  packages/plugin-host:
+    dependencies:
+      '@airegistry/extension-hello':
+        specifier: workspace:*
+        version: link:../../extensions/examples/hello
+      '@airegistry/sdk':
+        specifier: workspace:*
+        version: link:../sdk
+      server-only:
+        specifier: ^0.0.1
+        version: 0.0.1
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.0
+        version: 24.12.4
+      '@types/react':
+        specifier: ^19.2.2
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: ^19.2.2
+        version: 19.2.3(@types/react@19.2.14)
+      next:
+        specifier: ^16.0.1
+        version: 16.2.6(@babel/core@7.29.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      react:
+        specifier: ^19.2.0
+        version: 19.2.6
+      react-dom:
+        specifier: ^19.2.0
+        version: 19.2.6(react@19.2.6)
       typescript:
         specifier: ^5
         version: 5.9.3
@@ -109,6 +171,9 @@ importers:
       '@airegistry/core':
         specifier: workspace:*
         version: link:../core
+      '@airegistry/plugin-host':
+        specifier: workspace:*
+        version: link:../plugin-host
       '@airegistry/sdk':
         specifier: workspace:*
         version: link:../sdk
@@ -1992,6 +2057,9 @@ packages:
     resolution: {integrity: sha512-AcM7dV/5ul4EekoQ29Agm5vri8JNqRyj39o0qpX6vDF2GZrtutZl5RwgD1XnZjiTAfncsJhMI48QQH3sN87YNA==}
     engines: {node: '>=10'}
     hasBin: true
+
+  server-only@0.0.1:
+    resolution: {integrity: sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==}
 
   set-function-length@1.2.2:
     resolution: {integrity: sha512-pgRc4hJ4/sNjWCSS9AmnS40x3bNMDTknHgL5UaMBTMyJnU90EgWh1Rz+MC9eFu4BuN/UwZjKQuY/1v3rM7HMfg==}
@@ -4142,6 +4210,8 @@ snapshots:
   semver@6.3.1: {}
 
   semver@7.8.0: {}
+
+  server-only@0.0.1: {}
 
   set-function-length@1.2.2:
     dependencies:

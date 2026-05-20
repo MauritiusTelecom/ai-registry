@@ -20,8 +20,9 @@ An AI Registry is a jurisdiction-configured catalogue: it **lists, identifies, d
 | `packages/sdk/` | `@airegistry/sdk` | Public types and plugin manifest schema for extensions and third-party portals. |
 | `packages/ui-kit/` | `@airegistry/ui-kit` | Design tokens and shared headless components (`Icon`, `PageHero`, `AuthProvider`, `ThemeProvider`, `LogoutButton`) used by both the public site and the role workspaces. |
 | `packages/public/` | `@airegistry/public` | Public-portal layer: marketing pages, registry browse + discovery surface, governance/docs/ecosystem pages, auth flows, site shell. Forkable independently of the role workspaces. |
-| `apps/portal/` | `@airegistry/portal` | Default Next.js app. Mounts `@airegistry/public` at the public route group and serves the admin/provider/verifier/sovereign workspaces plus REST `/api/...` and MCP `/api/mcp`. Forkable; theme via CSS variables. |
-| `extensions/` | — | In-tree reference extensions (none yet). Third-party extensions install as workspace or npm packages following the manifest in `@airegistry/sdk/plugin`. |
+| `packages/plugin-host/` | `@airegistry/plugin-host` | Extension runtime: loads `airegistry-plugin.json` manifests, mounts `/api/ext/*` REST handlers, registers UI slot components. |
+| `apps/portal/` | `@airegistry/portal` | Default Next.js app. Mounts `@airegistry/public` at `app/(public)/` and role workspaces at `app/(workspaces)/`, plus REST `/api/...` and MCP `/api/mcp`. Forkable; theme via CSS variables. |
+| `extensions/` | `@airegistry/extension-*` | In-tree reference extensions (e.g. [`extensions/examples/hello`](extensions/examples/hello)). See [`CUSTOMIZATION.md`](CUSTOMIZATION.md). |
 | `ai-registry-specs/` (sibling repo) | — | Normative AIR-SPEC + module specs. |
 
 ## AIR identifiers
@@ -79,7 +80,7 @@ The repo is designed so operators can deploy without forking:
 
 1. **Configuration + branding (no code).** Set per-deployment values in `.env` (jurisdiction, identity domain, supported languages, etc.) and edit `SiteBranding` via `/admin/branding`. No defaults in code reference any specific deployment — the reference operator supplies them in their own environment.
 2. **Theming.** Override CSS variables from `@airegistry/ui-kit/tokens.css` in a deployment stylesheet. No new gradients or hex literals are allowed in `apps/portal/`; the kit owns the tokens.
-3. **Extensions / fork.** Drop a plugin under `extensions/` (manifest shape in `@airegistry/sdk/plugin`) for new REST routes, MCP tools, scheduled jobs, UI slots, or locale bundles. For deep redesigns, fork `apps/portal` and continue to depend on `@airegistry/core`.
+3. **Extensions / fork.** Drop a plugin under `extensions/` (manifest shape in `@airegistry/sdk/plugin`) for new REST routes, MCP tools, scheduled jobs, UI slots, or locale bundles. For deep redesigns, fork `packages/public` or `apps/portal` and continue to depend on `@airegistry/core`. See [`CUSTOMIZATION.md`](CUSTOMIZATION.md).
 
 ## Architecture
 
@@ -124,11 +125,11 @@ See [`MIGRATION.md`](MIGRATION.md) for path mapping, the `@/lib/...` alias bridg
 
 ## What is _not_ in the monorepo yet
 
-- Plugin loader runtime (only the manifest types are scaffolded in `@airegistry/sdk`).
-- `<PluginSlot>` primitive in the portal.
+- Full MCP/cron/schema extension wiring for plugins (REST + a minimal UI slot ship today).
 - Full design-token set in `@airegistry/ui-kit`.
+- `/admin/plugins` operator UI for extension lifecycle.
 
-These land in v1.0 — see the roadmap in the open-source rollout plan.
+See [`docs/open-source/migration-plan.md`](docs/open-source/migration-plan.md) for the v1.0 roadmap.
 
 ## Acknowledgements
 

@@ -1,0 +1,24 @@
+{
+  "name": "@airegistry/extension-hello",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reference AI Registry extension: sample REST route and public home UI slot.",
+  "type": "module",
+  "exports": {
+    "./rest/ping": "./src/rest/ping.ts",
+    "./ui/HeroBelow": "./src/ui/HeroBelow.tsx"
+  },
+  "dependencies": {
+    "@airegistry/sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "next": "^16.0.0",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "next": "^16.0.1",
+    "react": "^19.2.0",
+    "typescript": "^5"
+  }
+}

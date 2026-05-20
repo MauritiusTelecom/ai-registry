@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@airegistry/core": "workspace:*",
+    "@airegistry/plugin-host": "workspace:*",
     "@airegistry/sdk": "workspace:*",
     "@airegistry/ui-kit": "workspace:*"
   },
