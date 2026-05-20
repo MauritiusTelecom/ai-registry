@@ -13,19 +13,10 @@ function isProviderPortalFooterItem(link: FooterColumnLink): link is FooterProvi
   return "kind" in link && link.kind === "provider-portal";
 }
 
-const REPO_URL = "https://github.com/MauritiusTelecom/ai-registry";
-
 const PRODUCT_LINKS: FooterLink[] = [
   { label: "Registry", href: "/registry" },
   { label: "Providers", href: "/providers" },
   { label: "Ecosystem", href: "/ecosystem" }
-];
-
-const RESOURCES_LINKS: FooterLink[] = [
-  { label: "Documentation", href: "/docs" },
-  { label: "Whitepaper", href: "/whitepaper" },
-  { label: "Open data", href: "/open-data" },
-  { label: "Reference impl", href: REPO_URL, external: true }
 ];
 
 const PROVIDER_LINKS: FooterColumnLink[] = [
@@ -41,13 +32,24 @@ const GOVERNANCE_LINKS: FooterLink[] = [
   { label: "Appeals", href: "/governance#appeals" }
 ];
 
-const LEGAL_LINKS: FooterLink[] = [
-  { label: "Terms of use", href: "/terms" },
-  { label: "Privacy", href: "/privacy" },
-  { label: "Acceptable use", href: "/acceptable-use" },
-  { label: "License (Apache-2.0)", href: `${REPO_URL}/blob/main/LICENSE`, external: true },
-  { label: "Contact", href: "/contact" }
-];
+function footerLinkSets(openSourceRepoUrl: string) {
+  const repo = openSourceRepoUrl.replace(/\/$/, "");
+  return {
+    resources: [
+      { label: "Documentation", href: "/docs" },
+      { label: "Whitepaper", href: "/whitepaper" },
+      { label: "Open data", href: "/open-data" },
+      { label: "Reference impl", href: repo, external: true }
+    ] satisfies FooterLink[],
+    legal: [
+      { label: "Terms of use", href: "/terms" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Acceptable use", href: "/acceptable-use" },
+      { label: "License (Apache-2.0)", href: `${repo}/blob/main/LICENSE`, external: true },
+      { label: "Contact", href: "/contact" }
+    ] satisfies FooterLink[]
+  };
+}
 
 function FooterColumn({
   title,
@@ -92,13 +94,16 @@ export function Footer({
   registryName,
   logoUrl,
   copyrightLine,
-  buildLine
+  buildLine,
+  openSourceRepoUrl
 }: {
   registryName: string;
   logoUrl?: string | null;
   copyrightLine: string;
   buildLine: string;
+  openSourceRepoUrl: string;
 }) {
+  const { resources, legal } = footerLinkSets(openSourceRepoUrl);
   return (
     <footer className="footer">
       <div className="footer-glow" />
@@ -130,10 +135,10 @@ export function Footer({
         </div>
 
         <FooterColumn title="Product" links={PRODUCT_LINKS} />
-        <FooterColumn title="Resources" links={RESOURCES_LINKS} />
+        <FooterColumn title="Resources" links={resources} />
         <FooterColumn title="Providers" links={PROVIDER_LINKS} />
         <FooterColumn title="Governance" links={GOVERNANCE_LINKS} className="col-collapse" />
-        <FooterColumn title="Legal" links={LEGAL_LINKS} />
+        <FooterColumn title="Legal" links={legal} />
       </div>
 
       <div className="footer-bottom">

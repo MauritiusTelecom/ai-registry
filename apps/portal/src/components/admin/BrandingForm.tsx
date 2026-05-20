@@ -16,6 +16,9 @@ type Initial = {
   operatorOfficeName: string;
   operatorOfficeAddress: string;
   operatorContactHours: string;
+  jurisdictionDisplayName: string;
+  privacyDataProtectionAct: string;
+  openSourceRepoUrl: string;
 };
 
 type Defaults = {
@@ -28,6 +31,9 @@ type Defaults = {
   operatorOfficeName: string;
   operatorOfficeAddress: string;
   operatorContactHours: string;
+  jurisdictionDisplayName: string;
+  privacyDataProtectionAct: string;
+  openSourceRepoUrl: string;
 };
 
 type UploadSlot = "logo" | "hero";
@@ -57,6 +63,13 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
   const [operatorOfficeName, setOperatorOfficeName] = useState(initial.operatorOfficeName);
   const [operatorOfficeAddress, setOperatorOfficeAddress] = useState(initial.operatorOfficeAddress);
   const [operatorContactHours, setOperatorContactHours] = useState(initial.operatorContactHours);
+  const [jurisdictionDisplayName, setJurisdictionDisplayName] = useState(
+    initial.jurisdictionDisplayName
+  );
+  const [privacyDataProtectionAct, setPrivacyDataProtectionAct] = useState(
+    initial.privacyDataProtectionAct
+  );
+  const [openSourceRepoUrl, setOpenSourceRepoUrl] = useState(initial.openSourceRepoUrl);
 
   const [logoUrl, setLogoUrl] = useState<string | null>(initial.logoUrl);
   const [heroIconUrl, setHeroIconUrl] = useState<string | null>(initial.heroEyebrowIconUrl);
@@ -81,7 +94,10 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
           operatorContactEmail,
           operatorOfficeName,
           operatorOfficeAddress,
-          operatorContactHours
+          operatorContactHours,
+          jurisdictionDisplayName,
+          privacyDataProtectionAct,
+          openSourceRepoUrl
         })
       });
       if (!res.ok) {
@@ -223,6 +239,42 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
           onChange={setOperatorContactHours}
           placeholder={defaults.operatorContactHours}
           help={defaults.operatorContactHours}
+        />
+
+        <div style={{ borderTop: "1px dashed var(--border)", paddingTop: 18, marginTop: 4 }}>
+          <h3 className="p-card-title" style={{ fontSize: 14, marginBottom: 12 }}>
+            Marketing &amp; jurisdiction
+          </h3>
+          <p style={{ fontSize: 13, color: "var(--text-2)", marginTop: 0, marginBottom: 14 }}>
+            Home hero, /registry and /providers headlines, privacy law name, and repo links.
+          </p>
+        </div>
+
+        <TextField
+          id="b-jurisdiction-display"
+          label="Jurisdiction display name"
+          value={jurisdictionDisplayName}
+          onChange={setJurisdictionDisplayName}
+          placeholder={defaults.jurisdictionDisplayName}
+          help={defaults.jurisdictionDisplayName}
+        />
+
+        <TextField
+          id="b-privacy-act"
+          label="Privacy: data protection act"
+          value={privacyDataProtectionAct}
+          onChange={setPrivacyDataProtectionAct}
+          placeholder={defaults.privacyDataProtectionAct}
+          help={defaults.privacyDataProtectionAct}
+        />
+
+        <TextField
+          id="b-repo-url"
+          label="Open-source repository URL"
+          value={openSourceRepoUrl}
+          onChange={setOpenSourceRepoUrl}
+          placeholder={defaults.openSourceRepoUrl}
+          help={defaults.openSourceRepoUrl}
         />
 
         {message ? (

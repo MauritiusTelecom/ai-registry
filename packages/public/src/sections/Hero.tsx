@@ -145,12 +145,17 @@ export function Hero({
   eyebrowIconUrl
 }: {
   motionIntensity?: number;
-  /** Hero chip text. Falls back to "airegistry.mu" when undefined. */
+  /** Hero chip text. Falls back to portal domain from branding when undefined. */
   eyebrowText?: string;
   /** Optional custom icon for the hero chip. When set, replaces the Mauritius flag SVG. */
   eyebrowIconUrl?: string | null;
 }) {
-  const { operatorName } = usePublicBranding();
+  const {
+    operatorName,
+    jurisdictionDisplayName,
+    heroHeadlineAccent,
+    portalDomain
+  } = usePublicBranding();
   const fallbackCards = useMemo(() => buildFallbackCards(operatorName), [operatorName]);
   const [cards, setCards] = useState<FloatCardData[]>(fallbackCards);
 
@@ -219,20 +224,20 @@ export function Hero({
                 display: "block"
               }}
             >
-              <title>Mauritius</title>
+              <title>{jurisdictionDisplayName}</title>
               <rect x="0" y="0" width="60" height="10" fill="#EA2839" />
               <rect x="0" y="10" width="60" height="10" fill="#1A206D" />
               <rect x="0" y="20" width="60" height="10" fill="#FFD500" />
               <rect x="0" y="30" width="60" height="10" fill="#00A04D" />
             </svg>
           )}
-          <span>{eyebrowText ?? "airegistry.mu"}</span>
+          <span>{eyebrowText ?? portalDomain}</span>
         </div>
 
         <h1 className="hero-title">
-          Mauritius
+          {jurisdictionDisplayName}
           <br />
-          <span className="gradient-text">AI Registry.</span>
+          <span className="gradient-text">{heroHeadlineAccent}</span>
         </h1>
 
         <p className="hero-subtitle">

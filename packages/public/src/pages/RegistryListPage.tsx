@@ -1,3 +1,4 @@
+import { getBranding } from "@airegistry/core/branding";
 import { PageHero } from "@airegistry/ui-kit";
 import { RegistrySection } from "../sections/RegistrySection";
 import { publicPageMetadata } from "../lib/page-metadata";
@@ -25,7 +26,10 @@ export default async function RegistryPage({
 }: {
   searchParams: Promise<{ provider?: string; kind?: string }>;
 }) {
-  const { provider, kind } = await searchParams;
+  const [{ provider, kind }, { jurisdictionDisplayName }] = await Promise.all([
+    searchParams,
+    getBranding()
+  ]);
   const initialKind = normalizeKind(kind);
   return (
     <div>
@@ -33,7 +37,7 @@ export default async function RegistryPage({
         crumb="Registry · Discover sovereign AI"
         title={
           <>
-            Discover what Mauritius can{" "}
+            Discover what {jurisdictionDisplayName} can{" "}
             <span className="gradient-text">trust and integrate</span>.
           </>
         }

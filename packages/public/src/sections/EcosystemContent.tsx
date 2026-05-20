@@ -165,7 +165,7 @@ const TRACKS: { num: string; title: string; desc: string; cta?: string; href?: s
   {
     num: "Track 04",
     title: "Observe",
-    desc: "Track airegistry.mu, study the operating model, and decide if and how to deploy in your context.",
+    desc: "Track this registry, study the operating model, and decide if and how to deploy in your context.",
     featured: false
   }
 ];
@@ -943,7 +943,16 @@ function LongTermVision() {
 }
 
 function GetInvolved() {
-  const { operatorName } = usePublicBranding();
+  const { operatorName, portalDomain, openSourceRepoUrl } = usePublicBranding();
+  const tracks = [
+    { ...TRACKS[0]!, href: openSourceRepoUrl },
+    { ...TRACKS[1]!, href: `${openSourceRepoUrl.replace(/\/$/, "")}/pulls` },
+    TRACKS[2]!,
+    {
+      ...TRACKS[3]!,
+      desc: `Track ${portalDomain}, study the operating model, and decide if and how to deploy in your context.`
+    }
+  ];
   return (
     <section className="section" id="engage" style={{ scrollMarginTop: 120 }}>
       <Reveal className="section-header">
@@ -969,7 +978,7 @@ function GetInvolved() {
             gap: 16
           }}
         >
-          {TRACKS.map((t) => {
+          {tracks.map((t) => {
             const hasHref = Boolean(t.href);
             const isExternal = hasHref && t.href!.startsWith("http");
             const LinkEl: React.ElementType = hasHref ? (isExternal ? "a" : Link) : "div";

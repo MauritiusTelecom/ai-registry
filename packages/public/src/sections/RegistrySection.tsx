@@ -6,6 +6,7 @@ import type { PublicRegistryListResponse, RegistryCard } from "@airegistry/sdk";
 import { Icon, type IconName } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";
 import { withBase } from "@airegistry/sdk";
+import { usePublicBranding } from "../lib/branding-context";
 
 export type Resource = {
   id: string;
@@ -181,6 +182,7 @@ export function RegistrySection({
   /** When set (e.g. from `/registry?kind=model`), the matching kind tab is pre-selected. */
   initialKind?: (typeof KINDS)[number]["id"];
 }) {
+  const { jurisdictionDisplayName } = usePublicBranding();
   const [activeKind, setActiveKind] = useState<(typeof KINDS)[number]["id"]>(
     initialKind ?? "all"
   );
@@ -322,7 +324,8 @@ export function RegistrySection({
             <span>The Registry</span>
           </div>
           <h2>
-            Discover what Mauritius can <span className="gradient-text">trust and integrate</span>.
+            Discover what {jurisdictionDisplayName} can{" "}
+            <span className="gradient-text">trust and integrate</span>.
           </h2>
           <p>
             The registry points to locally-relevant AI resources - never hosts them. Each listing

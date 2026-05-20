@@ -30,6 +30,7 @@ export async function SiteShell({ children }: { children: ReactNode }) {
             logoUrl={branding.logoUrl}
             copyrightLine={branding.copyrightLine}
             buildLine={branding.buildLine}
+            openSourceRepoUrl={branding.openSourceRepoUrl}
           />
           <ReportModal />
           {isDev ? <TweaksPanel /> : null}
