@@ -1,9 +1,14 @@
 import Link from "next/link";
+import { getBranding } from "@airegistry/core/branding";
 import { DocPage, DocPanel } from "../sections/DocPage";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = { title: "Terms of use · Mauritius AI Registry" };
+export async function generateMetadata() {
+  return publicPageMetadata("Terms of use");
+}
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const { registryName, operatorName } = await getBranding();
   return (
     <DocPage
       crumb={
@@ -15,11 +20,11 @@ export default function TermsPage() {
         </>
       }
       title="Terms of use"
-      subtitle="The plain-language terms that govern the use of the Mauritius AI Registry public portal and APIs."
+      subtitle={`The plain-language terms that govern the use of the ${registryName} public portal and APIs.`}
     >
       <DocPanel title="The registry points; the provider operates">
         <p>
-          The Mauritius AI Registry is a discovery layer. It lists, describes and resolves
+          {registryName} is a discovery layer. It lists, describes and resolves
           locally relevant AI resources. It does not host, gateway, proxy, authenticate or
           rate-limit calls to the resources it lists. When you discover a resource here,
           you go directly to the provider; the provider&rsquo;s own terms apply to your
@@ -53,7 +58,7 @@ export default function TermsPage() {
       <DocPanel title="No warranty">
         <p>
           The portal and APIs are provided on an &ldquo;as is&rdquo; basis. The operator
-          (Mauritius Telecom) makes no warranty about the accuracy or completeness of
+          ({operatorName}) makes no warranty about the accuracy or completeness of
           third-party metadata, and is not responsible for the resources providers point
           to. Liability for any resource rests with its provider.
         </p>

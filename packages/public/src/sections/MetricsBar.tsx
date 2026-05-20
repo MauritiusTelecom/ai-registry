@@ -1,6 +1,7 @@
 "use client";
 
 import { useCountUp } from "../shell/useCountUp";
+import { usePublicBranding } from "../lib/branding-context";
 
 type Metric = {
   label: string;
@@ -9,11 +10,11 @@ type Metric = {
   trend: string;
 };
 
-const METRICS: Metric[] = [
-  { label: "Listed Resources", target: 7, suffix: "", trend: "live catalogue" },
-  { label: "Verified Providers", target: 1, suffix: "", trend: "Mauritius Telecom" },
-  { label: "Uptime", target: 99.97, suffix: "%", trend: "90-day SLO" },
-  { label: "Jurisdictions", target: 1, suffix: "", trend: "MU" }
+const BASE_METRICS: Omit<Metric, "trend">[] = [
+  { label: "Listed Resources", target: 7, suffix: "" },
+  { label: "Verified Providers", target: 1, suffix: "" },
+  { label: "Uptime", target: 99.97, suffix: "%" },
+  { label: "Jurisdictions", target: 1, suffix: "" }
 ];
 
 function MetricCell({ label, target, suffix, trend }: Metric) {
@@ -33,10 +34,17 @@ function MetricCell({ label, target, suffix, trend }: Metric) {
 }
 
 export function MetricsBar() {
+  const { operatorName } = usePublicBranding();
+  const metrics: Metric[] = [
+    { ...BASE_METRICS[0]!, trend: "live catalogue" },
+    { ...BASE_METRICS[1]!, trend: operatorName },
+    { ...BASE_METRICS[2]!, trend: "90-day SLO" },
+    { ...BASE_METRICS[3]!, trend: "MU" }
+  ];
   return (
     <div className="metrics-bar">
       <div className="metrics-grid">
-        {METRICS.map((metric) => (
+        {metrics.map((metric) => (
           <MetricCell key={metric.label} {...metric} />
         ))}
       </div>

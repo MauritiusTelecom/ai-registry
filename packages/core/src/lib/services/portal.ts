@@ -815,6 +815,11 @@ export type BrandingRow = {
   buildLine: string | null;
   heroEyebrowText: string | null;
   heroEyebrowIconUrl: string | null;
+  operatorName: string | null;
+  operatorContactEmail: string | null;
+  operatorOfficeName: string | null;
+  operatorOfficeAddress: string | null;
+  operatorContactHours: string | null;
 };
 
 const BRANDING_SINGLETON_ID = "default";
@@ -834,7 +839,12 @@ export async function loadBrandingSingleton(): Promise<BrandingRow | null> {
         copyrightLine: true,
         buildLine: true,
         heroEyebrowText: true,
-        heroEyebrowIconUrl: true
+        heroEyebrowIconUrl: true,
+        operatorName: true,
+        operatorContactEmail: true,
+        operatorOfficeName: true,
+        operatorOfficeAddress: true,
+        operatorContactHours: true
       }
     });
   } catch {
@@ -1297,6 +1307,11 @@ export type AdminBrandingView = {
   buildLine: string | null;
   heroEyebrowText: string | null;
   heroEyebrowIconUrl: string | null;
+  operatorName: string | null;
+  operatorContactEmail: string | null;
+  operatorOfficeName: string | null;
+  operatorOfficeAddress: string | null;
+  operatorContactHours: string | null;
 };
 
 /**
@@ -1316,7 +1331,12 @@ export async function loadAdminBrandingForm(
     copyrightLine: row.copyrightLine,
     buildLine: row.buildLine,
     heroEyebrowText: row.heroEyebrowText,
-    heroEyebrowIconUrl: row.heroEyebrowIconUrl
+    heroEyebrowIconUrl: row.heroEyebrowIconUrl,
+    operatorName: row.operatorName,
+    operatorContactEmail: row.operatorContactEmail,
+    operatorOfficeName: row.operatorOfficeName,
+    operatorOfficeAddress: row.operatorOfficeAddress,
+    operatorContactHours: row.operatorContactHours
   };
 }
 

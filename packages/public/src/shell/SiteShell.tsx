@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { getBranding } from "@airegistry/core/branding";
 import { AuthProvider } from "@airegistry/ui-kit";
+import { BrandingProvider } from "../lib/branding-context";
 import { ReportProvider } from "./ReportContext";
 import { TopNav } from "./TopNav";
 import { Footer } from "./Footer";
@@ -20,18 +21,20 @@ export async function SiteShell({ children }: { children: ReactNode }) {
   const branding = await getBranding();
   return (
     <AuthProvider>
-      <ReportProvider>
-        <TopNav registryName={branding.registryName} logoUrl={branding.logoUrl} />
-        <main>{children}</main>
-        <Footer
-          registryName={branding.registryName}
-          logoUrl={branding.logoUrl}
-          copyrightLine={branding.copyrightLine}
-          buildLine={branding.buildLine}
-        />
-        <ReportModal />
-        {isDev ? <TweaksPanel /> : null}
-      </ReportProvider>
+      <BrandingProvider value={branding}>
+        <ReportProvider>
+          <TopNav registryName={branding.registryName} logoUrl={branding.logoUrl} />
+          <main>{children}</main>
+          <Footer
+            registryName={branding.registryName}
+            logoUrl={branding.logoUrl}
+            copyrightLine={branding.copyrightLine}
+            buildLine={branding.buildLine}
+          />
+          <ReportModal />
+          {isDev ? <TweaksPanel /> : null}
+        </ReportProvider>
+      </BrandingProvider>
     </AuthProvider>
   );
 }

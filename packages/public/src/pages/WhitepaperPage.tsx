@@ -1,9 +1,14 @@
 import Link from "next/link";
+import { getBranding } from "@airegistry/core/branding";
 import { DocPage, DocPanel } from "../sections/DocPage";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = { title: "Whitepaper · Mauritius AI Registry" };
+export async function generateMetadata() {
+  return publicPageMetadata("Whitepaper");
+}
 
-export default function WhitepaperPage() {
+export default async function WhitepaperPage() {
+  const { operatorName, portalDomain } = await getBranding();
   return (
     <DocPage
       crumb={
@@ -97,7 +102,7 @@ export default function WhitepaperPage() {
           <Link href="/governance" style={{ color: "var(--text-2)" }}>
             governance charter
           </Link>
-          . Reference implementation: airegistry.mu, operated by Mauritius Telecom.
+          . Reference implementation: {portalDomain}, operated by {operatorName}.
         </p>
       </DocPanel>
     </DocPage>

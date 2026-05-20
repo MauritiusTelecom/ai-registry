@@ -18,9 +18,9 @@ export default async function AdminBrandingPage() {
       <div className="p-page-header">
         <h1 className="p-title">Branding</h1>
         <p className="p-subtitle">
-          Override the registry name, logo, footer copyright and build line
-          surfaced across the public portal. Leave a field empty to fall back
-          to the deployment default.
+          Override the registry name, operator contact copy, logo, footer copyright
+          and build line surfaced across the public portal. Leave a field empty to
+          fall back to the deployment default.
         </p>
       </div>
 
@@ -31,13 +31,23 @@ export default async function AdminBrandingPage() {
           copyrightLine: row?.copyrightLine ?? "",
           buildLine: row?.buildLine ?? "",
           heroEyebrowText: row?.heroEyebrowText ?? "",
-          heroEyebrowIconUrl: row?.heroEyebrowIconUrl ?? null
+          heroEyebrowIconUrl: row?.heroEyebrowIconUrl ?? null,
+          operatorName: row?.operatorName ?? "",
+          operatorContactEmail: row?.operatorContactEmail ?? "",
+          operatorOfficeName: row?.operatorOfficeName ?? "",
+          operatorOfficeAddress: row?.operatorOfficeAddress ?? "",
+          operatorContactHours: row?.operatorContactHours ?? ""
         }}
         defaults={{
           registryName: cfg.registryName,
           copyrightLine: DEFAULT_COPYRIGHT_LINE,
           buildLine: DEFAULT_BUILD_LINE,
-          heroEyebrowText: cfg.portalDomain
+          heroEyebrowText: cfg.portalDomain,
+          operatorName: cfg.operatorName,
+          operatorContactEmail: cfg.operatorContactEmail,
+          operatorOfficeName: cfg.operatorOfficeName,
+          operatorOfficeAddress: cfg.operatorOfficeAddress || "(unset in .env)",
+          operatorContactHours: cfg.operatorContactHours
         }}
       />
     </div>
