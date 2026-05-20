@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { clearSessionCookie } from "@airegistry/sdk/server";
+import { clearSessionCookie, clearCsrfCookieDirective } from "@airegistry/sdk/server";
 
 /**
  * POST /api/auth/logout
@@ -9,8 +9,22 @@ import { clearSessionCookie } from "@airegistry/sdk/server";
  * still returns 200.
  */
 export async function POST() {
-  const { name, value, ...cookieAttrs } = clearSessionCookie();
   const jar = await cookies();
-  jar.set(name, value, cookieAttrs);
+  const cleared = clearSessionCookie();
+  jar.set(cleared.name, cleared.value, {
+    httpOnly: cleared.httpOnly,
+    secure: cleared.secure,
+    sameSite: cleared.sameSite,
+    path: cleared.path,
+    maxAge: cleared.maxAge
+  });
+  const csrf = clearCsrfCookieDirective();
+  jar.set(csrf.name, csrf.value, {
+    httpOnly: csrf.httpOnly,
+    secure: csrf.secure,
+    sameSite: csrf.sameSite,
+    path: csrf.path,
+    maxAge: csrf.maxAge
+  });
   return NextResponse.json({ ok: true });
 }

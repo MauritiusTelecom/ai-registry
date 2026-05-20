@@ -5,6 +5,7 @@ import { withBase } from "@airegistry/sdk";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/library";
+import { registryFetch } from "@airegistry/ui-kit";
 
 type StatusOption = { id: string; code: string; name: string };
 type AdminUser = { id: string; name: string; email: string };
@@ -117,7 +118,7 @@ function ReplyCard({
     }
     setBusy(true);
     try {
-      const res = await fetch(withBase(`/api/admin/complaints/${complaintId}/reply`), {
+      const res = await registryFetch(withBase(`/api/admin/complaints/${complaintId}/reply`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subject: subject.trim(), message: body.trim() })
@@ -208,7 +209,7 @@ function ManageCard({
     setMsg(null);
     setBusy(true);
     try {
-      const res = await fetch(withBase(`/api/admin/complaints/${complaintId}/update`), {
+      const res = await registryFetch(withBase(`/api/admin/complaints/${complaintId}/update`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -338,7 +339,7 @@ function DeleteCard({ complaintId }: { complaintId: string }) {
     setErr(null);
     setBusy(true);
     try {
-      const res = await fetch(withBase(`/api/admin/complaints/${complaintId}`), {
+      const res = await registryFetch(withBase(`/api/admin/complaints/${complaintId}`), {
         method: "DELETE"
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };

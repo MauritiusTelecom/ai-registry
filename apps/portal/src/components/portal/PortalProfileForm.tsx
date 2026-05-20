@@ -5,6 +5,7 @@ import { withBase } from "@airegistry/sdk";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/library";
+import { registryFetch } from "@airegistry/ui-kit";
 
 type Props = { initialName: string; initialOrganisation: string | null };
 
@@ -21,7 +22,7 @@ export function PortalProfileForm({ initialName, initialOrganisation }: Props) {
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(withBase("/api/portal/profile"), {
+      const res = await registryFetch(withBase("/api/portal/profile"), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

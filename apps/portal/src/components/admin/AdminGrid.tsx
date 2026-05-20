@@ -1,6 +1,7 @@
 "use client";
 
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
@@ -103,7 +104,7 @@ export function AdminGrid<Row extends { id: string }>(props: AdminGridProps<Row>
     [props.columns]
   );
 
-  // Translate GridFilter → EntityFilter (id → key, label stays, options stay).
+// Translate GridFilter → EntityFilter (id → key, label stays, options stay).
   const filters: EntityFilter[] | undefined = useMemo(() => {
     if (!props.filters) return undefined;
     return props.filters.map((f) => ({

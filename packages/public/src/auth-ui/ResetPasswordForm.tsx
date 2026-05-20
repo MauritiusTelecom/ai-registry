@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 export function ResetPasswordForm({ token }: { token: string }) {
   const [password, setPassword] = useState("");
@@ -20,7 +21,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       return;
     }
     try {
-      const res = await fetch(withBase("/api/auth/reset-password"), {
+      const res = await registryFetch(withBase("/api/auth/reset-password"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ token, password })
@@ -114,3 +115,4 @@ function FormField({
     </div>
   );
 }
+

@@ -435,6 +435,8 @@ model User {
   resetToken              String?
   resetTokenExpiry        DateTime?
   onboardingComplete      Boolean   @default(true)
+  /** Bumped on password reset to invalidate existing session cookies. */
+  sessionEpoch            Int       @default(0)
   image                   String?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt

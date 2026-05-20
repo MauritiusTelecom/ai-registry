@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 export type FaqEntryFormInitial = {
   code: string;
@@ -50,7 +51,7 @@ export function FaqEntryForm({
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch(withBase("/api/admin/site/faq"), {
+      const res = await registryFetch(withBase("/api/admin/site/faq"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

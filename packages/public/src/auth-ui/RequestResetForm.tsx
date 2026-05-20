@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 export function RequestResetForm() {
   const [email, setEmail] = useState("");
@@ -13,7 +14,7 @@ export function RequestResetForm() {
     event.preventDefault();
     setBusy(true);
     try {
-      const res = await fetch(withBase("/api/auth/request-reset"), {
+      const res = await registryFetch(withBase("/api/auth/request-reset"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email })
@@ -82,3 +83,4 @@ export function RequestResetForm() {
     </form>
   );
 }
+

@@ -35,8 +35,11 @@ import {
 } from "./tokens";
 import {
   issueSessionToken,
-  sessionCookieAttributes
+  sessionCookieAttributes,
+  sessionTtlForRoles,
+  type IssueSessionOptions
 } from "./session";
+import { issueCsrfCookie, clearCsrfCookie, type CsrfCookieDirective } from "./csrf";
 
 // ----- Session cookie directives -----
 
@@ -49,18 +52,33 @@ export type SessionCookieDirective = {
   value: string;
   httpOnly: true;
   secure: boolean;
-  sameSite: "lax";
+  sameSite: "strict" | "lax";
   path: "/";
   maxAge: number;
+};
+
+export type SignSessionCookieOptions = {
+  sessionEpoch?: number;
+  roleCodes?: string[];
 };
 
 /**
  * Sign a fresh session token for `userId` and return the cookie directive
  * the route should set. Combines `issueSessionToken` + `sessionCookieAttributes`.
  */
-export function signSessionCookie(userId: string, now: Date = new Date()): SessionCookieDirective {
-  const token = issueSessionToken(userId, now);
-  const attrs = sessionCookieAttributes();
+export function signSessionCookie(
+  userId: string,
+  now: Date = new Date(),
+  opts: SignSessionCookieOptions = {}
+): SessionCookieDirective {
+  const roles = opts.roleCodes ?? [];
+  const ttlSeconds = sessionTtlForRoles(roles);
+  const issueOpts: IssueSessionOptions = {
+    sessionEpoch: opts.sessionEpoch ?? 0,
+    ttlSeconds
+  };
+  const token = issueSessionToken(userId, now, issueOpts);
+  const attrs = sessionCookieAttributes(ttlSeconds);
   return {
     name: attrs.name,
     value: token,
@@ -87,6 +105,16 @@ export function clearSessionCookie(): SessionCookieDirective {
     path: attrs.path,
     maxAge: 0
   };
+}
+
+/** Issue CSRF cookie with the same max-age as the session. */
+export function signCsrfCookie(maxAgeSeconds?: number): CsrfCookieDirective {
+  const attrs = sessionCookieAttributes(maxAgeSeconds);
+  return issueCsrfCookie(attrs.maxAge);
+}
+
+export function clearCsrfCookieDirective(): CsrfCookieDirective {
+  return clearCsrfCookie();
 }
 
 // ----- Password hashing -----
@@ -326,6 +354,8 @@ export type UserForLogin = {
   emailVerified: boolean;
   roleCode: string;
   statusCode: string;
+  sessionEpoch: number;
+  roleCodes: string[];
 };
 
 /**
@@ -337,9 +367,16 @@ export type UserForLogin = {
 export async function findUserForLogin(email: string): Promise<UserForLogin | null> {
   const u = await prisma.user.findUnique({
     where: { email },
-    include: { role: true, status: true }
+    include: {
+      role: true,
+      status: true,
+      roleAssignments: { include: { role: true } }
+    }
   });
   if (!u) return null;
+  const roleCodes = Array.from(
+    new Set([u.role.code, ...(u.roleAssignments ?? []).map((ra) => ra.role.code)])
+  );
   return {
     id: u.id,
     email: u.email,
@@ -347,7 +384,9 @@ export async function findUserForLogin(email: string): Promise<UserForLogin | nu
     passwordHash: u.passwordHash ?? "",
     emailVerified: u.emailVerified,
     roleCode: u.role.code,
-    statusCode: u.status.code
+    statusCode: u.status.code,
+    sessionEpoch: u.sessionEpoch,
+    roleCodes
   };
 }
 
@@ -510,6 +549,7 @@ export async function applyPasswordReset(
       emailVerified: true,
       verificationToken: null,
       verificationTokenExpiry: null,
+      sessionEpoch: { increment: 1 },
       ...(activeStatusId ? { statusId: activeStatusId } : {})
     }
   });

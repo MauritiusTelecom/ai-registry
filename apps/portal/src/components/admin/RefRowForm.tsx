@@ -1,6 +1,7 @@
 "use client";
 
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -77,7 +78,7 @@ export function RefRowForm({
       else out[f.key] = "";
     }
     return out;
-  }, [config.fields, initial]);
+}, [config.fields, initial]);
 
   return (
     <EntityForm<FormValues>
@@ -92,7 +93,7 @@ export function RefRowForm({
             ? `/api/admin/ref/${config.id}`
             : `/api/admin/ref/${config.id}/${initial!.id}`;
         const method = mode === "create" ? "POST" : "PATCH";
-        const res = await fetch(withBase(url), {
+        const res = await registryFetch(withBase(url), {
           method,
           headers: { "content-type": "application/json" },
           body: JSON.stringify(values)

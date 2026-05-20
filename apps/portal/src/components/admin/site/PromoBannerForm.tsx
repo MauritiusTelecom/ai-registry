@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 export type PromoBannerFormInitial = {
   enabled: boolean;
@@ -45,7 +46,7 @@ export function PromoBannerForm({ initial }: { initial: PromoBannerFormInitial }
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch(withBase("/api/admin/site/promo"), {
+      const res = await registryFetch(withBase("/api/admin/site/promo"), {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

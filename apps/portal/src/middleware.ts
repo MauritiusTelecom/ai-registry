@@ -1,4 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  isMutationMethod,
+  checkMutationOrigin,
+  constantTimeEqual,
+  CSRF_COOKIE_NAME,
+  CSRF_HEADER_NAME
+} from "@airegistry/core/security/mutation-origin";
 
 /**
  * Phase 2 middleware: gate the authenticated portal surface.
@@ -9,13 +16,9 @@ import { NextResponse, type NextRequest } from "next/server";
  * receives the request then performs the canonical user lookup against the
  * database (see `src/lib/auth/current-user.ts`).
  *
- * If the signature is missing or invalid, the middleware redirects to
- * `/login?next=<original-path>` so the user lands back on the page they
- * were trying to reach after authenticating.
- *
- * Protected prefixes are configured via the `matcher` block at the bottom
- * of this file. Add new protected portals (admin, verifier, sovereign) by
- * extending the matcher AND the `requiresSession()` helper.
+ * Also enforces on `/api/*` mutations:
+ *   - Origin / Referer allowlist (anti-CSRF)
+ *   - Double-submit CSRF when session + CSRF cookies are present
  */
 
 const COOKIE_NAME = process.env.SESSION_COOKIE_NAME || "airegistry_session";
@@ -71,8 +74,6 @@ async function verifyCookie(token: string): Promise<boolean> {
   );
   if (!ok) return false;
 
-  // Check expiry without trusting the payload until the signature is
-  // verified above.
   try {
     const payloadBytes = base64UrlToBytes(payloadB64);
     const payload = JSON.parse(new TextDecoder().decode(payloadBytes)) as {
@@ -85,21 +86,47 @@ async function verifyCookie(token: string): Promise<boolean> {
   }
 }
 
-/**
- * The middleware also propagates an `x-pathname` request header on every
- * request so the root layout can detect portal routes and skip the public
- * site chrome (TopNav / Footer). Portal pages already render their own
- * sidebar + header; rendering the home-page nav above them would double up.
- */
 function withPathnameHeader(req: NextRequest): Headers {
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-pathname", req.nextUrl.pathname);
   return requestHeaders;
 }
 
+function mutationBlockedResponse(reason: string): NextResponse {
+  return NextResponse.json(
+    { error: "Request blocked.", code: reason },
+    { status: 403 }
+  );
+}
+
+function checkApiMutation(req: NextRequest): NextResponse | null {
+  if (!req.nextUrl.pathname.startsWith("/api/") || !isMutationMethod(req.method)) {
+    return null;
+  }
+
+  const originResult = checkMutationOrigin(req.headers);
+  if (!originResult.allowed) {
+    return mutationBlockedResponse(originResult.reason ?? "disallowed-origin");
+  }
+
+  const sessionToken = req.cookies.get(COOKIE_NAME)?.value;
+  const csrfCookie = req.cookies.get(CSRF_COOKIE_NAME)?.value;
+  if (sessionToken && csrfCookie) {
+    const headerToken = req.headers.get(CSRF_HEADER_NAME)?.trim() ?? "";
+    if (!constantTimeEqual(csrfCookie, headerToken)) {
+      return mutationBlockedResponse("csrf-mismatch");
+    }
+  }
+
+  return null;
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const requestHeaders = withPathnameHeader(req);
+
+  const mutationBlock = checkApiMutation(req);
+  if (mutationBlock) return mutationBlock;
 
   if (!requiresSession(pathname)) {
     return NextResponse.next({ request: { headers: requestHeaders } });
@@ -114,9 +141,9 @@ export async function middleware(req: NextRequest) {
     url.search = "";
     url.searchParams.set("next", pathname);
     const res = NextResponse.redirect(url);
-    // Clear a present-but-invalid cookie so subsequent requests don't loop.
     if (token) {
       res.cookies.set(COOKIE_NAME, "", { path: "/", maxAge: 0 });
+      res.cookies.set(CSRF_COOKIE_NAME, "", { path: "/", maxAge: 0 });
     }
     return res;
   }
@@ -125,8 +152,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // The middleware now runs on every page-rendering request so it can stamp
-  // `x-pathname` for the root layout's chrome detection. Static assets, API
-  // routes, and Next internals are excluded so the cost stays trivial.
-  matcher: ["/((?!_next/|favicon|api/|.*\\..*).*)"]
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"]
 };

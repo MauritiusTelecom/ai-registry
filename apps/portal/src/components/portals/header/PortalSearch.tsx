@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Icon, type IconName } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 /**
  * Command-palette search.
@@ -126,7 +127,7 @@ export function PortalSearch({
     const controller = new AbortController();
     setLoading(true);
     setError(null);
-    fetch(withBase(`/api/portal/search?q=${encodeURIComponent(q)}`), {
+    registryFetch(withBase(`/api/portal/search?q=${encodeURIComponent(q)}`), {
       credentials: "same-origin",
       signal: controller.signal
     })

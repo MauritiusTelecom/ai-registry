@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 /**
  * User dropdown - avatar + name + role badge that reveals a panel with:
@@ -63,7 +64,7 @@ export function PortalUserDropdown({ user, currentRole }: { user: PortalUser; cu
 
   async function handleLogout() {
     try {
-      await fetch(withBase("/api/auth/logout"), { method: "POST" });
+      await registryFetch(withBase("/api/auth/logout"), { method: "POST" });
     } finally {
       window.location.assign(withBase("/"));
     }

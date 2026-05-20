@@ -5,6 +5,8 @@ import { withBase } from "@airegistry/sdk";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Icon, Button, Field, Input, Select, TextArea } from "@/components/library";
+import { Icon } from "@airegistry/ui-kit";
+import { registryFetch } from "@airegistry/ui-kit";
 
 type RefRow = { code: string; name: string };
 
@@ -227,7 +229,7 @@ export function ProviderResourceEditForm({
         }))
       };
 
-      const res = await fetch(withBase(`/api/portal/resources/${initial.id}`), {
+      const res = await registryFetch(withBase(`/api/portal/resources/${initial.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

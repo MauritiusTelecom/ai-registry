@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, type ChangeEvent, type FormEvent } from "react";
-import { Icon } from "@airegistry/ui-kit";
+import { Icon, PageHero, registryFetch } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";
-import { PageHero } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
 import { usePublicBranding } from "../lib/branding-context";
 
@@ -62,7 +61,7 @@ export function ContactContent() {
 
     setSubmitting(true);
     try {
-      const response = await fetch(withBase("/api/public/contact"), {
+      const response = await registryFetch(withBase("/api/public/contact"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -250,3 +249,4 @@ export function ContactContent() {
     </div>
   );
 }
+

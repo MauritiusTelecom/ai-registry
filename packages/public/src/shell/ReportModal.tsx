@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Icon } from "@airegistry/ui-kit";
+import { Icon, registryFetch } from "@airegistry/ui-kit";
 import { Modal } from "./Modal";
 import { useReport } from "./ReportContext";
 import { withBase } from "@airegistry/sdk";
@@ -52,7 +52,7 @@ export function ReportModal() {
 
     setSubmitting(true);
     try {
-      const response = await fetch(withBase("/api/public/report"), {
+      const response = await registryFetch(withBase("/api/public/report"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -150,3 +150,4 @@ export function ReportModal() {
     </Modal>
   );
 }
+

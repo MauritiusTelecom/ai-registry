@@ -10,6 +10,7 @@ import { CONTACT_TOPIC_LABELS, CONTACT_TOPICS, type ContactTopicCode } from "@ai
 import { getPublicOrigin } from "@/lib/public-origin";
 import { writeAudit } from "@airegistry/sdk";
 import { userExistsById, submitContactRecord } from "@airegistry/sdk/server";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 type ContactPayload = {
   name?: string;
@@ -41,6 +42,9 @@ function verboseContactErrors(): boolean {
 }
 
 export async function POST(req: Request) {
+  const limited = enforceRateLimit(req, "public-write");
+  if (limited) return limited;
+
   let payload: ContactPayload;
   try {
     payload = (await req.json()) as ContactPayload;
