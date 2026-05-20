@@ -180,3 +180,70 @@ This pass is structural only: it moves files and wires the workspace. It does NO
 - Convert `@/lib/...` imports to `@airegistry/core/...` — that's a follow-up cleanup.
 
 Those land in the v1.0 push outlined in the open-source rollout plan.
+
+---
+
+## Splitting the public portal out of `apps/portal` (in progress)
+
+A second pass is now underway to make the public-portal half of `apps/portal` forkable independently of the admin/provider/verifier/sovereign workspaces. Same Next.js app, same `/api/*` surface; the boundary is a new workspace package that the app mounts at a `(public)` route group.
+
+| PR | Status | Scope |
+|---|---|---|
+| **PR 1** | landed | Promote shared chrome primitives (`Icon`, `PageHero`, `AuthProvider`, `useAuth`, `ThemeProvider`, `useTheme`, `LogoutButton`, `theme-cookie`) to `@airegistry/ui-kit`. 50 files in `apps/portal/` rewired; originals left as deprecated one-line re-export shims until the sandbox can delete files. |
+| **PR 2** | landed | Scaffold `@airegistry/public` workspace package. Declared deps on `@airegistry/core` + `@airegistry/sdk` + `@airegistry/ui-kit`; `apps/portal/package.json` and `next.config.mjs` updated to consume + transpile it. No code moved yet. |
+| **PR 3** | landed | Moved 36 files from `apps/portal/src/components/public/` into `packages/public/src/{shell,sections,auth-ui}/`: 12 shell components (SiteShell, TopNav, Footer, Modal, ReportModal, ReportContext, Reveal, TweaksPanel, ProviderPortalFooterLink, ResourceReportButton, PrototypeHtmlPage, PrototypeHtmlRuntime), 18 section components, and 6 auth forms. Plus two cross-boundary moves: `lib/branding.ts` → `@airegistry/core/branding` (so the role-portal chrome and the public site reach it via the same import), and `lib/portals/public-hrefs.ts` → `@airegistry/public/lib/public-hrefs`. 24 routes under `app/` rewired to import from `@airegistry/public/...`. Originals left as one-line shims; `ChromeSwitch.tsx` retained as real code (PR 4 deletes it). Hotfix: `useCountUp.ts` was missed in the initial move and added in a follow-up; 13 section files had `from "../Reveal"` corrected to `from "../shell/Reveal"`. |
+| **PR 4 (partial)** | landed — page extraction only | **Page-body extraction.** All 24 public-route page bodies moved into `packages/public/src/pages/{HomePage,RegistryListPage,RegistryDetailPage,ProvidersListPage,ProviderDetailPage,DocsPage,EcosystemPage,GovernancePage,LoginPage,RegisterPage,AuthResetRequestPage,AuthResetTokenPage,AuthVerifyPage,ContactPage,ContactVerifyPage,PricingPage,PrivacyPage,TermsPage,AcceptableUsePage,SovereigntyRubricPage,VerificationPage,WhitepaperPage,OpenDataPage,AuditLogPage}.tsx`. Each route file in `apps/portal/src/app/` is now a 300–400-byte thin re-export: `export { default, metadata, dynamic } from "@airegistry/public/pages/..."`. Two cross-boundary moves needed for this: (a) `portalForRole` (the only thing the LoginPage uses from `lib/portals/auth-gate.ts`) moved to `@airegistry/core/auth/portal-for-role`, with auth-gate re-exporting it for backward compat; (b) imports of `@airegistry/public/sections/X`, `@airegistry/public/shell/X`, `@airegistry/public/auth-ui/X`, `@airegistry/public/lib/X`, `@/lib/branding` were rewritten to relative `../sections/X` etc. (or `@airegistry/core/branding`) in the extracted files since they now live inside `packages/public`. Added `packages/public/src/pages/index.ts` barrel; main `@airegistry/public` index re-exports it. |
+| PR 4 (remainder) | deferred — needs file delete | Introduce `app/(public)/` and `app/(workspaces)/` route groups and remove `ChromeSwitch`. Both require physically moving / deleting route files (Next.js refuses to build if `app/page.tsx` and `app/(public)/page.tsx` both exist), which the workspace sandbox can't do. **Now mechanical when you can delete files locally**: move every public route file under `app/` into `app/(public)/` (the shims themselves are tiny so moving them is trivial); move the role workspaces into `app/(workspaces)/` if you want symmetry; delete `apps/portal/src/components/public/ChromeSwitch.tsx`; simplify `app/layout.tsx` to drop the ChromeSwitch wrapper and have `(public)/layout.tsx` mount `SiteShell` directly. The page bodies already live in `@airegistry/public/pages/`, so the route-group split is purely an organisational `git mv`. |
+| ~~PR 5~~ | folded into PR 3 | `public-hrefs.ts` moved as part of PR 3 because the moved `ProviderPortalFooterLink` needed it. |
+| **PR 6a** | landed | **Public-CMS data layer.** Added `public_cms` Postgres schema to the existing multi-schema Prisma setup, with four editable-content models: `CmsFaqEntry` (collection, ordered), `CmsHowItWorksStep` (collection, ordered, with `highlight` flag), `CmsListingCriterion` (collection, ordered, optional `iconName`), `CmsPromoBanner` (singleton). Added `packages/core/src/lib/services/public-cms.ts` with typed read projections + audited upsert / delete / reorder helpers, exposed at `@airegistry/core/services/public-cms`. Seeded the FAQ, how-it-works, and promo-banner tables in `prisma/seed.ts` with the strings previously hardcoded in the section components; existing rows aren't overwritten on re-seed so admin edits survive `pnpm db:seed`. Wired `Faq.tsx` to read from the new table (split into server `Faq` + client `FaqClient` so the open/close interaction still works) with a hardcoded fallback if the DB is empty or unreachable. |
+| **PR 6b** | landed | Wired the remaining sections to read from the CMS, same pattern as `Faq.tsx`: `HowItWorks.tsx` reads via `listActiveHowItWorksSteps`; `ListingCriteria.tsx` reads via `listActiveListingCriteria` (tone — pink / purple / cyan / emerald — is derived from `sortOrder % 4` so reordering rotates colours without a schema column); `Promo.tsx` reads the singleton via `getPromoBanner` and renders `null` when disabled. Each section keeps a hardcoded `FALLBACK_*` array as DB-empty / DB-down defence. Added listing-criteria seed to `prisma/seed.ts` (the four built-in sovereignty bases). |
+| **PR 6c** | landed | **`/admin/site/*` CRUD.** Eleven admin pages (landing + list/new/edit for FAQ, how-it-works, listing-criteria + singleton-edit for promo banner), seven API routes (POST upsert + DELETE per collection table, PUT for the singleton), four client form components. New "Site content" group in the admin nav (between Operations and Reference Tables). All mutators go through the audited service helpers in `@airegistry/core/services/public-cms`, so `/admin/audit` shows every CMS change. The promo banner singleton starts disabled on a fresh deploy; switch it on at `/admin/site/promo`. Service layer was extended with `listAll*` and `delete*` for how-it-works and listing-criteria during this PR (PR 6a only shipped the read+upsert subset). |
+
+### Public-CMS local bootstrap
+
+After pulling PR 6a, run:
+
+```powershell
+cd D:\src\AIRegistry\ai-registry
+pnpm install
+pnpm --filter @airegistry/core prisma:generate    # picks up the four new CmsX models + the public_cms schema
+pnpm --filter @airegistry/core db:push            # creates the public_cms schema and tables in PostgreSQL
+pnpm --filter @airegistry/core db:seed            # populates Faq/HowItWorks/Promo with current hardcoded copy
+pnpm --filter @airegistry/portal typecheck
+pnpm --filter @airegistry/portal build
+```
+
+The schema is additive — existing `registry.*` tables are untouched.
+
+### Why a workspace package, not a sibling `apps/public-site/`
+
+The split keeps a single Next.js app — one deploy, one origin, one cookie jar, one bundle of `/api/*` route handlers. Shared chrome primitives are already in `@airegistry/ui-kit` (PR 1). The cleanest way to make the public site forkable without splitting deploys is to put its routes/components/sections behind a workspace-package boundary that the app mounts via `app/(public)/` route shims. If a hard deploy split is ever needed later, the PR-3 moves don't change — only PR 4 would differ (a second Next.js app instead of route groups).
+
+### PR-1 cleanup carry-over
+
+Same caveat as the original `src/` cleanup above — the workspace sandbox could not delete the original primitive source files, so they remain in `apps/portal/src/components/public/{Icon,AuthProvider,ThemeProvider,auth/LogoutButton,sections/PageHero}.tsx` and `apps/portal/src/lib/theme-cookie.ts` as deprecated one-line shims pointing at `@airegistry/ui-kit`. Delete by hand once consumers have migrated:
+
+```powershell
+# PowerShell, from D:\src\AIRegistry\ai-registry
+Remove-Item -Force `
+  apps\portal\src\components\public\Icon.tsx, `
+  apps\portal\src\components\public\AuthProvider.tsx, `
+  apps\portal\src\components\public\ThemeProvider.tsx, `
+  apps\portal\src\components\public\auth\LogoutButton.tsx, `
+  apps\portal\src\components\public\sections\PageHero.tsx, `
+  apps\portal\src\lib\theme-cookie.ts
+```
+
+Also remove the `"@/lib/theme-cookie": ["./src/lib/theme-cookie"]` line from `apps/portal/tsconfig.json` paths.
+
+### Stray sed temp files from the PR-1 rewrite pass
+
+A `sed -i` attempt during the import-rewrite step failed mid-flight because the sandbox mount disallows rename, leaving four extension-less garbage files behind. They are NOT picked up by tsc (the `include` glob requires `.ts`/`.tsx`), but should be removed:
+
+```powershell
+Remove-Item -Force `
+  apps\portal\src\app\sedK8Jfaa, `
+  apps\portal\src\app\acceptable-use\sedAieDMn, `
+  apps\portal\src\components\public\sedlYHCN0, `
+  apps\portal\src\components\public\sections\sed1Q0Tjk
+```

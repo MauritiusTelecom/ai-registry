@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
-import { PageHero } from "@/components/public/sections/PageHero";
-import { LogoutButton } from "@/components/public/auth/LogoutButton";
+import { PageHero } from "@airegistry/ui-kit";
+import { LogoutButton } from "@airegistry/ui-kit";
 import { PortalProfileForm } from "@/components/portal/PortalProfileForm";
 import { CONTACT_TOPIC_LABELS, type ContactTopicCode } from "@airegistry/sdk";
 import { loadPortalHome } from "@airegistry/sdk/server";

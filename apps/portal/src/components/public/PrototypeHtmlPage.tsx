@@ -1,8 +1,9 @@
-// Deprecated. The Phase 0 implementation now uses native React components
-// directly under @/components/public/sections.
-
-export function PrototypeHtmlPage(): never {
-  throw new Error(
-    "PrototypeHtmlPage was removed in the Phase 0 native re-implementation."
-  );
-}
+/**
+ * DEPRECATED location - this module moved to `@airegistry/public/shell/PrototypeHtmlPage`.
+ *
+ * Re-export shim left behind so any importer still using `@/components/public/...`
+ * or a relative sibling path keeps resolving during the deprecation window. The
+ * portal codebase will be rewired to `@airegistry/public/...` in the same PR;
+ * remove this file once the deprecation window closes.
+ */
+export * from "@airegistry/public/shell/PrototypeHtmlPage";

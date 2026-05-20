@@ -1,29 +1,7 @@
-import Link from "next/link";
-import { AuthShell } from "@/components/public/auth/AuthShell";
-import { RequestResetForm } from "@/components/public/auth/RequestResetForm";
-
-export const metadata = { title: "Reset password" };
-
-export default function RequestResetPage() {
-  return (
-    <AuthShell
-      eyebrow="Reset password"
-      title={
-        <>
-          Forgot your <span className="gradient-text">password</span>?
-        </>
-      }
-      subtitle="Enter your email and we'll send you a one-time reset link."
-      footer={
-        <>
-          Remembered it?{" "}
-          <Link href="/login" style={{ color: "var(--text-2)" }}>
-            Sign in
-          </Link>
-        </>
-      }
-    >
-      <RequestResetForm />
-    </AuthShell>
-  );
-}
+/**
+ * Route shim. The page body lives in `@airegistry/public/pages/AuthResetRequestPage` so the public site
+ * can be customised or replaced without forking apps/portal.
+ * Route segment config + the default export are re-exported here so
+ * Next.js's static analysis sees them at the route file location.
+ */
+export { default, metadata } from "@airegistry/public/pages/AuthResetRequestPage";

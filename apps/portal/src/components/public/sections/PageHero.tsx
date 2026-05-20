@@ -1,26 +1,9 @@
-import type { ReactNode } from "react";
-
-type PageHeroProps = {
-  crumb: ReactNode;
-  title: ReactNode;
-  subtitle?: string;
-  children?: ReactNode;
-};
-
-export function PageHero({ crumb, title, subtitle, children }: PageHeroProps) {
-  return (
-    <section className="page-hero">
-      <div className="grid-bg" style={{ position: "absolute", inset: 0, opacity: 0.6, zIndex: 0 }} />
-      <div style={{ position: "relative", zIndex: 1 }}>
-        <div className="crumbs">{crumb}</div>
-        <h1>{title}</h1>
-        {subtitle && (
-          <p style={{ marginTop: 18, fontSize: 17, maxWidth: 680, color: "var(--text-2)" }}>
-            {subtitle}
-          </p>
-        )}
-        {children}
-      </div>
-    </section>
-  );
-}
+/**
+ * DEPRECATED — `PageHero` has moved to `@airegistry/ui-kit`.
+ *
+ * This file is a re-export shim left behind because the workspace sandbox
+ * could not delete files during the PR-1 migration (see MIGRATION.md). The
+ * portal codebase no longer imports from this path; remove this file when
+ * the deprecation window closes.
+ */
+export { PageHero } from "@airegistry/ui-kit";

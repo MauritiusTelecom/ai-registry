@@ -33,7 +33,12 @@ const nextConfig = {
 
   // Transpile workspace packages on the fly — they ship as TS source, not as
   // built JS, during the migration phase.
-  transpilePackages: ["@airegistry/core", "@airegistry/sdk", "@airegistry/ui-kit"],
+  transpilePackages: [
+    "@airegistry/core",
+    "@airegistry/public",
+    "@airegistry/sdk",
+    "@airegistry/ui-kit"
+  ],
 
   // AIR-SPEC §13 names `/.well-known/ai-registry` as the capability document
   // path. Next.js's App Router excludes dot-prefixed folders, so the route

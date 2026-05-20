@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Icon, type IconName } from "@/components/public/Icon";
+import { Icon, type IconName } from "@airegistry/ui-kit";
 
 export type RowMenuItem = {
   key: string;

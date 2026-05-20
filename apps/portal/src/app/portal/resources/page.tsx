@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
-import { PageHero } from "@/components/public/sections/PageHero";
+import { PageHero } from "@airegistry/ui-kit";
 import { loadPortalResourceList } from "@airegistry/sdk/server";
 
 export const metadata = { title: "My resources" };

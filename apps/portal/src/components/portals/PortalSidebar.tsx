@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Icon } from "@/components/public/Icon";
+import { Icon } from "@airegistry/ui-kit";
 import type { PortalConfig } from "@/lib/portals/nav-config";
 import { withBase } from "@airegistry/sdk";
 

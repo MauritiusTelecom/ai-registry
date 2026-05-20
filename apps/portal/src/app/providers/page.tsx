@@ -1,24 +1,7 @@
-import { PageHero } from "@/components/public/sections/PageHero";
-import { ProvidersSection } from "@/components/public/sections/ProvidersSection";
-
-export const metadata = {
-  title: "Providers · Mauritius AI Registry"
-};
-
-export default function ProvidersPage() {
-  return (
-    <div>
-      <PageHero
-        crumb="Providers · The organisations behind the registry"
-        title={
-          <>
-            Meet the organisations{" "}
-            <span className="gradient-text">Mauritius already trusts</span>.
-          </>
-        }
-        subtitle="Browse the sovereign operators, model labs, hosting partners and accredited integrators behind every listing in the registry. Each provider carries a verifiable status and a public profile."
-      />
-      <ProvidersSection withHeader={false} />
-    </div>
-  );
-}
+/**
+ * Route shim. The page body lives in `@airegistry/public/pages/ProvidersListPage` so the public site
+ * can be customised or replaced without forking apps/portal.
+ * Route segment config + the default export are re-exported here so
+ * Next.js's static analysis sees them at the route file location.
+ */
+export { default, metadata } from "@airegistry/public/pages/ProvidersListPage";

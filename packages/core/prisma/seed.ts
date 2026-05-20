@@ -34,8 +34,8 @@
 
 import { config as loadDotenv } from "dotenv";
 import { resolve } from "node:path";
-import { PrismaClient } from "../generated/prisma";
-import { hashPassword } from "../lib/auth/password";
+import { PrismaClient } from "../src/generated/prisma";
+import { hashPassword } from "../src/lib/auth/password";
 
 type RefRow = { code: string; name: string; description?: string; sortOrder?: number };
 
@@ -896,6 +896,168 @@ async function main() {
         "\n  (bootstrap admin skipped - set SEED_ADMIN_PASSWORD to create or refresh operator admin)"
       );
     }
+
+  // ─── public_cms seed ────────────────────────────────────────────────
+  //
+  // Populate the editable public-site CMS tables with the strings that were
+  // previously hardcoded in the section components (Faq.tsx, HowItWorks.tsx,
+  // WhatGetsListed/ListingCriteria.tsx). After this runs, a fresh deploy
+  // renders identically to today's behaviour. Operators edit the rows via
+  // /admin/site/* to customise without code.
+  //
+  // Idempotent: upserts by stable `code`. Existing rows that an operator has
+  // already customised are left untouched (no overwrite of question/answer
+  // text on re-seed) — only newly-added codes get created.
+
+  console.log("\n  Seeding public_cms (FAQ, how-it-works, listing criteria, promo) ...");
+
+  const FAQ_SEED = [
+    {
+      code: "hosting",
+      question: "Does the registry host any AI?",
+      answer:
+        "No. The registry only points. Providers operate their own resources, and hosting environments run the workloads. The registry is never on the runtime path."
+    },
+    {
+      code: "sovereignty",
+      question: "How is sovereignty defined?",
+      answer:
+        "A submission must cite at least one of: local law, local data, local systems, or local language and culture - with concrete evidence such as a referenced statute, dataset, or institutional integration."
+    },
+    {
+      code: "verified",
+      question: 'What does "verified" mean?',
+      answer:
+        "Provider verification confirms that the listing is bound to the rightful operator via DNS and email proofs. It does not imply endorsement of the resource itself."
+    },
+    {
+      code: "submitter",
+      question: "Who can submit a resource?",
+      answer:
+        "Any organisation or accredited individual that operates a sovereign AI resource can submit. Government endorsement is a separate, stronger signal granted only by the responsible authority."
+    },
+    {
+      code: "open-source",
+      question: "Is the platform open source?",
+      answer:
+        "Yes. The reference implementation at airegistry.mu and the AIR-SPEC are openly licensed. Each jurisdiction operates its own instance with local governance."
+    },
+    {
+      code: "resolve",
+      question: "How are listings resolved at runtime?",
+      answer:
+        "AIR-IDs (under air://) resolve to provider endpoints described in the listing metadata. Optionally, hosting environments issue SPIFFE/SPIRE SVIDs for runtime identity."
+    }
+  ];
+
+  for (let i = 0; i < FAQ_SEED.length; i += 1) {
+    const row = FAQ_SEED[i];
+    await prisma.cmsFaqEntry.upsert({
+      where: { code: row.code },
+      update: {},
+      create: {
+        code: row.code,
+        question: row.question,
+        answer: row.answer,
+        sortOrder: i,
+        active: true
+      }
+    });
+  }
+
+  const HOW_IT_WORKS_SEED = [
+    { code: "submit", stepNumber: 1, title: "Submit", description: "Provider submits the resource with metadata and sovereignty evidence." },
+    { code: "review", stepNumber: 2, title: "Review", description: "Reviewer applies the sovereignty rubric and records reviewer notes." },
+    { code: "publish", stepNumber: 3, title: "Publish", description: "Operator publishes the listing and issues the stable AIR-ID." },
+    { code: "discover", stepNumber: 4, title: "Discover", description: "Consumer finds the resource through the portal or discovery API." },
+    {
+      code: "use",
+      stepNumber: 5,
+      title: "Use",
+      description: "Consumer calls the provider directly - runtime never touches the registry.",
+      highlight: true
+    },
+    { code: "maintain", stepNumber: 6, title: "Maintain", description: "Provider keeps metadata accurate; status reflects any changes over time." }
+  ];
+
+  for (let i = 0; i < HOW_IT_WORKS_SEED.length; i += 1) {
+    const row = HOW_IT_WORKS_SEED[i];
+    await prisma.cmsHowItWorksStep.upsert({
+      where: { code: row.code },
+      update: {},
+      create: {
+        code: row.code,
+        title: row.title,
+        description: row.description,
+        stepNumber: row.stepNumber,
+        highlight: row.highlight ?? false,
+        sortOrder: i,
+        active: true
+      }
+    });
+  }
+
+  const LISTING_CRITERIA_SEED = [
+    {
+      code: "local-law",
+      iconName: "flag",
+      title: "Local law",
+      description: "Encodes local legislation, regulation, official process or professional obligation."
+    },
+    {
+      code: "local-data",
+      iconName: "database",
+      title: "Local data",
+      description: "Uses local datasets, records or locally collected knowledge."
+    },
+    {
+      code: "local-systems",
+      iconName: "lock",
+      title: "Local systems",
+      description: "Integrates with or describes local institutional systems and workflows."
+    },
+    {
+      code: "local-language-culture",
+      iconName: "globe",
+      title: "Local language & culture",
+      description: "Supports local language, culture, norms or context."
+    }
+  ];
+
+  for (let i = 0; i < LISTING_CRITERIA_SEED.length; i += 1) {
+    const row = LISTING_CRITERIA_SEED[i];
+    await prisma.cmsListingCriterion.upsert({
+      where: { code: row.code },
+      update: {},
+      create: {
+        code: row.code,
+        title: row.title,
+        description: row.description,
+        iconName: row.iconName,
+        sortOrder: i,
+        active: true
+      }
+    });
+  }
+
+  // Promo banner starts disabled; operator turns it on via /admin/site/promo.
+  await prisma.cmsPromoBanner.upsert({
+    where: { id: "default" },
+    update: {},
+    create: {
+      id: "default",
+      enabled: false,
+      heading: null,
+      body: null,
+      ctaLabel: null,
+      ctaHref: null
+    }
+  });
+
+  console.log("    + cms_faq_entry rows: " + FAQ_SEED.length);
+  console.log("    + cms_how_it_works_step rows: " + HOW_IT_WORKS_SEED.length);
+  console.log("    + cms_listing_criterion rows: " + LISTING_CRITERIA_SEED.length);
+  console.log("    + cms_promo_banner singleton");
 
   console.log("\n✓ Phase 1 seed complete.");
 }

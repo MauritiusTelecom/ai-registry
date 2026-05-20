@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useState, type ReactNode } from "react";
-import { useAuth } from "@/components/public/AuthProvider";
+import { useAuth } from "@airegistry/ui-kit";
 import { REGISTRATION_MSG } from "@/lib/portal/authoring-messages";
 
 type Props = {

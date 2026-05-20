@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import "./globals.css";
 import { getBranding } from "@/lib/branding";
-import { SAR_THEME_KEY, themeFromCookie } from "@/lib/theme-cookie";
-import { SiteShell } from "@/components/public/SiteShell";
-import { ThemeProvider } from "@/components/public/ThemeProvider";
+import { SAR_THEME_KEY, themeFromCookie } from "@airegistry/ui-kit";
+import { SiteShell } from "@airegistry/public/shell/SiteShell";
+import { ThemeProvider } from "@airegistry/ui-kit";
 import { ChromeSwitch } from "@/components/public/ChromeSwitch";
 
 // Title flows from /admin/branding overrides, falling back to the env

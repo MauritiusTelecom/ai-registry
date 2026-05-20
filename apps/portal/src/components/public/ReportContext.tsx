@@ -1,36 +1,9 @@
-"use client";
-
-import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
-
-export type ReportTarget = {
-  id: string;
-  title: string;
-  provider: string;
-};
-
-type ReportContextValue = {
-  target: ReportTarget | null;
-  open: (target: ReportTarget) => void;
-  close: () => void;
-};
-
-const ReportContext = createContext<ReportContextValue>({
-  target: null,
-  open: () => {},
-  close: () => {}
-});
-
-export function ReportProvider({ children }: { children: ReactNode }) {
-  const [target, setTarget] = useState<ReportTarget | null>(null);
-  const open = useCallback((t: ReportTarget) => setTarget(t), []);
-  const close = useCallback(() => setTarget(null), []);
-  return (
-    <ReportContext.Provider value={{ target, open, close }}>
-      {children}
-    </ReportContext.Provider>
-  );
-}
-
-export function useReport() {
-  return useContext(ReportContext);
-}
+/**
+ * DEPRECATED location - this module moved to `@airegistry/public/shell/ReportContext`.
+ *
+ * Re-export shim left behind so any importer still using `@/components/public/...`
+ * or a relative sibling path keeps resolving during the deprecation window. The
+ * portal codebase will be rewired to `@airegistry/public/...` in the same PR;
+ * remove this file once the deprecation window closes.
+ */
+export * from "@airegistry/public/shell/ReportContext";
