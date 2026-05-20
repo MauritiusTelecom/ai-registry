@@ -7,13 +7,11 @@ Loads in-tree extensions from `extensions/**/airegistry-plugin.json` and wires:
 
 Extensions import only `@airegistry/sdk`; this package is the bridge used by the reference portal.
 
-## Disable extensions
+## Enable or disable
 
-```bash
-PLUGINS_ENABLED=false
-```
+Plugins load **by default** when `PLUGINS_ENABLED` is unset. Set `PLUGINS_ENABLED=false` in the root `.env` to disable all extensions (including the hello demo on the home page).
 
-When unset, plugins load by default.
+Operator steps and slot IDs: [`CUSTOMIZATION.md`](../../CUSTOMIZATION.md) (Layer 4 — Extensions).
 
 ## Example
 

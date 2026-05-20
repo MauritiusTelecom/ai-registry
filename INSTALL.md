@@ -1,6 +1,6 @@
 # Installation
 
-End-to-end setup for a local AI Registry development environment. For the architectural overview see [`README.md`](README.md); for the per-deployment configuration contract see the **Configuration** section below.
+End-to-end setup for a local AI Registry development environment. For the architectural overview see [`README.md`](README.md); for portal structure and customization after install see [`CUSTOMIZATION.md`](CUSTOMIZATION.md); for the per-deployment configuration contract see **Section 3** below.
 
 ## 1. Prerequisites
 
@@ -140,6 +140,19 @@ pnpm smoke
 ```
 
 Hits the Phase 5 surface (`/api/health`, `/.well-known/ai-registry`, `/api/resources`, `/api/resolve`, `/api/mcp`) against the running app. Set `BASE=http://host:port` to point elsewhere.
+
+## 8. Customize your portal
+
+After the dev server is running, tailor the public site without editing code:
+
+1. **Validate config** — `pnpm config:validate`
+2. **Set deployment variables** in the root `.env` (`REGISTRY_NAME`, `PORTAL_DOMAIN`, `OPERATOR_NAME`, `JURISDICTION`, optional `JURISDICTION_DISPLAY_NAME`, `OPERATOR_CONTACT_*`, etc.). See `.env.example`.
+3. **Apply schema + seed** (if not done) — `pnpm db:push` and `pnpm db:seed`
+4. **Sign in as admin** — open **`/admin/branding`** for logo, footer, operator contact, jurisdiction label, privacy act, and open-source repo URL (DB overrides merge over `.env`).
+5. **Edit home marketing blocks** — `/admin/site/faq`, `/admin/site/how-it-works`, `/admin/site/listing-criteria`, `/admin/site/promo` (promo starts disabled until you enable it in admin).
+6. **Extensions** — plugins load by default; add `PLUGINS_ENABLED=false` to `.env` if you do not want the hello demo banner on the home page.
+
+Step-by-step structure, route map, what still requires a code fork, and branding field reference: **[`CUSTOMIZATION.md`](CUSTOMIZATION.md)**.
 
 ## Common commands
 
