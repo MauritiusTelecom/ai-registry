@@ -28,7 +28,7 @@ export { portalForRole } from "@airegistry/core/auth/portal-for-role";
 
 // Path-prefix helpers re-exported from `./path` so existing callers keep
 // working. The pure-string helpers live in `./path` because client
-// components (e.g. ChromeSwitch) need them without dragging the
+// client path helpers need them without dragging the
 // server-only `current-user` import that lives in this file.
 export { PORTAL_PATH_PREFIXES, isPortalPath } from "./path";
 

@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import "./globals.css";
 import { getBranding } from "@/lib/branding";
-import { SAR_THEME_KEY, themeFromCookie } from "@airegistry/ui-kit";
-import { SiteShell } from "@airegistry/public/shell/SiteShell";
-import { ThemeProvider } from "@airegistry/ui-kit";
-import { ChromeSwitch } from "@/components/public/ChromeSwitch";
+import { SAR_THEME_KEY, themeFromCookie, ThemeProvider } from "@airegistry/ui-kit";
+import { ensurePluginsLoaded } from "@/lib/plugins/ensure-loaded";
 
 // Title flows from /admin/branding overrides, falling back to the env
 // REGISTRY_NAME so a fresh deployment still ships with sensible defaults.
@@ -24,13 +22,11 @@ const FONT_HREF =
 export default async function RootLayout({
   children
 }: Readonly<{ children: React.ReactNode }>) {
+  await ensurePluginsLoaded();
+
   const jar = await cookies();
   const theme = themeFromCookie(jar.get(SAR_THEME_KEY)?.value);
 
-  // Portal routes (/admin /provider /verifier /sovereign /portal) render
-  // their own chrome. ChromeSwitch is a client component that decides
-  // public vs portal off `usePathname()` so client-side navigation (e.g.
-  // "Public site" → "/") flips the chrome without a full reload.
   return (
     <html lang="en" suppressHydrationWarning data-theme={theme}>
       <head>
@@ -39,12 +35,7 @@ export default async function RootLayout({
         <link rel="stylesheet" href={FONT_HREF} />
       </head>
       <body>
-        <ThemeProvider initialTheme={theme}>
-          <ChromeSwitch
-            portal={<main>{children}</main>}
-            publicSite={<SiteShell>{children}</SiteShell>}
-          />
-        </ThemeProvider>
+        <ThemeProvider initialTheme={theme}>{children}</ThemeProvider>
       </body>
     </html>
   );

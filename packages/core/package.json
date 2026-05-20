@@ -50,7 +50,16 @@
     "nodemailer": "^6.10.1",
     "prisma": "^6.19.3"
   },
+  "peerDependencies": {
+    "next": "^16.0.0"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "next": "^16.0.1",
     "@types/node": "^24.10.0",
     "@types/nodemailer": "^6.4.17",
     "dotenv": "^16.4.5",

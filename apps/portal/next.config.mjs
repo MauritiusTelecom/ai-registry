@@ -35,6 +35,8 @@ const nextConfig = {
   // built JS, during the migration phase.
   transpilePackages: [
     "@airegistry/core",
+    "@airegistry/extension-hello",
+    "@airegistry/plugin-host",
     "@airegistry/public",
     "@airegistry/sdk",
     "@airegistry/ui-kit"

@@ -73,8 +73,9 @@ const TRUST_SIGNAL_PREFERENCE: { code: string; status: DisplayStatus }[] = [
   { code: "provider_verification", status: "trusted" }
 ];
 
-type ResourceWithLifecycleAndSignals = Resource & {
-  lifecycleStatus: LifecycleStatus;
+/** Minimal shape required by `deriveDisplayStatus` (full Resource row not needed). */
+export type DeriveDisplayStatusInput = {
+  lifecycleStatus: Pick<LifecycleStatus, "code"> | LifecycleStatus;
   trustSignals?: (TrustSignal & {
     kind: TrustSignalType;
     status: TrustSignalStatusType;
@@ -94,7 +95,7 @@ type ResourceWithLifecycleAndSignals = Resource & {
  *   - lifecycle = listed + provider verification  → trusted
  *   - lifecycle = listed (no signals)             → active
  */
-export function deriveDisplayStatus(resource: ResourceWithLifecycleAndSignals): DisplayStatus {
+export function deriveDisplayStatus(resource: DeriveDisplayStatusInput): DisplayStatus {
   const code = resource.lifecycleStatus.code;
   if (code === "suspended" || code === "deprecated") return "isolated";
   if (code === "submitted" || code === "in_review" || code === "draft" || code === "needs_update") {

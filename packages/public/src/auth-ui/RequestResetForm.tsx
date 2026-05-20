@@ -77,4 +77,8 @@ export function RequestResetForm() {
         />
       </div>
       <button type="submit" className="btn btn-primary" disabled={busy}>
-      
+        {busy ? "Sending…" : "Send reset link"}
+      </button>
+    </form>
+  );
+}

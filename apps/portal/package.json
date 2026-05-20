@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@airegistry/core": "workspace:*",
+    "@airegistry/extension-hello": "workspace:*",
+    "@airegistry/plugin-host": "workspace:*",
     "@airegistry/public": "workspace:*",
     "@airegistry/sdk": "workspace:*",
     "@airegistry/ui-kit": "workspace:*",

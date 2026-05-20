@@ -28,7 +28,7 @@ export type { AirIdParts } from "./lib/validators";
 
 // Email
 export { sendEmail, emailTemplates, renderTemplate } from "./lib/email";
-export type { SendEmailInput, SendEmailResult, EmailTemplate } from "./lib/email";
+export type { SendEmailInput, SendEmailResult } from "./lib/email";
 
 // Path helpers
 export { withBase } from "./lib/with-base";

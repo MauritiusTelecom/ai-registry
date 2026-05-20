@@ -5,7 +5,7 @@ import { prisma } from "../prisma";
  * after successful writes.
  */
 export async function writeAudit(input: {
-  actorUserId: string | null;
+  actorUserId?: string | null;
   entityType: string;
   entityId: string;
   action: string;
@@ -16,7 +16,7 @@ export async function writeAudit(input: {
 }): Promise<void> {
   await prisma.auditLog.create({
     data: {
-      actorUserId: input.actorUserId,
+      actorUserId: input.actorUserId ?? null,
       entityType: input.entityType,
       entityId: input.entityId,
       action: input.action,

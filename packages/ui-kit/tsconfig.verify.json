@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "noEmit": true,
+    "typeRoots": ["/tmp/tsc-verify/node_modules/@types"],
+    "paths": {
+      "@airegistry/sdk": ["../sdk/src/index.ts"],
+      "@airegistry/sdk/*": ["../sdk/src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
+}
