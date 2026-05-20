@@ -28,7 +28,8 @@
     "smoke": "pnpm --filter @airegistry/portal smoke",
     "deploy": "bash deploy/deploy.sh",
     "deploy:dry": "DRY_RUN=1 bash deploy/deploy.sh",
-    "deploy:db:remote": "bash deploy/deploy-db.sh"
+    "deploy:db:remote": "bash deploy/deploy-db.sh",
+    "backup:prod": "bash scripts/backup-prod.sh"
   },
   "devDependencies": {
     "turbo": "^2.3.0",
