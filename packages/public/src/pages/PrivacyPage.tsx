@@ -1,9 +1,14 @@
 import Link from "next/link";
+import { getBranding } from "@airegistry/core/branding";
 import { DocPage, DocPanel } from "../sections/DocPage";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = { title: "Privacy · Mauritius AI Registry" };
+export async function generateMetadata() {
+  return publicPageMetadata("Privacy");
+}
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const { registryName, operatorName } = await getBranding();
   return (
     <DocPage
       crumb={
@@ -68,7 +73,7 @@ export default function PrivacyPage() {
 
       <DocPanel title="Operator">
         <p>
-          The Mauritius AI Registry is operated by Mauritius Telecom in collaboration with
+          {registryName} is operated by {operatorName} in collaboration with
           the Ministry of Information.
         </p>
       </DocPanel>

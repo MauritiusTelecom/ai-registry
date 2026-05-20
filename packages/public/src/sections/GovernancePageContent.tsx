@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getBranding } from "@airegistry/core/branding";
 import { Reveal } from "../shell/Reveal";
 import { PageHero } from "@airegistry/ui-kit";
 
@@ -14,7 +15,8 @@ const panelStyle: React.CSSProperties = {
 };
 const headingStyle: React.CSSProperties = { marginBottom: 12 };
 
-export function GovernancePageContent() {
+export async function GovernancePageContent() {
+  const { operatorName, portalDomain } = await getBranding();
   return (
     <div>
       <PageHero
@@ -141,7 +143,7 @@ export function GovernancePageContent() {
         <h2 style={headingStyle}>Disclosure</h2>
         <div className="glass" style={panelStyle}>
           <p>
-            The operator (Mauritius Telecom for airegistry.mu) commits to disclose:
+            The operator ({operatorName} for {portalDomain}) commits to disclose:
           </p>
           <ul style={{ paddingLeft: 22, marginTop: 12, display: "grid", gap: 8 }}>
             <li>Funding and operating sponsors of the registry instance.</li>

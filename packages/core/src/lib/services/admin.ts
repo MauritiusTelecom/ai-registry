@@ -44,6 +44,11 @@ export type AdminBrandingFullView = {
   buildLine: string | null;
   heroEyebrowText: string | null;
   heroEyebrowIconUrl: string | null;
+  operatorName: string | null;
+  operatorContactEmail: string | null;
+  operatorOfficeName: string | null;
+  operatorOfficeAddress: string | null;
+  operatorContactHours: string | null;
   updatedAt: string | null;
 };
 
@@ -58,6 +63,11 @@ export async function loadAdminBrandingFull(): Promise<AdminBrandingFullView> {
     buildLine: row?.buildLine ?? null,
     heroEyebrowText: row?.heroEyebrowText ?? null,
     heroEyebrowIconUrl: row?.heroEyebrowIconUrl ?? null,
+    operatorName: row?.operatorName ?? null,
+    operatorContactEmail: row?.operatorContactEmail ?? null,
+    operatorOfficeName: row?.operatorOfficeName ?? null,
+    operatorOfficeAddress: row?.operatorOfficeAddress ?? null,
+    operatorContactHours: row?.operatorContactHours ?? null,
     updatedAt: row?.updatedAt?.toISOString() ?? null
   };
 }
@@ -84,14 +94,24 @@ export async function updateAdminBrandingFields(
           registryName: before.registryName,
           copyrightLine: before.copyrightLine,
           buildLine: before.buildLine,
-          heroEyebrowText: before.heroEyebrowText
+          heroEyebrowText: before.heroEyebrowText,
+          operatorName: before.operatorName,
+          operatorContactEmail: before.operatorContactEmail,
+          operatorOfficeName: before.operatorOfficeName,
+          operatorOfficeAddress: before.operatorOfficeAddress,
+          operatorContactHours: before.operatorContactHours
         }
       : null,
     newValue: {
       registryName: updated.registryName,
       copyrightLine: updated.copyrightLine,
       buildLine: updated.buildLine,
-      heroEyebrowText: updated.heroEyebrowText
+      heroEyebrowText: updated.heroEyebrowText,
+      operatorName: updated.operatorName,
+      operatorContactEmail: updated.operatorContactEmail,
+      operatorOfficeName: updated.operatorOfficeName,
+      operatorOfficeAddress: updated.operatorOfficeAddress,
+      operatorContactHours: updated.operatorContactHours
     }
   });
 }

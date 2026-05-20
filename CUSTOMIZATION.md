@@ -7,6 +7,7 @@ This guide helps operators change branding, marketing content, visuals, or behav
 | What you want to change | Approach | Modify core? |
 |------------------------|----------|--------------|
 | Registry name, jurisdiction, languages, API URLs | Root [`.env`](.env.example) + `pnpm config:validate` | No |
+| Operator name, contact email, office, hours on `/contact` and legal copy | `OPERATOR_NAME` (+ optional `OPERATOR_CONTACT_*` in `.env`) and `/admin/branding` | No |
 | Logos, footer copy, hero eyebrow | `/admin/branding` (DB `SiteBranding` + env fallbacks) | No |
 | FAQ, how-it-works, listing criteria, promo banner | `/admin/site/*` (public CMS) | No |
 | Colors, typography, spacing | Override [`@airegistry/ui-kit/tokens.css`](packages/ui-kit/src/tokens.css) | No |
@@ -17,9 +18,15 @@ This guide helps operators change branding, marketing content, visuals, or behav
 
 ## Layer 1 — Configuration and branding (no code)
 
-1. Copy `.env.example` to `.env` and set deployment variables (`REGISTRY_NAME`, `PORTAL_DOMAIN`, `JURISDICTION`, etc.).
-2. Run `pnpm config:validate`.
-3. Sign in as admin and open **`/admin/branding`** for operator-controlled overrides (merged in `@airegistry/core/branding`).
+1. Copy `.env.example` to `.env` and set deployment variables (`REGISTRY_NAME`, `PORTAL_DOMAIN`, `OPERATOR_NAME`, `JURISDICTION`, etc.).
+2. Optionally set operator contact defaults (all optional; sensible fallbacks apply when unset):
+   - `OPERATOR_CONTACT_EMAIL` — sidebar on `/contact`
+   - `OPERATOR_OFFICE_NAME` — defaults to `OPERATOR_NAME`
+   - `OPERATOR_OFFICE_ADDRESS` — multiline; use `\n` between lines in `.env`
+   - `OPERATOR_CONTACT_HOURS`
+3. Run `pnpm config:validate`.
+4. Sign in as admin and open **`/admin/branding`** for DB overrides (registry name, logo, footer, hero chip, and operator/contact fields). Values merge in `getBranding()` as **DB → `.env` → built-in default**.
+5. After pulling schema changes that extend `SiteBranding`, run `pnpm db:push`.
 
 ## Layer 2 — Public CMS (no fork)
 

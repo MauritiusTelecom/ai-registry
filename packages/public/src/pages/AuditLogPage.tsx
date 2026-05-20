@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { DocPage, DocPanel } from "../sections/DocPage";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = { title: "Audit log · Mauritius AI Registry" };
+export async function generateMetadata() {
+  return publicPageMetadata("Audit log");
+}
 
 export default function AuditLogPage() {
   return (

@@ -1,9 +1,10 @@
 import { PageHero } from "@airegistry/ui-kit";
 import { RegistrySection } from "../sections/RegistrySection";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = {
-  title: "Registry · Mauritius AI Registry"
-};
+export async function generateMetadata() {
+  return publicPageMetadata("Registry");
+}
 
 type RegistryKind = "all" | "model" | "agent" | "skill";
 const VALID_KINDS: ReadonlySet<RegistryKind> = new Set([

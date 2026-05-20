@@ -1158,6 +1158,11 @@ model SiteBranding {
   buildLine          String?
   heroEyebrowText    String?
   heroEyebrowIconUrl String?
+  operatorName           String?
+  operatorContactEmail   String?
+  operatorOfficeName     String?
+  operatorOfficeAddress  String?
+  operatorContactHours   String?
   updatedAt          DateTime @updatedAt
   updatedById        String?  @db.Uuid
 

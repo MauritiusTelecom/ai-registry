@@ -1,9 +1,10 @@
 import { PageHero } from "@airegistry/ui-kit";
 import { ProvidersSection } from "../sections/ProvidersSection";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = {
-  title: "Providers · Mauritius AI Registry"
-};
+export async function generateMetadata() {
+  return publicPageMetadata("Providers");
+}
 
 export default function ProvidersPage() {
   return (

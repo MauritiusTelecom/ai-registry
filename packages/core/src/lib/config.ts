@@ -39,6 +39,14 @@ export type RegistryConfig = {
   identityDomain: string;
   /** Display name of the deploying operator. */
   operatorName: string;
+  /** Public contact email shown on /contact (defaults to no-reply@{portalDomain}). */
+  operatorContactEmail: string;
+  /** First line of the office block on /contact (defaults to operatorName). */
+  operatorOfficeName: string;
+  /** Remaining office address lines on /contact (newline-separated). */
+  operatorOfficeAddress: string;
+  /** Office hours line on /contact. */
+  operatorContactHours: string;
   /** BCP-47 language codes the deployment serves. */
   supportedLanguages: string[];
   /** Default language; always present in `supportedLanguages`. */
@@ -169,6 +177,19 @@ function readRequired(env: NodeJS.ProcessEnv, key: RequiredKey): string {
   return value.trim();
 }
 
+/** Optional env var; returns trimmed string or empty when unset. */
+function readOptional(env: NodeJS.ProcessEnv, key: string): string {
+  const value = env[key];
+  if (typeof value !== "string") return "";
+  return value.trim();
+}
+
+/** Like readOptional but expands literal `\\n` to newlines (for multiline .env values). */
+function readOptionalMultiline(env: NodeJS.ProcessEnv, key: string): string {
+  const raw = readOptional(env, key);
+  return raw === "" ? "" : raw.replace(/\\n/g, "\n");
+}
+
 /**
  * Build an RFC 5322 From header. When a display name is supplied, the
  * result is `"Display Name" <address>`; otherwise the bare address.
@@ -244,6 +265,15 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
   const jurisdiction = readRequired(env, "JURISDICTION");
   const identityDomain = readRequired(env, "IDENTITY_DOMAIN");
   const operatorName = readRequired(env, "OPERATOR_NAME");
+  const operatorContactEmailRaw = readOptional(env, "OPERATOR_CONTACT_EMAIL");
+  const operatorContactEmail =
+    operatorContactEmailRaw || `no-reply@${portalDomain}`;
+  const operatorOfficeNameRaw = readOptional(env, "OPERATOR_OFFICE_NAME");
+  const operatorOfficeName = operatorOfficeNameRaw || operatorName;
+  const operatorOfficeAddress = readOptionalMultiline(env, "OPERATOR_OFFICE_ADDRESS");
+  const operatorContactHoursRaw = readOptional(env, "OPERATOR_CONTACT_HOURS");
+  const operatorContactHours =
+    operatorContactHoursRaw || "Mon-Fri · 09:00-17:30 · GMT+4";
 
   const supportedLanguages = splitCsv(readRequired(env, "SUPPORTED_LANGUAGES")).map(
     validateLanguageCode
@@ -608,6 +638,10 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
     jurisdiction,
     identityDomain,
     operatorName,
+    operatorContactEmail,
+    operatorOfficeName,
+    operatorOfficeAddress,
+    operatorContactHours,
     supportedLanguages,
     defaultLanguage,
     resourceTypes,
