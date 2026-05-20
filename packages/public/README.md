@@ -41,4 +41,4 @@ export { HomePage as default } from "@airegistry/public/pages/HomePage";
 
 ## Status
 
-Scaffold. PR 3 lands the section components and shell; PR 4 lands the pages and the route-group shims; PR 5 moves `public-hrefs.ts`; PR 6 wires the admin-edited public-CMS schema.
+**Landed:** section components, shell, page bodies, public-CMS-backed sections, and `apps/portal` route-group shims under `app/(public)/` with `SiteShell` in `(public)/layout.tsx`. Extensions can contribute UI via `<PluginSlot id="..." />` (see `@airegistry/plugin-host` and `extensions/examples/hello`).

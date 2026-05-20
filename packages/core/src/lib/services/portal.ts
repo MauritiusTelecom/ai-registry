@@ -23,6 +23,7 @@
  *     assertCanReview.
  */
 
+import type { Prisma } from "../../generated/prisma";
 import { prisma } from "../prisma";
 
 // ─── Provider dashboard ───────────────────────────────────────────────────
@@ -375,7 +376,7 @@ export async function loadMyComplaints(
     severityCode: c.severity.code,
     severityName: c.severity.name,
     statusCode: c.status.code,
-    excerpt: c.summary.slice(0, 240)
+    excerpt: c.description.slice(0, 240)
   }));
 }
 
@@ -963,6 +964,8 @@ export type PortalResourceOwnerView = {
   slug: string;
   title: string;
   airId: string | null;
+  shortDescription: string | null;
+  longDescription: string | null;
   lifecycleCode: string;
   canEdit: boolean;
   canSubmit: boolean;
@@ -988,6 +991,8 @@ export async function loadPortalResourceForOwner(
     slug: r.slug,
     title: r.title,
     airId: r.airId,
+    shortDescription: r.shortDescription,
+    longDescription: r.longDescription,
     lifecycleCode: code,
     canEdit: code === "draft" || code === "needs_update",
     canSubmit: code === "draft" || code === "needs_update"
@@ -1045,7 +1050,14 @@ export async function loadProviderResourceForEdit(
         },
         orderBy: { createdAt: "asc" }
       },
-      endpoints: { orderBy: { primary: "desc" } }
+      endpoints: {
+        include: {
+          protocol: { select: { code: true, name: true } },
+          authMethod: { select: { code: true, name: true } },
+          accessModel: { select: { code: true, name: true } }
+        },
+        orderBy: { primary: "desc" }
+      }
     }
   });
 }
@@ -1143,8 +1155,9 @@ export type SovereignPoliciesView = {
   officialAuthorities: Array<{
     id: string;
     name: string;
-    slug: string | null;
     typeName: string;
+    domainArea: string;
+    websiteUrl: string | null;
     authorisationCount: number;
   }>;
   sovereigntyEvidenceCount: number;
@@ -1184,8 +1197,9 @@ export async function loadSovereignPoliciesView(
     officialAuthorities: officialAuthoritiesRaw.map((a) => ({
       id: a.id,
       name: a.name,
-      slug: a.slug,
       typeName: a.type.name,
+      domainArea: a.domainArea,
+      websiteUrl: a.websiteUrl,
       authorisationCount: a._count.authorisations
     })),
     sovereigntyEvidenceCount
@@ -1193,6 +1207,8 @@ export async function loadSovereignPoliciesView(
 }
 
 export type ProviderAnalyticsView = {
+  /** Total resources owned by the provider (all lifecycles). */
+  resourceCount: number;
   /** Lifecycle-code → count of provider's resources. */
   lifecycle: Record<string, number>;
   /** resourceTypeId → count of listed resources. */
@@ -1243,6 +1259,7 @@ export async function loadProviderAnalytics(
     return acc;
   }, {});
   return {
+    resourceCount: resources.length,
     lifecycle,
     listingByTypeId: listingByKind.map((g) => ({
       resourceTypeId: g.resourceTypeId,
@@ -1363,9 +1380,26 @@ export async function loadAdminContactDetail(id: string) {
   });
 }
 
+export type AdminProviderDetailProvider = Prisma.ProviderGetPayload<{
+  include: {
+    type: { select: { code: true; name: true } };
+    status: { select: { code: true; name: true } };
+    homeJurisdiction: { select: { code: true; name: true } };
+    _count: { select: { resources: true; users: true } };
+  };
+}>;
+
+export type AdminProviderDetailTrustSignal = Prisma.TrustSignalGetPayload<{
+  include: {
+    kind: { select: { code: true; name: true } };
+    status: { select: { code: true; name: true } };
+    decidedBy: { select: { name: true; email: true } };
+  };
+}>;
+
 export type AdminProviderDetail = {
-  provider: unknown; // Prisma row — bound by the page form
-  recentTrustSignals: unknown[];
+  provider: AdminProviderDetailProvider | null;
+  recentTrustSignals: AdminProviderDetailTrustSignal[];
 };
 
 /**
@@ -1379,14 +1413,15 @@ export async function loadAdminProviderDetail(id: string): Promise<AdminProvider
         type: { select: { code: true, name: true } },
         status: { select: { code: true, name: true } },
         homeJurisdiction: { select: { code: true, name: true } },
-        _count: { select: { resources: true } }
+        _count: { select: { resources: true, users: true } }
       }
     }),
     prisma.trustSignal.findMany({
-      where: { providerId: id },
+      where: { targetProviderId: id },
       include: {
         kind: { select: { code: true, name: true } },
-        status: { select: { code: true, name: true } }
+        status: { select: { code: true, name: true } },
+        decidedBy: { select: { name: true, email: true } }
       },
       orderBy: { decidedAt: "desc" },
       take: 50
@@ -1413,6 +1448,7 @@ export async function loadAdminResourceForEdit(id: string) {
         },
         resourceLanguages: { include: { language: { select: { code: true } } } },
         resourceSectors: { include: { sector: { select: { code: true } } } },
+        listingOrigin: { select: { code: true, name: true } },
         evidence: {
           include: {
             sovereigntyBasis: { select: { code: true } },
@@ -1420,7 +1456,14 @@ export async function loadAdminResourceForEdit(id: string) {
           },
           orderBy: { createdAt: "asc" }
         },
-        endpoints: { orderBy: { primary: "desc" } }
+        endpoints: {
+          include: {
+            protocol: { select: { code: true, name: true } },
+            authMethod: { select: { code: true, name: true } },
+            accessModel: { select: { code: true, name: true } }
+          },
+          orderBy: { primary: "desc" }
+        }
       }
     }),
     prisma.provider.findMany({
@@ -1444,7 +1487,7 @@ export async function loadAdminComplaintDetail(id: string) {
       include: {
         complaintType: { select: { code: true, name: true } },
         severity: { select: { code: true, name: true } },
-        status: { select: { code: true, name: true } },
+        status: { select: { id: true, code: true, name: true } },
         targetResource: {
           select: {
             slug: true,
@@ -1453,7 +1496,14 @@ export async function loadAdminComplaintDetail(id: string) {
           }
         },
         targetProvider: { select: { slug: true, displayName: true } },
-        assignedTo: { select: { id: true, name: true, email: true } }
+        assignedTo: { select: { id: true, name: true, email: true } },
+        enforcementActions: {
+          include: {
+            actionType: { select: { name: true } },
+            performedBy: { select: { name: true } }
+          },
+          orderBy: { performedAt: "desc" }
+        }
       }
     }),
     prisma.user.findMany({

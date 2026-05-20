@@ -268,4 +268,16 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
     >
       <div
         style={{
-          fontFamily: "IBM Plex Mono, monospace"
+          fontFamily: "IBM Plex Mono, monospace",
+          fontSize: 11,
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          color: "var(--text-3)"
+        }}
+      >
+        {label}
+      </div>
+      <div style={{ fontSize: 15, color: "var(--text)" }}>{value}</div>
+    </div>
+  );
+}

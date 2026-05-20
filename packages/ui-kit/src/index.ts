@@ -7,8 +7,8 @@
 //
 // Operators override CSS variables from tokens.css to theme the portal
 // without forking. Future additions land in this index: Button, Badge,
-// Card, Modal, Tabs, and a PluginSlot primitive so extensions can mount
-// UI into the chrome.
+// Card, Modal, Tabs. Plugin UI slots import from @airegistry/plugin-host/slot
+// (not this barrel) so client components here never pull in server-only loaders.
 
 export const UI_KIT_VERSION = "0.1.0" as const;
 
