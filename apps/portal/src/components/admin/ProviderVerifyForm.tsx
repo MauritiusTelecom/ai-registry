@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 const OPTIONS: { value: string; label: string }[] = [
   { value: "verified", label: "Verified" },
@@ -36,7 +37,7 @@ export function ProviderVerifyForm({
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(withBase(`/api/admin/providers/${providerId}/verify`), {
+      const res = await registryFetch(withBase(`/api/admin/providers/${providerId}/verify`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

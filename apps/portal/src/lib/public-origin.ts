@@ -2,29 +2,37 @@ import { getConfig } from "@airegistry/sdk";
 
 /**
  * Returns the public absolute origin (scheme + host, no trailing slash)
- * for the current request, suitable for embedding in transactional emails
- * and other off-site links.
- *
- * Behind F5 + nginx the app listens on 127.0.0.1:3002, so `new URL(req.url)`
- * always yields `http://localhost:3002` - useless for outbound email links.
+ * for transactional emails and other off-site links.
  *
  * Resolution order:
- *   1. X-Forwarded-Proto + X-Forwarded-Host headers (set by our nginx vhost)
- *   2. https://{PORTAL_DOMAIN} from src/lib/config.ts (env var)
- *   3. last-ditch fallback to the request's own origin (dev / curl tests)
+ *   1. `https://{PORTAL_DOMAIN}` from deployment config (trusted default)
+ *   2. X-Forwarded-* only when TRUST_FORWARDED_HEADERS=true (behind nginx/F5)
+ *   3. Request URL origin (local dev / curl)
  */
 export function getPublicOrigin(req: Request): string {
-  const headers = req.headers;
-  const proto = headers.get("x-forwarded-proto");
-  const host = headers.get("x-forwarded-host") ?? headers.get("host");
-  if (proto && host) {
-    return `${proto}://${host}`.replace(/\/+$/, "");
-  }
   try {
     const cfg = getConfig();
-    if (cfg.portalDomain) return `https://${cfg.portalDomain}`;
+    if (cfg.portalDomain) {
+      return `https://${cfg.portalDomain}`.replace(/\/+$/, "");
+    }
   } catch {
-    // config not loaded (test harness, etc.) - fall through
+    // config not loaded — fall through
   }
+
+  const trustForwarded =
+    process.env.TRUST_FORWARDED_HEADERS === "true" ||
+    process.env.TRUST_FORWARDED_HEADERS === "1";
+
+  if (trustForwarded) {
+    const headers = req.headers;
+    const proto = headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+    const host =
+      headers.get("x-forwarded-host")?.split(",")[0]?.trim() ??
+      headers.get("host")?.split(",")[0]?.trim();
+    if (proto && host && /^https?$/i.test(proto)) {
+      return `${proto}://${host}`.replace(/\/+$/, "");
+    }
+  }
+
   return new URL(req.url).origin;
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SOVEREIGNTY_CHECKLIST_ITEMS, type ChecklistAnswerCode } from "@airegistry/sdk";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 type Props = {
   reviewId: string;
@@ -41,7 +42,7 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
       };
       if (decision === "approve") body.checklist = checklist;
 
-      const res = await fetch(withBase(`/api/admin/reviews/${reviewId}/decide`), {
+      const res = await registryFetch(withBase(`/api/admin/reviews/${reviewId}/decide`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)

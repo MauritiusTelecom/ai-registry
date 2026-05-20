@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 export type ListingCriterionFormInitial = {
   code: string;
@@ -76,7 +77,7 @@ export function ListingCriterionForm({
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch(withBase("/api/admin/site/listing-criteria"), {
+      const res = await registryFetch(withBase("/api/admin/site/listing-criteria"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

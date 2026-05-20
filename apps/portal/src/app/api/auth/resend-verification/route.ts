@@ -4,7 +4,8 @@ import { prepareEmailVerificationToken } from "@airegistry/sdk/server";
 import { emailTemplates, sendEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
 import { writeAudit } from "@airegistry/sdk";
-import { findUserByEmail, setUserVerificationToken } from "@airegistry/sdk/server";
+import { exposeDevAuthLinks, findUserByEmail, setUserVerificationToken } from "@airegistry/sdk/server";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/auth/resend-verification
@@ -22,6 +23,9 @@ import { findUserByEmail, setUserVerificationToken } from "@airegistry/sdk/serve
 type RequestPayload = { email?: unknown };
 
 export async function POST(req: Request) {
+  const limited = enforceRateLimit(req, "auth");
+  if (limited) return limited;
+
   let body: RequestPayload;
   try {
     body = (await req.json()) as RequestPayload;
@@ -66,6 +70,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     ok: true,
-    verifyUrl: process.env.NODE_ENV !== "production" ? verifyUrl : undefined
+    ...(exposeDevAuthLinks() ? { verifyUrl } : {})
   });
 }

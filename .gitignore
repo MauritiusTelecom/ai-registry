@@ -3,6 +3,9 @@ node_modules/
 .env.local
 .env.production
 .env.production.local
+.env.prod
+.env.*.local
+packages/core/.env
 
 # Build artefacts
 .next/

@@ -23,6 +23,8 @@
     "./admin/*": "./src/lib/admin/*.ts",
     "./auth/*": "./src/lib/auth/*.ts",
     "./auth/portal-for-role": "./src/lib/auth/portal-for-role.ts",
+    "./rate-limit": "./src/lib/rate-limit.ts",
+    "./security/mutation-origin": "./src/lib/security/mutation-origin.ts",
     "./services/*": "./src/lib/services/*.ts",
     "./generated/prisma": "./src/generated/prisma/index.js"
   },
@@ -47,7 +49,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
-    "nodemailer": "^6.10.1",
+    "nodemailer": "^8.0.7",
     "prisma": "^6.19.3"
   },
   "peerDependencies": {
@@ -59,11 +61,11 @@
     }
   },
   "devDependencies": {
-    "next": "^16.0.1",
     "@types/node": "^24.10.0",
     "@types/nodemailer": "^6.4.17",
     "dotenv": "^16.4.5",
     "dotenv-cli": "^7.4.2",
+    "next": "^16.0.1",
     "tsx": "^4.19.2",
     "typescript": "^5"
   }

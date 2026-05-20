@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { Icon } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 /**
  * Generic admin CRUD grid used by `/admin/users`, `/admin/providers`,
@@ -109,7 +110,7 @@ export function AdminGrid<Row extends { id: string }>(props: AdminGridProps<Row>
       params.set("page", String(page));
       params.set("pageSize", String(pageSize));
       try {
-        const res = await fetch(withBase(`${props.endpoint}?${params.toString()}`));
+        const res = await registryFetch(withBase(`${props.endpoint}?${params.toString()}`));
         if (!res.ok) {
           const body = (await res.json().catch(() => ({}))) as {
             error?: string;

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 export function ProviderVisibilityPanel({
   providerId,
@@ -33,7 +34,7 @@ export function ProviderVisibilityPanel({
       if (notifyByEmail && reason.trim() !== "") {
         body.visibilityChangeReason = reason.trim();
       }
-      const res = await fetch(withBase(`/api/admin/providers/${providerId}`), {
+      const res = await registryFetch(withBase(`/api/admin/providers/${providerId}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)

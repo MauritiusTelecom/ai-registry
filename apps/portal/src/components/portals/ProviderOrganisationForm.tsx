@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 export type OrgFormOption = { code: string; name: string };
 
@@ -51,7 +52,7 @@ export function ProviderOrganisationForm({
     setError(null);
     setOk(null);
     try {
-      const res = await fetch(withBase("/api/portal/provider/organisation"), {
+      const res = await registryFetch(withBase("/api/portal/provider/organisation"), {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         credentials: "same-origin",

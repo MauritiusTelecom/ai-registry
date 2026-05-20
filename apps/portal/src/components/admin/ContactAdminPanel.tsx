@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 type Props = {
   contactId: string;
@@ -98,7 +99,7 @@ function ReplyCard({
     }
     setBusy(true);
     try {
-      const res = await fetch(withBase(`/api/admin/contacts/${contactId}/reply`), {
+      const res = await registryFetch(withBase(`/api/admin/contacts/${contactId}/reply`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subject: subject.trim(), message: body.trim() })
@@ -160,7 +161,7 @@ function DeleteCard({ contactId }: { contactId: string }) {
     setErr(null);
     setBusy(true);
     try {
-      const res = await fetch(withBase(`/api/admin/contacts/${contactId}`), {
+      const res = await registryFetch(withBase(`/api/admin/contacts/${contactId}`), {
         method: "DELETE"
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };

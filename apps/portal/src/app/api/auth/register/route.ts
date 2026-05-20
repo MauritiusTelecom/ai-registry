@@ -9,7 +9,12 @@ import { emailTemplates, sendEmail } from "@airegistry/sdk/server";
 import { linkContactsToUser } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
 import { writeAudit } from "@airegistry/sdk";
-import { findUserByEmail, createSelfRegisteredUser } from "@airegistry/sdk/server";
+import {
+  exposeDevAuthLinks,
+  findUserByEmail,
+  createSelfRegisteredUser
+} from "@airegistry/sdk/server";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/auth/register
@@ -19,7 +24,8 @@ import { findUserByEmail, createSelfRegisteredUser } from "@airegistry/sdk/serve
  * Creates a User row with role=`provider`, status=`invited`, emailVerified=false,
  * and a verification token, then emails a verification link. No session is
  * issued — the new account cannot access the provider portal until the
- * email is verified and the user signs in. 409 on duplicate email.
+ * email is verified and the user signs in. Duplicate email returns the same
+ * 201 acknowledgement as a new registration (anti-enumeration).
  */
 
 type RegisterPayload = {
@@ -33,7 +39,17 @@ function isEmail(v: unknown): v is string {
   return typeof v === "string" && /^\S+@\S+\.\S+$/.test(v);
 }
 
+const REGISTER_ACK = {
+  ok: true as const,
+  redirectTo: "/login?registered=1",
+  message:
+    "If this email is eligible for an account, check your inbox for a verification link."
+};
+
 export async function POST(req: Request) {
+  const limited = enforceRateLimit(req, "auth");
+  if (limited) return limited;
+
   let body: RegisterPayload;
   try {
     body = (await req.json()) as RegisterPayload;
@@ -64,10 +80,7 @@ export async function POST(req: Request) {
   // separately from the "ref data not seeded" 503 the service raises.
   const existing = await findUserByEmail(email);
   if (existing) {
-    return NextResponse.json(
-      { error: "An account with this email already exists. Try logging in." },
-      { status: 409 }
-    );
+    return NextResponse.json(REGISTER_ACK, { status: 201 });
   }
 
   const passwordHash = await hashUserPassword(body.password as string);
@@ -127,10 +140,9 @@ export async function POST(req: Request) {
   // /login?registered=1 which renders a "check your email" confirmation.
   return NextResponse.json(
     {
-      ok: true,
+      ...REGISTER_ACK,
       user: { id: user.id, email: user.email, name: user.name, emailVerified: false },
-      redirectTo: "/login?registered=1",
-      verifyUrl: process.env.NODE_ENV !== "production" ? verifyUrl : undefined
+      ...(exposeDevAuthLinks() ? { verifyUrl } : {})
     },
     { status: 201 }
   );

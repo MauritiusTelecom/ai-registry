@@ -65,8 +65,10 @@ export type RegistryConfig = {
     secret: string;
     /** Session cookie name. */
     sessionCookieName: string;
-    /** Session lifetime in seconds. */
+    /** Session lifetime in seconds (default roles). */
     sessionTtlSeconds: number;
+    /** Shorter session lifetime for admin / reviewer roles. */
+    sessionTtlAdminSeconds: number;
   };
   /** Outbound mail (Phase 2). All SMTP fields optional - when unset the email
    * helper logs links to the console (dev fallback). */
@@ -331,9 +333,9 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
 
   // ── Auth (Phase 2) ─────────────────────────────────────────────────────
   const authSecret = readRequired(env, "AUTH_SECRET");
-  if (authSecret.length < 16 || /^replace-with/.test(authSecret)) {
+  if (authSecret.length < 32 || /^replace-with/.test(authSecret)) {
     throw new ConfigError(
-      "AUTH_SECRET must be at least 16 characters and not the placeholder value. " +
+      "AUTH_SECRET must be at least 32 characters and not the placeholder value. " +
         'Generate with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64url\'))"'
     );
   }
@@ -343,6 +345,13 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
   if (!Number.isFinite(sessionTtlSeconds) || sessionTtlSeconds < 60) {
     throw new ConfigError(
       `SESSION_TTL_SECONDS must be an integer ≥ 60 (got "${sessionTtlRaw}").`
+    );
+  }
+  const sessionTtlAdminRaw = (env.SESSION_TTL_ADMIN_SECONDS ?? "28800").trim();
+  const sessionTtlAdminSeconds = Number.parseInt(sessionTtlAdminRaw, 10);
+  if (!Number.isFinite(sessionTtlAdminSeconds) || sessionTtlAdminSeconds < 60) {
+    throw new ConfigError(
+      `SESSION_TTL_ADMIN_SECONDS must be an integer ≥ 60 (got "${sessionTtlAdminRaw}").`
     );
   }
 
@@ -677,7 +686,8 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
     auth: {
       secret: authSecret,
       sessionCookieName,
-      sessionTtlSeconds
+      sessionTtlSeconds,
+      sessionTtlAdminSeconds
     },
     mail: {
       from: composeFromHeader(

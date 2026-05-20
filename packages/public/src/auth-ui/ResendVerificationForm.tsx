@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 /**
  * Asks for an email address and posts to `/api/auth/resend-verification`.
@@ -22,7 +23,7 @@ export function ResendVerificationForm({ initialEmail = "" }: { initialEmail?: s
     setError(null);
     setDevVerifyUrl(null);
     try {
-      const res = await fetch(withBase("/api/auth/resend-verification"), {
+      const res = await registryFetch(withBase("/api/auth/resend-verification"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email })
@@ -114,3 +115,4 @@ export function ResendVerificationForm({ initialEmail = "" }: { initialEmail?: s
     </form>
   );
 }
+

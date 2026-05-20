@@ -3,7 +3,8 @@ import { getConfig } from "@airegistry/sdk";
 import { preparePasswordResetToken } from "@airegistry/sdk/server";
 import { emailTemplates, sendEmail } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
-import { findUserByEmail, setUserResetToken } from "@airegistry/sdk/server";
+import { exposeDevAuthLinks, findUserByEmail, setUserResetToken } from "@airegistry/sdk/server";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 /**
  * POST /api/auth/request-reset
@@ -17,6 +18,9 @@ import { findUserByEmail, setUserResetToken } from "@airegistry/sdk/server";
 type RequestPayload = { email?: unknown };
 
 export async function POST(req: Request) {
+  const limited = enforceRateLimit(req, "auth");
+  if (limited) return limited;
+
   let body: RequestPayload;
   try {
     body = (await req.json()) as RequestPayload;
@@ -51,6 +55,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     ok: true,
-    resetUrl: process.env.NODE_ENV !== "production" ? resetUrl : undefined
+    ...(exposeDevAuthLinks() ? { resetUrl } : {})
   });
 }

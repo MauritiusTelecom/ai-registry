@@ -12,6 +12,7 @@ import {
   loadProviderSummaryById
 } from "@airegistry/sdk/server";
 import { getPublicOrigin } from "@/lib/public-origin";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { writeAudit } from "@airegistry/sdk";
 
 /**
@@ -22,9 +23,8 @@ import { writeAudit } from "@airegistry/sdk";
  *   - `complainantEmail` is OPTIONAL. When omitted, the complaint is
  *     accepted but the operator cannot follow up.
  *   - `complainantName` is OPTIONAL.
- *   - The submitted `description` is stored verbatim; rate-limit and abuse
- *     controls (Phase 5) are responsible for keeping the channel from
- *     becoming a spam vector.
+ *   - The submitted `description` is stored verbatim. In-app rate limiting
+ *     (`public-write` bucket) caps submissions per client IP.
  *
  * Body: {
  *   targetAirId?:    string,          // resolves to Resource via airId
@@ -54,6 +54,9 @@ function isEmail(v: unknown): v is string {
 }
 
 export async function POST(req: Request) {
+  const limited = enforceRateLimit(req, "public-write");
+  if (limited) return limited;
+
   let body: ComplaintPayload;
   try {
     body = (await req.json()) as ComplaintPayload;

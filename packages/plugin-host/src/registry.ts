@@ -63,6 +63,8 @@ export function getUiSlotComponents(slotId: string): ComponentType[] {
 
 export function isPluginsEnabled(): boolean {
   const flag = process.env.PLUGINS_ENABLED;
-  if (flag === undefined || flag === "") return true;
+  if (flag === undefined || flag === "") {
+    return process.env.NODE_ENV !== "production";
+  }
   return flag !== "0" && flag.toLowerCase() !== "false";
 }

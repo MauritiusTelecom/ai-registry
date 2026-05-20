@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 export type NewResourceFormVariant = "public" | "provider";
 
@@ -44,7 +45,7 @@ export function NewResourceForm({
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(withBase("/api/portal/resources"), {
+      const res = await registryFetch(withBase("/api/portal/resources"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

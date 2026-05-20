@@ -7,6 +7,7 @@ import { Icon, type IconName } from "@airegistry/ui-kit";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
 import { RowActionMenu, type RowMenuItem } from "./RowActionMenu";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 export type ResourceRow = {
   id: string;
@@ -220,7 +221,7 @@ function ResourceRowActions({
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(withBase(`/api/admin/resources/${row.id}`), { method: "DELETE" });
+      const res = await registryFetch(withBase(`/api/admin/resources/${row.id}`), { method: "DELETE" });
       const data = (await res.json()) as { error?: string; detail?: string };
       if (!res.ok) {
         setError(data.error ?? data.detail ?? "Delete failed");
@@ -366,7 +367,7 @@ function ActionDialog({
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(withBase(`/api/admin/resources/${row.id}/transition`), {
+      const res = await registryFetch(withBase(`/api/admin/resources/${row.id}/transition`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, reason: reason.trim(), notifyByEmail })
@@ -518,7 +519,7 @@ function ResourceForm({
     setError(null);
     setBusy(true);
     try {
-      const res = await fetch(withBase("/api/admin/resources"), {
+      const res = await registryFetch(withBase("/api/admin/resources"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

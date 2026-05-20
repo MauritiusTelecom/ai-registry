@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 type Initial = {
   registryName: string;
@@ -82,7 +83,7 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
     setSavingText(true);
     setMessage(null);
     try {
-      const res = await fetch(withBase("/api/admin/branding"), {
+      const res = await registryFetch(withBase("/api/admin/branding"), {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -397,7 +398,7 @@ function ImageSlot({
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch(withBase(`/api/admin/branding/logo?slot=${slot}`), {
+      const res = await registryFetch(withBase(`/api/admin/branding/logo?slot=${slot}`), {
         method: "POST",
         body: fd
       });
@@ -418,7 +419,7 @@ function ImageSlot({
     if (!confirm(confirmRemove)) return;
     setClearing(true);
     try {
-      const res = await fetch(withBase(`/api/admin/branding/logo?slot=${slot}`), {
+      const res = await registryFetch(withBase(`/api/admin/branding/logo?slot=${slot}`), {
         method: "DELETE"
       });
       if (!res.ok) {
@@ -478,7 +479,7 @@ function ImageSlot({
           <input
             ref={fileRef}
             type="file"
-            accept="image/png,image/jpeg,image/svg+xml,image/webp"
+            accept="image/png,image/jpeg,image/webp"
             style={{ display: "none" }}
             onChange={onUpload}
             disabled={uploading}

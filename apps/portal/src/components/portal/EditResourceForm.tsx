@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 type Props = {
   resourceId: string;
@@ -47,7 +48,7 @@ export function EditResourceForm({
     setError(null);
     setPending("save");
     try {
-      const res = await fetch(withBase(`/api/portal/resources/${resourceId}`), {
+      const res = await registryFetch(withBase(`/api/portal/resources/${resourceId}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -73,7 +74,7 @@ export function EditResourceForm({
     setError(null);
     setPending("submit");
     try {
-      const res = await fetch(withBase(`/api/portal/resources/${resourceId}/submit`), {
+      const res = await registryFetch(withBase(`/api/portal/resources/${resourceId}/submit`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ notifyByEmail: notifyOperators })

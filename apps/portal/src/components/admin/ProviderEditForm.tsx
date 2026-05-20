@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 type RefRow = { code: string; name: string };
 
@@ -114,7 +115,7 @@ export function ProviderEditForm({
         webhookUrl: nullableTrim(webhookUrl)
       };
 
-      const res = await fetch(withBase(`/api/admin/providers/${initial.id}`), {
+      const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

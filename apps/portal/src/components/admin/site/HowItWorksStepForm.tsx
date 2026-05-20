@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 export type HowItWorksStepFormInitial = {
   code: string;
@@ -56,7 +57,7 @@ export function HowItWorksStepForm({
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch(withBase("/api/admin/site/how-it-works"), {
+      const res = await registryFetch(withBase("/api/admin/site/how-it-works"), {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

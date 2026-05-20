@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { RefTableConfig } from "@airegistry/sdk";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 /**
  * Form used by both /new and /[id]/edit routes. Fields are rendered from
@@ -52,7 +53,7 @@ export function RefRowForm({
           ? `/api/admin/ref/${config.id}`
           : `/api/admin/ref/${config.id}/${initial!.id}`;
       const method = mode === "create" ? "POST" : "PATCH";
-      const res = await fetch(withBase(url), {
+      const res = await registryFetch(withBase(url), {
         method,
         headers: { "content-type": "application/json" },
         body: JSON.stringify(values)

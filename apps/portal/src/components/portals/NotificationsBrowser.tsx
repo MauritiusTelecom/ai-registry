@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 /**
  * Full-page notifications surface.
@@ -83,7 +84,7 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
     );
     setBusy(true);
     try {
-      const res = await fetch(withBase("/api/portal/notifications/read"), {
+      const res = await registryFetch(withBase("/api/portal/notifications/read"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "same-origin",
@@ -107,7 +108,7 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
     setNotifs((ns) => ns.map((n) => ({ ...n, unread: false })));
     setBusy(true);
     try {
-      const res = await fetch(withBase("/api/portal/notifications/read-all"), {
+      const res = await registryFetch(withBase("/api/portal/notifications/read-all"), {
         method: "POST",
         credentials: "same-origin"
       });

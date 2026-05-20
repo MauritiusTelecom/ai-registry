@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Icon } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 type RefRow = { code: string; name: string };
 
@@ -247,7 +248,7 @@ export function ResourceEditForm({
         }))
       };
 
-      const res = await fetch(withBase(`/api/admin/resources/${initial.id}`), {
+      const res = await registryFetch(withBase(`/api/admin/resources/${initial.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
