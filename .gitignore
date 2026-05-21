@@ -29,3 +29,7 @@ deploy/secrets/
 # Release artefacts produced by `pnpm deploy:build`.
 deploy/build/
 deploy/release-*.tar.gz
+
+# Internal-only docs (CEO notes, drafts, presentations). Keep out of public repo.
+docs/missing-features-ceo.md
+docs/missing-features-ceo.html
