@@ -55,11 +55,11 @@ cp .env.example .env             # edit DATABASE_URL + deployment config
 docker compose up -d postgres
 pnpm prisma:generate
 pnpm db:push                     # or `pnpm prisma:migrate` against an established DB
-pnpm db:seed
+pnpm db:seed                # set SEED_ADMIN_PASSWORD in .env first for /admin login
 pnpm --filter @airegistry/portal dev    # http://localhost:3002
 ```
 
-For a fuller walkthrough — prerequisites by OS, the full env-var list, postgres setup, smoke tests, troubleshooting — see [`INSTALL.md`](INSTALL.md).
+For a fuller walkthrough — prerequisites by OS, the full env-var list, postgres setup, bootstrap admin login, smoke tests, troubleshooting — see [`INSTALL.md`](INSTALL.md).
 
 ## Common tasks
 

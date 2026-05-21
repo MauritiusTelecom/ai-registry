@@ -12,9 +12,12 @@ cp .env.example .env       # then edit DATABASE_URL + deployment config
 docker compose up -d postgres
 pnpm prisma:generate
 pnpm db:push
+# set SEED_ADMIN_PASSWORD (and optional SEED_ADMIN_EMAIL) in .env, then:
 pnpm db:seed
-pnpm --filter @airegistry/portal dev    # http://localhost:3002
+pnpm --filter @airegistry/portal dev    # http://localhost:3002 — sign in at /login
 ```
+
+Bootstrap admin login (`SEED_ADMIN_*`): see [`INSTALL.md`](INSTALL.md) §5.
 
 If your edits touch the schema, run `pnpm prisma:format && pnpm prisma:validate` before opening a PR.
 

@@ -6,11 +6,12 @@
  */
 
 import { config as loadDotenv } from "dotenv";
+import { resolve } from "node:path";
 import { ConfigError, getConfig } from "../packages/core/src/lib/config";
 
-// Load .env if it exists (silent if it doesn't - env vars may be supplied
-// via the shell or a deployment-time secret manager).
-loadDotenv();
+// Monorepo root .env (same path Prisma scripts use via dotenv-cli -e ../../.env).
+const repoRootEnv = resolve(__dirname, "../.env");
+loadDotenv({ path: repoRootEnv });
 
 try {
   const cfg = getConfig();
