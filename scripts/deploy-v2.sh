@@ -72,8 +72,8 @@ rsync -avzR --delete -e "${SSH}" \
   "${HOST}:${REMOTE_APP}/"
 echo
 
-# ── 4/5 remote install + DB sync + restart ──────────────────────
-echo "▸ 4/5  Remote: pnpm install + deploy:db + pm2 restart"
+# ── 4/5 remote install + Prisma regen + DB sync + restart ──────
+echo "▸ 4/5  Remote: pnpm install + prisma:generate + deploy:db + pm2 restart"
 ${SSH} "${HOST}" "
   set -euo pipefail
   cd ${REMOTE_APP}
@@ -82,6 +82,7 @@ ${SSH} "${HOST}" "
     npm install -g pnpm
   fi
   pnpm install
+  pnpm prisma:generate
   pnpm deploy:db
   pm2 restart ${PM2_NAME}
 "
