@@ -51,8 +51,9 @@ ${SSH} "${HOST}" "
 "
 echo
 
-# ── 2/5 clean + build for v2 (empty basePath) ────────────────────
-echo "▸ 2/5  Clean apps/portal/.next + build (NEXT_PUBLIC_BASE_PATH= empty)"
+# ── 2/5 regenerate Prisma client, clean + build for v2 ──────────
+echo "▸ 2/5  Regenerate Prisma client + clean + build (NEXT_PUBLIC_BASE_PATH= empty)"
+pnpm prisma:generate
 rm -rf apps/portal/.next
 NEXT_PUBLIC_BASE_PATH= pnpm --filter @airegistry/portal build
 echo
