@@ -75,8 +75,8 @@ rsync -avzR --delete -e "${SSH}" \
   "${HOST}:${REMOTE_APP}/"
 echo
 
-# ── 4/5 remote install + Prisma regen + DB sync + restart ──────
-echo "▸ 4/5  Remote: pnpm install + prisma:generate + deploy:db + pm2 restart"
+# ── 4/5 remote install + Prisma regen + engine symlink + DB sync + restart
+echo "▸ 4/5  Remote: pnpm install + prisma:generate + engine symlink + deploy:db + pm2 restart"
 ${SSH} "${HOST}" "
   set -euo pipefail
   cd ${REMOTE_APP}
@@ -86,6 +86,13 @@ ${SSH} "${HOST}" "
   fi
   pnpm install
   pnpm prisma:generate
+
+  # Prisma engine symlink: the .next bundle searches
+  # apps/portal/src/generated/prisma first; point it at the real engine dir
+  # in packages/core. Recreated every deploy in case the path moves.
+  mkdir -p apps/portal/src/generated
+  ln -sfn ${REMOTE_APP}/packages/core/src/generated/prisma apps/portal/src/generated/prisma
+
   pnpm deploy:db
   pm2 restart ${PM2_NAME}
 "
