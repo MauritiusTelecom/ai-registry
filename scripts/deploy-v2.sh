@@ -62,8 +62,9 @@ echo
 echo "▸ 3/5  Rsync to ${REMOTE_APP}"
 rsync -avzR --delete -e "${SSH}" \
   apps/portal/.next \
-  packages/core/src/generated \
-  packages/core/prisma \
+  apps/portal/next.config.mjs \
+  apps/portal/package.json \
+  packages/core \
   packages/public \
   packages/sdk \
   packages/ui-kit \
@@ -71,9 +72,6 @@ rsync -avzR --delete -e "${SSH}" \
   extensions \
   docker docker-compose.yml \
   package.json pnpm-lock.yaml pnpm-workspace.yaml \
-  apps/portal/next.config.mjs \
-  packages/core/package.json \
-  apps/portal/package.json \
   "${HOST}:${REMOTE_APP}/"
 echo
 
