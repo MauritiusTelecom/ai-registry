@@ -117,6 +117,45 @@ pnpm db:bootstrap           # generate + push (--skip-generate) + seed
 
 For an established database with committed migrations, use `pnpm prisma:migrate` instead of `pnpm db:push`.
 
+### Bootstrap admin login
+
+The admin workspace (`/admin`, `/admin/branding`, `/admin/site/*`) requires a user with the **admin** role. The seed script can create or update that account when you set these keys in the root `.env` **before** running `pnpm db:seed`:
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `SEED_ADMIN_PASSWORD` | yes (to create admin) | Password for the bootstrap admin. If unset, seed skips admin creation and you cannot sign in to `/admin` until you add a user another way. |
+| `SEED_ADMIN_EMAIL` | no | Login email (default: `admin@registry.com`). |
+| `SEED_ADMIN_NAME` | no | Display name in the admin UI (default: same as email). |
+
+Example (local dev only — do not commit real passwords):
+
+```bash
+SEED_ADMIN_EMAIL="admin@registry.com"
+SEED_ADMIN_NAME="Registry Admin"
+SEED_ADMIN_PASSWORD="choose-a-strong-password"
+```
+
+Then seed (or re-seed after changing these values):
+
+```bash
+pnpm db:seed
+```
+
+You should see `bootstrap admin created` or `bootstrap admin updated` in the output.
+
+**Sign in:**
+
+1. Start the portal (step 6 below).
+2. Open http://localhost:3002/login
+3. Sign in with `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`.
+4. Open http://localhost:3002/admin (or go straight to `/admin/branding`).
+
+Re-running `pnpm db:seed` with the same email updates the password and keeps the account active and email-verified.
+
+**Production:** set `SEED_ADMIN_PASSWORD` only for the first seed on a new environment, then remove it from the server `.env` so later deploys do not keep resetting the password (see `deploy/DEPLOY.md`).
+
+Optional: `SEED_PROVIDER_EMAIL`, `SEED_PROVIDER_PASSWORD`, and related keys create a demo **provider** portal user linked to the seeded exemplar provider — useful for testing `/provider`, not required for admin setup.
+
 ## 6. Run the portal
 
 ```bash
@@ -148,7 +187,7 @@ After the dev server is running, tailor the public site without editing code:
 1. **Validate config** — `pnpm config:validate`
 2. **Set deployment variables** in the root `.env` (`REGISTRY_NAME`, `PORTAL_DOMAIN`, `OPERATOR_NAME`, `JURISDICTION`, optional `JURISDICTION_DISPLAY_NAME`, `OPERATOR_CONTACT_*`, etc.). See `.env.example`.
 3. **Apply schema + seed** (if not done) — `pnpm db:push` and `pnpm db:seed`
-4. **Sign in as admin** — open **`/admin/branding`** for logo, footer, operator contact, jurisdiction label, privacy act, and open-source repo URL (DB overrides merge over `.env`).
+4. **Sign in as admin** — set `SEED_ADMIN_*` in `.env`, run `pnpm db:seed`, then sign in at **`/login`** (see **Bootstrap admin login** in step 5). After login, open **`/admin/branding`** for logo, footer, operator contact, jurisdiction label, privacy act, and open-source repo URL (DB overrides merge over `.env`).
 5. **Edit home marketing blocks** — `/admin/site/faq`, `/admin/site/how-it-works`, `/admin/site/listing-criteria`, `/admin/site/promo` (promo starts disabled until you enable it in admin).
 6. **Extensions** — plugins load by default; add `PLUGINS_ENABLED=false` to `.env` if you do not want the hello demo banner on the home page.
 
