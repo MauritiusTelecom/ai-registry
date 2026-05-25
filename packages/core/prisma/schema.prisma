@@ -128,7 +128,8 @@ model RiskLevel {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  resources Resource[]
+  resources        Resource[]
+  resourceVersions ResourceVersion[]
 
   @@schema("registry")
 }
@@ -462,6 +463,9 @@ model User {
   threadMessages           ReviewThreadMessage[]
   threadAttachmentsUploaded ReviewThreadAttachment[]
   providerDocumentsUploaded ProviderDocument[]
+  resourceVersionsCreated  ResourceVersion[]         @relation("ResourceVersionCreatedBy")
+  resourceVersionsApproved ResourceVersion[]         @relation("ResourceVersionApprovedBy")
+  resourceVersionsRejected ResourceVersion[]         @relation("ResourceVersionRejectedBy")
 
   @@index([providerId])
   @@index([roleId])
@@ -672,6 +676,10 @@ model Resource {
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
+  // System-tracked version pointers. See docs/specs/resource-versioning.md
+  currentPublishedVersionId String? @unique
+  draftVersionId            String? @unique
+
   resourceType        ResourceType       @relation(fields: [resourceTypeId], references: [id], onDelete: Restrict)
   provider            Provider           @relation(fields: [providerId], references: [id], onDelete: Restrict)
   primaryJurisdiction Jurisdiction       @relation(fields: [primaryJurisdictionId], references: [id], onDelete: Restrict)
@@ -693,6 +701,9 @@ model Resource {
   enforcementActions  EnforcementAction[]
   runtimeBindings     RuntimeIdentityBinding[]
   federatedReferences FederatedResourceReference[]
+  versions            ResourceVersion[]                @relation("ResourceVersionsAll")
+  currentPublishedVersion ResourceVersion?             @relation("ResourceCurrentPublishedVersion", fields: [currentPublishedVersionId], references: [id], onDelete: SetNull)
+  draftVersion            ResourceVersion?             @relation("ResourceDraftVersion", fields: [draftVersionId], references: [id], onDelete: SetNull)
 
   @@unique([providerId, slug])
   @@index([providerId])
@@ -701,6 +712,71 @@ model Resource {
   @@index([lifecycleStatusId])
   @@index([riskLevelId])
   @@index([publicVisibility])
+  @@schema("registry")
+}
+
+// ─── Resource versioning ───────────────────────────────
+// See docs/specs/resource-versioning.md. Versions snapshot the scalar
+// fields of Resource at submit / approve time. M:N relations stay on
+// Resource directly (Option A scope).
+
+model ResourceVersionStatusType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  versions ResourceVersion[]
+
+  @@schema("registry")
+}
+
+model ResourceVersion {
+  id              String    @id @default(uuid())
+  resourceId      String
+  versionNumber   Int
+  statusId        String
+
+  // Versioned scalar snapshots
+  title                 String
+  shortDescription      String
+  longDescription       String?
+  accessUrl             String?
+  sourceCodeUrl         String?
+  documentationUrl      String?
+  termsUrl              String?
+  license               String?
+  versionLabel          String?
+  providerVersionNumber String?
+  latencyTier           String?
+  riskLevelId           String
+
+  createdById   String    @db.Uuid
+  createdAt     DateTime  @default(now())
+
+  submittedAt   DateTime?
+  approvedById  String?   @db.Uuid
+  approvedAt    DateTime?
+  rejectedById  String?   @db.Uuid
+  rejectedAt    DateTime?
+  decisionNote  String?
+
+  resource           Resource                    @relation("ResourceVersionsAll", fields: [resourceId], references: [id], onDelete: Cascade)
+  status             ResourceVersionStatusType   @relation(fields: [statusId], references: [id])
+  riskLevel          RiskLevel                   @relation(fields: [riskLevelId], references: [id])
+  createdBy          User                        @relation("ResourceVersionCreatedBy", fields: [createdById], references: [id])
+  approvedBy         User?                       @relation("ResourceVersionApprovedBy", fields: [approvedById], references: [id])
+  rejectedBy         User?                       @relation("ResourceVersionRejectedBy", fields: [rejectedById], references: [id])
+  asCurrentPublished Resource?                   @relation("ResourceCurrentPublishedVersion")
+  asDraft            Resource?                   @relation("ResourceDraftVersion")
+
+  @@unique([resourceId, versionNumber])
+  @@index([resourceId])
+  @@index([statusId])
   @@schema("registry")
 }
 

@@ -1,0 +1,369 @@
+/**
+ * Resource versioning services. See docs/specs/resource-versioning.md.
+ *
+ * Lifecycle:
+ *   open draft  -> updateDraft (many)  -> submitDraft  -> approveDraft | rejectDraft
+ *
+ * On approve: copy draft's scalar fields back into Resource, set
+ * currentPublishedVersionId = draft.id, clear draftVersionId.
+ *
+ * On reject: keep draftVersionId, status flips to "rejected"; provider
+ * can edit and resubmit.
+ */
+
+import type { SessionUser } from "../auth/current-user";
+import { prisma } from "../prisma";
+
+// ─── Constants + helpers ───────────────────────────────────
+
+export const VERSIONED_FIELDS = [
+  "title",
+  "shortDescription",
+  "longDescription",
+  "accessUrl",
+  "sourceCodeUrl",
+  "documentationUrl",
+  "termsUrl",
+  "license",
+  "versionLabel",
+  "providerVersionNumber",
+  "latencyTier",
+  "riskLevelId"
+] as const;
+
+export type VersionedFieldName = (typeof VERSIONED_FIELDS)[number];
+
+export type VersionedFieldPatch = Partial<{
+  title: string;
+  shortDescription: string;
+  longDescription: string | null;
+  accessUrl: string | null;
+  sourceCodeUrl: string | null;
+  documentationUrl: string | null;
+  termsUrl: string | null;
+  license: string | null;
+  versionLabel: string | null;
+  providerVersionNumber: string | null;
+  latencyTier: string | null;
+  riskLevelId: string;
+}>;
+
+export class VersioningError extends Error {
+  constructor(public readonly code: string, message: string) {
+    super(message);
+    this.name = "VersioningError";
+  }
+}
+
+function isAdmin(user: SessionUser): boolean {
+  return user.roles.includes("admin") || user.role.code === "admin";
+}
+
+function isVerifier(user: SessionUser): boolean {
+  return user.roles.includes("verifier") || user.role.code === "verifier";
+}
+
+async function getStatusIdByCode(code: "draft" | "submitted" | "approved" | "rejected"): Promise<string> {
+  const row = await prisma.resourceVersionStatusType.findUnique({ where: { code } });
+  if (!row) throw new VersioningError("seed_missing", `ResourceVersionStatusType not seeded: ${code}`);
+  return row.id;
+}
+
+async function userOwnsResource(user: SessionUser, resourceId: string): Promise<boolean> {
+  if (!user.provider) return false;
+  const r = await prisma.resource.findUnique({
+    where: { id: resourceId },
+    select: { providerId: true }
+  });
+  return r?.providerId === user.provider.id;
+}
+
+// ─── Loaders ───────────────────────────────────────────────
+
+export async function listVersions(resourceId: string) {
+  return prisma.resourceVersion.findMany({
+    where: { resourceId },
+    include: {
+      status: true,
+      createdBy: { select: { id: true, name: true, email: true } },
+      approvedBy: { select: { id: true, name: true, email: true } },
+      rejectedBy: { select: { id: true, name: true, email: true } }
+    },
+    orderBy: { versionNumber: "desc" }
+  });
+}
+
+async function loadResourceForVersionOps(resourceId: string) {
+  return prisma.resource.findUnique({
+    where: { id: resourceId },
+    include: {
+      draftVersion: true,
+      currentPublishedVersion: true
+    }
+  });
+}
+
+// ─── Open / get a draft ────────────────────────────────────
+
+export async function openOrGetDraft(resourceId: string, user: SessionUser) {
+  if (!isAdmin(user) && !(await userOwnsResource(user, resourceId))) {
+    throw new VersioningError("forbidden", "You cannot edit this resource");
+  }
+
+  const resource = await loadResourceForVersionOps(resourceId);
+  if (!resource) throw new VersioningError("not_found", "Resource not found");
+
+  // If a draft already exists, return it
+  if (resource.draftVersion) return resource.draftVersion;
+
+  // Otherwise create one, snapshotting the current Resource scalar fields
+  const draftStatusId = await getStatusIdByCode("draft");
+
+  const maxVersion = await prisma.resourceVersion.aggregate({
+    where: { resourceId },
+    _max: { versionNumber: true }
+  });
+  const nextVersionNumber = (maxVersion._max.versionNumber ?? 0) + 1;
+
+  const draft = await prisma.resourceVersion.create({
+    data: {
+      resourceId,
+      versionNumber: nextVersionNumber,
+      statusId: draftStatusId,
+      title: resource.title,
+      shortDescription: resource.shortDescription,
+      longDescription: resource.longDescription,
+      accessUrl: resource.accessUrl,
+      sourceCodeUrl: resource.sourceCodeUrl,
+      documentationUrl: resource.documentationUrl,
+      termsUrl: resource.termsUrl,
+      license: resource.license,
+      versionLabel: resource.versionLabel,
+      providerVersionNumber: resource.versionNumber,
+      latencyTier: resource.latencyTier,
+      riskLevelId: resource.riskLevelId,
+      createdById: user.id
+    }
+  });
+
+  await prisma.resource.update({
+    where: { id: resourceId },
+    data: { draftVersionId: draft.id }
+  });
+
+  return draft;
+}
+
+// ─── Update draft ──────────────────────────────────────────
+
+export async function updateDraft(
+  resourceId: string,
+  user: SessionUser,
+  patch: VersionedFieldPatch
+) {
+  if (!isAdmin(user) && !(await userOwnsResource(user, resourceId))) {
+    throw new VersioningError("forbidden", "You cannot edit this resource");
+  }
+
+  const resource = await loadResourceForVersionOps(resourceId);
+  if (!resource) throw new VersioningError("not_found", "Resource not found");
+  if (!resource.draftVersion) {
+    throw new VersioningError("no_draft", "No draft exists. Call openOrGetDraft first.");
+  }
+  if (resource.draftVersion.status && resource.draftVersion.statusId) {
+    // confirm the draft is still editable
+    const status = await prisma.resourceVersionStatusType.findUnique({
+      where: { id: resource.draftVersion.statusId }
+    });
+    if (status?.code !== "draft" && status?.code !== "rejected") {
+      throw new VersioningError("not_editable", `Draft is in status ${status?.code}; cannot edit`);
+    }
+  }
+
+  // If the draft was previously rejected and the provider is editing again,
+  // flip it back to draft so it represents an in-progress change set.
+  const draftStatusId = await getStatusIdByCode("draft");
+
+  const updated = await prisma.resourceVersion.update({
+    where: { id: resource.draftVersion.id },
+    data: {
+      ...patch,
+      statusId: draftStatusId
+    }
+  });
+
+  return updated;
+}
+
+// ─── Submit draft for review ───────────────────────────────
+
+export async function submitDraft(resourceId: string, user: SessionUser) {
+  if (!isAdmin(user) && !(await userOwnsResource(user, resourceId))) {
+    throw new VersioningError("forbidden", "You cannot submit this resource");
+  }
+
+  const resource = await loadResourceForVersionOps(resourceId);
+  if (!resource) throw new VersioningError("not_found", "Resource not found");
+  if (!resource.draftVersion) throw new VersioningError("no_draft", "No draft to submit");
+
+  const submittedStatusId = await getStatusIdByCode("submitted");
+
+  return prisma.resourceVersion.update({
+    where: { id: resource.draftVersion.id },
+    data: {
+      statusId: submittedStatusId,
+      submittedAt: new Date()
+    }
+  });
+}
+
+// ─── Approve draft → flip to live ──────────────────────────
+
+export async function approveDraft(opts: {
+  resourceId: string;
+  versionId: string;
+  user: SessionUser;
+  decisionNote?: string;
+}) {
+  if (!isAdmin(opts.user) && !isVerifier(opts.user)) {
+    throw new VersioningError("forbidden", "Only verifiers or admins can approve");
+  }
+
+  const version = await prisma.resourceVersion.findUnique({
+    where: { id: opts.versionId },
+    include: { status: true }
+  });
+  if (!version || version.resourceId !== opts.resourceId) {
+    throw new VersioningError("not_found", "Version not found");
+  }
+  if (version.status.code !== "submitted" && version.status.code !== "draft") {
+    throw new VersioningError("not_approvable", `Version is in status ${version.status.code}`);
+  }
+
+  const approvedStatusId = await getStatusIdByCode("approved");
+  const now = new Date();
+
+  return prisma.$transaction(async (tx) => {
+    const approved = await tx.resourceVersion.update({
+      where: { id: version.id },
+      data: {
+        statusId: approvedStatusId,
+        approvedById: opts.user.id,
+        approvedAt: now,
+        decisionNote: opts.decisionNote ?? null
+      }
+    });
+
+    await tx.resource.update({
+      where: { id: opts.resourceId },
+      data: {
+        title: approved.title,
+        shortDescription: approved.shortDescription,
+        longDescription: approved.longDescription,
+        accessUrl: approved.accessUrl,
+        sourceCodeUrl: approved.sourceCodeUrl,
+        documentationUrl: approved.documentationUrl,
+        termsUrl: approved.termsUrl,
+        license: approved.license,
+        versionLabel: approved.versionLabel,
+        versionNumber: approved.providerVersionNumber,
+        latencyTier: approved.latencyTier,
+        riskLevelId: approved.riskLevelId,
+        currentPublishedVersionId: approved.id,
+        draftVersionId: null,
+        lastReviewedAt: now,
+        lastProviderUpdateAt: now
+      }
+    });
+
+    return approved;
+  });
+}
+
+// ─── Reject draft → status flip, keep draftVersionId set ──
+
+export async function rejectDraft(opts: {
+  resourceId: string;
+  versionId: string;
+  user: SessionUser;
+  decisionNote?: string;
+}) {
+  if (!isAdmin(opts.user) && !isVerifier(opts.user)) {
+    throw new VersioningError("forbidden", "Only verifiers or admins can reject");
+  }
+
+  const version = await prisma.resourceVersion.findUnique({
+    where: { id: opts.versionId },
+    include: { status: true }
+  });
+  if (!version || version.resourceId !== opts.resourceId) {
+    throw new VersioningError("not_found", "Version not found");
+  }
+  if (version.status.code !== "submitted") {
+    throw new VersioningError("not_rejectable", `Version is in status ${version.status.code}`);
+  }
+
+  const rejectedStatusId = await getStatusIdByCode("rejected");
+
+  return prisma.resourceVersion.update({
+    where: { id: version.id },
+    data: {
+      statusId: rejectedStatusId,
+      rejectedById: opts.user.id,
+      rejectedAt: new Date(),
+      decisionNote: opts.decisionNote ?? null
+    }
+  });
+}
+
+// ─── Discard draft ─────────────────────────────────────────
+
+export async function discardDraft(resourceId: string, user: SessionUser) {
+  if (!isAdmin(user) && !(await userOwnsResource(user, resourceId))) {
+    throw new VersioningError("forbidden", "You cannot discard this draft");
+  }
+
+  const resource = await loadResourceForVersionOps(resourceId);
+  if (!resource) throw new VersioningError("not_found", "Resource not found");
+  if (!resource.draftVersion) return { ok: true };
+
+  // Only delete if it's actually a draft (not submitted, not approved).
+  const status = await prisma.resourceVersionStatusType.findUnique({
+    where: { id: resource.draftVersion.statusId }
+  });
+  if (status?.code !== "draft" && status?.code !== "rejected") {
+    throw new VersioningError(
+      "not_discardable",
+      `Draft is in status ${status?.code}; cannot discard`
+    );
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.resource.update({
+      where: { id: resourceId },
+      data: { draftVersionId: null }
+    });
+    await tx.resourceVersion.delete({ where: { id: resource.draftVersion!.id } });
+  });
+
+  return { ok: true };
+}
+
+// ─── Diff helper for the verifier UI ───────────────────────
+
+export type FieldDelta = { field: VersionedFieldName; was: string | null; now: string | null };
+
+export function diffVersionsScalar(
+  base: Record<string, unknown> | null,
+  candidate: Record<string, unknown>
+): FieldDelta[] {
+  const out: FieldDelta[] = [];
+  for (const field of VERSIONED_FIELDS) {
+    const wasRaw = base?.[field];
+    const nowRaw = candidate[field];
+    const was = wasRaw == null ? null : String(wasRaw);
+    const now = nowRaw == null ? null : String(nowRaw);
+    if (was !== now) out.push({ field, was, now });
+  }
+  return out;
+}
