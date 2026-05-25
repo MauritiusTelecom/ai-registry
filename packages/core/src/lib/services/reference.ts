@@ -62,7 +62,9 @@ export const REFERENCE_TABLE_NAMES = [
   "complaintStatusType",
   "enforcementType",
   "officialAuthorityType",
-  "officialAuthorisationStatusType"
+  "officialAuthorisationStatusType",
+  "providerDocumentType",
+  "reviewThreadStatusType"
 ] as const;
 
 export type ReferenceTableName = (typeof REFERENCE_TABLE_NAMES)[number];

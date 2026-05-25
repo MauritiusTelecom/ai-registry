@@ -8,6 +8,7 @@ import {
   publicProviderKind
 } from "@airegistry/sdk";
 import { PageHero } from "@airegistry/ui-kit";
+import { loadProviderDocuments } from "@airegistry/core/services/sovereignty-documents";
 import { publicPageMetadata } from "../lib/page-metadata";
 
 export async function generateMetadata() {
@@ -28,6 +29,12 @@ export default async function ProviderDetailPage({
   const kind = publicProviderKind(provider.type.code);
   const glyph = deriveGlyph(provider.displayName || provider.slug);
   const since = provider.createdAt.toISOString().slice(0, 7);
+
+  // Public verification documents for this provider.
+  const publicDocuments = await loadProviderDocuments({
+    providerId: provider.id,
+    includePrivate: false
+  });
 
   const listings = provider.resources;
 
@@ -229,6 +236,60 @@ export default async function ProviderDetailPage({
                     </li>
                   );
                 })}
+              </ul>
+            </div>
+          )}
+
+          {/* Verification documents (public ones) */}
+          {publicDocuments.length > 0 && (
+            <div
+              className="glass"
+              style={{ padding: 28, marginBottom: 24 }}
+            >
+              <h2
+                style={{
+                  fontSize: 16,
+                  fontWeight: 600,
+                  marginTop: 0,
+                  marginBottom: 12
+                }}
+              >
+                Verification documents
+              </h2>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
+                {publicDocuments.map((d) => (
+                  <li
+                    key={d.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      fontSize: 13,
+                      padding: "8px 10px",
+                      background: "rgba(0,0,0,0.18)",
+                      borderRadius: 6
+                    }}
+                  >
+                    <span style={{ fontWeight: 600 }}>{d.documentType.name}</span>
+                    <span style={{ opacity: 0.6 }}>·</span>
+                    <span>{d.title}</span>
+                    <a
+                      href={`/api/portal/provider/documents/${d.id}/file`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        marginLeft: "auto",
+                        padding: "4px 8px",
+                        background: "rgba(90, 209, 255, 0.15)",
+                        borderRadius: 4,
+                        fontSize: 12,
+                        color: "var(--text)"
+                      }}
+                    >
+                      📎 {d.filename}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
           )}

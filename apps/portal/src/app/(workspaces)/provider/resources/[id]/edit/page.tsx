@@ -86,7 +86,10 @@ export default async function ProviderResourceEditPage({
       referenceUrl: e.referenceUrl,
       referenceIdentifier: e.referenceIdentifier,
       issuingBody: e.issuingBody,
-      publicVisibility: e.publicVisibility
+      publicVisibility: e.publicVisibility,
+      fileFilename: e.fileFilename ?? null,
+      fileSizeBytes: e.fileSizeBytes ?? null,
+      fileContentType: e.fileContentType ?? null
     })),
     endpoints: resource.endpoints.map((ep) => ({
       id: ep.id,

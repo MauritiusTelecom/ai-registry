@@ -461,6 +461,7 @@ model User {
   threadsResolved          ReviewThread[]            @relation("ReviewThreadResolvedBy")
   threadMessages           ReviewThreadMessage[]
   threadAttachmentsUploaded ReviewThreadAttachment[]
+  providerDocumentsUploaded ProviderDocument[]
 
   @@index([providerId])
   @@index([roleId])
@@ -572,6 +573,7 @@ model Provider {
   reviews            Review[]
   complaints         Complaint[]
   enforcementActions EnforcementAction[]
+  documents          ProviderDocument[]
 
   @@index([homeJurisdictionId])
   @@index([statusId])
@@ -769,6 +771,15 @@ model SovereigntyEvidence {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
+  // Optional uploaded file. Either referenceUrl (external link), the file
+  // fields, or both may be set. See docs/specs/sovereignty-documents.md
+  fileStorageKey     String?  @unique
+  fileFilename       String?
+  fileContentType    String?
+  fileSizeBytes      Int?
+  fileChecksumSha256 String?
+  fileUploadedAt     DateTime?
+
   resource         Resource         @relation(fields: [resourceId], references: [id], onDelete: Cascade)
   sovereigntyBasis SovereigntyBasis @relation(fields: [sovereigntyBasisId], references: [id], onDelete: Restrict)
   evidenceType     EvidenceType     @relation(fields: [evidenceTypeId], references: [id], onDelete: Restrict)
@@ -777,6 +788,54 @@ model SovereigntyEvidence {
   @@index([resourceId])
   @@index([sovereigntyBasisId])
   @@index([evidenceTypeId])
+  @@schema("registry")
+}
+
+// ─── Provider verification documents ─────────────────────
+// See docs/specs/sovereignty-documents.md
+
+model ProviderDocumentType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  documents ProviderDocument[]
+
+  @@schema("registry")
+}
+
+model ProviderDocument {
+  id              String    @id @default(uuid())
+  providerId      String
+  documentTypeId  String
+
+  title           String
+  description     String?
+
+  fileStorageKey  String    @unique
+  filename        String
+  contentType     String
+  sizeBytes       Int
+  checksumSha256  String
+
+  publicVisibility Boolean  @default(false)
+  expiresAt        DateTime?
+
+  uploadedById    String    @db.Uuid
+  uploadedAt      DateTime  @default(now())
+
+  provider     Provider             @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  documentType ProviderDocumentType @relation(fields: [documentTypeId], references: [id], onDelete: Restrict)
+  uploadedBy   User                 @relation(fields: [uploadedById], references: [id])
+
+  @@index([providerId])
+  @@index([documentTypeId])
+  @@index([publicVisibility])
   @@schema("registry")
 }
 
