@@ -617,9 +617,26 @@ export function ProviderResourceEditForm({
                   disabled={!canEdit}
                 />
               ) : (
-                <p style={{ fontSize: 11, opacity: 0.6, margin: 0 }}>
-                  Save this evidence row first to attach a file.
-                </p>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "8px 10px",
+                    fontSize: 12,
+                    color: "var(--text-2)",
+                    background: "rgba(90, 209, 255, 0.06)",
+                    border: "1px dashed rgba(90, 209, 255, 0.25)",
+                    borderRadius: 6
+                  }}
+                >
+                  <span>📎</span>
+                  <span>
+                    To attach a file (PDF, image, screenshot…), first click{" "}
+                    <strong>Save changes</strong> at the bottom of the page. The file
+                    picker will appear here once this evidence row is saved.
+                  </span>
+                </div>
               )}
             </div>
           ))}
