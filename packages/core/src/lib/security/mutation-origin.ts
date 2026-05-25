@@ -25,6 +25,18 @@ export function buildAllowedMutationOrigins(): Set<string> {
   if (portal) {
     origins.add(`https://${portal}`);
     origins.add(`http://${portal}`);
+    // Auto-accept the www / bare-domain sibling so a user landing on
+    // airegistry.mu vs www.airegistry.mu isn't blocked over a canonical
+    // URL mismatch. CSRF allowlist only; the app still renders via the
+    // configured PORTAL_DOMAIN.
+    if (portal.startsWith("www.")) {
+      const bare = portal.slice(4);
+      origins.add(`https://${bare}`);
+      origins.add(`http://${bare}`);
+    } else {
+      origins.add(`https://www.${portal}`);
+      origins.add(`http://www.${portal}`);
+    }
   }
   for (const extra of parseExtraOrigins()) {
     origins.add(extra);
