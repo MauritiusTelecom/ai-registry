@@ -144,6 +144,10 @@ export type RegistryConfig = {
     userStatusChanged: EmailTemplate;
     providerVisibilityChanged: EmailTemplate;
     resourceLifecycleChanged: EmailTemplate;
+    reviewThreadOpened: EmailTemplate;
+    reviewThreadProviderReply: EmailTemplate;
+    reviewThreadVerifierReply: EmailTemplate;
+    reviewThreadResolved: EmailTemplate;
   };
 };
 
@@ -660,6 +664,66 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
           `Reason:\n{reason}\n\n` +
           `View your resources:\n  {portalResourcesUrl}\n` +
           `{publicCatalogBlock}\n` +
+          `- {registryName}`
+      )
+    },
+    reviewThreadOpened: {
+      subject: tpl(
+        "EMAIL_REVIEW_THREAD_OPENED_SUBJECT",
+        `New message on your review - {reviewTitle}`
+      ),
+      body: tpl(
+        "EMAIL_REVIEW_THREAD_OPENED_BODY",
+        `Hello,\n\n` +
+          `A verifier has opened a conversation on your review of "{reviewTitle}".\n\n` +
+          `From: {authorName}\n` +
+          `Message:\n{excerpt}\n\n` +
+          `Open the thread to reply:\n  {threadUrl}\n\n` +
+          `- {registryName}`
+      )
+    },
+    reviewThreadProviderReply: {
+      subject: tpl(
+        "EMAIL_REVIEW_THREAD_PROVIDER_REPLY_SUBJECT",
+        `Provider replied - {reviewTitle}`
+      ),
+      body: tpl(
+        "EMAIL_REVIEW_THREAD_PROVIDER_REPLY_BODY",
+        `Hello,\n\n` +
+          `The provider replied on the review of "{reviewTitle}".\n\n` +
+          `From: {authorName}\n` +
+          `Message:\n{excerpt}\n` +
+          `{attachmentLine}\n` +
+          `Open the thread:\n  {threadUrl}\n\n` +
+          `- {registryName}`
+      )
+    },
+    reviewThreadVerifierReply: {
+      subject: tpl(
+        "EMAIL_REVIEW_THREAD_VERIFIER_REPLY_SUBJECT",
+        `Verifier replied - {reviewTitle}`
+      ),
+      body: tpl(
+        "EMAIL_REVIEW_THREAD_VERIFIER_REPLY_BODY",
+        `Hello,\n\n` +
+          `The verifier replied on the review of "{reviewTitle}".\n\n` +
+          `From: {authorName}\n` +
+          `Message:\n{excerpt}\n` +
+          `{attachmentLine}\n` +
+          `Open the thread:\n  {threadUrl}\n\n` +
+          `- {registryName}`
+      )
+    },
+    reviewThreadResolved: {
+      subject: tpl(
+        "EMAIL_REVIEW_THREAD_RESOLVED_SUBJECT",
+        `Review thread resolved - {reviewTitle}`
+      ),
+      body: tpl(
+        "EMAIL_REVIEW_THREAD_RESOLVED_BODY",
+        `Hello,\n\n` +
+          `The conversation on the review of "{reviewTitle}" has been marked resolved.\n\n` +
+          `Open the thread:\n  {threadUrl}\n\n` +
           `- {registryName}`
       )
     }

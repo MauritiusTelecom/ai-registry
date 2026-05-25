@@ -390,5 +390,71 @@ export const emailTemplates = {
       publicCatalogUrl: opts.publicCatalogUrl ?? "",
       publicCatalogBlock
     });
+  },
+  /** Verifier or admin opens a review-thread; sent to provider users. */
+  reviewThreadOpened(opts: {
+    registryName: string;
+    reviewTitle: string;
+    authorName: string;
+    excerpt: string;
+    threadUrl: string;
+  }): { subject: string; text: string } {
+    return renderConfigured("reviewThreadOpened", {
+      registryName: opts.registryName,
+      reviewTitle: opts.reviewTitle,
+      authorName: opts.authorName,
+      excerpt: opts.excerpt,
+      threadUrl: opts.threadUrl
+    });
+  },
+  /** Provider replied on a thread; sent to verifier + admins. */
+  reviewThreadProviderReply(opts: {
+    registryName: string;
+    reviewTitle: string;
+    authorName: string;
+    excerpt: string;
+    threadUrl: string;
+    attachmentCount: number;
+  }): { subject: string; text: string } {
+    return renderConfigured("reviewThreadProviderReply", {
+      registryName: opts.registryName,
+      reviewTitle: opts.reviewTitle,
+      authorName: opts.authorName,
+      excerpt: opts.excerpt,
+      threadUrl: opts.threadUrl,
+      attachmentLine:
+        opts.attachmentCount > 0 ? `\n${opts.attachmentCount} file(s) attached.\n` : ""
+    });
+  },
+  /** Verifier or admin replied on a thread; sent to provider users. */
+  reviewThreadVerifierReply(opts: {
+    registryName: string;
+    reviewTitle: string;
+    authorName: string;
+    excerpt: string;
+    threadUrl: string;
+    attachmentCount: number;
+  }): { subject: string; text: string } {
+    return renderConfigured("reviewThreadVerifierReply", {
+      registryName: opts.registryName,
+      reviewTitle: opts.reviewTitle,
+      authorName: opts.authorName,
+      excerpt: opts.excerpt,
+      threadUrl: opts.threadUrl,
+      attachmentLine:
+        opts.attachmentCount > 0 ? `\n${opts.attachmentCount} file(s) attached.\n` : ""
+    });
+  },
+  /** Status flipped to resolved; sent to both parties. */
+  reviewThreadResolved(opts: {
+    registryName: string;
+    reviewTitle: string;
+    threadUrl: string;
+  }): { subject: string; text: string } {
+    return renderConfigured("reviewThreadResolved", {
+      registryName: opts.registryName,
+      reviewTitle: opts.reviewTitle,
+      threadUrl: opts.threadUrl
+    });
   }
 };
