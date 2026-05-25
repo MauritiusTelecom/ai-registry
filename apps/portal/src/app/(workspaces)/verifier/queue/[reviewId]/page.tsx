@@ -2,12 +2,15 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { getCurrentUser } from "@airegistry/sdk/server";
+import { prisma } from "@airegistry/core";
 import {
   canAccessThread,
   loadReviewForAccess
 } from "@airegistry/core/services/review-thread";
+import { loadProviderDocuments } from "@airegistry/core/services/sovereignty-documents";
 
 import { ThreadConversation } from "@/components/portal/ThreadConversation";
+import { VerificationDocumentsPanel } from "@/components/portal/VerificationDocumentsPanel";
 
 export const metadata = { title: "Verifier · Review" };
 export const dynamic = "force-dynamic";
@@ -42,6 +45,19 @@ export default async function VerifierReviewDetailPage({
       ? "admin"
       : "verifier";
 
+  const providerId = review.resource?.provider?.id;
+  const resourceId = review.resource?.id;
+
+  const [providerDocuments, evidenceFiles] = await Promise.all([
+    providerId ? loadProviderDocuments({ providerId, includePrivate: true }) : Promise.resolve([]),
+    resourceId
+      ? prisma.sovereigntyEvidence.findMany({
+          where: { resourceId, fileStorageKey: { not: null } },
+          include: { evidenceType: true, sovereigntyBasis: true }
+        })
+      : Promise.resolve([])
+  ]);
+
   return (
     <main className="max-w-4xl mx-auto p-6 space-y-6">
       <header className="space-y-2">
@@ -56,6 +72,33 @@ export default async function VerifierReviewDetailPage({
           <code className="opacity-60">{reviewId.slice(0, 8)}</code>
         </p>
       </header>
+
+      <VerificationDocumentsPanel
+        providerDocuments={providerDocuments.map((d) => ({
+          id: d.id,
+          title: d.title,
+          documentTypeName: d.documentType.name,
+          filename: d.filename,
+          sizeBytes: d.sizeBytes,
+          contentType: d.contentType,
+          publicVisibility: d.publicVisibility,
+          expiresAt: d.expiresAt ? d.expiresAt.toISOString() : null,
+          url: `/api/portal/provider/documents/${d.id}/file`
+        }))}
+        evidenceFiles={evidenceFiles.map((e) => ({
+          id: e.id,
+          title: e.title,
+          evidenceTypeName: e.evidenceType.name,
+          sovereigntyBasisName: e.sovereigntyBasis.name,
+          filename: e.fileFilename ?? "file",
+          sizeBytes: e.fileSizeBytes ?? 0,
+          contentType: e.fileContentType ?? "application/octet-stream",
+          publicVisibility: e.publicVisibility,
+          url: resourceId
+            ? `/api/portal/resources/${resourceId}/evidence/${e.id}/file`
+            : ""
+        }))}
+      />
 
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-wide opacity-70 mb-3">
