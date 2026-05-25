@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { Icon } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { EvidenceFileAttachment } from "@/components/portal/EvidenceFileAttachment";
 
 type RefRow = { code: string; name: string };
 
@@ -19,6 +20,9 @@ type EvidenceRow = {
   referenceIdentifier: string | null;
   issuingBody: string | null;
   publicVisibility: boolean;
+  fileFilename?: string | null;
+  fileSizeBytes?: number | null;
+  fileContentType?: string | null;
 };
 
 type EndpointRow = {
@@ -621,6 +625,22 @@ export function ProviderResourceEditForm({
                   <Icon name="trash" size={12} /> Remove
                 </button>
               </div>
+              {e.id ? (
+                <EvidenceFileAttachment
+                  resourceId={initial.id}
+                  evidenceId={e.id}
+                  initial={{
+                    filename: e.fileFilename ?? null,
+                    sizeBytes: e.fileSizeBytes ?? null,
+                    contentType: e.fileContentType ?? null
+                  }}
+                  disabled={!canEdit}
+                />
+              ) : (
+                <p style={{ fontSize: 11, opacity: 0.6, margin: 0 }}>
+                  Save this evidence row first to attach a file.
+                </p>
+              )}
             </div>
           ))}
         </div>

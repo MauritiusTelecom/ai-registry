@@ -3,6 +3,7 @@ import { getCurrentUser } from "@airegistry/sdk/server";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { getConfig } from "@airegistry/sdk";
 import { ProviderOrganisationForm } from "@/components/portals/ProviderOrganisationForm";
+import { ProviderDocumentsCard } from "@/components/portal/ProviderDocumentsCard";
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadProviderForSettings } from "@airegistry/sdk/server";
 // import { ProviderNotificationsForm } from "@/components/portals/ProviderNotificationsForm";
@@ -54,10 +55,11 @@ export default async function ProviderSettingsPage() {
   const providerId = await ensureUserProviderLinked(user.id);
   const cfg = getConfig();
 
-  const [provider, providerTypes, jurisdictions] = await Promise.all([
+  const [provider, providerTypes, jurisdictions, documentTypes] = await Promise.all([
     loadProviderForSettings(providerId),
     listReferenceTable("providerTypeRef", { orderBy: "name" }),
-    listReferenceTable("jurisdiction", { orderBy: "name" })
+    listReferenceTable("jurisdiction", { orderBy: "name" }),
+    listReferenceTable("providerDocumentType", { orderBy: "sortOrder" })
   ]);
 
   if (!provider) {
@@ -93,6 +95,10 @@ export default async function ProviderSettingsPage() {
           providerTypes={providerTypes}
           jurisdictions={jurisdictions}
           defaultJurisdictionCode={cfg.jurisdiction}
+        />
+
+        <ProviderDocumentsCard
+          documentTypes={documentTypes.map((t) => ({ code: t.code, name: t.name }))}
         />
 
         {/*
