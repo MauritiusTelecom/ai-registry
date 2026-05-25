@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import { registryFetch } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
 
@@ -235,45 +236,72 @@ function UploadDialog({
     }
   }
 
+  const inputStyle: CSSProperties = {
+    display: "block",
+    marginTop: 6,
+    width: "100%",
+    padding: "8px 10px",
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid var(--hairline, rgba(255,255,255,0.1))",
+    borderRadius: 6,
+    color: "var(--text, inherit)",
+    fontSize: 13,
+    fontFamily: "inherit",
+    outline: "none",
+    boxSizing: "border-box"
+  };
+  const labelStyle: CSSProperties = {
+    fontSize: 12,
+    fontWeight: 500,
+    color: "var(--text-2, rgba(255,255,255,0.7))",
+    textTransform: "uppercase",
+    letterSpacing: "0.04em"
+  };
+
   return (
     <div
       role="dialog"
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.5)",
+        background: "rgba(0,0,0,0.6)",
+        backdropFilter: "blur(4px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 1000
+        zIndex: 1000,
+        padding: 16
       }}
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "var(--bg-1)",
-          padding: 24,
-          borderRadius: 8,
+          background: "var(--bg-2, #14181f)",
+          border: "1px solid var(--hairline, rgba(255,255,255,0.08))",
+          padding: 28,
+          borderRadius: 12,
           width: "100%",
-          maxWidth: 480,
+          maxWidth: 520,
           maxHeight: "90vh",
-          overflow: "auto"
+          overflow: "auto",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.5)"
         }}
       >
-        <h3 style={{ margin: 0, marginBottom: 16 }}>Upload document</h3>
-        <div style={{ display: "grid", gap: 12 }}>
-          <label style={{ fontSize: 13 }}>
-            Type
+        <h3 style={{ margin: 0, marginBottom: 4, fontSize: 18, fontWeight: 600 }}>
+          Upload verification document
+        </h3>
+        <p style={{ margin: 0, marginBottom: 20, fontSize: 13, color: "var(--text-3, rgba(255,255,255,0.55))" }}>
+          PDF, image, text, or zip - max 10 MB. Public documents appear on your public provider page.
+        </p>
+
+        <div style={{ display: "grid", gap: 16 }}>
+          <div>
+            <div style={labelStyle}>Type</div>
             <select
               value={documentTypeCode}
               onChange={(e) => setDocumentTypeCode(e.target.value)}
-              style={{
-                display: "block",
-                marginTop: 4,
-                width: "100%",
-                padding: 6
-              }}
+              style={inputStyle}
             >
               {documentTypes.map((t) => (
                 <option key={t.code} value={t.code}>
@@ -281,78 +309,166 @@ function UploadDialog({
                 </option>
               ))}
             </select>
-          </label>
-          <label style={{ fontSize: 13 }}>
-            Title
+          </div>
+
+          <div>
+            <div style={labelStyle}>Title</div>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. MT Business Registration 2026"
-              style={{
-                display: "block",
-                marginTop: 4,
-                width: "100%",
-                padding: 6
-              }}
+              style={inputStyle}
             />
-          </label>
-          <label style={{ fontSize: 13 }}>
-            Description (optional)
+          </div>
+
+          <div>
+            <div style={labelStyle}>Description (optional)</div>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
-              style={{
-                display: "block",
-                marginTop: 4,
-                width: "100%",
-                padding: 6
-              }}
+              style={{ ...inputStyle, resize: "vertical" }}
             />
-          </label>
-          <label style={{ fontSize: 13 }}>
-            File (PDF, image, txt, zip — 10 MB max)
-            <input
-              type="file"
-              accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.zip"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              style={{ display: "block", marginTop: 4 }}
-            />
-          </label>
-          <label style={{ fontSize: 13, display: "flex", gap: 8, alignItems: "center" }}>
-            <input
-              type="checkbox"
-              checked={publicVisibility}
-              onChange={(e) => setPublicVisibility(e.target.checked)}
-            />
-            Show on public provider page
-          </label>
-          <label style={{ fontSize: 13 }}>
-            Expires (optional)
+          </div>
+
+          <div>
+            <div style={labelStyle}>File</div>
+            <FilePicker file={file} onPick={setFile} />
+          </div>
+
+          <div>
+            <div style={labelStyle}>Expires (optional)</div>
             <input
               type="date"
               value={expiresAt}
               onChange={(e) => setExpiresAt(e.target.value)}
-              style={{
-                display: "block",
-                marginTop: 4,
-                width: "100%",
-                padding: 6
-              }}
+              style={inputStyle}
             />
+          </div>
+
+          <label
+            style={{
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+              fontSize: 13,
+              padding: "10px 12px",
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid var(--hairline, rgba(255,255,255,0.08))",
+              borderRadius: 6,
+              cursor: "pointer"
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={publicVisibility}
+              onChange={(e) => setPublicVisibility(e.target.checked)}
+              style={{ accentColor: "var(--accent, #5ad1ff)" }}
+            />
+            <span>Show on the public provider page</span>
           </label>
-          {err && <p style={{ fontSize: 12, color: "tomato", margin: 0 }}>{err}</p>}
+
+          {err && (
+            <div
+              style={{
+                fontSize: 12,
+                color: "#ff8a95",
+                padding: "8px 10px",
+                background: "rgba(255, 90, 106, 0.1)",
+                border: "1px solid rgba(255, 90, 106, 0.3)",
+                borderRadius: 6
+              }}
+            >
+              {err}
+            </div>
+          )}
         </div>
-        <div style={{ display: "flex", gap: 8, marginTop: 16, justifyContent: "flex-end" }}>
-          <button onClick={onClose} disabled={busy} className="btn">
+
+        <div style={{ display: "flex", gap: 10, marginTop: 24, justifyContent: "flex-end" }}>
+          <button
+            onClick={onClose}
+            disabled={busy}
+            className="btn"
+            style={{ minWidth: 100 }}
+          >
             Cancel
           </button>
-          <button onClick={submit} disabled={busy} className="btn btn-primary">
+          <button
+            onClick={submit}
+            disabled={busy}
+            className="btn btn-primary"
+            style={{ minWidth: 100 }}
+          >
             {busy ? "Uploading…" : "Upload"}
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function FilePicker({
+  file,
+  onPick
+}: {
+  file: File | null;
+  onPick: (f: File | null) => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <div
+      onClick={() => ref.current?.click()}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        marginTop: 6,
+        padding: "12px 14px",
+        background: "rgba(255,255,255,0.04)",
+        border: "1px dashed var(--hairline, rgba(255,255,255,0.18))",
+        borderRadius: 6,
+        cursor: "pointer",
+        fontSize: 13
+      }}
+    >
+      <span style={{ fontSize: 18 }}>📎</span>
+      {file ? (
+        <>
+          <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {file.name}
+          </span>
+          <span style={{ opacity: 0.6, fontSize: 12 }}>{formatSize(file.size)}</span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPick(null);
+              if (ref.current) ref.current.value = "";
+            }}
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--text-3, rgba(255,255,255,0.6))",
+              fontSize: 16,
+              padding: 0
+            }}
+            aria-label="Remove file"
+          >
+            ✕
+          </button>
+        </>
+      ) : (
+        <span style={{ opacity: 0.7 }}>Click to choose a file…</span>
+      )}
+      <input
+        ref={ref}
+        type="file"
+        accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.zip"
+        style={{ display: "none" }}
+        onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+      />
     </div>
   );
 }
