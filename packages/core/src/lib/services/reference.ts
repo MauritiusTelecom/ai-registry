@@ -64,7 +64,8 @@ export const REFERENCE_TABLE_NAMES = [
   "officialAuthorityType",
   "officialAuthorisationStatusType",
   "providerDocumentType",
-  "reviewThreadStatusType"
+  "reviewThreadStatusType",
+  "resourceVersionStatusType"
 ] as const;
 
 export type ReferenceTableName = (typeof REFERENCE_TABLE_NAMES)[number];
