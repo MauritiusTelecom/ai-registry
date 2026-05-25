@@ -2,7 +2,8 @@
 #
 # Usage:
 #
-#   docker compose up -d postgres   # bring up the database
+#   docker compose up -d postgres   # bring up the database only
+#   docker compose up -d            # bring up database + app
 #   docker compose down             # stop everything (data persists in volume)
 #   docker compose down -v          # destructive — drops the volume
 #
@@ -10,9 +11,8 @@
 # `airegistry` whose password is `airegistry-dev`. The default `.env.example`
 # already points DATABASE_URL at this instance.
 #
-# This compose file is for development only. Production deployments use the
-# operator's managed Postgres / cluster and supply DATABASE_URL through their
-# own secret pipeline.
+# The `app` service builds from ./Dockerfile and runs the Next.js portal on
+# port 3002. It waits for Postgres to be healthy before starting.
 
 services:
   postgres:
@@ -33,6 +33,22 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${APP_CONTAINER_NAME:-airegistry-app}
+    restart: unless-stopped
+    ports:
+      - "${APP_HOST_PORT:-3002}:3002"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-airegistry}:${POSTGRES_PASSWORD:-airegistry-dev}@postgres:5432/${POSTGRES_DB:-airegistry}?schema=registry"
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   airegistry-pg-data:
