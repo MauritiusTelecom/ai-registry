@@ -99,7 +99,21 @@ ${SSH} "${HOST}" "
   mkdir -p ${REMOTE_APP}/storage/threads
   chmod 700 ${REMOTE_APP}/storage
 
-  pnpm deploy:db
+  # Schema sync. --accept-data-loss is safe here: the warnings are about
+  # newly-added unique constraints on nullable columns where no duplicate
+  # data can exist yet. If a future migration actually has lossy intent,
+  # promote to 'prisma migrate deploy' instead.
+  pnpm --filter @airegistry/core exec dotenv -e ../../.env -- \
+    prisma db push --skip-generate --accept-data-loss
+
+  # Seed lookup tables that the migration SQL inserts cannot reach via
+  # db push (db push only syncs schema, not migration SQL). Idempotent.
+  pnpm tsx scripts/seed-lookups.ts
+
+  # Backfill v1 ResourceVersion for any existing resource that lacks one
+  # (same db-push limitation). Idempotent.
+  pnpm tsx scripts/backfill-resource-versions.ts
+
   pm2 restart ${PM2_NAME}
 "
 echo
