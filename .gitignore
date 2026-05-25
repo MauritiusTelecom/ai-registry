@@ -21,6 +21,11 @@ packages/core/src/generated/
 # state, not source.
 apps/portal/public/branding/
 
+# Review-thread attachments live on the server filesystem under
+# THREAD_ATTACHMENT_ROOT (default ./storage). Per-deployment runtime state,
+# never source.
+/storage/
+
 # Local-only deploy machine config (host, user, paths). Real values live here.
 deploy/deploy.config.sh
 # Never commit anything dropped into deploy/secrets/. It is consumed by

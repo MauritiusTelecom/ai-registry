@@ -36,6 +36,10 @@ export { withBase } from "./lib/with-base";
 // Audit primitive (AIR-SPEC §18)
 export { writeAudit } from "./lib/audit/write-audit";
 
+// File storage (for review-thread attachments etc.)
+export { getAttachmentStorage } from "./lib/storage";
+export type { AttachmentStorage } from "./lib/storage";
+
 // Governance — sovereignty review checklist (AIR-SPEC §11; constitution §3)
 export { SOVEREIGNTY_CHECKLIST_ITEMS } from "./lib/governance/sovereignty-checklist";
 export type { ChecklistAnswerCode } from "./lib/governance/sovereignty-checklist";

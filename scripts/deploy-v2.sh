@@ -93,6 +93,12 @@ ${SSH} "${HOST}" "
   mkdir -p apps/portal/src/generated
   ln -sfn ${REMOTE_APP}/packages/core/src/generated/prisma apps/portal/src/generated/prisma
 
+  # Review-thread attachment storage. Created if missing; never wiped by
+  # the rsync above because it lives outside any synced path. chmod 700
+  # so only the app user can read uploaded files.
+  mkdir -p ${REMOTE_APP}/storage/threads
+  chmod 700 ${REMOTE_APP}/storage
+
   pnpm deploy:db
   pm2 restart ${PM2_NAME}
 "

@@ -457,6 +457,10 @@ model User {
   enforcementActions       EnforcementAction[]             @relation("EnforcementPerformedBy")
   contacts                 Contact[]
   notificationReads        NotificationRead[]
+  threadsOpened            ReviewThread[]            @relation("ReviewThreadOpenedBy")
+  threadsResolved          ReviewThread[]            @relation("ReviewThreadResolvedBy")
+  threadMessages           ReviewThreadMessage[]
+  threadAttachmentsUploaded ReviewThreadAttachment[]
 
   @@index([providerId])
   @@index([roleId])
@@ -863,6 +867,7 @@ model Review {
   reviewer   User?            @relation("ReviewerOfReview", fields: [reviewerId], references: [id])
 
   checklistItems ReviewChecklistItem[]
+  thread         ReviewThread?
 
   @@index([resourceId])
   @@index([providerId])
@@ -886,6 +891,82 @@ model ReviewChecklistItem {
   result ChecklistResultType? @relation(fields: [resultId], references: [id], onDelete: SetNull)
 
   @@index([reviewId])
+  @@schema("registry")
+}
+
+// ─── Review thread (simple ticketing on a review) ────────
+// See docs/specs/provider-review-thread.md
+
+model ReviewThreadStatusType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  threads ReviewThread[]
+
+  @@schema("registry")
+}
+
+model ReviewThread {
+  id           String    @id @default(uuid())
+  reviewId     String    @unique
+  statusId     String
+  openedById   String    @db.Uuid
+  resolvedById String?   @db.Uuid
+  resolvedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  review     Review                 @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  status     ReviewThreadStatusType @relation(fields: [statusId], references: [id], onDelete: Restrict)
+  openedBy   User                   @relation("ReviewThreadOpenedBy", fields: [openedById], references: [id])
+  resolvedBy User?                  @relation("ReviewThreadResolvedBy", fields: [resolvedById], references: [id])
+
+  messages ReviewThreadMessage[]
+
+  @@index([statusId])
+  @@index([openedById])
+  @@schema("registry")
+}
+
+model ReviewThreadMessage {
+  id          String   @id @default(uuid())
+  threadId    String
+  authorId    String   @db.Uuid
+  authorRole  String
+  body        String
+  systemEvent String?
+  createdAt   DateTime @default(now())
+
+  thread      ReviewThread             @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author      User                     @relation(fields: [authorId], references: [id])
+  attachments ReviewThreadAttachment[]
+
+  @@index([threadId, createdAt])
+  @@index([authorId])
+  @@schema("registry")
+}
+
+model ReviewThreadAttachment {
+  id             String   @id @default(uuid())
+  messageId      String
+  filename       String
+  contentType    String
+  sizeBytes      Int
+  storageKey     String   @unique
+  checksumSha256 String
+  uploadedById   String   @db.Uuid
+  createdAt      DateTime @default(now())
+
+  message    ReviewThreadMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  uploadedBy User                @relation(fields: [uploadedById], references: [id])
+
+  @@index([messageId])
   @@schema("registry")
 }
 
