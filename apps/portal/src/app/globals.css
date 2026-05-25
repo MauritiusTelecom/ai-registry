@@ -2028,15 +2028,23 @@ textarea.p-input {
   font-size: 11.5px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-3);
+  color: var(--text-2);
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
   border-radius: 8px;
   text-decoration: none;
-  transition: color 140ms, border-color 140ms;
+  cursor: pointer;
+  transition: color 140ms, border-color 140ms, background 140ms;
 }
 .r-card-action-link:hover {
   color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
   border-color: var(--border-strong);
+}
+.r-card-action-link:disabled,
+.r-card-action-link[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* ─── Provider portal header (rich) ───────────────────────────────────
