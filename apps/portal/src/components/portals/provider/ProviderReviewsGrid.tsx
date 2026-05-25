@@ -63,6 +63,19 @@ export function ProviderReviewsGrid({ rows, types }: Props) {
         ) : (
           "-"
         )
+    },
+    {
+      key: "thread",
+      label: "Conversation",
+      render: (row) => (
+        <Link
+          href={`/provider/reviews/${row.id}`}
+          className="r-card-action-link"
+          style={{ fontSize: 11 }}
+        >
+          Open →
+        </Link>
+      )
     }
   ];
 

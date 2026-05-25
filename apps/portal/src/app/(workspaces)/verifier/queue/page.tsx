@@ -55,7 +55,20 @@ export default async function VerifierQueuePage() {
     { key: "type", label: "Review type", render: (row) => <span className="tag">{row.reviewType}</span> },
     { key: "status", label: "Status", render: (row) => <StatusPill status={row.status} /> },
     { key: "started", label: "Started", render: (row) => row.startedAt ?? "-", mono: true },
-    { key: "created", label: "Queued", render: (row) => row.createdAt, mono: true }
+    { key: "created", label: "Queued", render: (row) => row.createdAt, mono: true },
+    {
+      key: "open",
+      label: "",
+      render: (row) => (
+        <Link
+          href={`/verifier/queue/${row.id}`}
+          className="r-card-action-link"
+          style={{ fontSize: 11 }}
+        >
+          Open →
+        </Link>
+      )
+    }
   ];
 
   return (
