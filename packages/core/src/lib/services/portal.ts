@@ -3051,7 +3051,7 @@ export async function applyMyResourceUpdate(
   actorUserId: string,
   resourceId: string,
   input: ApplyMyResourceUpdateInput
-): Promise<void> {
+): Promise<{ evidenceIds: string[] | null }> {
   const {
     data,
     before,
@@ -3064,6 +3064,8 @@ export async function applyMyResourceUpdate(
     languageCodes,
     sectorCodes
   } = input;
+
+  let newEvidenceIds: string[] | null = null;
 
   await prisma.$transaction(async (tx) => {
     if (Object.keys(data).length > 0) {
@@ -3102,11 +3104,14 @@ export async function applyMyResourceUpdate(
     }
     if (evidenceResolved !== undefined) {
       await tx.sovereigntyEvidence.deleteMany({ where: { resourceId } });
+      const created: string[] = [];
       for (const row of evidenceResolved) {
-        await tx.sovereigntyEvidence.create({
+        const ev = await tx.sovereigntyEvidence.create({
           data: { ...row, resourceId }
         });
+        created.push(ev.id);
       }
+      newEvidenceIds = created;
     }
     if (endpointsResolved !== undefined) {
       await tx.resourceEndpoint.deleteMany({ where: { resourceId } });
@@ -3133,6 +3138,8 @@ export async function applyMyResourceUpdate(
       ...(endpointsResolved !== undefined ? { endpointCount: endpointsResolved.length } : {})
     }
   });
+
+  return { evidenceIds: newEvidenceIds };
 }
 
 export type MyResourceSubmitResult =

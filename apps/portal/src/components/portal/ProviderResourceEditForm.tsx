@@ -112,6 +112,11 @@ export function ProviderResourceEditForm({
   // ── Sovereignty ─────────────────────────────────────────────────────────
   const [basisCodes, setBasisCodes] = useState<string[]>(initial.sovereigntyBasisCodes);
   const [evidence, setEvidence] = useState<EvidenceRow[]>(initial.evidence);
+  // Files queued on unsaved evidence rows; index-aligned with `evidence`.
+  // Re-keyed on save once the new evidence ids land in the PATCH response.
+  const [pendingEvidenceFiles, setPendingEvidenceFiles] = useState<(File | null)[]>(
+    () => initial.evidence.map(() => null)
+  );
 
   // ── Endpoints ───────────────────────────────────────────────────────────
   const [endpoints, setEndpoints] = useState<EndpointRow[]>(initial.endpoints);
@@ -150,12 +155,17 @@ export function ProviderResourceEditForm({
         publicVisibility: true
       }
     ]);
+    setPendingEvidenceFiles((arr) => [...arr, null]);
   }
   function updateEvidence(idx: number, patch: Partial<EvidenceRow>) {
     setEvidence((rows) => rows.map((r, i) => (i === idx ? { ...r, ...patch } : r)));
   }
   function removeEvidence(idx: number) {
     setEvidence((rows) => rows.filter((_, i) => i !== idx));
+    setPendingEvidenceFiles((arr) => arr.filter((_, i) => i !== idx));
+  }
+  function setPendingFile(idx: number, file: File | null) {
+    setPendingEvidenceFiles((arr) => arr.map((f, i) => (i === idx ? file : f)));
   }
 
   function addEndpoint() {
@@ -238,12 +248,50 @@ export function ProviderResourceEditForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      const data = (await res.json()) as { error?: string };
+      const data = (await res.json()) as {
+        error?: string;
+        evidenceIds?: string[] | null;
+      };
       if (!res.ok) {
         setError(data.error ?? "Save failed");
         return;
       }
-      setOkMsg("Saved.");
+
+      // Upload any staged evidence files now that we have the new ids.
+      const evidenceIds = data.evidenceIds;
+      const pending = pendingEvidenceFiles;
+      if (evidenceIds && evidenceIds.length === pending.length) {
+        const failures: string[] = [];
+        for (let i = 0; i < pending.length; i++) {
+          const file = pending[i];
+          const evId = evidenceIds[i];
+          if (!file || !evId) continue;
+          try {
+            const form = new FormData();
+            form.append("file", file);
+            const upRes = await registryFetch(
+              withBase(`/api/portal/resources/${initial.id}/evidence/${evId}/file`),
+              { method: "POST", body: form }
+            );
+            if (!upRes.ok) {
+              const detail = (await upRes.json().catch(() => ({}))).error ?? `HTTP ${upRes.status}`;
+              failures.push(`${file.name}: ${detail}`);
+            }
+          } catch {
+            failures.push(`${file.name}: network error`);
+          }
+        }
+        if (failures.length > 0) {
+          setError(`Saved, but some files failed to upload:\n${failures.join("\n")}`);
+        } else {
+          setOkMsg(
+            pending.some((f) => f) ? "Saved and uploaded attached files." : "Saved."
+          );
+        }
+        setPendingEvidenceFiles(pending.map(() => null));
+      } else {
+        setOkMsg("Saved.");
+      }
       router.refresh();
     } catch {
       setError("Network error");
@@ -605,39 +653,18 @@ export function ProviderResourceEditForm({
                   <Icon name="trash" size={12} /> Remove
                 </button>
               </div>
-              {e.id ? (
-                <EvidenceFileAttachment
-                  resourceId={initial.id}
-                  evidenceId={e.id}
-                  initial={{
-                    filename: e.fileFilename ?? null,
-                    sizeBytes: e.fileSizeBytes ?? null,
-                    contentType: e.fileContentType ?? null
-                  }}
-                  disabled={!canEdit}
-                />
-              ) : (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "8px 10px",
-                    fontSize: 12,
-                    color: "var(--text-2)",
-                    background: "rgba(90, 209, 255, 0.06)",
-                    border: "1px dashed rgba(90, 209, 255, 0.25)",
-                    borderRadius: 6
-                  }}
-                >
-                  <span>📎</span>
-                  <span>
-                    To attach a file (PDF, image, screenshot…), first click{" "}
-                    <strong>Save changes</strong> at the bottom of the page. The file
-                    picker will appear here once this evidence row is saved.
-                  </span>
-                </div>
-              )}
+              <EvidenceFileAttachment
+                resourceId={initial.id}
+                evidenceId={e.id}
+                initial={{
+                  filename: e.fileFilename ?? null,
+                  sizeBytes: e.fileSizeBytes ?? null,
+                  contentType: e.fileContentType ?? null
+                }}
+                disabled={!canEdit}
+                pendingFile={pendingEvidenceFiles[i] ?? null}
+                onPendingChange={(file) => setPendingFile(i, file)}
+              />
             </div>
           ))}
         </div>
