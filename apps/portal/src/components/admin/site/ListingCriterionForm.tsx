@@ -105,7 +105,7 @@ export function ListingCriterionForm({
     if (!confirm(`Delete criterion "${initial.code}"?`)) return;
     setDeleting(true);
     try {
-      const res = await fetch(
+      const res = await registryFetch(
         withBase(`/api/admin/site/listing-criteria/${encodeURIComponent(initial.code)}`),
         { method: "DELETE" }
       );
