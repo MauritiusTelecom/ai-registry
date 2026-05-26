@@ -418,7 +418,7 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
   }
 
-  await applyMyResourceUpdate(user.id, id, {
+  const result = await applyMyResourceUpdate(user.id, id, {
     data,
     before,
     basisRows,
@@ -431,5 +431,8 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     sectorCodes
   });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    evidenceIds: result.evidenceIds
+  });
 }
