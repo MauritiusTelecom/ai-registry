@@ -86,7 +86,7 @@ export function HowItWorksStepForm({
     if (!confirm(`Delete step "${initial.code}"?`)) return;
     setDeleting(true);
     try {
-      const res = await fetch(
+      const res = await registryFetch(
         withBase(`/api/admin/site/how-it-works/${encodeURIComponent(initial.code)}`),
         { method: "DELETE" }
       );

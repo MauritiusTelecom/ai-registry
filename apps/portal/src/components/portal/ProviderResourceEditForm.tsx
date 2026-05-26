@@ -305,7 +305,7 @@ export function ProviderResourceEditForm({
     setOkMsg(null);
     setPending("submit");
     try {
-      const res = await fetch(
+      const res = await registryFetch(
         withBase(`/api/portal/resources/${initial.id}/submit`),
         {
           method: "POST",

@@ -5,6 +5,8 @@ import { withBase } from "@airegistry/sdk";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/library";
+import { withBase } from "@airegistry/sdk";
+import { registryFetch } from "@airegistry/ui-kit";
 
 type Action =
   | "approve"
@@ -93,7 +95,7 @@ export function ResourceLifecyclePanel({
     }
     setBusy(true);
     try {
-      const res = await fetch(
+      const res = await registryFetch(
         withBase(`/api/admin/resources/${resourceId}/transition`),
         {
           method: "POST",
