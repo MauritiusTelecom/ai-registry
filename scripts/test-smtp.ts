@@ -19,8 +19,11 @@
 
 import { config as loadDotenv } from "dotenv";
 import nodemailer from "nodemailer";
+import { resolve } from "node:path";
 
-loadDotenv();
+// Always load the monorepo-root .env so this works regardless of which
+// cwd `pnpm test:smtp` is invoked from (apps/portal vs repo root).
+loadDotenv({ path: resolve(__dirname, "../.env") });
 
 const host = process.env.SMTP_HOST;
 const port = Number(process.env.SMTP_PORT ?? "587");
