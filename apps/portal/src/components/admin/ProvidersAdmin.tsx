@@ -358,7 +358,7 @@ function ProviderForm({
       else if (mode === "edit") body.websiteUrl = null;
       if (mode === "create") body.slug = slug.trim();
 
-      const res = await fetch(
+      const res = await registryFetch(
         withBase(
           mode === "create"
             ? "/api/admin/providers"

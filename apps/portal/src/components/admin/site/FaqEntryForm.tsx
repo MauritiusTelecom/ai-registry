@@ -80,7 +80,7 @@ export function FaqEntryForm({
     setDeleting(true);
     setMessage(null);
     try {
-      const res = await fetch(
+      const res = await registryFetch(
         withBase(`/api/admin/site/faq/${encodeURIComponent(initial.code)}`),
         { method: "DELETE" }
       );
