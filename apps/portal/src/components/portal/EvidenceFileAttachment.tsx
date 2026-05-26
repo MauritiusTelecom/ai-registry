@@ -6,13 +6,19 @@ import { withBase } from "@airegistry/sdk";
 
 type Props = {
   resourceId: string;
-  evidenceId: string;
+  /** When undefined, the evidence row hasn't been saved yet. The component
+   *  stages the file locally and reports it via onPendingChange. */
+  evidenceId?: string;
   initial: {
     filename: string | null;
     sizeBytes: number | null;
     contentType: string | null;
   };
   disabled?: boolean;
+  /** Pending mode (unsaved row): the parent receives the staged file and
+   *  uploads it after save once the evidence id exists. */
+  pendingFile?: File | null;
+  onPendingChange?: (file: File | null) => void;
 };
 
 const ALLOWED = new Set([
@@ -26,7 +32,40 @@ const ALLOWED = new Set([
 ]);
 const MAX = 10 * 1024 * 1024;
 
-export function EvidenceFileAttachment({ resourceId, evidenceId, initial, disabled }: Props) {
+export function EvidenceFileAttachment({
+  resourceId,
+  evidenceId,
+  initial,
+  disabled,
+  pendingFile,
+  onPendingChange
+}: Props) {
+  // Pending mode: evidence row not saved yet. Show file picker that stages
+  // a File locally; the form uploads it after the resource save returns
+  // the new evidence id.
+  if (!evidenceId) {
+    return (
+      <PendingFilePicker
+        file={pendingFile ?? null}
+        onChange={(f) => onPendingChange?.(f)}
+        disabled={disabled}
+      />
+    );
+  }
+  return <SavedRowAttachment resourceId={resourceId} evidenceId={evidenceId} initial={initial} disabled={disabled} />;
+}
+
+function SavedRowAttachment({
+  resourceId,
+  evidenceId,
+  initial,
+  disabled
+}: {
+  resourceId: string;
+  evidenceId: string;
+  initial: Props["initial"];
+  disabled?: boolean;
+}) {
   const [filename, setFilename] = useState<string | null>(initial.filename);
   const [sizeBytes, setSizeBytes] = useState<number | null>(initial.sizeBytes);
   const [contentType, setContentType] = useState<string | null>(initial.contentType);
@@ -187,3 +226,113 @@ function formatSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
+
+function PendingFilePicker({
+  file,
+  onChange,
+  disabled
+}: {
+  file: File | null;
+  onChange: (f: File | null) => void;
+  disabled?: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  function pick(f: File | null) {
+    if (!f) {
+      onChange(null);
+      setErr(null);
+      return;
+    }
+    if (!ALLOWED.has(f.type)) {
+      setErr(`Type ${f.type || "unknown"} not allowed`);
+      return;
+    }
+    if (f.size > MAX) {
+      setErr("File exceeds 10 MB");
+      return;
+    }
+    setErr(null);
+    onChange(f);
+  }
+
+  if (file) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          fontSize: 12,
+          padding: "6px 10px",
+          background: "rgba(90, 209, 255, 0.06)",
+          border: "1px dashed rgba(90, 209, 255, 0.25)",
+          borderRadius: 6
+        }}
+      >
+        <span>📎</span>
+        <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {file.name}
+        </span>
+        <span style={{ opacity: 0.6 }}>{formatSize(file.size)}</span>
+        <span style={{ fontSize: 11, opacity: 0.7, fontStyle: "italic" }}>
+          will upload when you Save changes
+        </span>
+        {!disabled && (
+          <button
+            type="button"
+            onClick={() => {
+              pick(null);
+              if (inputRef.current) inputRef.current.value = "";
+            }}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "var(--text-3, rgba(255,255,255,0.6))",
+              cursor: "pointer",
+              fontSize: 14,
+              padding: 0
+            }}
+            aria-label="Remove staged file"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12 }}>
+      {!disabled && (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          style={{
+            fontSize: 11,
+            background: "transparent",
+            border: "1px solid var(--border-1, rgba(255,255,255,0.12))",
+            padding: "4px 8px",
+            borderRadius: 4,
+            cursor: "pointer"
+          }}
+        >
+          📎 Attach file (optional)
+        </button>
+      )}
+      <span style={{ opacity: 0.5, fontSize: 11 }}>
+        PDF, image, txt, zip · max 10 MB
+      </span>
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.zip"
+        style={{ display: "none" }}
+        onChange={(e) => pick(e.target.files?.[0] ?? null)}
+      />
+      {err && <span style={{ color: "tomato" }}>{err}</span>}
+    </div>
+  );
+}
+
