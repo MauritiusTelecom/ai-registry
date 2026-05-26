@@ -295,6 +295,10 @@ export type ProviderReviewRow = {
   id: string;
   target: string;
   targetSlug: string | null;
+  /** Resource id when the review's target is a resource; null otherwise.
+   *  Used by the provider portal to link to the editable page instead of
+   *  the public catalog page (which 404s for non-listed resources). */
+  targetResourceId: string | null;
   type: string;
   /** Raw status code — page applies its own display mapping. */
   statusCode: string;
@@ -314,7 +318,7 @@ export async function loadMyReviews(
     include: {
       reviewType: { select: { name: true } },
       status: { select: { code: true, name: true } },
-      resource: { select: { slug: true, title: true } }
+      resource: { select: { id: true, slug: true, title: true } }
     },
     orderBy: [{ status: { sortOrder: "asc" } }, { createdAt: "desc" }],
     take: 200
@@ -323,6 +327,7 @@ export async function loadMyReviews(
     id: r.id,
     target: r.resource?.title ?? "Provider record",
     targetSlug: r.resource?.slug ?? null,
+    targetResourceId: r.resource?.id ?? null,
     type: r.reviewType.name,
     statusCode: r.status.code,
     startedAt: r.startedAt ? r.startedAt.toISOString().slice(0, 10) : null,

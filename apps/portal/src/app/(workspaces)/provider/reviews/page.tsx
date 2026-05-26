@@ -55,6 +55,7 @@ export default async function ProviderReviewsPage() {
     id: r.id,
     target: r.target,
     targetSlug: r.targetSlug,
+    targetResourceId: r.targetResourceId,
     type: r.type,
     status: STATUS_DISPLAY[r.statusCode] ?? "active",
     startedAt: r.startedAt,

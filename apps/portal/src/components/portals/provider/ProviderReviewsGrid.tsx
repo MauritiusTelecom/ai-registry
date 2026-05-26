@@ -8,6 +8,7 @@ export type ProviderReviewRow = {
   id: string;
   target: string;
   targetSlug: string | null;
+  targetResourceId: string | null;
   type: string;
   status: string;
   startedAt: string | null;
@@ -25,10 +26,13 @@ export function ProviderReviewsGrid({ rows, types }: Props) {
     {
       key: "target",
       label: "Target",
+      // Link to the provider's editable resource page (works for any
+      // lifecycle state). The public /registry/[slug] page 404s for
+      // non-listed resources, which is what owners hit if we link there.
       render: (row) =>
-        row.targetSlug ? (
+        row.targetResourceId ? (
           <Link
-            href={`/registry/${row.targetSlug}`}
+            href={`/provider/resources/${row.targetResourceId}/edit`}
             style={{ color: "var(--text)", textDecoration: "none" }}
           >
             {row.target}
