@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { findResourceForDetail } from "@airegistry/sdk";
 import { toRegistryCardDetail } from "@airegistry/sdk";
 import { PageHero } from "@airegistry/ui-kit";
+import { prisma } from "@airegistry/core";
+import { getCurrentUser } from "@airegistry/core/auth/current-user";
 import { AirIdCopy } from "../sections/AirIdCopy";
 import { ResourceReportButton } from "../shell/ResourceReportButton";
 
@@ -16,7 +18,32 @@ export default async function ResourceDetailPage({
 }) {
   const { slug } = await params;
   const row = await findResourceForDetail({ slug });
-  if (!row) notFound();
+
+  if (!row) {
+    // Public lookup is visibility-filtered. If a row exists with this slug
+    // but isn't publicly listed (draft / submitted / needs_update),
+    // redirect the OWNER (or admin/verifier) to their editable view
+    // instead of 404'ing.
+    const unfiltered = await prisma.resource.findFirst({
+      where: { slug },
+      select: { id: true, providerId: true }
+    });
+    if (unfiltered) {
+      const user = await getCurrentUser();
+      if (user) {
+        const isOwner =
+          user.provider?.id != null && user.provider.id === unfiltered.providerId;
+        const isStaff =
+          user.role.code === "admin" ||
+          user.role.code === "verifier" ||
+          user.roles.includes("admin") ||
+          user.roles.includes("verifier");
+        if (isOwner) redirect(`/provider/resources/${unfiltered.id}/edit`);
+        if (isStaff) redirect(`/admin/resources/${unfiltered.id}/edit`);
+      }
+    }
+    notFound();
+  }
   if (row.lifecycleStatus.code === "removed") notFound();
 
   const detail = toRegistryCardDetail(row);
