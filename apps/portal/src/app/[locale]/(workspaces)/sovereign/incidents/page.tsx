@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { loadSovereignIncidents } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";

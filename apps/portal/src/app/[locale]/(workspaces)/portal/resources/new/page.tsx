@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { localeRedirect } from "@/i18n/locale-redirect";
 import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
@@ -12,8 +12,8 @@ export const metadata = { title: "New resource" };
 export default async function PortalNewResourcePage() {
   const t = await getTranslations("portal.resourceNew");
   const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/portal/resources/new");
-  if (user.role.code !== "provider") redirect("/portal");
+  if (!user) return await localeRedirect("/login?next=/portal/resources/new");
+  if (user.role.code !== "provider") return await localeRedirect("/portal");
 
   const cfg = getConfig();
   // DB-active types ∩ env RESOURCE_TYPES restriction — admins can hide a

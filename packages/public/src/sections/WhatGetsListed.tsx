@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { Icon, type IconName } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";

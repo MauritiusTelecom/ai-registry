@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { SOVEREIGNTY_CHECKLIST_ITEMS } from "@airegistry/sdk";
 import { listReferenceTable } from "@airegistry/sdk/server";

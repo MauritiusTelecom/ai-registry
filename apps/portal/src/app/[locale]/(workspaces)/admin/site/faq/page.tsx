@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { listAllFaqEntries } from "@airegistry/core/services/public-cms";
 import { Icon } from "@airegistry/ui-kit";

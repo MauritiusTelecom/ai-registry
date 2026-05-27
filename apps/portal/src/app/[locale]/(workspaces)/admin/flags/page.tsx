@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { localeRedirect } from "@/i18n/locale-redirect";
 
 /**
  * Admin · Flags - retired surface.
@@ -16,6 +16,6 @@ import { redirect } from "next/navigation";
  */
 export const dynamic = "force-dynamic";
 
-export default function AdminFlagsRedirect() {
-  redirect("/admin/complaints?status=needs_action");
+export default async function AdminFlagsRedirect() {
+  return await localeRedirect("/admin/complaints?status=needs_action");
 }

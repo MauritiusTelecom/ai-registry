@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { AuthShell } from "../auth-ui/AuthShell";
 import { RequestResetForm } from "../auth-ui/RequestResetForm";

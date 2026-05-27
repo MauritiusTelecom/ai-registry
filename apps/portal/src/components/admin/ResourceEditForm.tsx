@@ -2,7 +2,7 @@
 
 import { withBase } from "@airegistry/sdk";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
 import { Icon, Button, Field, Input, Select, TextArea } from "@/components/library";
 import { registryFetch } from "@airegistry/ui-kit";
@@ -370,7 +370,7 @@ export function ResourceEditForm({
       </Section>
 
       {/* ── 2. Descriptions ─────────────────────────────────────────────── */}
-<Section title="Descriptions">
+<Section title={t("sectionDescriptions")}>
         <Field label="Short description (8+ chars, shown on cards)">
           <TextArea
                           style={{ minHeight: 70, fontFamily: "inherit" }}

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { ProviderPortalFooterLink } from "./ProviderPortalFooterLink";
 import { withBase } from "@airegistry/sdk";
@@ -120,9 +120,7 @@ export function Footer({
             )}
             <span style={{ fontSize: 15 }}>{registryName}</span>
           </Link>
-          <p className="footer-brand">
-            {t("brandDescription")}
-          </p>
+          <p className="footer-brand">{t("brandDescription")}</p>
           <div style={{ marginTop: 18, display: "flex", gap: 8, flexWrap: "wrap" }}>
             <span className="tag" style={{ color: "#10b981" }}>
               <span className="status-dot" style={{ background: "#10b981" }} /> {tc("operational")}

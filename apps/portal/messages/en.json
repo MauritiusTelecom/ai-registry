@@ -52,7 +52,11 @@
     "providerPortal": "Provider Portal",
     "verifierPortal": "Verifier Portal",
     "sovereignPortal": "Sovereign Portal",
-    "accountSettings": "Account settings"
+    "accountSettings": "Account settings",
+    "roleAdmin": "admin",
+    "roleProvider": "provider",
+    "roleVerifier": "verifier",
+    "roleSovereign": "sovereign"
   },
 
   "footer": {
@@ -1672,7 +1676,7 @@
     "edit": "Edit",
     "delete": "Delete",
     "deleteTitle": "Delete resource?",
-    "deleteWarning": "will be deleted permanently. Delete is refused once an AIR-ID has been minted or any review / trust-signal exists — use Remove instead to tombstone the row.",
+    "deleteWarning": "<title></title> will be deleted permanently. Delete is refused once an AIR-ID has been minted or any review / trust-signal exists — use <remove></remove> instead to tombstone the row.",
     "cancel": "Cancel",
     "deleting": "Deleting…",
     "close": "Close",
@@ -1728,12 +1732,12 @@
     "suspend": "Suspend",
     "delete": "Delete",
     "deleteTitle": "Delete user?",
-    "deleteWarning": "will be removed permanently. Audit entries they authored remain but become anonymous.",
+    "deleteWarning": "<name></name> (<email></email>) will be removed permanently. Audit entries they authored remain but become anonymous.",
     "cancel": "Cancel",
     "deleting": "Deleting…",
     "reactivateTitle": "Reactivate user?",
     "suspendTitle": "Suspend user?",
-    "statusWillBeMarkedAs": "will be marked as",
+    "statusWillBeMarkedAs": "<name></name> (<email></email>) will be marked as",
     "statusActive": "active",
     "statusSuspended": "suspended",
     "emailUserStatusChange": "Email the user about this status change",
@@ -1777,7 +1781,7 @@
     "editProviderTitle": "Edit provider",
     "close": "Close",
     "deleteTitle": "Delete provider?",
-    "deleteWarning": "will be deleted permanently. Delete is refused when any resource, user, or audit reference exists — suspend the provider instead.",
+    "deleteWarning": "<name></name> (<slug></slug>) will be deleted permanently. Delete is refused when any resource, user, or audit reference exists — suspend the provider instead.",
     "cancel": "Cancel",
     "deleting": "Deleting…",
     "fieldSlug": "Slug",
@@ -2105,6 +2109,7 @@
     "next": "Next →",
     "deleteRowTitle": "Delete row?",
     "deleteRowDescription": "This will permanently remove the <strong>{code}</strong> row from <strong>{table}</strong>.",
+    "deleteRowBody": "This permanently removes the entry from <table></table>. If other rows reference it, deletion is blocked — toggle <active></active> to false instead.",
     "cancel": "Cancel",
     "deleting": "Deleting…",
     "deleteButton": "Delete",
@@ -2403,10 +2408,13 @@
 
   "portalDataTable": {
     "searchPlaceholder": "Search…",
+    "searchAria": "Search",
     "all": "All",
     "clearFilters": "Clear filters",
+    "clearFiltersAria": "Clear search and filters",
     "clear": "Clear",
-    "noRowsMatch": "No rows match these filters."
+    "noRowsMatch": "No rows match your search and filters.",
+    "rowCount": "{shown} of {total}"
   },
 
   "portalRegistration": {

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadVerifierReportsSnapshot } from "@airegistry/sdk/server";

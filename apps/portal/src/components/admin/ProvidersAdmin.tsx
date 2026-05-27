@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useState } from "react";
 import { Icon, ConfirmDialog, Modal, Button } from "@/components/library";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
@@ -238,7 +237,7 @@ function ProviderRowActions({
 <Modal
         open={editing}
         onClose={() => setEditing(false)}
-        title="Edit provider"
+        title={t("editProviderTitle")}
         maxWidth={600}
       >
         <div style={{ padding: 24 }}>
@@ -257,13 +256,14 @@ function ProviderRowActions({
 
 <ConfirmDialog
         open={confirmDelete}
-        title="Delete provider?"
+        title={t("deleteTitle")}
         body={
           <>
             <p style={{ margin: 0, color: "var(--text-2)", fontSize: 14, marginBottom: 12 }}>
-              <strong>{row.displayName}</strong> ({row.slug}) will be deleted permanently.
-              Delete is refused when any resource, user, or audit reference exists - suspend
-              the provider instead.
+              {t.rich("deleteWarning", {
+                name: () => <strong>{row.displayName}</strong>,
+                slug: () => row.slug
+              })}
             </p>
             {error ? (
               <div className="field-error" style={{ marginBottom: 4 }}>
@@ -273,7 +273,7 @@ function ProviderRowActions({
 </>
         }
         destructive
-        confirmLabel={busy ? "Deleting…" : "Delete"}
+        confirmLabel={busy ? t("deleting") : t("delete")}
         onCancel={() => setConfirmDelete(false)}
         onConfirm={doDelete}
       />

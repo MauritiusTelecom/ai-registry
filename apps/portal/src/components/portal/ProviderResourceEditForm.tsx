@@ -2,7 +2,7 @@
 
 import { withBase } from "@airegistry/sdk";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useMemo, useState } from "react";
 import { Icon, Button, Field, Input, Select, TextArea } from "@/components/library";
 import { useTranslations } from "next-intl";

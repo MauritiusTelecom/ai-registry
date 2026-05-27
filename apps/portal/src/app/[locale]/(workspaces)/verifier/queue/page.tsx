@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { loadVerifierQueue } from "@airegistry/sdk/server";
 import { DataTable, type Column } from "@/components/portals/DataTable";
