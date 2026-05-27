@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { localeRedirect } from "@/i18n/locale-redirect";
 import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { PageHero } from "@airegistry/ui-kit";
@@ -21,7 +21,7 @@ function topicLabel(code: string): string {
 export default async function PortalPage() {
   const t = await getTranslations("portalHome");
   const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/portal");
+  if (!user) return await localeRedirect("/login?next=/portal");
 
   const homeView = await loadPortalHome(user.id);
   const { organisationName, verifiedContacts } = homeView;

@@ -1,5 +1,6 @@
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { notFound } from "next/navigation";
+import { localeRedirect } from "@/i18n/locale-redirect";
 import { getTranslations } from "next-intl/server";
 
 import { getCurrentUser } from "@airegistry/sdk/server";
@@ -23,7 +24,7 @@ export default async function VerifierReviewDetailPage({
 }) {
   const t = await getTranslations("verifier.reviewDetail");
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) return await localeRedirect("/login");
 
   const { reviewId } = await params;
   const review = await loadReviewForAccess(reviewId);

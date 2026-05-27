@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import type { SessionUser } from "@airegistry/sdk";
 import { getTranslations } from "next-intl/server";
 import type { PortalConfig } from "@/lib/portals/nav-config";

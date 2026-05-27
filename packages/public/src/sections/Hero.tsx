@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { usePublicBranding } from "../lib/branding-context";
 import type {

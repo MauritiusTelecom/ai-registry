@@ -1,5 +1,6 @@
-import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { notFound } from "next/navigation";
+import { localeRedirect } from "@/i18n/locale-redirect";
 import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
@@ -12,8 +13,8 @@ export const metadata = { title: "Edit resource" };
 export default async function PortalResourceEditPage({ params }: { params: Promise<{ id: string }> }) {
   const t = await getTranslations("portal.resourceEdit");
   const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/portal/resources");
-  if (user.role.code !== "provider") redirect("/portal");
+  if (!user) return await localeRedirect("/login?next=/portal/resources");
+  if (user.role.code !== "provider") return await localeRedirect("/portal");
 
   const { id } = await params;
   const providerId = await ensureUserProviderLinked(user.id);

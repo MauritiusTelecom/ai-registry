@@ -277,7 +277,7 @@ function UserRowActions({
 <Modal
         open={editing}
         onClose={() => setEditing(false)}
-        title="Edit user"
+        title={t("editUserTitle")}
         maxWidth={560}
       >
         <div style={{ padding: 24 }}>
@@ -297,12 +297,14 @@ function UserRowActions({
 
 <ConfirmDialog
         open={confirmDelete}
-        title="Delete user?"
+        title={t("deleteTitle")}
         body={
           <>
             <p style={{ margin: 0, color: "var(--text-2)", fontSize: 14, marginBottom: 12 }}>
-              <strong>{row.name}</strong> ({row.email}) will be removed permanently. Audit
-              entries they authored remain but become anonymous.
+              {t.rich("deleteWarning", {
+                name: () => <strong>{row.name}</strong>,
+                email: () => row.email
+              })}
             </p>
             {error ? (
               <div className="field-error" style={{ marginBottom: 4 }}>
@@ -312,19 +314,22 @@ function UserRowActions({
 </>
         }
         destructive
-        confirmLabel={busy ? "Deleting…" : "Delete"}
+        confirmLabel={busy ? t("deleting") : t("delete")}
         onCancel={() => setConfirmDelete(false)}
         onConfirm={doDelete}
       />
 
       <ConfirmDialog
         open={confirmStatus}
-        title={isSuspended ? "Reactivate user?" : "Suspend user?"}
+        title={isSuspended ? t("reactivateTitle") : t("suspendTitle")}
         body={
           <>
             <p style={{ margin: 0, color: "var(--text-2)", fontSize: 14, marginBottom: 14 }}>
-              <strong>{row.name}</strong> ({row.email}) will be marked as{" "}
-              <strong>{isSuspended ? "active" : "suspended"}</strong>.
+              {t.rich("statusWillBeMarkedAs", {
+                name: () => <strong>{row.name}</strong>,
+                email: () => row.email
+              })}{" "}
+              <strong>{isSuspended ? t("statusActive") : t("statusSuspended")}</strong>.
             </p>
             <label
               style={{
@@ -365,7 +370,7 @@ function UserRowActions({
             ) : null}
 </>
         }
-        confirmLabel={busy ? "Saving…" : isSuspended ? "Reactivate" : "Suspend"}
+        confirmLabel={busy ? t("saving") : isSuspended ? t("reactivate") : t("suspend")}
         onCancel={() => setConfirmStatus(false)}
         onConfirm={async () => {
           const ok = await patch({

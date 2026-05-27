@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Icon, type IconName } from "@airegistry/ui-kit";
 import { useTranslations } from "next-intl";
 import { Reveal } from "../shell/Reveal";

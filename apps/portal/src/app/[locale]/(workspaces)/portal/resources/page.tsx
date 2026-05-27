@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { localeRedirect } from "@/i18n/locale-redirect";
 import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
@@ -17,9 +17,9 @@ export default async function PortalResourcesPage({
 }) {
   const t = await getTranslations("portal.resources");
   const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/portal/resources");
+  if (!user) return await localeRedirect("/login?next=/portal/resources");
   if (user.role.code !== "provider") {
-    redirect("/portal");
+    return await localeRedirect("/portal");
   }
 
   const sp = await searchParams;

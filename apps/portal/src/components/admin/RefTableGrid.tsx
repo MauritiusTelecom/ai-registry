@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import {
   EntityGrid,
   ConfirmDialog,
@@ -27,46 +27,44 @@ import { useTranslations } from "next-intl";
 type Row = Record<string, unknown> & { id: string };
 
 export function RefTableGrid({ config }: { config: RefTableConfig }) {
-const router = useRouter();
+  const router = useRouter();
+  const t = useTranslations("adminRefGrid");
   const [deleting, setDeleting] = useState<Row | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
-  // Translate `config.gridColumns` (string keys) into EntityGrid columns
-  // by looking up the matching field label.
   const columns: EntityColumn<Row>[] = useMemo(
     () =>
       config.gridColumns.map((key) => ({
         key,
         label: labelFor(config, key),
         mono: key === "code",
-        render: (row) => renderCell(row[key])
+        render: (row) => renderCell(row[key], t)
       })),
-    [config]
+    [config, t]
   );
 
-// The grid surfaces an `active` filter when the table has the column.
   const filters: EntityFilter[] | undefined = useMemo(() => {
     if (!config.hasActive) return undefined;
     return [
       {
         key: "active",
-        label: "Active",
+        label: t("activeFilter"),
         options: [
-          { value: "true", label: "Active only" },
-          { value: "false", label: "Inactive only" }
+          { value: "true", label: t("activeOnly") },
+          { value: "false", label: t("inactiveOnly") }
         ]
       }
     ];
-  }, [config.hasActive]);
+  }, [config.hasActive, t]);
 
   const onDelete = useCallback(async () => {
     if (!deleting) return;
     setBusy(true);
     setError(null);
     try {
-const res = await registryFetch(withBase(`/api/admin/ref/${config.id}/${deleting.id}`), {
+      const res = await registryFetch(withBase(`/api/admin/ref/${config.id}/${deleting.id}`), {
         method: "DELETE"
       });
       if (!res.ok) {
@@ -112,39 +110,39 @@ const res = await registryFetch(withBase(`/api/admin/ref/${config.id}/${deleting
 
   return (
     <>
-
       {error ? (
         <div className="field-error" role="alert" style={{ marginBottom: 12 }}>
           {error}
         </div>
       ) : null}
 
-<EntityGrid<Row>
+      <EntityGrid<Row>
         endpoint={withBase(`/api/admin/ref/${config.id}`)}
         columns={columns}
         filters={filters}
         rowActions={rowActions}
         addAction={{ href: `/admin/ref/${config.id}/new` }}
-        searchPlaceholder="Search…"
+        searchPlaceholder={t("search")}
         pageSizeOptions={[10, 20, 50, 100]}
         defaultPageSize={20}
         pageSizeParam="pageSize"
-        emptyState="No rows match the current filter."
+        emptyState={t("noRows")}
         reloadKey={reloadKey}
       />
 
       <ConfirmDialog
         open={Boolean(deleting)}
-        title="Delete row?"
+        title={t("deleteRowTitle")}
         body={
           <p style={{ margin: 0, color: "var(--text-2)", fontSize: 14 }}>
-            This permanently removes the entry from <code>{config.label}</code>. If
-            other rows reference it, deletion is blocked - toggle <code>active</code>
-            to false instead.
+            {t.rich("deleteRowBody", {
+              table: () => <code>{config.label}</code>,
+              active: () => <code>active</code>
+            })}
           </p>
         }
         destructive
-        confirmLabel={busy ? "Deleting…" : "Delete"}
+        confirmLabel={busy ? t("deleting") : t("deleteButton")}
         onCancel={() => setDeleting(null)}
         onConfirm={onDelete}
       />
@@ -152,15 +150,20 @@ const res = await registryFetch(withBase(`/api/admin/ref/${config.id}/${deleting
   );
 }
 
-function renderCell(value: unknown): ReactNode {
+function renderCell(
+  value: unknown,
+  t: ReturnType<typeof useTranslations<"adminRefGrid">>
+): ReactNode {
   if (value === null || value === undefined || value === "") {
     return <span style={{ color: "var(--text-3)" }}>-</span>;
   }
   if (typeof value === "boolean") {
     return value ? (
-      <span className="tag" style={{ color: "#10b981" }}>active</span>
+      <span className="tag" style={{ color: "#10b981" }}>
+        {t("active")}
+      </span>
     ) : (
-      <span className="tag">inactive</span>
+      <span className="tag">{t("inactive")}</span>
     );
   }
   if (typeof value === "string" && value.length > 80) {

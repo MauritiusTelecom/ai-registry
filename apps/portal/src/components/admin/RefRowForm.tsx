@@ -5,7 +5,7 @@ import { registryFetch } from "@airegistry/ui-kit";
 import { useTranslations } from "next-intl";
 
 import { useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import {
   EntityForm,
   type EntityFormFieldDef,

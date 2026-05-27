@@ -4,7 +4,7 @@ import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
 import { useTranslations } from "next-intl";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useState, type ReactNode } from "react";
 import {
   Button,
@@ -142,7 +142,7 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
 
   return (
     <div style={{ display: "grid", gap: 24, fontSize: 13 }}>
-<Section title="Identity">
+      <Section title={t("sectionIdentity")}>
         <Row>
           <Field id="pe-displayName" label="Display name" required>
             <Input
@@ -175,7 +175,7 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
         </Row>
       </Section>
 
-<Section title="Classification">
+      <Section title={t("sectionClassification")}>
         <Row>
           <Field id="pe-type" label="Provider type" required>
             <Select
@@ -221,7 +221,7 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
         </Row>
       </Section>
 
-<Section title="Contact & links">
+      <Section title={t("sectionContactLinks")}>
         <Row>
           <Field id="pe-contact" label="Primary contact email" required>
             <Input
@@ -263,7 +263,7 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
         </Row>
       </Section>
 
-<Section title="Incident response">
+      <Section title={t("sectionIncidentResponse")}>
         <Row>
           <Field id="pe-incCh" label="Incident channel">
             <Input
@@ -297,7 +297,7 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
         </Row>
       </Section>
 
-<Section title="Description">
+      <Section title={t("sectionDescription")}>
         <Field id="pe-desc" label="Provider description">
           <TextArea
             id="pe-desc"

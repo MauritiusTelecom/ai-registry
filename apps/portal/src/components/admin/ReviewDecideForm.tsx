@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { SOVEREIGNTY_CHECKLIST_ITEMS, type ChecklistAnswerCode, withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
 import { Button } from "@/components/library";

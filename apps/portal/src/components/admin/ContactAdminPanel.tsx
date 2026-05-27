@@ -3,7 +3,7 @@
 import { withBase } from "@airegistry/sdk";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/library";
 import { registryFetch } from "@airegistry/ui-kit";
 import { useTranslations } from "next-intl";

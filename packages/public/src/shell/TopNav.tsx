@@ -1,13 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Icon } from "@airegistry/ui-kit";
 import { useTheme } from "@airegistry/ui-kit";
 import { useAuth } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
 
 const NAV_ITEM_IDS = ["home", "registry", "providers", "contact"] as const;
 const NAV_HREFS: Record<string, string> = {
@@ -22,28 +22,19 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-const UI_LOCALES = ["en", "fr"] as const;
-const DEFAULT_LOCALE =
-  process.env.NEXT_PUBLIC_DEFAULT_LANGUAGE?.trim().toLowerCase().split("-")[0] ?? "en";
-
 function LocaleSwitcherSlot() {
   const t = useTranslations("localeSwitcher");
   const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname() ?? "/";
 
   function switchTo(nextLocale: string) {
-    const { pathname, search, hash } = window.location;
-    const segments = pathname.split("/").filter(Boolean);
-    const hasLocalePrefix = UI_LOCALES.includes(segments[0] as (typeof UI_LOCALES)[number]);
-    const bareSegments = hasLocalePrefix ? segments.slice(1) : segments;
-    const barePath = bareSegments.length ? `/${bareSegments.join("/")}` : "/";
-
-    const newPath =
-      nextLocale === DEFAULT_LOCALE ? barePath : `/${nextLocale}${barePath === "/" ? "" : barePath}`;
-
-    window.location.assign(newPath + search + hash);
+    router.replace(pathname, { locale: nextLocale });
   }
 
-  const otherLocale = UI_LOCALES.find((l) => l !== locale) ?? (locale === "fr" ? "en" : "fr");
+  const otherLocale =
+    (routing.locales as readonly string[]).find((l) => l !== locale) ??
+    (locale === "fr" ? "en" : "fr");
 
   return (
     <button
@@ -134,25 +125,25 @@ function UserMenu() {
             {isAdmin && (
               <Link href="/admin" className="dropdown-item" onClick={() => setOpen(false)}>
                 <Icon name="shield" size={14} /> {t("adminPortal")}
-                <span className="role-badge">admin</span>
+                <span className="role-badge">{t("roleAdmin")}</span>
               </Link>
             )}
             {isProvider && (
               <Link href="/provider" className="dropdown-item" onClick={() => setOpen(false)}>
                 <Icon name="layers" size={14} /> {t("providerPortal")}
-                <span className="role-badge">provider</span>
+                <span className="role-badge">{t("roleProvider")}</span>
               </Link>
             )}
             {isVerifier && (
               <Link href="/verifier" className="dropdown-item" onClick={() => setOpen(false)}>
                 <Icon name="check" size={14} /> {t("verifierPortal")}
-                <span className="role-badge">verifier</span>
+                <span className="role-badge">{t("roleVerifier")}</span>
               </Link>
             )}
             {isSovereign && (
               <Link href="/sovereign" className="dropdown-item" onClick={() => setOpen(false)}>
                 <Icon name="flag" size={14} /> {t("sovereignPortal")}
-                <span className="role-badge">sovereign</span>
+                <span className="role-badge">{t("roleSovereign")}</span>
               </Link>
             )}
             <button type="button" className="dropdown-item" onClick={() => setOpen(false)}>
@@ -299,5 +290,3 @@ export function TopNav({
     </nav>
   );
 }
-
- 

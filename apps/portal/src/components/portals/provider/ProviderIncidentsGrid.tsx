@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { EntityGrid, type EntityColumn } from "@/components/library";
 import { useTranslations } from "next-intl";
 

@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useState } from "react";
 import { Icon, ConfirmDialog, Modal, Button, type IconName } from "@/components/library";
 import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
@@ -307,13 +306,14 @@ function ResourceRowActions({
 
 <ConfirmDialog
         open={confirmDelete}
-        title="Delete resource?"
+        title={t("deleteTitle")}
         body={
           <>
             <p style={{ margin: 0, color: "var(--text-2)", fontSize: 14, marginBottom: 12 }}>
-              <strong>{row.title}</strong> will be deleted permanently. Delete is refused once
-              an AIR-ID has been minted or any review / trust-signal exists - use{" "}
-              <strong>Remove</strong> instead to tombstone the row.
+              {t.rich("deleteWarning", {
+                title: () => <strong>{row.title}</strong>,
+                remove: () => <strong>{t("remove")}</strong>
+              })}
             </p>
             {error ? (
               <div className="field-error" style={{ marginBottom: 4 }}>
@@ -323,7 +323,7 @@ function ResourceRowActions({
 </>
         }
         destructive
-        confirmLabel={busy ? "Deleting…" : "Delete"}
+        confirmLabel={busy ? t("deleting") : t("delete")}
         onCancel={() => setConfirmDelete(false)}
         onConfirm={doDelete}
       />

@@ -52,7 +52,11 @@
     "providerPortal": "Portail Fournisseur",
     "verifierPortal": "Portail Vérificateur",
     "sovereignPortal": "Portail Souverain",
-    "accountSettings": "Paramètres du compte"
+    "accountSettings": "Paramètres du compte",
+    "roleAdmin": "admin",
+    "roleProvider": "fournisseur",
+    "roleVerifier": "vérificateur",
+    "roleSovereign": "souverain"
   },
 
   "footer": {
@@ -1673,7 +1677,7 @@
     "edit": "Modifier",
     "delete": "Supprimer",
     "deleteTitle": "Supprimer la ressource ?",
-    "deleteWarning": "sera supprimée définitivement. La suppression est refusée lorsqu'un AIR-ID a été émis ou qu'un signal de confiance / revue existe — utilisez Retirer pour archiver la ligne.",
+    "deleteWarning": "<title></title> sera supprimée définitivement. La suppression est refusée lorsqu'un AIR-ID a été émis ou qu'un signal de confiance / revue existe — utilisez <remove></remove> pour archiver la ligne.",
     "cancel": "Annuler",
     "deleting": "Suppression…",
     "close": "Fermer",
@@ -1729,7 +1733,7 @@
     "suspend": "Suspendre",
     "delete": "Supprimer",
     "deleteTitle": "Supprimer l'utilisateur ?",
-    "deleteWarning": "sera supprimé définitivement. Les entrées d'audit qu'il a créées restent mais deviennent anonymes.",
+    "deleteWarning": "<name></name> (<email></email>) sera supprimé définitivement. Les entrées d'audit qu'il a créées restent mais deviennent anonymes.",
     "cancel": "Annuler",
     "deleting": "Suppression…",
     "reactivateTitle": "Réactiver l'utilisateur ?",
@@ -1778,7 +1782,7 @@
     "editProviderTitle": "Modifier le fournisseur",
     "close": "Fermer",
     "deleteTitle": "Supprimer le fournisseur ?",
-    "deleteWarning": "sera supprimé définitivement. La suppression est refusée lorsqu'une ressource, un utilisateur ou une référence d'audit existe — suspendez le fournisseur à la place.",
+    "deleteWarning": "<name></name> (<slug></slug>) sera supprimé définitivement. La suppression est refusée lorsqu'une ressource, un utilisateur ou une référence d'audit existe — suspendez le fournisseur à la place.",
     "cancel": "Annuler",
     "deleting": "Suppression…",
     "fieldSlug": "Slug",
@@ -2106,6 +2110,7 @@
     "next": "Suiv. →",
     "deleteRowTitle": "Supprimer la ligne ?",
     "deleteRowDescription": "Cela supprimera définitivement la ligne <strong>{code}</strong> de <strong>{table}</strong>.",
+    "deleteRowBody": "Cela supprime définitivement l'entrée de <table></table>. Si d'autres lignes y font référence, la suppression est bloquée — passez <active></active> à false à la place.",
     "cancel": "Annuler",
     "deleting": "Suppression…",
     "deleteButton": "Supprimer",
@@ -2404,10 +2409,13 @@
 
   "portalDataTable": {
     "searchPlaceholder": "Rechercher…",
+    "searchAria": "Rechercher",
     "all": "Tous",
     "clearFilters": "Effacer les filtres",
+    "clearFiltersAria": "Effacer la recherche et les filtres",
     "clear": "Effacer",
-    "noRowsMatch": "Aucune ligne ne correspond à ces filtres."
+    "noRowsMatch": "Aucune ligne ne correspond à votre recherche et à vos filtres.",
+    "rowCount": "{shown} sur {total}"
   },
 
   "portalRegistration": {
