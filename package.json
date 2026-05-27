@@ -7,6 +7,10 @@
   "engines": {
     "node": ">=20.0.0"
   },
+  "dependencies": {
+    "@airegistry/public": "workspace:*",
+    "@airegistry/ui-kit": "workspace:*"
+  },
   "scripts": {
     "dev": "turbo run dev --filter=@airegistry/portal",
     "start": "pnpm --filter @airegistry/portal start",

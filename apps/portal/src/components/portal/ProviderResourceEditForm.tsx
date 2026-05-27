@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Icon, Button, Field, Input, Select, TextArea } from "@/components/library";
 import { useTranslations } from "next-intl";
-import { Icon } from "@airegistry/ui-kit";
 import { registryFetch } from "@airegistry/ui-kit";
 import { EvidenceFileAttachment } from "@/components/portal/EvidenceFileAttachment";
 

@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/library";
-import { EntityGrid, type EntityColumn } from "@/components/library";
+import { Button, EntityGrid, type EntityColumn } from "@/components/library";
 import { useTranslations } from "next-intl";
-import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
 import { StatusPill } from "../StatusPill";
 
 export type ProviderResourceRow = {
@@ -26,7 +24,8 @@ type Props = {
 };
 
 export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
-const columns: EntityColumn<ProviderResourceRow>[] = [
+  const t = useTranslations("provider.resources");
+  const columns: EntityColumn<ProviderResourceRow>[] = [
     {
       key: "title",
       label: t("colTitle"),
@@ -92,7 +91,7 @@ Public
     <EntityGrid
       rows={rows}
       columns={columns}
-emptyState="You haven't published any resources yet."
+      emptyState="You haven't published any resources yet."
       searchPlaceholder="Search title, AIR-ID, or slug…"
       searchableKeys={["title", "airId", "slug"]}
       filters={[

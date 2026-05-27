@@ -1,4 +1,4 @@
 /**
- * Re-export. The implementation lives in `components/public/Reveal.tsx`.
+ * Re-export. Scroll reveal lives in `@airegistry/public/shell`.
  */
-export { Reveal } from "@/components/public/Reveal";
+export { Reveal } from "@airegistry/public/shell";

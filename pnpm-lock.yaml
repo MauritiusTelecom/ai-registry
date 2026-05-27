@@ -7,6 +7,13 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@airegistry/public':
+        specifier: workspace:*
+        version: link:packages/public
+      '@airegistry/ui-kit':
+        specifier: workspace:*
+        version: link:packages/ui-kit
     devDependencies:
       turbo:
         specifier: ^2.3.0

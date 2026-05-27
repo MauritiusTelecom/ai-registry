@@ -5,6 +5,7 @@ import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/library";
 
 /**

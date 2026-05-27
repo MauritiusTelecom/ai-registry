@@ -71,7 +71,7 @@ export default async function ProviderReviewsPage() {
       <div className="p-page-header">
         <h1 className="p-title">{t("title")}</h1>
         <p className="p-subtitle">
-          {t("subtitle", { count: projected.length, provider: user?.provider?.displayName, openCount })}
+          {t("subtitle", { count: projected.length, provider: user?.provider?.displayName ?? "", openCount })}
         </p>
       </div>
       <ProviderReviewsGrid rows={projected} types={types} />

@@ -5,7 +5,6 @@ import { withBase } from "@airegistry/sdk";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Icon, Button, Field, Input, Select, TextArea } from "@/components/library";
-import { Icon } from "@airegistry/ui-kit";
 import { registryFetch } from "@airegistry/ui-kit";
 import { useTranslations } from "next-intl";
 

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { EntityGrid, type EntityColumn } from "@/components/library";
 import { useTranslations } from "next-intl";
-import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
 
 export type ProviderIncidentRow = {
   id: string;
@@ -21,7 +20,8 @@ type Props = {
 };
 
 export function ProviderIncidentsGrid({ rows, actionTypes }: Props) {
-const columns: EntityColumn<ProviderIncidentRow>[] = [
+  const t = useTranslations("provider.incidents");
+  const columns: EntityColumn<ProviderIncidentRow>[] = [
     { key: "ts", label: "Performed", render: (row) => row.ts, mono: true },
     {
       key: "action",
@@ -64,7 +64,7 @@ const columns: EntityColumn<ProviderIncidentRow>[] = [
     <EntityGrid
       rows={rows}
       columns={columns}
-emptyState="No enforcement actions on record. Quiet is good."
+      emptyState="No enforcement actions on record. Quiet is good."
       searchPlaceholder="Search incidents by target or reason…"
       searchableKeys={["target", "reason", "publicNote"]}
       filters={[

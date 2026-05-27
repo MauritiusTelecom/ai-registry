@@ -4,11 +4,9 @@ import { withBase } from "@airegistry/sdk";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useAuth } from "@/components/public/AuthProvider";
 import { Button, Field, Input, Select, TextArea } from "@/components/library";
 import { useTranslations } from "next-intl";
-import { useAuth } from "@airegistry/ui-kit";
-import { registryFetch } from "@airegistry/ui-kit";
+import { registryFetch, useAuth } from "@airegistry/ui-kit";
 
 export type OrgFormOption = { code: string; name: string };
 

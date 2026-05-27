@@ -5,6 +5,8 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./src/*"],
+      "@/components/library": ["../../src/components/library"],
+      "@/components/library/*": ["../../src/components/library/*"],
 
       "@/lib/prisma": ["../../packages/core/src/lib/prisma"],
 

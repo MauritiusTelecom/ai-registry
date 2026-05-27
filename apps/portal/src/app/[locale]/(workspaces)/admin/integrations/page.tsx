@@ -42,8 +42,12 @@ export default async function AdminIntegrationsPage() {
       label: t("smtpLabel"),
       status: smtpConfigured ? "configured" : "unconfigured",
       detail: smtpConfigured
-        ? t("smtpDetailConfigured", { host: cfg.mail.smtpHost, port: String(cfg.mail.smtpPort), from: cfg.mail.from })
-        : t("smtpDetailUnconfigured", { from: cfg.mail.from }),
+        ? t("smtpDetailConfigured", {
+            host: cfg.mail.smtpHost ?? "",
+            port: String(cfg.mail.smtpPort ?? ""),
+            from: cfg.mail.from ?? ""
+          })
+        : t("smtpDetailUnconfigured", { from: cfg.mail.from ?? "" }),
       spec: "ai-registry-specs/shared/email-notifications.md"
     },
     {
@@ -80,7 +84,10 @@ export default async function AdminIntegrationsPage() {
       label: t("oidcLabel"),
       status: oidcConfigured ? "configured" : "reserved",
       detail: oidcConfigured
-        ? t("oidcDetailConfigured", { issuer: process.env.OIDC_ISSUER ?? "(set OIDC_ISSUER)", clientId: process.env.OIDC_CLIENT_ID })
+        ? t("oidcDetailConfigured", {
+            issuer: process.env.OIDC_ISSUER ?? "(set OIDC_ISSUER)",
+            clientId: process.env.OIDC_CLIENT_ID ?? ""
+          })
         : t("oidcDetailUnconfigured"),
       spec: "ai-registry-specs/shared/auth.md"
     },

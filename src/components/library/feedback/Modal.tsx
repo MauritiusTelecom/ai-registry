@@ -1,4 +1,5 @@
 /**
  * Re-export. The implementation lives in `components/public/Modal.tsx`.
  */
-export { Modal } from "@/components/public/Modal";
+/** Modal delegated to `@airegistry/public/shell`. */
+export { Modal } from "@airegistry/public/shell";

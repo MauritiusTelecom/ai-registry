@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/library";
-import { EntityGrid, type EntityColumn } from "@/components/library";
+import { Button, EntityGrid, type EntityColumn } from "@/components/library";
 import { useTranslations } from "next-intl";
-import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
 import { StatusPill } from "../StatusPill";
 
 export type ProviderSubmissionRow = {
@@ -26,7 +24,8 @@ type Props = {
 };
 
 export function ProviderSubmissionsGrid({ rows, kinds, lifecycles }: Props) {
-const columns: EntityColumn<ProviderSubmissionRow>[] = [
+  const t = useTranslations("provider.submissions");
+  const columns: EntityColumn<ProviderSubmissionRow>[] = [
     {
       key: "title",
       label: t("colTitle"),
@@ -90,7 +89,7 @@ Public
     <EntityGrid
       rows={rows}
       columns={columns}
-emptyState="No in-flight submissions — all your resources are either listed or removed."
+      emptyState="No in-flight submissions — all your resources are either listed or removed."
       searchPlaceholder="Search submissions by title or slug…"
       searchableKeys={["title", "slug"]}
       filters={[

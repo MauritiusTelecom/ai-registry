@@ -95,6 +95,19 @@ const nextConfig = {
     "@airegistry/ui-kit"
   ],
 
+  // `src/components/library` (repo root) is compiled as part of this app via
+  // tsconfig path aliases. Module resolution for those files starts at the
+  // monorepo root, where pnpm does not link workspace packages; `@airegistry/*`
+  // only exists under `apps/portal/node_modules`. Prefer that folder first.
+  webpack(config) {
+    const portalNodeModules = path.join(__dirname, "node_modules");
+    const existing = config.resolve.modules ?? ["node_modules"];
+    if (!existing.includes(portalNodeModules)) {
+      config.resolve.modules = [portalNodeModules, ...existing];
+    }
+    return config;
+  },
+
   // AIR-SPEC §13 names `/.well-known/ai-registry` as the capability document
   // path. Next.js's App Router excludes dot-prefixed folders, so the route
   // handler lives at /api/well-known/ai-registry and is exposed at the

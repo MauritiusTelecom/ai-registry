@@ -1,6 +1,4 @@
 /**
- * Re-export. The implementation lives in `components/public/ThemeProvider.tsx`.
- * Pulls in the `useTheme` hook in the same line so consumers don't need
- * separate imports.
+ * Re-export. Theme primitives live in `@airegistry/ui-kit`.
  */
-export { ThemeProvider, useTheme } from "@/components/public/ThemeProvider";
+export { ThemeProvider, useTheme } from "@airegistry/ui-kit";

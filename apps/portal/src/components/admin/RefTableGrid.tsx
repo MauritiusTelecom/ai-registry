@@ -158,9 +158,9 @@ function renderCell(value: unknown): ReactNode {
   }
   if (typeof value === "boolean") {
     return value ? (
-      <span className="tag" style={{ color: "#10b981" }}>{t("active")}</span>
+      <span className="tag" style={{ color: "#10b981" }}>active</span>
     ) : (
-      <span className="tag">{t("inactive")}</span>
+      <span className="tag">inactive</span>
     );
   }
   if (typeof value === "string" && value.length > 80) {
