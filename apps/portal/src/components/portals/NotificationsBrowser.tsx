@@ -1,5 +1,6 @@
 "use client";
 
+
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
 
@@ -29,16 +30,17 @@ type Notification = {
   unread: boolean;
 };
 
-const KIND_LABEL: Record<Notification["kind"], string> = {
-  review: "Review",
-  alert: "Alert",
-  audit: "Audit",
-  system: "System"
+const KIND_LABEL_KEY: Record<Notification["kind"], string> = {
+  review: "kindReview",
+  alert: "kindAlert",
+  audit: "kindAudit",
+  system: "kindSystem"
 };
 
 const PAGE_SIZE = 20;
 
 export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
+  const t = useTranslations("portalNotificationsBrowser");
   const [notifs, setNotifs] = useState<Notification[]>(initial);
   const [q, setQ] = useState("");
   const [kindFilter, setKindFilter] = useState<"" | Notification["kind"]>("");
@@ -135,12 +137,12 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
             setQ(e.target.value);
             setPage(1);
           }}
-          placeholder="Search notifications by title or body…"
-          aria-label="Search notifications"
+          placeholder={t("searchPlaceholder")}
+          aria-label={t("searchPlaceholder")}
           className="p-grid-search"
         />
         <label className="p-grid-filter">
-          <span className="p-grid-filter-label">Kind</span>
+          <span className="p-grid-filter-label">{t("kind")}</span>
           <select
             value={kindFilter}
             onChange={(e) => {
@@ -148,15 +150,15 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
               setPage(1);
             }}
           >
-            <option value="">All</option>
-            <option value="review">Review</option>
-            <option value="alert">Alert</option>
-            <option value="audit">Audit</option>
-            <option value="system">System</option>
+            <option value="">{t("all")}</option>
+            <option value="review">{t("kindReview")}</option>
+            <option value="alert">{t("kindAlert")}</option>
+            <option value="audit">{t("kindAudit")}</option>
+            <option value="system">{t("kindSystem")}</option>
           </select>
         </label>
         <label className="p-grid-filter">
-          <span className="p-grid-filter-label">Status</span>
+          <span className="p-grid-filter-label">{t("status")}</span>
           <select
             value={readFilter}
             onChange={(e) => {
@@ -164,14 +166,14 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
               setPage(1);
             }}
           >
-            <option value="all">All</option>
-            <option value="unread">Unread</option>
-            <option value="read">Read</option>
+            <option value="all">{t("all")}</option>
+            <option value="unread">{t("unread")}</option>
+            <option value="read">{t("read")}</option>
           </select>
         </label>
         {anyFilterActive ? (
           <button type="button" className="p-grid-clear" onClick={resetFilters}>
-            Clear
+            {t("clear")}
           </button>
         ) : null}
         <span className="p-grid-count">
@@ -183,7 +185,7 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
           disabled={busy || unreadCount === 0}
           onClick={() => void markAllRead()}
         >
-          {busy ? "Saving…" : `Mark all read${unreadCount > 0 ? ` (${unreadCount})` : ""}`}
+{busy ? "Saving…" : `Mark all read${unreadCount > 0 ? ` (${unreadCount})` : ""}`}
         </Button>
       </div>
 
@@ -191,8 +193,8 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
         <div className="p-empty">
           <div className="p-empty-text">
             {anyFilterActive
-              ? "No notifications match your search and filters."
-              : "Nothing new for you right now."}
+              ? t("noMatch")
+              : t("nothingNew")}
           </div>
         </div>
       ) : (
@@ -201,10 +203,10 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
             <thead>
               <tr>
                 <th style={{ width: 32 }}></th>
-                <th style={{ width: 110 }}>Kind</th>
-                <th>Title</th>
-                <th>Detail</th>
-                <th style={{ width: 110 }}>When</th>
+                <th style={{ width: 110 }}>{t("kind")}</th>
+                <th>{t("titleCol")}</th>
+                <th>{t("detail")}</th>
+                <th style={{ width: 110 }}>{t("when")}</th>
                 <th style={{ width: 60 }}></th>
               </tr>
             </thead>
@@ -220,8 +222,8 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
                 >
                   <td>
                     <span
-                      aria-label={n.unread ? "Unread" : "Read"}
-                      title={n.unread ? "Unread" : "Read"}
+                      aria-label={n.unread ? t("unread") : t("read")}
+                      title={n.unread ? t("unread") : t("read")}
                       style={{
                         display: "inline-block",
                         width: 8,
@@ -250,7 +252,7 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
                         textTransform: "uppercase"
                       }}
                     >
-                      {KIND_LABEL[n.kind]}
+                      {t(KIND_LABEL_KEY[n.kind])}
                     </span>
                   </td>
                   <td style={{ fontWeight: n.unread ? 600 : 400 }}>{n.title}</td>
@@ -267,7 +269,7 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
                         disabled={busy}
                         style={{ fontSize: 12 }}
                       >
-                        Mark read
+                        {t("markRead")}
                       </button>
                     ) : (
                       <span style={{ color: "var(--text-3)", fontSize: 12 }}>—</span>
@@ -291,8 +293,7 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
           }}
         >
           <span>
-            Page {safePage} of {totalPages} · showing {start + 1}–
-            {Math.min(start + PAGE_SIZE, filtered.length)} of {filtered.length}
+            {t("pagination", { page: safePage, totalPages, start: start + 1, end: Math.min(start + PAGE_SIZE, filtered.length), total: filtered.length })}
           </span>
           <span style={{ display: "flex", gap: 8 }}>
             <Button
@@ -301,7 +302,7 @@ export function NotificationsBrowser({ initial }: { initial: Notification[] }) {
               disabled={safePage <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
-              ← Prev
+← Prev
             </Button>
             <Button
               intent="secondary"

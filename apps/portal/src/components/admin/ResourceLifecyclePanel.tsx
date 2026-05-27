@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/library";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 type Action =
   | "approve"
@@ -56,15 +57,6 @@ const ACTION_TONE: Record<Action, string> = {
   remove: "#ef4444"
 };
 
-const ACTION_HINT: Record<Action, string> = {
-  approve: "Marks the resource as `listed` and mints the AIR-ID.",
-  reject: "Sends the resource back to `needs_update`.",
-  suspend: "Hides the resource from the public registry while keeping it in the catalogue.",
-  restore: "Reverts the resource to `listed` from any status (including suspended, deprecated, removed, or a pre-approval state). Mints the AIR-ID if one was never issued.",
-  deprecate: "Marks the resource as `deprecated` while keeping the public detail visible.",
-  remove: "Tombstones the resource. The public detail returns 410 Gone but the AIR-ID stays reserved."
-};
-
 export function ResourceLifecyclePanel({
   resourceId,
   currentLifecycleCode,
@@ -74,6 +66,7 @@ export function ResourceLifecyclePanel({
   currentLifecycleCode: string;
   currentLifecycleName: string;
 }) {
+  const t = useTranslations("adminLifecycle");
   const router = useRouter();
   const [action, setAction] = useState<Action | null>(null);
   const [reason, setReason] = useState("");
@@ -90,7 +83,7 @@ export function ResourceLifecyclePanel({
     setError(null);
     setOkMsg(null);
     if (reason.trim().length < 4) {
-      setError("Reason is required (min 4 chars)");
+      setError(t("reasonRequired"));
       return;
     }
     setBusy(true);
@@ -105,15 +98,15 @@ export function ResourceLifecyclePanel({
       );
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Action failed");
+        setError(data.error ?? t("actionFailed"));
         return;
       }
-      setOkMsg(`Lifecycle moved via "${action}".`);
+      setOkMsg(t("lifecycleMoved", { action }));
       setAction(null);
       setReason("");
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setBusy(false);
     }
@@ -130,7 +123,7 @@ export function ResourceLifecyclePanel({
             textTransform: "uppercase"
           }}
         >
-          Current status
+          {t("currentStatus")}
         </span>
         <div style={{ marginTop: 4, fontSize: 14 }}>
           <strong>{currentLifecycleName}</strong>{" "}
@@ -142,7 +135,7 @@ export function ResourceLifecyclePanel({
 
       {allowed.length === 0 ? (
         <p style={{ color: "var(--text-3)", margin: 0 }}>
-          No lifecycle transitions available from this status.
+          {t("noTransitions")}
         </p>
       ) : (
         <>
@@ -154,7 +147,7 @@ export function ResourceLifecyclePanel({
               textTransform: "uppercase"
             }}
           >
-            Available actions
+            {t("availableActions")}
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {allowed.map((a) => (
@@ -191,7 +184,7 @@ export function ResourceLifecyclePanel({
               }}
             >
               <div style={{ fontSize: 12, color: "var(--text-2)" }}>
-                {ACTION_HINT[action]}
+                {t(`actionHint_${action}`)}
               </div>
               <label style={{ display: "grid", gap: 6, fontSize: 12 }}>
                 <span
@@ -202,14 +195,14 @@ export function ResourceLifecyclePanel({
                     textTransform: "uppercase"
                   }}
                 >
-                  Reason (required, min 4 chars)
+                  {t("reasonLabel")}
                 </span>
                 <textarea
                   className="auth-input"
                   style={{ minHeight: 70, fontFamily: "inherit" }}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="What changed and why?"
+                  placeholder={t("reasonPlaceholder")}
                 />
               </label>
               <label
@@ -228,7 +221,7 @@ export function ResourceLifecyclePanel({
                   onChange={(e) => setNotifyByEmail(e.target.checked)}
                   style={{ accentColor: "var(--primary)" }}
                 />
-                <span>Email the provider's contacts about this transition</span>
+                <span>{t("notifyByEmail")}</span>
               </label>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                 <Button intent="secondary"
@@ -239,7 +232,7 @@ export function ResourceLifecyclePanel({
                   }}
                   disabled={busy}
                 >
-                  Cancel
+Cancel
                 </Button>
                 <Button intent="primary"
                   onClick={submit}
@@ -250,7 +243,7 @@ export function ResourceLifecyclePanel({
                   }}
                 >
                   {busy
-                    ? "Working…"
+                    ? t("working")
                     : `${action.charAt(0).toUpperCase() + action.slice(1)}`}
                 </Button>
               </div>

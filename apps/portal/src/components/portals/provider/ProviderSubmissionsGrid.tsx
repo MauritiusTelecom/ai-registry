@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { Button } from "@/components/library";
 import { EntityGrid, type EntityColumn } from "@/components/library";
+import { useTranslations } from "next-intl";
+import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
 import { StatusPill } from "../StatusPill";
 
 export type ProviderSubmissionRow = {
@@ -24,10 +26,10 @@ type Props = {
 };
 
 export function ProviderSubmissionsGrid({ rows, kinds, lifecycles }: Props) {
-  const columns: EntityColumn<ProviderSubmissionRow>[] = [
+const columns: EntityColumn<ProviderSubmissionRow>[] = [
     {
       key: "title",
-      label: "Title",
+      label: t("colTitle"),
       render: (row) =>
         row.lifecycleCode === "listed" ? (
           <Link
@@ -42,22 +44,22 @@ export function ProviderSubmissionsGrid({ rows, kinds, lifecycles }: Props) {
     },
     {
       key: "kind",
-      label: "Kind",
+      label: t("colKind"),
       render: (row) => <span className="tag">{row.kind}</span>
     },
-    { key: "lifecycle", label: "Lifecycle", render: (row) => row.lifecycle },
+    { key: "lifecycle", label: t("colLifecycle"), render: (row) => row.lifecycle },
     {
       key: "status",
-      label: "Visual status",
+      label: t("colVisualStatus"),
       render: (row) => <StatusPill status={row.status} />
     },
     {
       key: "submitted",
-      label: "Submitted",
+      label: t("colSubmitted"),
       render: (row) => row.submittedAt ?? "-",
       mono: true
     },
-    { key: "updated", label: "Updated", render: (row) => row.updatedAt, mono: true },
+    { key: "updated", label: t("colUpdated"), render: (row) => row.updatedAt, mono: true },
     {
       key: "actions",
       label: "",
@@ -68,7 +70,7 @@ export function ProviderSubmissionsGrid({ rows, kinds, lifecycles }: Props) {
             intent="secondary"
             size="sm"
           >
-            Edit / submit
+Edit / submit
           </Button>
         ) : row.lifecycleCode === "listed" ? (
           <Button
@@ -76,7 +78,7 @@ export function ProviderSubmissionsGrid({ rows, kinds, lifecycles }: Props) {
             intent="secondary"
             size="sm"
           >
-            Public
+Public
           </Button>
         ) : (
           <span style={{ color: "var(--text-3)", fontSize: 12 }}>-</span>
@@ -88,18 +90,18 @@ export function ProviderSubmissionsGrid({ rows, kinds, lifecycles }: Props) {
     <EntityGrid
       rows={rows}
       columns={columns}
-      emptyState="No in-flight submissions — all your resources are either listed or removed."
+emptyState="No in-flight submissions — all your resources are either listed or removed."
       searchPlaceholder="Search submissions by title or slug…"
       searchableKeys={["title", "slug"]}
       filters={[
         {
           key: "kind",
-          label: "Kind",
+          label: t("colKind"),
           options: kinds.map((k) => ({ value: k.code, label: k.name }))
         },
         {
           key: "lifecycleCode",
-          label: "Lifecycle",
+          label: t("colLifecycle"),
           options: lifecycles.map((l) => ({ value: l.code, label: l.name }))
         }
       ]}

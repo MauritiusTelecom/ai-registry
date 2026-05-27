@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Icon, type IconName } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
@@ -52,21 +53,23 @@ const GROUP_ORDER: SearchKind[] = [
   "provider",
   "user"
 ];
-const GROUP_LABEL: Record<SearchKind, string> = {
-  page: "Pages",
-  resource: "Resources",
-  complaint: "Complaints",
-  review: "Reviews",
-  incident: "Incidents",
-  provider: "Providers",
-  user: "Users"
+const GROUP_LABEL_KEYS: Record<SearchKind, string> = {
+  page: "groupPages",
+  resource: "groupResources",
+  complaint: "groupComplaints",
+  review: "groupReviews",
+  incident: "groupIncidents",
+  provider: "groupProviders",
+  user: "groupUsers"
 };
 
 export function PortalSearch({
-  placeholder = "Search resources, providers, pages, actions…"
+  placeholder
 }: {
   placeholder?: string;
 }) {
+  const t = useTranslations("portalSearch");
+  const effectivePlaceholder = placeholder ?? t("defaultPlaceholder");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -195,10 +198,10 @@ export function PortalSearch({
         type="button"
         className="p-search"
         onClick={() => setOpen(true)}
-        aria-label="Open command palette"
+        aria-label={t("openPalette")}
       >
         <Icon name="search" size={14} />
-        <span>{placeholder}</span>
+        <span>{effectivePlaceholder}</span>
         <kbd>⌘K</kbd>
       </button>
 
@@ -215,7 +218,7 @@ export function PortalSearch({
               <Icon name="search" size={16} />
               <input
                 autoFocus
-                placeholder={placeholder}
+                placeholder={effectivePlaceholder}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={onInputKeyDown}
@@ -225,22 +228,22 @@ export function PortalSearch({
 
             <div className="p-cmd-body" ref={listRef}>
               {loading && results.length === 0 ? (
-                <div className="p-cmd-hint">Searching…</div>
+                <div className="p-cmd-hint">{t("searching")}</div>
               ) : error ? (
                 <div className="p-cmd-hint p-cmd-hint-error">
-                  Search failed: {error}
+                  {t("searchFailed", { error })}
                 </div>
               ) : results.length === 0 ? (
                 <div className="p-cmd-hint">
                   {tooShort
-                    ? "Keep typing… (need at least 2 characters for full search)."
-                    : `No matches for “${trimmedQ}”.`}
+                    ? t("keepTyping")
+                    : t("noMatches", { query: trimmedQ })}
                 </div>
               ) : (
                 grouped.map((group) => (
                   <div key={group.kind} className="p-cmd-group">
                     <div className="p-cmd-group-label">
-                      {GROUP_LABEL[group.kind]}
+                      {t(GROUP_LABEL_KEYS[group.kind])}
                     </div>
                     {group.items.map((r) => {
                       const idx = results.indexOf(r);
@@ -271,13 +274,13 @@ export function PortalSearch({
 
             <div className="p-cmd-foot" aria-hidden="true">
               <span className="p-cmd-foot-chip">
-                <kbd>↑↓</kbd> navigate
+                <kbd>↑↓</kbd> {t("navigate")}
               </span>
               <span className="p-cmd-foot-chip">
-                <kbd>↵</kbd> open
+                <kbd>↵</kbd> {t("open")}
               </span>
               <span className="p-cmd-foot-chip">
-                <kbd>esc</kbd> close
+                <kbd>esc</kbd> {t("close")}
               </span>
             </div>
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Icon } from "@airegistry/ui-kit";
 import { useReport, type ReportTarget } from "./ReportContext";
 
@@ -8,6 +9,7 @@ import { useReport, type ReportTarget } from "./ReportContext";
 // so it lives here instead.
 
 export function ResourceReportButton({ target }: { target: ReportTarget }) {
+  const t = useTranslations("reportModal");
   const { open } = useReport();
   return (
     <button
@@ -15,7 +17,7 @@ export function ResourceReportButton({ target }: { target: ReportTarget }) {
       className="btn btn-secondary btn-report-listing"
       onClick={() => open(target)}
     >
-      <Icon name="flag" size={14} /> Report this listing
+      <Icon name="flag" size={14} /> {t("reportListing")}
     </button>
   );
 }

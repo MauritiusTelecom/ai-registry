@@ -2,6 +2,7 @@
 
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -48,6 +49,7 @@ export function RefRowForm({
   mode: "create" | "update";
   initial?: FormValues & { id?: string };
 }) {
+  const t = useTranslations("adminRefRow");
   const router = useRouter();
 
   // Translate config.fields into EntityForm field defs.
@@ -81,7 +83,7 @@ export function RefRowForm({
 }, [config.fields, initial]);
 
   return (
-    <EntityForm<FormValues>
+<EntityForm<FormValues>
       schema={schema}
       initial={initialValues}
       mode={mode === "create" ? "create" : "edit"}

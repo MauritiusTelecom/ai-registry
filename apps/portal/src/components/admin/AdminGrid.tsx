@@ -2,6 +2,7 @@
 
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
@@ -63,6 +64,7 @@ export type AdminGridProps<Row extends { id: string }> = {
 };
 
 export function AdminGrid<Row extends { id: string }>(props: AdminGridProps<Row>) {
+  const t = useTranslations("adminGrid");
   // Seed q + filter values from the URL on first paint so a deep link
   // (e.g. /admin/users?q=alice@example.com) lands with the row already
   // pre-filtered. The header-search uses this exact pattern when it routes
@@ -142,7 +144,7 @@ export function AdminGrid<Row extends { id: string }>(props: AdminGridProps<Row>
         reloadKey={reloadKey}
       />
 
-      {props.addModal ? (
+{props.addModal ? (
         <Modal
           open={addOpen}
           onClose={() => setAddOpen(false)}

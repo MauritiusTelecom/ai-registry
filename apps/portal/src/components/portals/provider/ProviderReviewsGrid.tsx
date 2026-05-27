@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { EntityGrid, type EntityColumn } from "@/components/library";
+import { useTranslations } from "next-intl";
+import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
 import { StatusPill } from "../StatusPill";
 
 export type ProviderReviewRow = {
@@ -21,10 +23,10 @@ type Props = {
 };
 
 export function ProviderReviewsGrid({ rows, types }: Props) {
-  const columns: EntityColumn<ProviderReviewRow>[] = [
+const columns: EntityColumn<ProviderReviewRow>[] = [
     {
       key: "target",
-      label: "Target",
+      label: t("colTarget"),
       render: (row) =>
         row.targetSlug ? (
           <Link
@@ -39,24 +41,24 @@ export function ProviderReviewsGrid({ rows, types }: Props) {
     },
     {
       key: "type",
-      label: "Type",
+      label: t("colType"),
       render: (row) => <span className="tag">{row.type}</span>
     },
     {
       key: "status",
-      label: "Status",
+      label: t("colStatus"),
       render: (row) => <StatusPill status={row.status} />
     },
-    { key: "started", label: "Started", render: (row) => row.startedAt ?? "-", mono: true },
+    { key: "started", label: t("colStarted"), render: (row) => row.startedAt ?? "-", mono: true },
     {
       key: "completed",
-      label: "Completed",
+      label: t("colCompleted"),
       render: (row) => row.completedAt ?? "-",
       mono: true
     },
     {
       key: "summary",
-      label: "Decision",
+      label: t("colDecision"),
       render: (row) =>
         row.decisionSummary ? (
           <span style={{ color: "var(--text-2)" }}>{row.decisionSummary}</span>
@@ -83,22 +85,22 @@ export function ProviderReviewsGrid({ rows, types }: Props) {
     <EntityGrid
       rows={rows}
       columns={columns}
-      emptyState="No reviews of your resources yet."
+emptyState="No reviews of your resources yet."
       searchPlaceholder="Search reviews by target or decision summary…"
       searchableKeys={["target", "decisionSummary"]}
       filters={[
         {
           key: "type",
-          label: "Type",
-          options: types.map((t) => ({ value: t.name, label: t.name }))
+          label: t("colType"),
+          options: types.map((ty) => ({ value: ty.name, label: ty.name }))
         },
         {
           key: "status",
-          label: "Status",
+          label: t("colStatus"),
           options: [
-            { value: "verified", label: "Decided" },
-            { value: "experimental", label: "In flight" },
-            { value: "isolated", label: "Withdrawn" }
+            { value: "verified", label: t("statusDecided") },
+            { value: "experimental", label: t("statusInFlight") },
+            { value: "isolated", label: t("statusWithdrawn") }
           ]
         }
       ]}

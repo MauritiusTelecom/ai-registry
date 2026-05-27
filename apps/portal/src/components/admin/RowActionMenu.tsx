@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon, type IconName } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 export type RowMenuItem = {
   key: string;
@@ -26,13 +27,15 @@ export type RowMenuItem = {
  */
 export function RowActionMenu({
   items,
-  buttonLabel = "More actions",
+  buttonLabel = "",
   align = "right"
 }: {
   items: RowMenuItem[];
   buttonLabel?: string;
   align?: "left" | "right";
 }) {
+  const t = useTranslations("adminActions");
+  const label = buttonLabel || t("moreActions");
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -104,8 +107,8 @@ export function RowActionMenu({
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={buttonLabel}
-        title={buttonLabel}
+        aria-label={label}
+        title={label}
         style={{
           padding: "4px 6px",
           // Make the trigger a touch wider so the dots feel like a button.

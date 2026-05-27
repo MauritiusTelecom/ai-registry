@@ -12,6 +12,7 @@ import {
 import type { RefTableConfig } from "@airegistry/sdk";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 /**
  * CRUD grid for one reference table. Now a thin adapter that translates a
@@ -26,7 +27,7 @@ import { registryFetch } from "@airegistry/ui-kit";
 type Row = Record<string, unknown> & { id: string };
 
 export function RefTableGrid({ config }: { config: RefTableConfig }) {
-  const router = useRouter();
+const router = useRouter();
   const [deleting, setDeleting] = useState<Row | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,13 +112,14 @@ const res = await registryFetch(withBase(`/api/admin/ref/${config.id}/${deleting
 
   return (
     <>
+
       {error ? (
         <div className="field-error" role="alert" style={{ marginBottom: 12 }}>
           {error}
         </div>
       ) : null}
 
-      <EntityGrid<Row>
+<EntityGrid<Row>
         endpoint={withBase(`/api/admin/ref/${config.id}`)}
         columns={columns}
         filters={filters}
@@ -156,9 +158,9 @@ function renderCell(value: unknown): ReactNode {
   }
   if (typeof value === "boolean") {
     return value ? (
-      <span className="tag" style={{ color: "#10b981" }}>active</span>
+      <span className="tag" style={{ color: "#10b981" }}>{t("active")}</span>
     ) : (
-      <span className="tag">inactive</span>
+      <span className="tag">{t("inactive")}</span>
     );
   }
   if (typeof value === "string" && value.length > 80) {

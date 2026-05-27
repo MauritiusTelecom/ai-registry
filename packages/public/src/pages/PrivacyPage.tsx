@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getBranding } from "@airegistry/core/branding";
 import { DocPage, DocPanel } from "../sections/DocPage";
 import { publicPageMetadata } from "../lib/page-metadata";
@@ -8,74 +9,59 @@ export async function generateMetadata() {
 }
 
 export default async function PrivacyPage() {
-  const { registryName, operatorName, privacyDataProtectionAct } = await getBranding();
+  const [{ registryName, operatorName, privacyDataProtectionAct }, t] = await Promise.all([
+    getBranding(),
+    getTranslations("privacy")
+  ]);
   return (
     <DocPage
       crumb={
         <>
           <Link href="/" style={{ color: "var(--text-3)", textDecoration: "none" }}>
-            Home
+            {t("home")}
           </Link>{" "}
-          · Privacy
+          · {t("title")}
         </>
       }
-      title="Privacy"
-      subtitle="What data the registry holds, what it does with it, and what rights you have under Mauritian data protection law."
+      title={t("title")}
+      subtitle={t("pageSubtitle")}
     >
-      <DocPanel title="What we hold">
-        <p>
-          The registry holds two kinds of data:
-        </p>
+      <DocPanel title={t("whatWeHoldTitle")}>
+        <p>{t("whatWeHoldIntro")}</p>
         <ul style={{ paddingLeft: 22, marginTop: 10, display: "grid", gap: 8 }}>
           <li>
-            <strong>Public listing metadata</strong> - providers, resources, governance
-            signals, sovereignty claims, endpoints. This is intentionally public and
-            available through the discovery API.
+            {t.rich("whatWeHoldItem1", {
+              strong: (chunks) => <strong>{chunks}</strong>
+            })}
           </li>
           <li>
-            <strong>Account data</strong> - name, email, organisation and role for
-            registered providers, reviewers and operators. Used only to authenticate, route
-            review work and contact you about the registry.
+            {t.rich("whatWeHoldItem2", {
+              strong: (chunks) => <strong>{chunks}</strong>
+            })}
           </li>
         </ul>
       </DocPanel>
 
-      <DocPanel title="Lawful basis">
-        <p>
-          Account data is held under the {privacyDataProtectionAct}. The lawful
-          basis is either contract performance (we cannot run your provider account
-          without it) or legitimate interest (operating a public registry of national
-          interest).
-        </p>
+      <DocPanel title={t("lawfulBasisTitle")}>
+        <p>{t("lawfulBasisBody", { privacyDataProtectionAct })}</p>
       </DocPanel>
 
-      <DocPanel title="What we don’t do">
-        <p>
-          We do not sell account data. We do not share it with third parties for
-          marketing. We do not host or proxy calls to the AI resources we list, so we do
-          not see end-user prompts or responses - those go directly between consumer and
-          provider.
-        </p>
+      <DocPanel title={t("whatWeDontDoTitle")}>
+        <p>{t("whatWeDontDoBody")}</p>
       </DocPanel>
 
-      <DocPanel title="Your rights">
+      <DocPanel title={t("yourRightsTitle")}>
         <p>
-          You can request access to, correction of, or deletion of your account data at
-          any time through{" "}
+          {t("yourRightsBody1")}{" "}
           <Link href="/contact" style={{ color: "var(--text-2)" }}>
-            the contact form
+            {t("theContactForm")}
           </Link>
-          . If your resource has been publicly listed, the AIR-ID and the underlying
-          audit log persist (append-only) - the resource record can be tombstoned, but the
-          governance trail behind a previously public listing is itself a public record.
+          {t("yourRightsBody2")}
         </p>
       </DocPanel>
 
-      <DocPanel title="Operator">
-        <p>
-          {registryName} is operated by {operatorName} in collaboration with
-          the Ministry of Information.
-        </p>
+      <DocPanel title={t("operatorTitle")}>
+        <p>{t("operatorBody", { registryName, operatorName })}</p>
       </DocPanel>
     </DocPage>
   );

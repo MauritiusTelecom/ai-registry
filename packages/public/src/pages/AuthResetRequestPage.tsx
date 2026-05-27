@@ -1,24 +1,28 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { AuthShell } from "../auth-ui/AuthShell";
 import { RequestResetForm } from "../auth-ui/RequestResetForm";
 
 export const metadata = { title: "Reset password" };
 
-export default function RequestResetPage() {
+export default async function RequestResetPage() {
+  const t = await getTranslations("auth");
   return (
     <AuthShell
-      eyebrow="Reset password"
+      eyebrow={t("resetPassword")}
       title={
         <>
-          Forgot your <span className="gradient-text">password</span>?
+          {t.rich("forgotPasswordTitle", {
+            accent: (chunks) => <span className="gradient-text">{chunks}</span>
+          })}
         </>
       }
-      subtitle="Enter your email and we'll send you a one-time reset link."
+      subtitle={t("forgotPasswordSubtitle")}
       footer={
         <>
-          Remembered it?{" "}
+          {t("rememberedPassword")}{" "}
           <Link href="/login" style={{ color: "var(--text-2)" }}>
-            Sign in
+            {t("signIn")}
           </Link>
         </>
       }

@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadDotenv } from "dotenv";
+import createNextIntlPlugin from "next-intl/plugin";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,10 +57,18 @@ const securityHeaders = [
     : [])
 ];
 
+function primaryLanguageTag(code) {
+  return (code ?? "en").trim().toLowerCase().split("-")[0];
+}
+
 const nextConfig = {
   reactStrictMode: true,
   basePath,
   assetPrefix: basePath || undefined,
+
+  env: {
+    NEXT_PUBLIC_DEFAULT_LANGUAGE: primaryLanguageTag(process.env.DEFAULT_LANGUAGE)
+  },
 
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
@@ -100,4 +109,6 @@ const nextConfig = {
   }
 };
 
-export default nextConfig;
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+export default withNextIntl(nextConfig);

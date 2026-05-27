@@ -1,78 +1,48 @@
+import { getTranslations } from "next-intl/server";
 import { Icon, type IconName } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";
 
-const PILLARS: { icon: IconName; title: string; desc: string }[] = [
-  {
-    icon: "shield",
-    title: "Provider Verification",
-    desc: "Domain-bound DNS and email proofs confirm that listed providers are who they claim to be."
-  },
-  {
-    icon: "flag",
-    title: "Sovereignty Review",
-    desc: "Each resource cites local law, data, systems, language or culture - and is reviewed against a published rubric."
-  },
-  {
-    icon: "lock",
-    title: "Runtime Identity",
-    desc: "Optional SPIFFE/SPIRE SVIDs from the hosting environment - issued by the operator, never the registry."
-  },
-  {
-    icon: "doc",
-    title: "Open Audit Log",
-    desc: "Status changes, reviewer notes and AIR-ID assignments are signed and publicly auditable."
-  }
+const PILLARS: { icon: IconName; titleKey: string; descKey: string }[] = [
+  { icon: "shield", titleKey: "providerVerification", descKey: "providerVerificationDesc" },
+  { icon: "flag", titleKey: "sovereigntyReview", descKey: "sovereigntyReviewDesc" },
+  { icon: "lock", titleKey: "runtimeIdentity", descKey: "runtimeIdentityDesc" },
+  { icon: "doc", titleKey: "openAuditLog", descKey: "openAuditLogDesc" }
 ];
 
-const TEST_ROWS: { label: string; body: string }[] = [
-  {
-    label: "Local law",
-    body: "Encodes legislation, regulation, official process or professional obligation."
-  },
-  {
-    label: "Local data",
-    body: "Uses local datasets, records or locally collected knowledge."
-  },
-  {
-    label: "Local systems",
-    body: "Integrates with or describes local institutional systems and workflows."
-  },
-  {
-    label: "Language & culture",
-    body: "Supports local language, culture, norms or context."
-  }
+const TEST_ROWS: { labelKey: string; bodyKey: string }[] = [
+  { labelKey: "localLaw", bodyKey: "localLawDesc" },
+  { labelKey: "localData", bodyKey: "localDataDesc" },
+  { labelKey: "localSystems", bodyKey: "localSystemsDesc" },
+  { labelKey: "languageCulture", bodyKey: "languageCultureDesc" }
 ];
 
-export function GovernanceSection() {
+export async function GovernanceSection() {
+  const t = await getTranslations("governance");
   return (
     <section className="section">
       <Reveal className="section-header">
         <div className="eyebrow">
           <span className="dot" />
-          <span>Governance, not Gatekeeping</span>
+          <span>{t("eyebrow")}</span>
         </div>
         <h2>
-          Listing is not endorsement.
+          {t("heading")}
           <br />
-          <span className="gradient-text">Three independent signals do the work.</span>
+          <span className="gradient-text">{t("headingAccent")}</span>
         </h2>
-        <p>
-          The registry exposes lightweight governance metadata so users can tell apart &ldquo;this
-          resource exists&rdquo; from &ldquo;an authorised body has officially endorsed it.&rdquo;
-          Status labels are explicit and auditable.
-        </p>
+        <p>{t("description")}</p>
       </Reveal>
 
       <div className="gov-grid">
         <Reveal>
           <div className="gov-pillars">
             {PILLARS.map((pillar) => (
-              <div className="pillar feature-card" key={pillar.title}>
+              <div className="pillar feature-card" key={pillar.titleKey}>
                 <div className="pillar-icon">
                   <Icon name={pillar.icon} size={16} />
                 </div>
-                <div className="pillar-title">{pillar.title}</div>
-                <div className="pillar-desc">{pillar.desc}</div>
+                <div className="pillar-title">{t(pillar.titleKey as any)}</div>
+                <div className="pillar-desc">{t(pillar.descKey as any)}</div>
               </div>
             ))}
           </div>
@@ -89,19 +59,17 @@ export function GovernanceSection() {
                 textTransform: "uppercase"
               }}
             >
-              Sovereignty Test
+              {t("sovereigntyTest")}
             </div>
-            <h3 style={{ marginTop: 12 }}>Specific, not aspirational.</h3>
+            <h3 style={{ marginTop: 12 }}>{t("specificNotAspirational")}</h3>
             <p style={{ marginTop: 10, fontSize: 14 }}>
-              To qualify, a submission must cite at least one sovereignty basis with concrete
-              evidence - a referenced law, dataset, institution, language asset or cultural
-              artefact.
+              {t("sovereigntyTestDesc")}
             </p>
 
             <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 10 }}>
               {TEST_ROWS.map((row) => (
                 <div
-                  key={row.label}
+                  key={row.labelKey}
                   style={{
                     display: "flex",
                     gap: 14,
@@ -121,9 +89,9 @@ export function GovernanceSection() {
                       textTransform: "uppercase"
                     }}
                   >
-                    {row.label}
+                    {t(row.labelKey as any)}
                   </span>
-                  <span style={{ fontSize: 13, color: "var(--text-2)", flex: 1 }}>{row.body}</span>
+                  <span style={{ fontSize: 13, color: "var(--text-2)", flex: 1 }}>{t(row.bodyKey as any)}</span>
                 </div>
               ))}
             </div>
@@ -137,8 +105,7 @@ export function GovernanceSection() {
                 color: "var(--text-3)"
               }}
             >
-              Quality matters more than quantity. A registry of fifty credible resources is more
-              useful than one of a thousand generic listings.
+              {t("qualityNote")}
             </div>
           </div>
         </Reveal>

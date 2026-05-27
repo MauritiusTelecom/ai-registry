@@ -1,23 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Icon, registryFetch } from "@airegistry/ui-kit";
 import { Modal } from "./Modal";
 import { useReport } from "./ReportContext";
 import { withBase } from "@airegistry/sdk";
 
-const REASONS = [
-  { value: "impersonation", label: "Provider impersonation" },
-  { value: "sovereignty", label: "Fails the sovereignty test" },
-  { value: "metadata", label: "Inaccurate metadata" },
-  { value: "abuse", label: "Resource is harmful or abusive" },
-  { value: "legal", label: "Legal or licensing concern" },
-  { value: "other", label: "Other" }
+const REASON_KEYS = [
+  { value: "impersonation", labelKey: "reasonImpersonation" },
+  { value: "sovereignty", labelKey: "reasonSovereignty" },
+  { value: "metadata", labelKey: "reasonMetadata" },
+  { value: "abuse", labelKey: "reasonAbuse" },
+  { value: "legal", labelKey: "reasonLegal" },
+  { value: "other", labelKey: "reasonOther" }
 ];
 
 type Errors = Partial<Record<"reason" | "details" | "email" | "submit", string>>;
 
 export function ReportModal() {
+  const t = useTranslations("reportModal");
   const { target, close } = useReport();
   const [reason, setReason] = useState("");
   const [details, setDetails] = useState("");
@@ -44,9 +46,9 @@ export function ReportModal() {
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     const next: Errors = {};
-    if (!reason) next.reason = "Select a reason";
-    if (details.trim().length < 12) next.details = "Add at least 12 characters of context";
-    if (!/^\S+@\S+\.\S+$/.test(email)) next.email = "Valid email required";
+    if (!reason) next.reason = t("errorSelectReason");
+    if (details.trim().length < 12) next.details = t("errorDetailsMin");
+    if (!/^\S+@\S+\.\S+$/.test(email)) next.email = t("errorEmailRequired");
     setErrors(next);
     if (Object.keys(next).length || !target) return;
 
@@ -64,12 +66,12 @@ export function ReportModal() {
       });
       if (!response.ok) {
         const data = (await response.json().catch(() => ({}))) as { error?: string };
-        setErrors({ submit: data.error ?? "Could not submit your report. Please retry." });
+        setErrors({ submit: data.error ?? t("errorSubmitFailed") });
         return;
       }
       setSubmitted(true);
     } catch {
-      setErrors({ submit: "Network error. Please retry." });
+      setErrors({ submit: t("errorNetwork") });
     } finally {
       setSubmitting(false);
     }
@@ -79,7 +81,7 @@ export function ReportModal() {
     <Modal
       open={!!target}
       onClose={handleClose}
-      title={submitted ? "Report received" : "Report this listing"}
+      title={submitted ? t("received") : t("title")}
       subtitle={submitted ? null : target ? `${target.title} · ${target.provider}` : ""}
     >
       {submitted ? (
@@ -87,24 +89,24 @@ export function ReportModal() {
           <div className="form-success">
             <Icon name="check" size={16} />
             <span>
-              Thanks. The review board will examine this report and respond within 5 working days.
+              {t("receivedBody")}
             </span>
           </div>
           <div style={{ marginTop: 18, display: "flex", justifyContent: "flex-end" }}>
             <button type="button" className="btn btn-secondary" onClick={handleClose}>
-              Close
+              {t("close")}
             </button>
           </div>
         </div>
       ) : (
         <form onSubmit={submit} noValidate>
           <div className={`field ${errors.reason ? "error" : ""}`}>
-            <label>Reason</label>
+            <label>{t("reason")}</label>
             <select value={reason} onChange={(event) => setReason(event.target.value)}>
-              <option value="">Select a reason…</option>
-              {REASONS.map((option) => (
+              <option value="">{t("selectReason")}</option>
+              {REASON_KEYS.map((option) => (
                 <option key={option.value} value={option.value}>
-                  {option.label}
+                  {t(option.labelKey)}
                 </option>
               ))}
             </select>
@@ -112,9 +114,9 @@ export function ReportModal() {
           </div>
 
           <div className={`field ${errors.details ? "error" : ""}`}>
-            <label>Details</label>
+            <label>{t("details")}</label>
             <textarea
-              placeholder="What's wrong, and how do you know? Links to evidence are welcome."
+              placeholder={t("detailsPlaceholder")}
               value={details}
               onChange={(event) => setDetails(event.target.value)}
             />
@@ -122,10 +124,10 @@ export function ReportModal() {
           </div>
 
           <div className={`field ${errors.email ? "error" : ""}`}>
-            <label>Your email</label>
+            <label>{t("yourEmail")}</label>
             <input
               type="email"
-              placeholder="you@org.example"
+              placeholder={t("placeholderEmail")}
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
@@ -138,10 +140,10 @@ export function ReportModal() {
 
           <div style={{ marginTop: 18, display: "flex", justifyContent: "flex-end", gap: 8 }}>
             <button type="button" className="btn btn-secondary" onClick={handleClose}>
-              Cancel
+              {t("cancel")}
             </button>
             <button type="submit" className="btn btn-primary" disabled={submitting}>
-              {submitting ? "Sending…" : "Submit report"}
+              {submitting ? t("sending") : t("submitReport")}
               <Icon name="arrow-right" size={13} />
             </button>
           </div>

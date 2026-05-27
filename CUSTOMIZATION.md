@@ -43,8 +43,8 @@ flowchart TB
 
 | Route group | Example URLs | Chrome |
 |-------------|--------------|--------|
-| `(public)` | `/`, `/registry`, `/contact`, `/login` | `SiteShell` from `@airegistry/public` |
-| `(workspaces)` | `/admin`, `/provider`, `/verifier`, `/sovereign` | Per-role workspace layout |
+| `[locale]/(public)` | `/`, `/registry`, `/contact`, `/login` | `SiteShell` from `@airegistry/public` |
+| `[locale]/(workspaces)` | `/admin`, `/provider`, `/verifier`, `/sovereign` | Per-role workspace layout |
 | `api/` | `/api/resources`, `/api/ext/hello/ping` | — |
 
 ---
@@ -56,7 +56,7 @@ Use this order on a new deployment. Skip phases that do not apply.
 | Phase | When | What to do | Where |
 |-------|------|------------|-------|
 | **A. Bootstrap** | First clone | Install deps, copy `.env`, Postgres, schema, seed | [`INSTALL.md`](INSTALL.md): `pnpm install`, `cp .env.example .env`, `pnpm db:push`, `pnpm db:seed`, `pnpm config:validate` |
-| **B. Deployment identity** | Before go-live | Registry name, domain, jurisdiction, languages, operator | Root `.env` (required vars in `.env.example`) |
+| **B. Deployment identity** | Before go-live | Registry name, domain, jurisdiction, languages, operator | Root `.env` (`SUPPORTED_LANGUAGES`, `DEFAULT_LANGUAGE` — see [`apps/portal/README.md`](apps/portal/README.md#localisation)) |
 | **C. Branding** | After admin login | Logo, footer, contact, jurisdiction label, privacy act, repo URL | [`INSTALL.md`](INSTALL.md) §5 (bootstrap admin), then `/admin/branding` (overrides env where set) |
 | **D. Home marketing** | Content pass | FAQ, how-it-works steps, listing criteria, promo banner | `/admin/site/faq`, `/admin/site/how-it-works`, `/admin/site/listing-criteria`, `/admin/site/promo` |
 | **E. Live directory** | Operational | Real providers and resources | Admin/provider workflows; `/registry` and `/providers` read the DB |
@@ -70,7 +70,7 @@ Use this order on a new deployment. Skip phases that do not apply.
 
 ## Public portal route map
 
-Shims live under [`apps/portal/src/app/(public)/`](apps/portal/src/app/(public)/). Page bodies live in [`packages/public/src/pages/`](packages/public/src/pages/).
+Shims live under [`apps/portal/src/app/[locale]/(public)/`](apps/portal/src/app/[locale]/(public)/). Page bodies live in [`packages/public/src/pages/`](packages/public/src/pages/).
 
 | URL | Page component | Primary customization |
 |-----|----------------|----------------------|

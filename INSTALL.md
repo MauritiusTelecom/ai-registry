@@ -68,8 +68,8 @@ Then edit `.env` and fill in at minimum:
 | `JURISDICTION` | ISO / local jurisdiction code | `MU` |
 | `IDENTITY_DOMAIN` | AIR-ID namespace authority | `air.mu` |
 | `OPERATOR_NAME` | Deploying operator | `Mauritius Telecom` |
-| `SUPPORTED_LANGUAGES` | Comma-separated BCP-47 codes | `en,fr,mfe` |
-| `DEFAULT_LANGUAGE` | One of `SUPPORTED_LANGUAGES` | `en` |
+| `SUPPORTED_LANGUAGES` | Comma-separated BCP-47 codes (registry + API). Portal UI messages exist for `en` and `fr` only. | `en,fr,mfe` |
+| `DEFAULT_LANGUAGE` | Default portal UI locale; must be in `SUPPORTED_LANGUAGES`. Normalized (`FR` → `fr`). Controls unprefixed URLs when using next-intl `as-needed` prefixes. Restart portal after change. | `en` |
 | `RESOURCE_TYPES` | Comma-separated resource type codes | `model,agent,tool,skill` |
 
 See `.env.example` for the full list (auth, mail, contact-form templates, operator alerts, etc.).

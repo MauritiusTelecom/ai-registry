@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 export type ListingCriterionFormInitial = {
   code: string;
@@ -60,6 +61,7 @@ export function ListingCriterionForm({
   mode: "create" | "edit";
   initial: ListingCriterionFormInitial;
 }) {
+  const t = useTranslations("adminSiteCriteria");
   const router = useRouter();
   const [code, setCode] = useState(initial.code);
   const [title, setTitle] = useState(initial.title);
@@ -102,7 +104,7 @@ export function ListingCriterionForm({
 
   async function onDelete() {
     if (mode !== "edit") return;
-    if (!confirm(`Delete criterion "${initial.code}"?`)) return;
+    if (!confirm(t("confirmDelete", { code: initial.code }))) return;
     setDeleting(true);
     try {
       const res = await registryFetch(
@@ -124,7 +126,7 @@ export function ListingCriterionForm({
   return (
     <form onSubmit={onSubmit} style={{ maxWidth: 720, display: "grid", gap: 18 }}>
       <div style={{ display: "grid", gap: 6 }}>
-        <label htmlFor="lc-code" style={labelStyle}>Code</label>
+        <label htmlFor="lc-code" style={labelStyle}>{t("code")}</label>
         <input
           id="lc-code"
           type="text"
@@ -132,13 +134,13 @@ export function ListingCriterionForm({
           onChange={(e) => setCode(e.target.value)}
           required
           disabled={mode === "edit"}
-          placeholder='e.g. "local-law"'
+          placeholder={t("codePlaceholder")}
           style={{ ...inputStyle, opacity: mode === "edit" ? 0.55 : 1 }}
         />
       </div>
 
       <div style={{ display: "grid", gap: 6 }}>
-        <label htmlFor="lc-title" style={labelStyle}>Title</label>
+        <label htmlFor="lc-title" style={labelStyle}>{t("title")}</label>
         <input
           id="lc-title"
           type="text"
@@ -150,7 +152,7 @@ export function ListingCriterionForm({
       </div>
 
       <div style={{ display: "grid", gap: 6 }}>
-        <label htmlFor="lc-desc" style={labelStyle}>Description</label>
+        <label htmlFor="lc-desc" style={labelStyle}>{t("description")}</label>
         <textarea
           id="lc-desc"
           value={description}
@@ -163,14 +165,14 @@ export function ListingCriterionForm({
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: 18, alignItems: "center" }}>
         <div style={{ display: "grid", gap: 6 }}>
-          <label htmlFor="lc-icon" style={labelStyle}>Icon</label>
+          <label htmlFor="lc-icon" style={labelStyle}>{t("icon")}</label>
           <select
             id="lc-icon"
             value={iconName}
             onChange={(e) => setIconName(e.target.value)}
             style={inputStyle}
           >
-            <option value="">(no icon)</option>
+            <option value="">{t("noIcon")}</option>
             {ALLOWED_ICONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
@@ -178,13 +180,12 @@ export function ListingCriterionForm({
             ))}
           </select>
           <span style={{ fontSize: 12, color: "var(--text-3)" }}>
-            Background tone (pink / purple / cyan / emerald) rotates with sort
-            order, so reordering changes colours but not icons.
+            {t("iconHelpText")}
           </span>
         </div>
 
         <div style={{ display: "grid", gap: 6 }}>
-          <label htmlFor="lc-sort" style={labelStyle}>Sort order</label>
+          <label htmlFor="lc-sort" style={labelStyle}>{t("sortOrder")}</label>
           <input
             id="lc-sort"
             type="number"
@@ -201,7 +202,7 @@ export function ListingCriterionForm({
             checked={active}
             onChange={(e) => setActive(e.target.checked)}
           />
-          Active
+          {t("active")}
         </label>
       </div>
 
@@ -213,7 +214,7 @@ export function ListingCriterionForm({
 
       <div style={{ display: "flex", gap: 10 }}>
         <button type="submit" className="btn btn-primary" disabled={saving || deleting}>
-          {saving ? "Saving…" : mode === "create" ? "Create criterion" : "Save changes"}
+          {saving ? t("saving") : mode === "create" ? t("createCriterion") : t("saveChanges")}
         </button>
         {mode === "edit" ? (
           <button
@@ -223,7 +224,7 @@ export function ListingCriterionForm({
             disabled={saving || deleting}
             style={{ color: "#ef4444", borderColor: "rgba(239, 68, 68, 0.45)" }}
           >
-            {deleting ? "Deleting…" : "Delete criterion"}
+            {deleting ? t("deleting") : t("deleteCriterion")}
           </button>
         ) : null}
       </div>

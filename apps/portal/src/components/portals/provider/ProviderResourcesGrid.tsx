@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { Button } from "@/components/library";
 import { EntityGrid, type EntityColumn } from "@/components/library";
+import { useTranslations } from "next-intl";
+import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
 import { StatusPill } from "../StatusPill";
 
 export type ProviderResourceRow = {
@@ -24,10 +26,10 @@ type Props = {
 };
 
 export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
-  const columns: EntityColumn<ProviderResourceRow>[] = [
+const columns: EntityColumn<ProviderResourceRow>[] = [
     {
       key: "title",
-      label: "Title",
+      label: t("colTitle"),
       render: (row) => (
         <div>
           <Link
@@ -43,23 +45,23 @@ export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
               fontFamily: "IBM Plex Mono, monospace"
             }}
           >
-            {row.airId ?? "(no AIR-ID - pre-listing)"}
+            {row.airId ?? t("noAirId")}
           </div>
         </div>
       )
     },
     {
       key: "kind",
-      label: "Kind",
+      label: t("colKind"),
       render: (row) => <span className="tag">{row.kind}</span>
     },
-    { key: "lifecycle", label: "Lifecycle", render: (row) => row.lifecycle },
+    { key: "lifecycle", label: t("colLifecycle"), render: (row) => row.lifecycle },
     {
       key: "status",
-      label: "Public status",
+      label: t("colPublicStatus"),
       render: (row) => <StatusPill status={row.status} />
     },
-    { key: "updatedAt", label: "Updated", render: (row) => row.updatedAt, mono: true },
+    { key: "updatedAt", label: t("colUpdated"), render: (row) => row.updatedAt, mono: true },
     {
       key: "actions",
       label: "",
@@ -70,7 +72,7 @@ export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
             intent="secondary"
             size="sm"
           >
-            Edit / submit
+Edit / submit
           </Button>
         ) : row.lifecycleCode === "listed" ? (
           <Button
@@ -78,7 +80,7 @@ export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
             intent="secondary"
             size="sm"
           >
-            Public
+Public
           </Button>
         ) : (
           <span style={{ color: "var(--text-3)", fontSize: 12 }}>-</span>
@@ -90,18 +92,18 @@ export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
     <EntityGrid
       rows={rows}
       columns={columns}
-      emptyState="You haven't published any resources yet."
+emptyState="You haven't published any resources yet."
       searchPlaceholder="Search title, AIR-ID, or slug…"
       searchableKeys={["title", "airId", "slug"]}
       filters={[
         {
           key: "kind",
-          label: "Kind",
+          label: t("colKind"),
           options: kinds.map((k) => ({ value: k.code, label: k.name }))
         },
         {
           key: "lifecycleCode",
-          label: "Lifecycle",
+          label: t("colLifecycle"),
           options: lifecycles.map((l) => ({ value: l.code, label: l.name }))
         },
         {
@@ -110,13 +112,13 @@ export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
           // Option values must therefore be the display strings the function
           // returns: "verified" | "trusted" | "active" | "experimental" | "isolated".
           key: "status",
-          label: "Public status",
+          label: t("colPublicStatus"),
           options: [
-            { value: "verified", label: "Verified" },
-            { value: "trusted", label: "Trusted (official provider)" },
-            { value: "active", label: "Active (listed)" },
-            { value: "experimental", label: "Experimental (pre-listing)" },
-            { value: "isolated", label: "Isolated (suspended / deprecated)" }
+            { value: "verified", label: t("statusVerified") },
+            { value: "trusted", label: t("statusTrusted") },
+            { value: "active", label: t("statusActive") },
+            { value: "experimental", label: t("statusExperimental") },
+            { value: "isolated", label: t("statusIsolated") }
           ]
         }
       ]}

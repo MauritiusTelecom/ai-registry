@@ -5,6 +5,8 @@ import { withBase } from "@airegistry/sdk";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/library";
+import { useTranslations } from "next-intl";
+import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
 
 type Props = {
@@ -33,6 +35,7 @@ export function EditResourceForm({
   postSubmitPath = "/portal/resources"
 }: Props) {
   const router = useRouter();
+  const t = useTranslations("editResource");
   const [title, setTitle] = useState(initialTitle);
   const [shortDescription, setShort] = useState(initialShort);
   const [longDescription, setLong] = useState(initialLong ?? "");
@@ -61,12 +64,12 @@ export function EditResourceForm({
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Save failed");
+        setError(data.error ?? t("saveFailed"));
         return;
       }
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setPending(null);
     }
@@ -83,13 +86,13 @@ export function EditResourceForm({
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Submit failed");
+        setError(data.error ?? t("submitFailed"));
         return;
       }
       router.push(postSubmitPath);
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setPending(null);
     }
@@ -101,11 +104,11 @@ export function EditResourceForm({
   return (
     <div style={{ display: "grid", gap: variant === "provider" ? 0 : 18 }}>
       <p style={{ fontSize: 13, color: "var(--text-2)", marginBottom: variant === "provider" ? 16 : 0 }}>
-        Lifecycle: <strong>{lifecycle.replace(/_/g, " ")}</strong>
+        {t("lifecycle")}: <strong>{lifecycle.replace(/_/g, " ")}</strong>
       </p>
       {variant === "provider" ? (
         <div className="p-field" style={{ marginBottom: 14 }}>
-          <label htmlFor="er-title">Title</label>
+          <label htmlFor="er-title">{t("titleLabel")}</label>
           <input
             id="er-title"
             className={inputClass}
@@ -118,7 +121,7 @@ export function EditResourceForm({
       ) : (
         <label style={{ display: "grid", gap: 6 }}>
           <span style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-3)" }}>
-            Title
+            {t("titleLabel")}
           </span>
           <input
             className={inputClass}
@@ -131,7 +134,7 @@ export function EditResourceForm({
       )}
       {variant === "provider" ? (
         <div className="p-field" style={{ marginBottom: 14 }}>
-          <label htmlFor="er-short">Short description</label>
+          <label htmlFor="er-short">{t("shortDescription")}</label>
           <textarea
             id="er-short"
             className={inputClass}
@@ -145,7 +148,7 @@ export function EditResourceForm({
       ) : (
         <label style={{ display: "grid", gap: 6 }}>
           <span style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-3)" }}>
-            Short description
+            {t("shortDescription")}
           </span>
           <textarea
             className={inputClass}
@@ -159,7 +162,7 @@ export function EditResourceForm({
       )}
       {variant === "provider" ? (
         <div className="p-field" style={{ marginBottom: 14 }}>
-          <label htmlFor="er-long">Long description (optional)</label>
+          <label htmlFor="er-long">{t("longDescription")}</label>
           <textarea
             id="er-long"
             className={inputClass}
@@ -173,7 +176,7 @@ export function EditResourceForm({
       ) : (
         <label style={{ display: "grid", gap: 6 }}>
           <span style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-3)" }}>
-            Long description (optional)
+            {t("longDescription")}
           </span>
           <textarea
             className={inputClass}
@@ -199,7 +202,7 @@ export function EditResourceForm({
           disabled={isBusy}
           onClick={() => void save()}
         >
-          {pending === "save" ? "Saving…" : "Save changes"}
+{pending === "save" ? "Saving…" : "Save changes"}
         </Button>
       ) : null}
       {canSubmit ? (
@@ -221,21 +224,20 @@ export function EditResourceForm({
               onChange={(e) => setNotifyOperators(e.target.checked)}
               style={{ accentColor: "var(--primary)" }}
             />
-            <span>Email operators that this resource is awaiting review</span>
+            <span>{t("notifyOperators")}</span>
           </label>
           <Button intent="primary"
             style={{ marginTop: 12 }}
             disabled={isBusy}
             onClick={() => void submitForReview()}
           >
-            {pending === "submit" ? "Submitting…" : "Submit for review"}
+{pending === "submit" ? "Submitting…" : "Submit for review"}
           </Button>
         </>
       ) : null}
       {variant === "provider" && canSubmit ? (
         <p style={{ fontSize: 12, color: "var(--text-3)", marginTop: 8, marginBottom: 0 }}>
-          Submitting opens an operator review. You can keep editing until the registry moves the record
-          forward.
+          {t("submitHint")}
         </p>
       ) : null}
     </div>

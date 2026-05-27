@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { registryFetch } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
 
@@ -40,9 +41,6 @@ export function EvidenceFileAttachment({
   pendingFile,
   onPendingChange
 }: Props) {
-  // Pending mode: evidence row not saved yet. Show file picker that stages
-  // a File locally; the form uploads it after the resource save returns
-  // the new evidence id.
   if (!evidenceId) {
     return (
       <PendingFilePicker
@@ -66,6 +64,7 @@ function SavedRowAttachment({
   initial: Props["initial"];
   disabled?: boolean;
 }) {
+  const t = useTranslations("evidenceFile");
   const [filename, setFilename] = useState<string | null>(initial.filename);
   const [sizeBytes, setSizeBytes] = useState<number | null>(initial.sizeBytes);
   const [contentType, setContentType] = useState<string | null>(initial.contentType);
@@ -75,11 +74,11 @@ function SavedRowAttachment({
 
   async function upload(file: File) {
     if (!ALLOWED.has(file.type)) {
-      setErr(`Type ${file.type || "unknown"} not allowed`);
+      setErr(t("typeNotAllowed", { type: file.type || "unknown" }));
       return;
     }
     if (file.size > MAX) {
-      setErr("File exceeds 10 MB");
+      setErr(t("fileExceeds10MB"));
       return;
     }
     setErr(null);
@@ -106,7 +105,7 @@ function SavedRowAttachment({
   }
 
   async function remove() {
-    if (!confirm("Remove the attached file?")) return;
+    if (!confirm(t("removeConfirm"))) return;
     setBusy(true);
     try {
       const res = await registryFetch(
@@ -158,7 +157,7 @@ function SavedRowAttachment({
                 cursor: "pointer"
               }}
             >
-              Replace
+              {t("replace")}
             </button>
             <button
               type="button"
@@ -173,7 +172,7 @@ function SavedRowAttachment({
                 cursor: "pointer"
               }}
             >
-              Remove
+              {t("remove")}
             </button>
           </>
         )}
@@ -191,7 +190,7 @@ function SavedRowAttachment({
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 12, opacity: 0.85 }}>
-      <span style={{ opacity: 0.7 }}>No file attached.</span>
+      <span style={{ opacity: 0.7 }}>{t("noFileAttached")}</span>
       {!disabled && (
         <button
           type="button"
@@ -206,7 +205,7 @@ function SavedRowAttachment({
             cursor: "pointer"
           }}
         >
-          {busy ? "Uploading…" : "Upload file"}
+          {busy ? t("uploading") : t("uploadFile")}
         </button>
       )}
       <input

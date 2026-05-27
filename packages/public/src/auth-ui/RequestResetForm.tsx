@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
 
 export function RequestResetForm() {
+  const t = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -31,7 +33,7 @@ export function RequestResetForm() {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <p style={{ color: "var(--text-2)", fontSize: 14 }}>
-          If an account exists for that email, a reset link is on its way. Check your inbox.
+          {t("resetSent")}
         </p>
         {devUrl ? (
           <div
@@ -46,7 +48,7 @@ export function RequestResetForm() {
               wordBreak: "break-all"
             }}
           >
-            Dev: {devUrl}
+            {t("devLabel")} {devUrl}
           </div>
         ) : null}
       </div>
@@ -66,7 +68,7 @@ export function RequestResetForm() {
             color: "var(--text-3)"
           }}
         >
-          Email
+          {t("email")}
         </label>
         <input
           id="rr-email"
@@ -78,9 +80,8 @@ export function RequestResetForm() {
         />
       </div>
       <button type="submit" className="btn btn-primary" disabled={busy}>
-        {busy ? "Sending…" : "Send reset link"}
+        {busy ? t("sendingResend") : t("sendResetLink")}
       </button>
     </form>
   );
 }
-

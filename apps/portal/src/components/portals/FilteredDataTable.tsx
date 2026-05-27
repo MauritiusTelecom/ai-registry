@@ -1,3 +1,4 @@
+
 /**
  * @deprecated — superseded by `<EntityGrid rows>` in `@/components/library`.
  *

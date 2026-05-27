@@ -3,16 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Icon } from "@airegistry/ui-kit";
 import type { PortalConfig } from "@/lib/portals/nav-config";
 import { withBase } from "@airegistry/sdk";
 
+const PORTAL_TITLE_KEYS: Record<string, string> = {
+  admin: "admin.title",
+  provider: "provider.title",
+  verifier: "verifier.title",
+  sovereign: "sovereign.title"
+};
+
 /**
  * Sidebar (client component for active-link highlighting).
  *
- * Mirrors the prototype's `Sidebar` shape but uses Next.js routing instead
- * of the hash router. The collapse toggle on the chrome itself was removed -
- * the sidebar is the primary navigation surface and shouldn't be hideable.
+ * Nav labels are translation key identifiers stored in `<role>Nav` namespaces
+ * (e.g. adminNav.dashboard). The sidebar resolves them at render time so the
+ * nav-config.ts file stays a plain TypeScript config without hook calls.
  *
  * Group-level collapse: when a `NavGroup` carries `collapsible: true`, the
  * group header renders as a button with a chevron and persists the user's
@@ -27,9 +35,16 @@ export function PortalSidebar({
   config: PortalConfig;
   branding?: { registryName: string; logoUrl: string | null };
 }) {
+  const tSidebar = useTranslations("portalSidebar");
+  const tNav = useTranslations(`${config.role}Nav` as any);
+  const tPortal = useTranslations();
   const pathname = usePathname() ?? "";
-  const registryName = branding?.registryName ?? "AI Registry";
+  const registryName = branding?.registryName ?? tSidebar("defaultRegistryName");
   const logoUrl = branding?.logoUrl ?? null;
+
+  const portalLabel = PORTAL_TITLE_KEYS[config.role]
+    ? tPortal(PORTAL_TITLE_KEYS[config.role] as any)
+    : config.label;
 
   return (
     <aside className="p-sidebar">
@@ -48,7 +63,7 @@ export function PortalSidebar({
           )}
           <div className="p-logo-text">
             <span className="p-logo-name">{registryName}</span>
-            <span className="p-logo-sub">{config.label}</span>
+            <span className="p-logo-sub">{portalLabel}</span>
           </div>
         </Link>
       </div>
@@ -62,13 +77,15 @@ export function PortalSidebar({
                 pathname.startsWith(`${item.href}/`))
           );
 
+          const resolvedGroupLabel = resolveNavLabel(tNav, group.label);
+
           if (group.collapsible) {
             return (
               <CollapsibleGroup
                 key={group.id}
                 role={config.role}
                 groupId={group.id}
-                label={group.label}
+                label={resolvedGroupLabel}
                 defaultCollapsed={group.defaultCollapsed ?? false}
                 forceOpen={groupActive}
               >
@@ -76,7 +93,7 @@ export function PortalSidebar({
                   <NavLink
                     key={item.id}
                     href={item.href}
-                    label={item.label}
+                    label={item.rawLabel ?? resolveNavLabel(tNav, item.label)}
                     stub={item.stub}
                     pathname={pathname}
                     basePath={config.basePath}
@@ -88,12 +105,12 @@ export function PortalSidebar({
 
           return (
             <div key={group.id}>
-              <div className="p-nav-divider">{group.label}</div>
+              <div className="p-nav-divider">{resolvedGroupLabel}</div>
               {group.items.map((item) => (
                 <NavLink
                   key={item.id}
                   href={item.href}
-                  label={item.label}
+                  label={item.rawLabel ?? resolveNavLabel(tNav, item.label)}
                   stub={item.stub}
                   pathname={pathname}
                   basePath={config.basePath}
@@ -106,11 +123,21 @@ export function PortalSidebar({
 
       <div className="p-sidebar-foot">
         <Link href="/" className="p-foot-link">
-          ↩ Public site
+          ↩ {tSidebar("publicSite")}
         </Link>
       </div>
     </aside>
   );
+}
+
+/** Resolve a translation key, falling back to the raw key if not found. */
+function resolveNavLabel(t: ReturnType<typeof useTranslations>, key: string): string {
+  if (!key) return "";
+  try {
+    return t(key as any);
+  } catch {
+    return key;
+  }
 }
 
 function NavLink({
@@ -126,6 +153,7 @@ function NavLink({
   pathname: string;
   basePath: string;
 }) {
+  const t = useTranslations("portalSidebar");
   const isActive =
     pathname === href || (href !== basePath && pathname.startsWith(`${href}/`));
   return (
@@ -134,7 +162,7 @@ function NavLink({
         •
       </span>
       <span className="p-nav-label">{label}</span>
-      {stub ? <span className="p-nav-badge">stub</span> : null}
+      {stub ? <span className="p-nav-badge">{t("stub")}</span> : null}
     </Link>
   );
 }
@@ -155,8 +183,6 @@ function CollapsibleGroup({
   children: React.ReactNode;
 }) {
   const storageKey = `nav.${role}.${groupId}`;
-  // Start with the default; hydrate from localStorage on mount so SSR and
-  // first paint never disagree (nothing flashes open before collapsing).
   const [collapsed, setCollapsed] = useState<boolean>(defaultCollapsed);
 
   useEffect(() => {
@@ -165,7 +191,7 @@ function CollapsibleGroup({
       if (raw === "open") setCollapsed(false);
       else if (raw === "closed") setCollapsed(true);
     } catch {
-      // localStorage may be unavailable (private mode, etc.) - keep the default.
+      // localStorage may be unavailable (private mode, etc.)
     }
   }, [storageKey]);
 

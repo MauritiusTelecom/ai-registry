@@ -2,15 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
 
-/**
- * Asks for an email address and posts to `/api/auth/resend-verification`.
- * That endpoint always returns 200 (no enumeration), so the UI always shows
- * the same "If an account exists, we've sent a fresh link" confirmation.
- */
 export function ResendVerificationForm({ initialEmail = "" }: { initialEmail?: string } = {}) {
+  const t = useTranslations("auth");
   const [email, setEmail] = useState(initialEmail);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
@@ -30,7 +27,7 @@ export function ResendVerificationForm({ initialEmail = "" }: { initialEmail?: s
       });
       const data = (await res.json()) as { ok?: boolean; verifyUrl?: string; error?: string };
       if (!res.ok || !data.ok) {
-        setError(data.error ?? "Could not send verification email. Try again.");
+        setError(data.error ?? t("couldNotSendVerification"));
         return;
       }
       if (data.verifyUrl) setDevVerifyUrl(data.verifyUrl);
@@ -46,8 +43,10 @@ export function ResendVerificationForm({ initialEmail = "" }: { initialEmail?: s
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <p style={{ color: "var(--text-2)", lineHeight: 1.5 }}>
-          If an account exists for <strong>{email}</strong>, a fresh verification email is on its
-          way. The link expires in 24 hours.
+          {t.rich("verificationSentConfirm", {
+            email,
+            strong: (chunks) => <strong>{chunks}</strong>
+          })}
         </p>
         {devVerifyUrl ? (
           <div
@@ -62,12 +61,12 @@ export function ResendVerificationForm({ initialEmail = "" }: { initialEmail?: s
               wordBreak: "break-all"
             }}
           >
-            Dev: open this verification link → {devVerifyUrl}
+            {t("devVerifyLink")} {devVerifyUrl}
           </div>
         ) : null}
         <div style={{ textAlign: "center" }}>
           <Link href="/login" className="btn btn-primary">
-            Back to sign in
+            {t("backToSignIn")}
           </Link>
         </div>
       </div>
@@ -87,7 +86,7 @@ export function ResendVerificationForm({ initialEmail = "" }: { initialEmail?: s
             color: "var(--text-3)"
           }}
         >
-          Email
+          {t("email")}
         </label>
         <input
           id="resend-email"
@@ -110,9 +109,8 @@ export function ResendVerificationForm({ initialEmail = "" }: { initialEmail?: s
         disabled={busy}
         style={{ marginTop: 6 }}
       >
-        {busy ? "Sending…" : "Send verification email"}
+        {busy ? t("sendingResend") : t("sendVerificationEmail")}
       </button>
     </form>
   );
 }
-

@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { withBase } from "@airegistry/sdk";
 
 type ProviderDocRow = {
@@ -32,14 +35,15 @@ type Props = {
 const IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
 
 export function VerificationDocumentsPanel({ providerDocuments, evidenceFiles }: Props) {
+  const t = useTranslations("verificationDocs");
   if (providerDocuments.length === 0 && evidenceFiles.length === 0) {
     return (
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-wide opacity-70 mb-3">
-          Verification documents
+          {t("title")}
         </h2>
         <div className="bg-black/20 rounded p-3 text-xs opacity-70">
-          No verification documents uploaded yet by this provider.
+          {t("emptyState")}
         </div>
       </section>
     );
@@ -48,13 +52,13 @@ export function VerificationDocumentsPanel({ providerDocuments, evidenceFiles }:
   return (
     <section className="space-y-4">
       <h2 className="text-sm font-semibold uppercase tracking-wide opacity-70 mb-1">
-        Verification documents
+        {t("title")}
       </h2>
 
       {providerDocuments.length > 0 && (
         <div>
           <h3 className="text-xs font-semibold opacity-70 mb-2">
-            Provider organisation documents ({providerDocuments.length})
+            {t("providerOrgDocs", { count: providerDocuments.length })}
           </h3>
           <ul className="space-y-1.5">
             {providerDocuments.map((d) => (
@@ -78,7 +82,7 @@ export function VerificationDocumentsPanel({ providerDocuments, evidenceFiles }:
                     d.publicVisibility ? "bg-green-700" : "bg-zinc-700"
                   }`}
                 >
-                  {d.publicVisibility ? "Public" : "Private"}
+                  {d.publicVisibility ? t("public") : t("private")}
                 </span>
                 {d.expiresAt && (
                   <ExpiryPill expiresAt={d.expiresAt} />
@@ -92,7 +96,7 @@ export function VerificationDocumentsPanel({ providerDocuments, evidenceFiles }:
       {evidenceFiles.length > 0 && (
         <div>
           <h3 className="text-xs font-semibold opacity-70 mb-2">
-            Resource evidence documents ({evidenceFiles.length})
+            {t("evidenceDocs", { count: evidenceFiles.length })}
           </h3>
           <ul className="space-y-1.5">
             {evidenceFiles.map((e) => (
@@ -129,7 +133,7 @@ export function VerificationDocumentsPanel({ providerDocuments, evidenceFiles }:
                     e.publicVisibility ? "bg-green-700" : "bg-zinc-700"
                   }`}
                 >
-                  {e.publicVisibility ? "Public" : "Private"}
+                  {e.publicVisibility ? t("public") : t("private")}
                 </span>
               </li>
             ))}

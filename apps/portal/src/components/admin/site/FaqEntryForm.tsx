@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 export type FaqEntryFormInitial = {
   code: string;
@@ -35,6 +36,7 @@ export function FaqEntryForm({
   mode: "create" | "edit";
   initial: FaqEntryFormInitial;
 }) {
+  const t = useTranslations("adminSiteFaq");
   const router = useRouter();
   const [code, setCode] = useState(initial.code);
   const [question, setQuestion] = useState(initial.question);
@@ -64,7 +66,7 @@ export function FaqEntryForm({
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
-      setMessage({ kind: "ok", text: "Saved." });
+      setMessage({ kind: "ok", text: t("saved") });
       router.push("/admin/site/faq");
       router.refresh();
     } catch (e) {
@@ -76,7 +78,7 @@ export function FaqEntryForm({
 
   async function onDelete() {
     if (mode !== "edit") return;
-    if (!confirm(`Delete FAQ entry "${initial.code}"? This cannot be undone.`)) return;
+    if (!confirm(t("confirmDelete", { code: initial.code }))) return;
     setDeleting(true);
     setMessage(null);
     try {
@@ -100,7 +102,7 @@ export function FaqEntryForm({
     <form onSubmit={onSubmit} style={{ maxWidth: 720, display: "grid", gap: 18 }}>
       <div style={{ display: "grid", gap: 6 }}>
         <label htmlFor="faq-code" style={labelStyle}>
-          Code
+          {t("code")}
         </label>
         <input
           id="faq-code"
@@ -109,7 +111,7 @@ export function FaqEntryForm({
           onChange={(e) => setCode(e.target.value)}
           required
           disabled={mode === "edit"}
-          placeholder='e.g. "hosting", "verified"'
+          placeholder={t("codePlaceholder")}
           style={{
             padding: "9px 12px",
             border: "1px solid var(--border)",
@@ -121,14 +123,13 @@ export function FaqEntryForm({
           }}
         />
         <span style={{ fontSize: 12, color: "var(--text-3)" }}>
-          Stable lookup key (lowercase, hyphen-separated). Cannot be changed
-          after creation — delete and re-create to rename.
+          {t("codeHelpText")}
         </span>
       </div>
 
       <div style={{ display: "grid", gap: 6 }}>
         <label htmlFor="faq-question" style={labelStyle}>
-          Question
+          {t("question")}
         </label>
         <input
           id="faq-question"
@@ -150,7 +151,7 @@ export function FaqEntryForm({
 
       <div style={{ display: "grid", gap: 6 }}>
         <label htmlFor="faq-answer" style={labelStyle}>
-          Answer
+          {t("answer")}
         </label>
         <textarea
           id="faq-answer"
@@ -174,7 +175,7 @@ export function FaqEntryForm({
       <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 24, alignItems: "center" }}>
         <div style={{ display: "grid", gap: 6 }}>
           <label htmlFor="faq-sortOrder" style={labelStyle}>
-            Sort order
+            {t("sortOrder")}
           </label>
           <input
             id="faq-sortOrder"
@@ -209,7 +210,7 @@ export function FaqEntryForm({
             checked={active}
             onChange={(e) => setActive(e.target.checked)}
           />
-          Active (visible on the public site)
+          {t("activeLabel")}
         </label>
       </div>
 
@@ -236,7 +237,7 @@ export function FaqEntryForm({
 
       <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
         <button type="submit" className="btn btn-primary" disabled={saving || deleting}>
-          {saving ? "Saving…" : mode === "create" ? "Create entry" : "Save changes"}
+          {saving ? t("saving") : mode === "create" ? t("createEntry") : t("saveChanges")}
         </button>
         {mode === "edit" ? (
           <button
@@ -246,7 +247,7 @@ export function FaqEntryForm({
             disabled={saving || deleting}
             style={{ color: "#ef4444", borderColor: "rgba(239, 68, 68, 0.45)" }}
           >
-            {deleting ? "Deleting…" : "Delete entry"}
+            {deleting ? t("deleting") : t("deleteEntry")}
           </button>
         ) : null}
       </div>

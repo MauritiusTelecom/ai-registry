@@ -8,6 +8,7 @@ import { AdminGrid, type GridColumn, type GridFilter } from "./AdminGrid";
 import { RowActionMenu, type RowMenuItem } from "./RowActionMenu";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 export type ResourceRow = {
   id: string;
@@ -90,20 +91,22 @@ export function ResourcesAdmin({
   jurisdictions: RefRow[];
   riskLevels: RefRow[];
 }) {
+  const t = useTranslations("adminResources");
+
   const filters: GridFilter[] = [
     {
       id: "kind",
-      label: "Kind",
+      label: t("filterKind"),
       options: kinds.map((k) => ({ value: k.code, label: k.name }))
     },
     {
       id: "lifecycle",
-      label: "Lifecycle",
+      label: t("filterLifecycle"),
       options: lifecycles.map((l) => ({ value: l.code, label: l.name }))
     },
     {
       id: "provider",
-      label: "Provider",
+      label: t("filterProvider"),
       options: providers.map((p) => ({ value: p.slug, label: p.displayName }))
     }
   ];
@@ -111,7 +114,7 @@ export function ResourcesAdmin({
   const columns: GridColumn<ResourceRow>[] = [
     {
       key: "title",
-      label: "Resource",
+      label: t("colResource"),
       render: (row) => (
         <div>
           <Link
@@ -138,13 +141,13 @@ export function ResourcesAdmin({
     },
     {
       key: "kind",
-      label: "Kind",
+      label: t("colKind"),
       render: (row) => <span className="tag">{row.kindCode}</span>
     },
-    { key: "provider", label: "Provider", render: (row) => row.providerName },
+    { key: "provider", label: t("colProvider"), render: (row) => row.providerName },
     {
       key: "lifecycle",
-      label: "Lifecycle",
+      label: t("colLifecycle"),
       render: (row) => (
         <span
           style={{
@@ -156,22 +159,22 @@ export function ResourcesAdmin({
         </span>
       )
     },
-    { key: "risk", label: "Risk", render: (row) => row.riskCode, mono: true },
+    { key: "risk", label: t("colRisk"), render: (row) => row.riskCode, mono: true },
     {
       key: "public",
-      label: "Public",
+      label: t("colPublic"),
       render: (row) =>
         row.publicVisibility ? (
           <span className="tag" style={{ color: "#10b981" }}>
-            visible
+            {t("visible")}
           </span>
         ) : (
-          <span className="tag">hidden</span>
+          <span className="tag">{t("hidden")}</span>
         )
     },
     {
       key: "updated",
-      label: "Updated",
+      label: t("colUpdated"),
       render: (row) => row.updatedAt.slice(0, 10),
       mono: true
     }
@@ -180,11 +183,11 @@ export function ResourcesAdmin({
   return (
     <AdminGrid<ResourceRow>
       endpoint="/api/admin/resources"
-      searchPlaceholder="Search by title, slug, AIR-ID…"
+      searchPlaceholder={t("searchPlaceholder")}
       filters={filters}
       columns={columns}
       addModal={{
-        title: "Add resource",
+        title: t("addModalTitle"),
         render: (close) => (
           <ResourceForm
             kinds={kinds}
@@ -195,7 +198,7 @@ export function ResourcesAdmin({
           />
         )
       }}
-      emptyState="No resources match this filter."
+      emptyState={t("emptyState")}
       actions={(row, reload) => (
         <ResourceRowActions row={row} reload={reload} />
       )}
@@ -210,6 +213,7 @@ function ResourceRowActions({
   row: ResourceRow;
   reload: () => void;
 }) {
+  const t = useTranslations("adminResources");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [actionFor, setActionFor] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -224,20 +228,18 @@ function ResourceRowActions({
       const res = await registryFetch(withBase(`/api/admin/resources/${row.id}`), { method: "DELETE" });
       const data = (await res.json()) as { error?: string; detail?: string };
       if (!res.ok) {
-        setError(data.error ?? data.detail ?? "Delete failed");
+        setError(data.error ?? data.detail ?? t("deleteFailed"));
         return;
       }
       setConfirmDelete(false);
       reload();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setBusy(false);
     }
   }
 
-  // Inline: View (icon-only, when there is a public detail) + Edit (icon-only).
-  // Kebab: every other action (lifecycle transitions + Delete when applicable).
   const menuItems: RowMenuItem[] = [];
   for (const a of allowed) {
     menuItems.push({
@@ -252,7 +254,7 @@ function ResourceRowActions({
   if (!row.airId) {
     menuItems.push({
       key: "delete",
-      label: "Delete",
+      label: t("delete"),
       icon: "trash",
       tone: "danger",
       disabled: busy,
@@ -268,8 +270,8 @@ function ResourceRowActions({
           target="_blank"
           rel="noopener noreferrer"
           className="r-card-action-link"
-          title="View public detail"
-          aria-label="View public detail"
+          title={t("viewPublicDetail")}
+          aria-label={t("viewPublicDetail")}
           style={iconBtnStyle}
         >
           <Icon name="eye" size={14} />
@@ -278,8 +280,8 @@ function ResourceRowActions({
       <Link
         href={`/admin/resources/${row.id}/edit`}
         className="r-card-action-link"
-        title="Edit"
-        aria-label="Edit"
+        title={t("edit")}
+        aria-label={t("edit")}
         style={iconBtnStyle}
       >
         <Icon name="edit" size={14} />
@@ -303,7 +305,7 @@ function ResourceRowActions({
         />
       ) : null}
 
-      <ConfirmDialog
+<ConfirmDialog
         open={confirmDelete}
         title="Delete resource?"
         body={
@@ -318,7 +320,7 @@ function ResourceRowActions({
                 {error}
               </div>
             ) : null}
-          </>
+</>
         }
         destructive
         confirmLabel={busy ? "Deleting…" : "Delete"}
@@ -338,8 +340,8 @@ function ActionDialog({
   action: string;
   onClose: (refreshed: boolean) => void;
 }) {
+  const t = useTranslations("adminResources");
   const [reason, setReason] = useState("");
-  // Notify provider contacts about this lifecycle transition. Default ON.
   const [notifyByEmail, setNotifyByEmail] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -355,19 +357,19 @@ function ActionDialog({
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Action failed");
+        setError(data.error ?? t("actionFailed"));
         return;
       }
       onClose(true);
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <Modal
+<Modal
       open
       onClose={() => onClose(false)}
       title={
@@ -381,31 +383,28 @@ function ActionDialog({
         <p style={{ fontSize: 13, color: "var(--text-2)", margin: "0 0 14px" }}>
           {action === "approve" ? (
             <>
-              Marks this resource as <code>listed</code> and mints the AIR-ID. For full §11
-              checklist capture use the proper review path at <code>/admin/reviews</code>.
+              {t("approveDescPre")}<code>listed</code>{t("approveDescMid")}<code>/admin/reviews</code>{t("approveDescPost")}
             </>
           ) : action === "remove" ? (
             <>
-              Tombstones the resource (lifecycle <code>removed</code>). Public detail returns
-              410 Gone but the AIR-ID stays reserved.
+              {t("removeDescPre")}<code>removed</code>{t("removeDescPost")}
             </>
           ) : (
             <>
-              Records reason on the audit log and writes one TrustSignal so the public detail
-              page reflects the change.
+              {t("defaultDesc")}
             </>
           )}
         </p>
         <label style={{ display: "grid", gap: 6, fontSize: 13 }}>
           <span style={{ fontSize: 11, color: "var(--text-3)", letterSpacing: "0.08em" }}>
-            REASON
+            {t("reason")}
           </span>
           <textarea
             className="auth-input"
             style={{ minHeight: 80, fontFamily: "inherit" }}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="What changed and why?"
+            placeholder={t("reasonPlaceholder")}
           />
         </label>
         <label
@@ -425,7 +424,7 @@ function ActionDialog({
             onChange={(e) => setNotifyByEmail(e.target.checked)}
             style={{ accentColor: "var(--primary)" }}
           />
-          <span>Email the provider's contacts about this transition</span>
+          <span>{t("emailProviderTransition")}</span>
         </label>
         {error ? (
           <div className="field-error" role="alert" style={{ marginTop: 12 }}>
@@ -433,7 +432,7 @@ function ActionDialog({
           </div>
         ) : null}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 14 }}>
-          <Button intent="secondary" onClick={() => onClose(false)}>
+<Button intent="secondary" onClick={() => onClose(false)}>
             Cancel
           </Button>
           <Button
@@ -462,6 +461,7 @@ function ResourceForm({
   riskLevels: RefRow[];
   onDone: () => void;
 }) {
+  const t = useTranslations("adminResources");
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -492,15 +492,13 @@ function ResourceForm({
       });
       const data = (await res.json()) as { error?: string; id?: string };
       if (!res.ok) {
-        setError(data.error ?? "Save failed");
+        setError(data.error ?? t("saveFailed"));
         return;
       }
-      // Close the modal, then jump to the full edit page so the admin can
-      // fill in descriptions, URLs, sovereignty evidence, endpoints, tags.
       onDone();
       if (data.id) router.push(`/admin/resources/${data.id}/edit`);
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setBusy(false);
     }
@@ -509,10 +507,9 @@ function ResourceForm({
   return (
     <div style={{ display: "grid", gap: 12, fontSize: 13 }}>
       <p style={{ color: "var(--text-2)", margin: 0, fontSize: 12 }}>
-        Creates a <code>draft</code>. After save you'll be sent to the full edit page
-        to capture descriptions, URLs, sovereignty evidence, endpoints, and tags.
+        {t("draftNotePrefix")}<code>draft</code>{t("draftNoteSuffix")}
       </p>
-      <Field label="Title">
+      <Field label={t("fieldTitle")}>
         <input
           className="auth-input"
           value={title}
@@ -529,14 +526,14 @@ function ResourceForm({
           }}
         />
       </Field>
-      <Field label="Slug">
+      <Field label={t("fieldSlug")}>
         <input
           className="auth-input"
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
         />
       </Field>
-      <Field label="Short description">
+      <Field label={t("fieldShortDescription")}>
         <textarea
           className="auth-input"
           style={{ minHeight: 70, fontFamily: "inherit" }}
@@ -545,7 +542,7 @@ function ResourceForm({
         />
       </Field>
       <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
-        <Field label="Kind">
+        <Field label={t("fieldKind")}>
           <select
             className="auth-input"
             value={kind}
@@ -558,7 +555,7 @@ function ResourceForm({
             ))}
           </select>
         </Field>
-        <Field label="Provider">
+        <Field label={t("fieldProvider")}>
           <select
             className="auth-input"
             value={providerSlug}
@@ -573,7 +570,7 @@ function ResourceForm({
         </Field>
       </div>
       <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
-        <Field label="Primary jurisdiction">
+        <Field label={t("fieldPrimaryJurisdiction")}>
           <select
             className="auth-input"
             value={jurisdictionCode}
@@ -586,7 +583,7 @@ function ResourceForm({
             ))}
           </select>
         </Field>
-        <Field label="Risk">
+        <Field label={t("fieldRisk")}>
           <select
             className="auth-input"
             value={riskCode}
@@ -608,7 +605,7 @@ function ResourceForm({
       ) : null}
 
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 6 }}>
-        <Button intent="secondary" onClick={onDone}>
+<Button intent="secondary" onClick={onDone}>
           Cancel
         </Button>
         <Button intent="primary" onClick={submit} disabled={busy}>
