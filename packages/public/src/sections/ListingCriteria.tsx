@@ -1,4 +1,5 @@
 import { listActiveListingCriteria } from "@airegistry/core/services/public-cms";
+import { getTranslations } from "next-intl/server";
 import { Icon, type IconName } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";
 
@@ -26,12 +27,14 @@ const TONE: Record<Tone, { rgb: string; color: string }> = {
   emerald: { rgb: "16, 185, 129", color: "#10b981" }
 };
 
-const FALLBACK_BASES: Basis[] = [
-  { icon: "flag", title: "Local law", desc: "Encodes local legislation, regulation, official process or professional obligation.", tone: "primary" },
-  { icon: "database", title: "Local data", desc: "Uses local datasets, records or locally collected knowledge.", tone: "tertiary" },
-  { icon: "lock", title: "Local systems", desc: "Integrates with or describes local institutional systems and workflows.", tone: "secondary" },
-  { icon: "globe", title: "Local language & culture", desc: "Supports local language, culture, norms or context.", tone: "emerald" }
-];
+function getFallbackBases(t: (key: string) => string): Basis[] {
+  return [
+    { icon: "flag", title: t("base1Name"), desc: t("base1Desc"), tone: "primary" },
+    { icon: "database", title: t("base2Name"), desc: t("base2Desc"), tone: "tertiary" },
+    { icon: "lock", title: t("base3Name"), desc: t("base3Desc"), tone: "secondary" },
+    { icon: "globe", title: t("base4Name"), desc: t("base4Desc"), tone: "emerald" }
+  ];
+}
 
 /**
  * Normalise the DB's `iconName` (string) to ui-kit's `IconName` enum. Falls
@@ -49,6 +52,8 @@ function toIconName(name: string | null | undefined): IconName {
 }
 
 export async function ListingCriteria() {
+  const t = await getTranslations("listingCriteria");
+  const fallbackBases = getFallbackBases(t);
   let bases: Basis[];
   try {
     const rows = await listActiveListingCriteria();
@@ -59,9 +64,9 @@ export async function ListingCriteria() {
           desc: r.description,
           tone: TONE_CYCLE[i % TONE_CYCLE.length]
         }))
-      : FALLBACK_BASES;
+      : fallbackBases;
   } catch {
-    bases = FALLBACK_BASES;
+    bases = fallbackBases;
   }
 
   return (
@@ -69,17 +74,12 @@ export async function ListingCriteria() {
       <Reveal className="section-header">
         <div className="eyebrow">
           <span className="dot" />
-          <span>Listing criteria</span>
+          <span>{t("eyebrow")}</span>
         </div>
         <h2>
-          The <span className="gradient-text">sovereignty test.</span>
+          {t("headingPrefix")} <span className="gradient-text">{t("headingAccent")}</span>
         </h2>
-        <p>
-          Only resources that meet a sovereignty test are listed past basic discovery.
-          The test asks whether the resource encodes local law, local data, local
-          systems, or local language and culture - keeping &ldquo;sovereign&rdquo;
-          specific, not aspirational.
-        </p>
+        <p>{t("description")}</p>
       </Reveal>
 
       <Reveal>
@@ -91,7 +91,6 @@ export async function ListingCriteria() {
           }}
           className="listing-criteria-grid"
         >
-          {/* Left: How it works panel */}
           <div
             style={{
               padding: 28,
@@ -109,7 +108,7 @@ export async function ListingCriteria() {
                 letterSpacing: "-0.015em"
               }}
             >
-              How it works
+              {t("howItWorks")}
             </h3>
             <p
               style={{
@@ -119,22 +118,22 @@ export async function ListingCriteria() {
                 lineHeight: 1.6
               }}
             >
-              A submission must cite at least one sovereignty basis and provide{" "}
-              <span
-                style={{
-                  background:
-                    "linear-gradient(13deg, rgba(var(--primary-rgb),0.22), rgba(var(--tertiary-rgb),0.22))",
-                  color: "var(--text)",
-                  padding: "1px 7px",
-                  borderRadius: 5,
-                  fontWeight: 500
-                }}
-              >
-                concrete evidence
-              </span>
-              : a referenced law, dataset, institution, language asset or cultural
-              artefact. Reviewers apply a published checklist before elevating a
-              resource&rsquo;s status.
+              {t.rich("howItWorksDesc", {
+                highlight: (chunks) => (
+                  <span
+                    style={{
+                      background:
+                        "linear-gradient(13deg, rgba(var(--primary-rgb),0.22), rgba(var(--tertiary-rgb),0.22))",
+                      color: "var(--text)",
+                      padding: "1px 7px",
+                      borderRadius: 5,
+                      fontWeight: 500
+                    }}
+                  >
+                    {chunks}
+                  </span>
+                )
+              })}
             </p>
             <div
               style={{
@@ -149,10 +148,9 @@ export async function ListingCriteria() {
               }}
             >
               <strong style={{ color: "#f59e0b", fontWeight: 500 }}>
-                Quality over quantity.
+                {t("qualityTitle")}
               </strong>{" "}
-              A registry of 50 credible resources is more useful than one of 1,000
-              generic listings. Small, deliberate, trustworthy - that&rsquo;s the bar.
+              {t("qualityBody")}
             </div>
           </div>
 

@@ -6,6 +6,10 @@ import { REF_TABLES } from "@airegistry/sdk";
  * Each entry maps a role to its sidebar items. Items reference Next.js routes
  * directly (no hash routing - the portals are server-rendered Next pages).
  *
+ * `label` values are translation key identifiers resolved at render time by
+ * PortalSidebar via `useTranslations("<role>Nav")`. Dynamic items (e.g.
+ * reference tables) carry `rawLabel` instead, which the sidebar renders as-is.
+ *
  * The set mirrors `ai-registry-prototype/claudedesign/portals/<role>-app.jsx`
  * so the implementation stays close to the prototype's information
  * architecture. Sub-routes the spec defines but Phase 4 will fully wire are
@@ -16,7 +20,10 @@ export type PortalRole = "admin" | "provider" | "verifier" | "sovereign";
 
 export type NavItem = {
   id: string;
+  /** Translation key within the role's nav namespace (e.g. adminNav.dashboard). */
   label: string;
+  /** Raw label for dynamic items that bypass translation (e.g. ref table names). */
+  rawLabel?: string;
   href: string;
   icon: string;
   /** Phase 4 stub flag - surfaces a "Coming in Phase 4" note when true. */
@@ -25,6 +32,7 @@ export type NavItem = {
 
 export type NavGroup = {
   id: string;
+  /** Translation key within the role's nav namespace. */
   label: string;
   items: NavItem[];
   /** When true the group's header acts as a toggle that hides / reveals the
@@ -48,99 +56,74 @@ export type PortalConfig = {
 export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
   admin: {
     role: "admin",
-    label: "Admin",
+    label: "admin",
     basePath: "/admin",
     icon: "shield",
     groups: [
       {
         id: "overview",
-        label: "Overview",
+        label: "overview",
         items: [
-          { id: "dashboard", label: "Dashboard", href: "/admin", icon: "home-alt" },
-          { id: "audit", label: "Audit log", href: "/admin/audit", icon: "audit" }
+          { id: "dashboard", label: "dashboard", href: "/admin", icon: "home-alt" },
+          { id: "audit", label: "auditLog", href: "/admin/audit", icon: "audit" }
         ]
       },
       {
         id: "catalogue",
-        label: "Catalogue",
+        label: "catalogue",
         items: [
-          { id: "resources", label: "Resources", href: "/admin/resources", icon: "layers" },
-          { id: "providers", label: "Providers", href: "/admin/providers", icon: "users" }
+          { id: "resources", label: "resources", href: "/admin/resources", icon: "layers" },
+          { id: "providers", label: "providers", href: "/admin/providers", icon: "users" }
         ]
       },
       {
-        // ─── Governance ─────────────────────────────────────────
-        // Reviews and Complaints both feed the operator's moderation /
-        // decision workload. Complaints replaces the former Flags entry -
-        // Flags was just a filtered view of complaints in `open` /
-        // `investigating` state, which is now the "Needs action" tab on
-        // the Complaints page. /admin/flags redirects there.
         id: "governance",
-        label: "Governance",
+        label: "governance",
         items: [
-          { id: "reviews", label: "Reviews", href: "/admin/reviews", icon: "check" },
-          { id: "complaints", label: "Complaints", href: "/admin/complaints", icon: "flag" },
-          { id: "policies", label: "Policies", href: "/admin/policies", icon: "doc" }
+          { id: "reviews", label: "reviews", href: "/admin/reviews", icon: "check" },
+          { id: "complaints", label: "complaints", href: "/admin/complaints", icon: "flag" },
+          { id: "policies", label: "policies", href: "/admin/policies", icon: "doc" }
         ]
       },
       {
-        // ─── Inbox ──────────────────────────────────────────────
-        // Public-facing intake the operator needs to triage. Contact
-        // messages come from the public /contact form (Contact table) and
-        // support view, reply (email), and status management.
         id: "inbox",
-        label: "Inbox",
+        label: "inbox",
         items: [
-          { id: "contacts", label: "Contact messages", href: "/admin/contacts", icon: "inbox" }
+          { id: "contacts", label: "contactMessages", href: "/admin/contacts", icon: "inbox" }
         ]
       },
       {
         id: "operations",
-        label: "Operations",
+        label: "operations",
         items: [
-          { id: "users", label: "Users & roles", href: "/admin/users", icon: "user" },
-          { id: "integrations", label: "Integrations", href: "/admin/integrations", icon: "flow" },
-          { id: "branding", label: "Branding", href: "/admin/branding", icon: "eye" },
-          { id: "settings", label: "Settings", href: "/admin/settings", icon: "settings" }
+          { id: "users", label: "usersRoles", href: "/admin/users", icon: "user" },
+          { id: "integrations", label: "integrations", href: "/admin/integrations", icon: "flow" },
+          { id: "branding", label: "branding", href: "/admin/branding", icon: "eye" },
+          { id: "settings", label: "settings", href: "/admin/settings", icon: "settings" }
         ]
       },
       {
-        // ─── Site content (public-portal CMS) ────────────────────
-        // Editable rows in the `public_cms` Postgres schema that drive
-        // the marketing surface in @airegistry/public. Operators tune
-        // copy here instead of forking the portal. Schema + service
-        // layer ships in @airegistry/core/services/public-cms.
         id: "site",
-        label: "Site content",
+        label: "siteContent",
         items: [
-          { id: "site-home", label: "Overview", href: "/admin/site", icon: "home-alt" },
-          { id: "site-faq", label: "FAQ", href: "/admin/site/faq", icon: "doc" },
-          { id: "site-how", label: "How it works", href: "/admin/site/how-it-works", icon: "flow" },
-          { id: "site-criteria", label: "Listing criteria", href: "/admin/site/listing-criteria", icon: "check" },
-          { id: "site-promo", label: "Promo banner", href: "/admin/site/promo", icon: "zap" }
+          { id: "site-home", label: "siteOverview", href: "/admin/site", icon: "home-alt" },
+          { id: "site-faq", label: "faq", href: "/admin/site/faq", icon: "doc" },
+          { id: "site-how", label: "howItWorks", href: "/admin/site/how-it-works", icon: "flow" },
+          { id: "site-criteria", label: "listingCriteria", href: "/admin/site/listing-criteria", icon: "check" },
+          { id: "site-promo", label: "promoBanner", href: "/admin/site/promo", icon: "zap" }
         ]
       },
       {
         id: "ref-tables",
-        label: "Reference Tables",
-        // The full registry - one row per controlled vocabulary the schema
-        // ships. Every entry routes to /admin/ref/[id] and renders the same
-        // generic CRUD grid (search, active filter, server-side pagination,
-        // view/edit/delete row icons + Add new top-right). Adding a new
-        // reference table is a one-line change in
-        // src/lib/admin/reference-tables.ts and it shows up here automatically.
-        //
-        // The group is collapsible and starts collapsed by default - there
-        // are ~30 rows here and most admins reach this surface only when
-        // tweaking taxonomies. The PortalSidebar auto-expands when the
-        // active route is `/admin/ref/...`.
+        label: "referenceTables",
         collapsible: true,
         defaultCollapsed: true,
         items: [
-          { id: "ref-index", label: "All tables", href: "/admin/ref", icon: "database" },
+          { id: "ref-index", label: "allTables", href: "/admin/ref", icon: "database" },
           ...REF_TABLES.map((t) => ({
             id: `ref-${t.id}`,
-            label: t.label,
+            label: "",
+            rawLabel: t.label,
             href: `/admin/ref/${t.id}`,
             icon: "database"
           }))
@@ -150,130 +133,122 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
   },
   provider: {
     role: "provider",
-    label: "Provider",
+    label: "provider",
     basePath: "/provider",
     icon: "layers",
-    // Mirrors the Verifier portal's 4-group structure (Overview / <work> /
-    // Inbox / Account). The Inbox group surfaces everything *directed at*
-    // this provider - complaints, contact requests, reviews, incidents -
-    // so the provider has a single landing for "the public is talking to me".
     groups: [
       {
         id: "overview",
-        label: "Overview",
+        label: "overview",
         items: [
-          { id: "dashboard", label: "Dashboard", href: "/provider", icon: "home-alt" }
+          { id: "dashboard", label: "dashboard", href: "/provider", icon: "home-alt" }
         ]
       },
       {
         id: "catalogue",
-        label: "Catalogue",
+        label: "catalogue",
         items: [
-          { id: "resources", label: "Resources", href: "/provider/resources", icon: "layers" },
-          { id: "submissions", label: "Submissions", href: "/provider/submissions", icon: "inbox" },
-          { id: "publish", label: "Publish new", href: "/provider/publish", icon: "plus" }
+          { id: "resources", label: "resources", href: "/provider/resources", icon: "layers" },
+          { id: "submissions", label: "submissions", href: "/provider/submissions", icon: "inbox" },
+          { id: "publish", label: "publishNew", href: "/provider/publish", icon: "plus" }
         ]
       },
       {
         id: "inbox",
-        label: "Inbox",
+        label: "inbox",
         items: [
-          { id: "complaints", label: "Complaints", href: "/provider/complaints", icon: "flag" },
-          // Contact requests is an admin-only inbox; provider portal omits it.
-          { id: "reviews", label: "Reviews", href: "/provider/reviews", icon: "check" },
-          { id: "incidents", label: "Incidents", href: "/provider/incidents", icon: "shield" }
+          { id: "complaints", label: "complaints", href: "/provider/complaints", icon: "flag" },
+          { id: "reviews", label: "reviews", href: "/provider/reviews", icon: "check" },
+          { id: "incidents", label: "incidents", href: "/provider/incidents", icon: "shield" }
         ]
       },
       {
         id: "account",
-        label: "Account",
+        label: "account",
         items: [
-          // Analytics is hidden from the provider portal until the metrics
-          // surface is wired up — the page route remains in place but the
-          // sidebar entry is omitted so providers don't see a stub.
-          { id: "settings", label: "Settings", href: "/provider/settings", icon: "settings" }
+          { id: "settings", label: "settings", href: "/provider/settings", icon: "settings" }
         ]
       }
     ]
   },
   verifier: {
     role: "verifier",
-    label: "Verifier",
+    label: "verifier",
     basePath: "/verifier",
     icon: "check",
     groups: [
       {
         id: "overview",
-        label: "Overview",
+        label: "overview",
         items: [
-          { id: "dashboard", label: "Dashboard", href: "/verifier", icon: "home-alt" }
+          { id: "dashboard", label: "dashboard", href: "/verifier", icon: "home-alt" }
         ]
       },
       {
         id: "review",
-        label: "Review",
+        label: "review",
         items: [
-          { id: "queue", label: "Queue", href: "/verifier/queue", icon: "inbox" },
-          { id: "decided", label: "Decided", href: "/verifier/decided", icon: "check" }
+          { id: "queue", label: "queue", href: "/verifier/queue", icon: "inbox" },
+          { id: "decided", label: "decided", href: "/verifier/decided", icon: "check" }
         ]
       },
       {
         id: "evidence",
-        label: "Evidence",
+        label: "evidence",
         items: [
-          { id: "runs", label: "Eval runs", href: "/verifier/runs", icon: "pulse" },
-          { id: "benchmarks", label: "Benchmarks", href: "/verifier/benchmarks", icon: "activity" },
-          { id: "redteam", label: "Red team", href: "/verifier/redteam", icon: "shield" }
+          { id: "runs", label: "evalRuns", href: "/verifier/runs", icon: "pulse" },
+          { id: "benchmarks", label: "benchmarks", href: "/verifier/benchmarks", icon: "activity" },
+          { id: "redteam", label: "redTeam", href: "/verifier/redteam", icon: "shield" }
         ]
       },
       {
         id: "outputs",
-        label: "Outputs",
+        label: "outputs",
         items: [
-          { id: "reports", label: "Reports", href: "/verifier/reports", icon: "doc" },
-          { id: "settings", label: "Settings", href: "/verifier/settings", icon: "settings" }
+          { id: "reports", label: "reports", href: "/verifier/reports", icon: "doc" },
+          { id: "settings", label: "settings", href: "/verifier/settings", icon: "settings" }
         ]
       }
     ]
   },
   sovereign: {
     role: "sovereign",
-    label: "Sovereign Ops",
+    label: "sovereign",
     basePath: "/sovereign",
     icon: "flag",
     groups: [
       {
         id: "overview",
-        label: "Overview",
+        label: "overview",
         items: [
-          { id: "dashboard", label: "Dashboard", href: "/sovereign", icon: "home-alt" }
+          { id: "dashboard", label: "dashboard", href: "/sovereign", icon: "home-alt" }
         ]
       },
       {
         id: "ecosystem",
-        label: "Ecosystem",
+        label: "ecosystem",
         items: [
-          { id: "catalog", label: "National catalogue", href: "/sovereign/catalog", icon: "layers" },
-          { id: "topology", label: "Topology", href: "/sovereign/topology", icon: "flow" },
-          { id: "sectors", label: "Sectors", href: "/sovereign/sectors", icon: "database" },
-          { id: "partners", label: "Partners", href: "/sovereign/partners", icon: "users" }
+          { id: "catalog", label: "nationalCatalogue", href: "/sovereign/catalog", icon: "layers" },
+          { id: "topology", label: "topology", href: "/sovereign/topology", icon: "flow" },
+          { id: "sectors", label: "sectors", href: "/sovereign/sectors", icon: "database" },
+          { id: "partners", label: "partners", href: "/sovereign/partners", icon: "users" }
         ]
       },
       {
         id: "governance",
-        label: "Governance",
+        label: "governance",
         items: [
-          { id: "risk", label: "Risk", href: "/sovereign/risk", icon: "shield" },
-          { id: "policies", label: "Policies", href: "/sovereign/policies", icon: "doc" },
-          { id: "incidents", label: "Incidents", href: "/sovereign/incidents", icon: "flag" }
+          { id: "risk", label: "risk", href: "/sovereign/risk", icon: "shield" },
+          { id: "policies", label: "policies", href: "/sovereign/policies", icon: "doc" },
+          { id: "incidents", label: "incidents", href: "/sovereign/incidents", icon: "flag" }
         ]
       },
       {
         id: "outputs",
-        label: "Outputs",
+        label: "outputs",
         items: [
-          { id: "reports", label: "Reports", href: "/sovereign/reports", icon: "doc" },
-          { id: "settings", label: "Settings", href: "/sovereign/settings", icon: "settings" }
+          { id: "reports", label: "reports", href: "/sovereign/reports", icon: "doc" },
+          { id: "settings", label: "settings", href: "/sovereign/settings", icon: "settings" }
         ]
       }
     ]

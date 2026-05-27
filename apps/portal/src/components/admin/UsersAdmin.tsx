@@ -7,6 +7,7 @@ import { RowActionMenu, type RowMenuItem } from "./RowActionMenu";
 import { StatusPill } from "@/components/portals/StatusPill";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 export type UserRow = {
   id: string;
@@ -53,32 +54,34 @@ export function UsersAdmin({
   providers: { slug: string; displayName: string }[];
   selfId: string;
 }) {
+  const t = useTranslations("adminUsers");
+
   const filters: GridFilter[] = [
     {
       id: "role",
-      label: "Role",
+      label: t("filterRole"),
       options: roles.map((r) => ({ value: r.code, label: r.name }))
     },
     {
       id: "status",
-      label: "Status",
+      label: t("filterStatus"),
       options: statuses.map((s) => ({ value: s.code, label: s.name }))
     },
     {
       id: "verified",
-      label: "Email",
+      label: t("filterEmail"),
       options: [
-        { value: "true", label: "Verified" },
-        { value: "false", label: "Pending" }
+        { value: "true", label: t("filterVerified") },
+        { value: "false", label: t("filterPending") }
       ],
-      emptyLabel: "All emails"
+      emptyLabel: t("filterAllEmails")
     }
   ];
 
   const columns: GridColumn<UserRow>[] = [
     {
       key: "user",
-      label: "Operator",
+      label: t("colOperator"),
       render: (row) => (
         <div>
           <div style={{ color: "var(--text)" }}>{row.name}</div>
@@ -88,36 +91,36 @@ export function UsersAdmin({
     },
     {
       key: "role",
-      label: "Role",
+      label: t("colRole"),
       render: (row) => <span className="tag">{row.roleName}</span>
     },
     {
       key: "provider",
-      label: "Provider",
+      label: t("colProvider"),
       render: (row) => row.providerName ?? "-"
     },
     {
       key: "verified",
-      label: "Email",
+      label: t("colEmail"),
       render: (row) =>
         row.emailVerified ? (
           <span className="tag" style={{ color: "#10b981" }}>
-            verified
+            {t("verified")}
           </span>
         ) : (
-          <span className="tag">pending</span>
+          <span className="tag">{t("pending")}</span>
         )
     },
     {
       key: "status",
-      label: "Status",
+      label: t("colStatus"),
       render: (row) => (
         <StatusPill status={STATUS_DISPLAY[row.statusCode] ?? "active"} />
       )
     },
     {
       key: "joined",
-      label: "Joined",
+      label: t("colJoined"),
       render: (row) => row.createdAt.slice(0, 10),
       mono: true
     }
@@ -126,11 +129,11 @@ export function UsersAdmin({
   return (
     <AdminGrid<UserRow>
       endpoint="/api/admin/users"
-      searchPlaceholder="Search by name or email…"
+      searchPlaceholder={t("searchPlaceholder")}
       filters={filters}
       columns={columns}
       addModal={{
-        title: "Add user",
+        title: t("addModalTitle"),
         render: (close) => (
           <UserForm
             roles={roles}
@@ -142,7 +145,7 @@ export function UsersAdmin({
           />
         )
       }}
-      emptyState="No users match this filter."
+      emptyState={t("emptyState")}
       actions={(row, reload) => (
         <UserRowActions
           row={row}
@@ -172,11 +175,11 @@ function UserRowActions({
   selfId: string;
   reload: () => void;
 }) {
+  const t = useTranslations("adminUsers");
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  // Suspend/reactivate confirm dialog state.
   const [confirmStatus, setConfirmStatus] = useState(false);
   const [statusNotify, setStatusNotify] = useState(true);
   const [statusReason, setStatusReason] = useState("");
@@ -195,13 +198,13 @@ function UserRowActions({
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Update failed");
+        setError(data.error ?? t("updateFailed"));
         return false;
       }
       reload();
       return true;
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
       return false;
     } finally {
       setBusy(false);
@@ -215,13 +218,13 @@ function UserRowActions({
       const res = await registryFetch(withBase(`/api/admin/users/${row.id}`), { method: "DELETE" });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Delete failed");
+        setError(data.error ?? t("deleteFailed"));
         return;
       }
       setConfirmDelete(false);
       reload();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setBusy(false);
     }
@@ -233,8 +236,8 @@ function UserRowActions({
         type="button"
         className="r-card-action-link"
         onClick={() => setEditing(true)}
-        title="Edit"
-        aria-label="Edit"
+        title={t("edit")}
+        aria-label={t("edit")}
         disabled={busy}
         style={iconBtnStyle}
       >
@@ -244,7 +247,7 @@ function UserRowActions({
         items={[
           {
             key: "toggleSuspend",
-            label: isSuspended ? "Reactivate" : "Suspend",
+            label: isSuspended ? t("reactivate") : t("suspend"),
             icon: isSuspended ? "check" : "lock",
             tone: isSuspended ? "default" : "danger",
             disabled: busy || isSelf,
@@ -256,7 +259,7 @@ function UserRowActions({
           },
           {
             key: "delete",
-            label: "Delete",
+            label: t("delete"),
             icon: "trash",
             tone: "danger",
             disabled: busy || isSelf,
@@ -271,7 +274,7 @@ function UserRowActions({
         </div>
       ) : null}
 
-      <Modal
+<Modal
         open={editing}
         onClose={() => setEditing(false)}
         title="Edit user"
@@ -292,7 +295,7 @@ function UserRowActions({
         </div>
       </Modal>
 
-      <ConfirmDialog
+<ConfirmDialog
         open={confirmDelete}
         title="Delete user?"
         body={
@@ -306,7 +309,7 @@ function UserRowActions({
                 {error}
               </div>
             ) : null}
-          </>
+</>
         }
         destructive
         confirmLabel={busy ? "Deleting…" : "Delete"}
@@ -339,19 +342,19 @@ function UserRowActions({
                 checked={statusNotify}
                 onChange={(e) => setStatusNotify(e.target.checked)}
               />
-              Email the user about this status change
+              {t("emailUserStatusChange")}
             </label>
             {statusNotify ? (
               <label style={{ display: "grid", gap: 6, marginBottom: 14 }}>
                 <span style={{ fontSize: 11, color: "var(--text-3)", letterSpacing: "0.08em" }}>
-                  REASON (OPTIONAL, INCLUDED IN EMAIL)
+                  {t("reasonOptionalLabel")}
                 </span>
                 <textarea
                   className="auth-input"
                   rows={2}
                   value={statusReason}
                   onChange={(e) => setStatusReason(e.target.value)}
-                  placeholder="Why is this status changing?"
+                  placeholder={t("reasonPlaceholder")}
                 />
               </label>
             ) : null}
@@ -360,7 +363,7 @@ function UserRowActions({
                 {error}
               </div>
             ) : null}
-          </>
+</>
         }
         confirmLabel={busy ? "Saving…" : isSuspended ? "Reactivate" : "Suspend"}
         onCancel={() => setConfirmStatus(false)}
@@ -395,15 +398,13 @@ function UserForm({
   initial: UserRow | null;
   onDone: () => void;
 }) {
+  const t = useTranslations("adminUsers");
   const [name, setName] = useState(initial?.name ?? "");
   const [email, setEmail] = useState(initial?.email ?? "");
   const [roleCode, setRoleCode] = useState(initial?.roleCode ?? "provider");
   const [statusCode, setStatusCode] = useState(initial?.statusCode ?? "invited");
   const [providerSlug, setProviderSlug] = useState(initial?.providerSlug ?? "");
   const [sendInvite, setSendInvite] = useState(true);
-  // Edit mode: notify the user when their status changes. Default ON; only
-  // surfaced in the UI once the operator picks a status different from the
-  // current one.
   const [notifyOnStatusChange, setNotifyOnStatusChange] = useState(true);
   const [statusChangeReason, setStatusChangeReason] = useState("");
   const [busy, setBusy] = useState(false);
@@ -441,12 +442,12 @@ function UserForm({
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Save failed");
+        setError(data.error ?? t("saveFailed"));
         return;
       }
       onDone();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setBusy(false);
     }
@@ -454,14 +455,14 @@ function UserForm({
 
   return (
     <div style={{ display: "grid", gap: 14, fontSize: 13 }}>
-      <Field label="Name">
+      <Field label={t("fieldName")}>
         <input
           className="auth-input"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
       </Field>
-      <Field label="Email">
+      <Field label={t("fieldEmail")}>
         <input
           className="auth-input"
           type="email"
@@ -469,7 +470,7 @@ function UserForm({
           onChange={(e) => setEmail(e.target.value)}
         />
       </Field>
-      <Field label="Role">
+      <Field label={t("fieldRole")}>
         <select
           className="auth-input"
           value={roleCode}
@@ -482,7 +483,7 @@ function UserForm({
           ))}
         </select>
       </Field>
-      <Field label="Status">
+      <Field label={t("fieldStatus")}>
         <select
           className="auth-input"
           value={statusCode}
@@ -495,13 +496,13 @@ function UserForm({
           ))}
         </select>
       </Field>
-      <Field label="Provider linkage">
+      <Field label={t("fieldProviderLinkage")}>
         <select
           className="auth-input"
           value={providerSlug}
           onChange={(e) => setProviderSlug(e.target.value)}
         >
-          <option value="">- none -</option>
+          <option value="">{t("providerNone")}</option>
           {providers.map((p) => (
             <option key={p.slug} value={p.slug}>
               {p.displayName}
@@ -524,7 +525,7 @@ function UserForm({
             checked={sendInvite}
             onChange={(e) => setSendInvite(e.target.checked)}
           />
-          Send verification / invite email now
+          {t("sendInviteEmail")}
         </label>
       ) : null}
       {statusWillChange ? (
@@ -544,16 +545,16 @@ function UserForm({
               checked={notifyOnStatusChange}
               onChange={(e) => setNotifyOnStatusChange(e.target.checked)}
             />
-            Email the user about this status change
+            {t("emailUserStatusChange")}
           </label>
           {notifyOnStatusChange ? (
-            <Field label="Reason (optional, included in email)">
+            <Field label={t("formReasonLabel")}>
               <textarea
                 className="auth-input"
                 rows={2}
                 value={statusChangeReason}
                 onChange={(e) => setStatusChangeReason(e.target.value)}
-                placeholder="Why is this status changing? Shown to the user."
+                placeholder={t("formReasonPlaceholder")}
               />
             </Field>
           ) : null}
@@ -565,7 +566,7 @@ function UserForm({
         </div>
       ) : null}
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-        <Button intent="secondary" onClick={onDone}>
+<Button intent="secondary" onClick={onDone}>
           Cancel
         </Button>
         <Button intent="primary" onClick={submit} disabled={busy}>

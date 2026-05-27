@@ -1,47 +1,34 @@
+import { getTranslations } from "next-intl/server";
 import { getBranding } from "@airegistry/core/branding";
 import { Reveal } from "../shell/Reveal";
 import { PageHero } from "@airegistry/ui-kit";
 
-const SECTIONS = [
-  {
-    id: "overview",
-    label: "Overview",
-    body: "AIR-SPEC 0.4 defines the listing schema, sovereignty rubric, identifier format, and verification proofs the registry implements."
-  },
-  {
-    id: "air-id",
-    label: "AIR-ID format",
-    body: "air://<jurisdiction>/<kind>/<provider>/<name>@<version> - stable, resolvable, and human-readable."
-  },
-  {
-    id: "metadata",
-    label: "Listing metadata",
-    body: "Provider, kind, sovereignty bases with evidence, contact, terms, license, region, optional SPIFFE trust domain."
-  },
-  {
-    id: "verification",
-    label: "Provider verification",
-    body: "DNS TXT and email-based proofs. Any mismatch flips status to “unverified” and surfaces a public note."
-  },
-  {
-    id: "review",
-    label: "Review workflow",
-    body: "Reviewers apply the published checklist, record signed notes, and assign a status. Appeals are public."
-  }
-];
+const SECTION_IDS = ["overview", "air-id", "metadata", "verification", "review"] as const;
 
 export async function DocsContent() {
-  const { portalDomain } = await getBranding();
+  const [{ portalDomain }, t] = await Promise.all([
+    getBranding(),
+    getTranslations("docs")
+  ]);
+
+  const SECTIONS = SECTION_IDS.map((id) => ({
+    id,
+    label: t(`section_${id}_label` as any),
+    body: t(`section_${id}_body` as any)
+  }));
+
   return (
     <div>
       <PageHero
-        crumb="Documentation · AIR-SPEC 0.4 MVP"
+        crumb={t("crumb")}
         title={
           <>
-            The technical <span className="gradient-text">specification</span>.
+            {t.rich("pageTitle", {
+              accent: (chunks) => <span className="gradient-text">{chunks}</span>
+            })}
           </>
         }
-        subtitle={`Everything you need to publish, resolve and audit listings against the v0.4 reference implementation at ${portalDomain}.`}
+        subtitle={t("pageSubtitle", { portalDomain })}
       />
       <section className="section" style={{ paddingTop: 40 }}>
         <div style={{ display: "grid", gridTemplateColumns: "220px 1fr", gap: 48 }}>

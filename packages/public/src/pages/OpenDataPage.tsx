@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getBranding } from "@airegistry/core/branding";
 import { DocPage, DocPanel } from "../sections/DocPage";
 import { publicPageMetadata } from "../lib/page-metadata";
@@ -8,50 +9,39 @@ export async function generateMetadata() {
 }
 
 export default async function OpenDataPage() {
-  const { portalDomain, openSourceRepoUrl } = await getBranding();
+  const [{ portalDomain, openSourceRepoUrl }, t] = await Promise.all([
+    getBranding(),
+    getTranslations("openData")
+  ]);
   const licenseUrl = `${openSourceRepoUrl.replace(/\/$/, "")}/blob/main/LICENSE`;
   return (
     <DocPage
       crumb={
         <>
           <Link href="/" style={{ color: "var(--text-3)", textDecoration: "none" }}>
-            Home
+            {t("home")}
           </Link>{" "}
-          · Open data
+          · {t("title")}
         </>
       }
-      title="Open data"
-      subtitle="Registry metadata is public by design. Browse, export, mirror or federate - with attribution."
+      title={t("title")}
+      subtitle={t("pageSubtitle")}
     >
-      <DocPanel title="What is open">
-        <p>
-          Every public listing, provider profile, governance signal and AIR-ID is available
-          through the discovery API without authentication. The audit log is append-only and
-          queryable. Nothing in the public layer is paywalled.
-        </p>
+      <DocPanel title={t("whatIsOpenTitle")}>
+        <p>{t("whatIsOpenBody")}</p>
       </DocPanel>
 
-      <DocPanel title="AIR-IDs are permanent">
-        <p>
-          Once issued, an AIR-ID is a stable identifier. Metadata versions may change, but the
-          identifier itself does not. Tombstones explain removals; they do not erase history.
-        </p>
+      <DocPanel title={t("airIdsPermanentTitle")}>
+        <p>{t("airIdsPermanentBody")}</p>
       </DocPanel>
 
-      <DocPanel title="Immutable audit trail">
-        <p>
-          Governance actions - reviews, appeals, lifecycle transitions - are written to an
-          append-only audit log. Entries are immutable. They survive provider rebrands, endpoint
-          changes and version bumps. If a resource is removed, the AIR-ID resolves to a
-          tombstone explaining why - never silently disappears.
-        </p>
+      <DocPanel title={t("immutableAuditTitle")}>
+        <p>{t("immutableAuditBody")}</p>
       </DocPanel>
 
-      <DocPanel title="Licensing and use">
+      <DocPanel title={t("licensingTitle")}>
         <p>
-          Registry metadata is open. Reuse, mirror, federate or redistribute it freely;
-          attribute back to the operating instance (e.g. {portalDomain}) when republishing.
-          The reference implementation is licensed{" "}
+          {t("licensingBody", { portalDomain })}{" "}
           <a
             href={licenseUrl}
             target="_blank"
@@ -64,15 +54,15 @@ export default async function OpenDataPage() {
         </p>
       </DocPanel>
 
-      <DocPanel title="See also">
+      <DocPanel title={t("seeAlsoTitle")}>
         <p>
-          Read the{" "}
+          {t("seeAlsoBody1")}{" "}
           <Link href="/docs" style={{ color: "var(--text-2)" }}>
-            technical documentation
+            {t("technicalDocs")}
           </Link>{" "}
-          for API endpoints and export formats, or browse the{" "}
+          {t("seeAlsoBody2")}{" "}
           <Link href="/audit-log" style={{ color: "var(--text-2)" }}>
-            public audit log
+            {t("publicAuditLog")}
           </Link>
           .
         </p>

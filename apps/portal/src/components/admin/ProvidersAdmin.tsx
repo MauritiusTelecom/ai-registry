@@ -9,6 +9,7 @@ import { RowActionMenu, type RowMenuItem } from "./RowActionMenu";
 import { StatusPill } from "@/components/portals/StatusPill";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 export type ProviderRow = {
   id: string;
@@ -54,20 +55,22 @@ export function ProvidersAdmin({
   statuses: RefRow[];
   jurisdictions: RefRow[];
 }) {
+  const t = useTranslations("adminProviders");
+
   const filters: GridFilter[] = [
     {
       id: "type",
-      label: "Type",
-      options: types.map((t) => ({ value: t.code, label: t.name }))
+      label: t("filterType"),
+      options: types.map((tp) => ({ value: tp.code, label: tp.name }))
     },
     {
       id: "status",
-      label: "Status",
+      label: t("filterStatus"),
       options: statuses.map((s) => ({ value: s.code, label: s.name }))
     },
     {
       id: "jurisdiction",
-      label: "Jurisdiction",
+      label: t("filterJurisdiction"),
       options: jurisdictions.map((j) => ({ value: j.code, label: j.name }))
     }
   ];
@@ -75,7 +78,7 @@ export function ProvidersAdmin({
   const columns: GridColumn<ProviderRow>[] = [
     {
       key: "name",
-      label: "Provider",
+      label: t("colProvider"),
       render: (row) => (
         <Link
           href={`/admin/providers/${row.id}`}
@@ -96,23 +99,23 @@ export function ProvidersAdmin({
         </Link>
       )
     },
-    { key: "type", label: "Type", render: (row) => <span className="tag">{row.typeName}</span> },
+    { key: "type", label: t("colType"), render: (row) => <span className="tag">{row.typeName}</span> },
     {
       key: "jurisdiction",
-      label: "Region",
+      label: t("colRegion"),
       render: (row) => row.jurisdictionCode,
       mono: true
     },
     {
       key: "resources",
-      label: "Resources",
+      label: t("colResources"),
       render: (row) => row.resourceCount,
       mono: true
     },
-    { key: "contact", label: "Contact", render: (row) => row.contactEmail, mono: true },
+    { key: "contact", label: t("colContact"), render: (row) => row.contactEmail, mono: true },
     {
       key: "status",
-      label: "Status",
+      label: t("colStatus"),
       render: (row) => <StatusPill status={STATUS_DISPLAY[row.statusCode] ?? "active"} />
     }
   ];
@@ -120,11 +123,11 @@ export function ProvidersAdmin({
   return (
     <AdminGrid<ProviderRow>
       endpoint="/api/admin/providers"
-      searchPlaceholder="Search by slug, name, contact…"
+      searchPlaceholder={t("searchPlaceholder")}
       filters={filters}
       columns={columns}
       addModal={{
-        title: "Add provider",
+        title: t("addModalTitle"),
         render: (close) => (
           <ProviderForm
             types={types}
@@ -135,7 +138,7 @@ export function ProvidersAdmin({
           />
         )
       }}
-      emptyState="No providers match this filter."
+      emptyState={t("emptyState")}
       actions={(row, reload) => (
         <ProviderRowActions
           row={row}
@@ -159,6 +162,7 @@ function ProviderRowActions({
   jurisdictions: RefRow[];
   reload: () => void;
 }) {
+  const t = useTranslations("adminProviders");
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -172,13 +176,13 @@ function ProviderRowActions({
       const res = await registryFetch(withBase(`/api/admin/providers/${row.id}`), { method: "DELETE" });
       const data = (await res.json()) as { error?: string; detail?: string };
       if (!res.ok) {
-        setError(data.error ?? data.detail ?? "Delete failed");
+        setError(data.error ?? data.detail ?? t("deleteFailed"));
         return;
       }
       setConfirmDelete(false);
       reload();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setBusy(false);
     }
@@ -189,8 +193,8 @@ function ProviderRowActions({
       <Link
         href={`/admin/providers/${row.id}`}
         className="r-card-action-link"
-        title="View"
-        aria-label="View"
+        title={t("view")}
+        aria-label={t("view")}
         style={iconBtnStyle}
       >
         <Icon name="eye" size={14} />
@@ -199,8 +203,8 @@ function ProviderRowActions({
         type="button"
         className="r-card-action-link"
         onClick={() => setEditing(true)}
-        title="Edit"
-        aria-label="Edit"
+        title={t("edit")}
+        aria-label={t("edit")}
         disabled={busy}
         style={iconBtnStyle}
       >
@@ -210,13 +214,13 @@ function ProviderRowActions({
         items={[
           {
             key: "verify",
-            label: "Verify status",
+            label: t("verifyStatus"),
             icon: "shield",
             onSelect: () => router.push(`/admin/providers/${row.id}`)
           },
           {
             key: "delete",
-            label: "Delete",
+            label: t("delete"),
             icon: "trash",
             tone: "danger",
             disabled: busy,
@@ -231,7 +235,7 @@ function ProviderRowActions({
         </div>
       ) : null}
 
-      <Modal
+<Modal
         open={editing}
         onClose={() => setEditing(false)}
         title="Edit provider"
@@ -251,7 +255,7 @@ function ProviderRowActions({
         </div>
       </Modal>
 
-      <ConfirmDialog
+<ConfirmDialog
         open={confirmDelete}
         title="Delete provider?"
         body={
@@ -266,7 +270,7 @@ function ProviderRowActions({
                 {error}
               </div>
             ) : null}
-          </>
+</>
         }
         destructive
         confirmLabel={busy ? "Deleting…" : "Delete"}
@@ -290,6 +294,7 @@ function ProviderForm({
   initial: ProviderRow | null;
   onDone: () => void;
 }) {
+  const t = useTranslations("adminProviders");
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [displayName, setDisplayName] = useState(initial?.displayName ?? "");
   const [typeCode, setTypeCode] = useState(initial?.typeCode ?? types[0]?.code ?? "");
@@ -331,12 +336,12 @@ function ProviderForm({
       );
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Save failed");
+        setError(data.error ?? t("saveFailed"));
         return;
       }
       onDone();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setBusy(false);
     }
@@ -345,7 +350,7 @@ function ProviderForm({
   return (
     <div style={{ display: "grid", gap: 12, fontSize: 13 }}>
       {mode === "create" ? (
-        <Field label="Slug" hint="Lowercase, hyphens. Cannot be changed later.">
+        <Field label={t("fieldSlug")} hint={t("slugHint")}>
           <input
             className="auth-input"
             value={slug}
@@ -353,7 +358,7 @@ function ProviderForm({
           />
         </Field>
       ) : null}
-      <Field label="Display name">
+      <Field label={t("fieldDisplayName")}>
         <input
           className="auth-input"
           value={displayName}
@@ -361,20 +366,20 @@ function ProviderForm({
         />
       </Field>
       <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
-        <Field label="Type">
+        <Field label={t("fieldType")}>
           <select
             className="auth-input"
             value={typeCode}
             onChange={(e) => setTypeCode(e.target.value)}
           >
-            {types.map((t) => (
-              <option key={t.code} value={t.code}>
-                {t.name}
+            {types.map((tp) => (
+              <option key={tp.code} value={tp.code}>
+                {tp.name}
               </option>
             ))}
           </select>
         </Field>
-        <Field label="Home jurisdiction">
+        <Field label={t("fieldHomeJurisdiction")}>
           <select
             className="auth-input"
             value={jurisdictionCode}
@@ -388,7 +393,7 @@ function ProviderForm({
           </select>
         </Field>
       </div>
-      <Field label="Contact email">
+      <Field label={t("fieldContactEmail")}>
         <input
           className="auth-input"
           type="email"
@@ -397,7 +402,7 @@ function ProviderForm({
         />
       </Field>
       {mode === "create" ? (
-        <Field label="Legal name (optional)">
+        <Field label={t("fieldLegalName")}>
           <input
             className="auth-input"
             value={legalName}
@@ -405,7 +410,7 @@ function ProviderForm({
           />
         </Field>
       ) : null}
-      <Field label="Website (optional)">
+      <Field label={t("fieldWebsite")}>
         <input
           className="auth-input"
           type="url"
@@ -422,7 +427,7 @@ function ProviderForm({
       ) : null}
 
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 6 }}>
-        <Button intent="secondary" onClick={onDone}>
+<Button intent="secondary" onClick={onDone}>
           Cancel
         </Button>
         <Button intent="primary" onClick={submit} disabled={busy}>

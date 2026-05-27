@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { Icon } from "@airegistry/ui-kit";
 
 type ModalProps = {
@@ -20,6 +21,7 @@ export function Modal({
   children,
   maxWidth = 520
 }: ModalProps) {
+  const t = useTranslations("common");
   useEffect(() => {
     if (!open) return;
     const onEsc = (e: KeyboardEvent) => {
@@ -50,7 +52,7 @@ export function Modal({
             <div className="modal-title">{title}</div>
             {subtitle ? <div className="modal-sub">{subtitle}</div> : null}
           </div>
-          <button className="modal-close" onClick={onClose} aria-label="Close">
+          <button className="modal-close" onClick={onClose} aria-label={t("close")}>
             <Icon name="x" size={14} />
           </button>
         </div>

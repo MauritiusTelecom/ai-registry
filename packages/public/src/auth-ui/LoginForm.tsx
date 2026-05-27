@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
 
@@ -12,6 +13,7 @@ import { registryFetch } from "@airegistry/ui-kit";
  * means "no explicit deep-link; defer to the server").
  */
 export function LoginForm({ redirect }: { redirect: string | null }) {
+  const t = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -43,7 +45,7 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
           setNeedsVerification(email);
           return;
         }
-        setError(data.error ?? "Login failed.");
+        setError(data.error ?? t("loginFailed"));
         return;
       }
       // Priority: an explicit `?next=…` (deep-link) wins; otherwise the
@@ -79,7 +81,7 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
 
   return (
     <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <FormField label="Email" htmlFor="login-email">
+      <FormField label={t("email")} htmlFor="login-email">
         <input
           id="login-email"
           type="email"
@@ -90,7 +92,7 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
           className="auth-input"
         />
       </FormField>
-      <FormField label="Password" htmlFor="login-password">
+      <FormField label={t("password")} htmlFor="login-password">
         <input
           id="login-password"
           type="password"
@@ -124,11 +126,14 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
           }}
         >
           <span>
-            Please verify your email (<strong>{needsVerification}</strong>) before signing in.
+            {t.rich("verifyEmail", {
+              strong: (chunks) => <strong>{chunks}</strong>,
+              email: needsVerification
+            })}
           </span>
           {resent ? (
             <span style={{ color: "var(--text-2)" }}>
-              Verification email re-sent. Check your inbox (and spam folder).
+              {t("verificationResent")}
             </span>
           ) : (
             <button
@@ -138,7 +143,7 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
               className="btn"
               style={{ alignSelf: "flex-start" }}
             >
-              {resendBusy ? "Sending…" : "Resend verification email"}
+              {resendBusy ? t("sendingResend") : t("resendVerification")}
             </button>
           )}
         </div>
@@ -149,7 +154,7 @@ export function LoginForm({ redirect }: { redirect: string | null }) {
         disabled={busy}
         style={{ marginTop: 6 }}
       >
-        {busy ? "Signing in…" : "Sign in"}
+        {busy ? t("signingIn") : t("signIn")}
       </button>
     </form>
   );

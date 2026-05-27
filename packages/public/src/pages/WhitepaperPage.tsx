@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getBranding } from "@airegistry/core/branding";
 import { DocPage, DocPanel } from "../sections/DocPage";
 import { publicPageMetadata } from "../lib/page-metadata";
@@ -8,101 +9,88 @@ export async function generateMetadata() {
 }
 
 export default async function WhitepaperPage() {
-  const { operatorName, portalDomain } = await getBranding();
+  const [{ operatorName, portalDomain }, t] = await Promise.all([
+    getBranding(),
+    getTranslations("whitepaper")
+  ]);
   return (
     <DocPage
       crumb={
         <>
           <Link href="/" style={{ color: "var(--text-3)", textDecoration: "none" }}>
-            Home
+            {t("home")}
           </Link>{" "}
-          · Whitepaper
+          · {t("title")}
         </>
       }
       title={
         <>
-          Open-source infrastructure for{" "}
-          <span className="gradient-text">sovereign AI discovery</span>.
+          {t.rich("pageTitle", {
+            accent: (chunks) => <span className="gradient-text">{chunks}</span>
+          })}
         </>
       }
-      subtitle="A registry-only pattern for discovering locally relevant AI resources while leaving hosting, access, runtime identity and liability with the rightful providers."
+      subtitle={t("pageSubtitle")}
     >
-      <DocPanel title="Why this matters now">
-        <p>
-          AI is moving from chat interfaces to connected systems. Models, agents, tools and
-          skills that understand local law, language, data and institutions are becoming
-          part of national digital infrastructure - but they are scattered, hard to find,
-          and invisible to the AI systems that should use them.
-        </p>
-        <p style={{ marginTop: 14 }}>
-          Sovereign AI matters more, not less. The most useful AI for citizens, businesses
-          and public agencies is rarely the largest global model. It is the model that
-          knows the country: a Kreol language model, a Mauritius tax skill, an agent that
-          helps with company registration, a tool that exposes a public service.
-        </p>
-        <p style={{ marginTop: 14 }}>
-          Without a sovereign discovery layer, useful local resources stay invisible.
-          Countries risk building disconnected AI assets instead of an AI ecosystem.
-        </p>
+      <DocPanel title={t("whyNowTitle")}>
+        <p>{t("whyNowBody1")}</p>
+        <p style={{ marginTop: 14 }}>{t("whyNowBody2")}</p>
+        <p style={{ marginTop: 14 }}>{t("whyNowBody3")}</p>
       </DocPanel>
 
-      <DocPanel title="The discipline: what it is, what it is not">
+      <DocPanel title={t("disciplineTitle")}>
         <p>
-          The registry separates three concerns that other platforms collapse:
-          <strong> discovery</strong>, <strong>provider operations</strong>, and{" "}
-          <strong>hosting</strong>. Each is operated by a different party. The registry is
-          only the first layer.
+          {t.rich("disciplineBody1", {
+            strong: (chunks) => <strong>{chunks}</strong>
+          })}
         </p>
-        <p style={{ marginTop: 14 }}>
-          The registry points. The provider operates. The hosting environment secures.
-          That boundary is what makes the registry trustworthy at national scale.
-        </p>
+        <p style={{ marginTop: 14 }}>{t("disciplineBody2")}</p>
         <p style={{ marginTop: 14, color: "var(--text-2)" }}>
-          It is <em>not</em> an AI hosting platform, gateway, runtime, access-control
-          layer, marketplace, billing platform, legal certifier, or workload-identity
-          issuer. Listing is not endorsement.
+          <em>{t("disciplineBody3")}</em>
         </p>
       </DocPanel>
 
-      <DocPanel title="What gets listed">
+      <DocPanel title={t("whatGetsListedTitle")}>
         <p>
-          Four resource types - <strong>model</strong>, <strong>agent</strong>,{" "}
-          <strong>tool</strong>, <strong>skill</strong> - and only resources that meet a{" "}
-          <Link href="/sovereignty-rubric" style={{ color: "var(--text-2)" }}>
-            sovereignty test
-          </Link>
-          : at least one of local law, local data, local systems, or local language and
-          culture, backed by concrete evidence.
+          {t.rich("whatGetsListedBody1", {
+            strong: (chunks) => <strong>{chunks}</strong>,
+            link: (chunks) => (
+              <Link href="/sovereignty-rubric" style={{ color: "var(--text-2)" }}>
+                {chunks}
+              </Link>
+            )
+          })}
         </p>
-        <p style={{ marginTop: 14 }}>
-          Quality matters more than quantity. A registry of fifty credible, well-described
-          resources is more useful than one of a thousand generic listings.
+        <p style={{ marginTop: 14 }}>{t("whatGetsListedBody2")}</p>
+      </DocPanel>
+
+      <DocPanel title={t("governanceTitle")}>
+        <p>
+          {t.rich("governanceBody", {
+            link: (chunks) => (
+              <Link href="/verification" style={{ color: "var(--text-2)" }}>
+                {chunks}
+              </Link>
+            )
+          })}
         </p>
       </DocPanel>
 
-      <DocPanel title="Governance without overreach">
+      <DocPanel title={t("companionDocsTitle")}>
         <p>
-          Every public resource carries{" "}
-          <Link href="/verification" style={{ color: "var(--text-2)" }}>
-            three independent governance signals
-          </Link>
-          : provider verification, sovereignty review, and official-resource status.
-          Keeping them separate prevents the most common failure of public registries:
-          becoming a de-facto certifier and attracting liability that was never intended.
-        </p>
-      </DocPanel>
-
-      <DocPanel title="Companion documents">
-        <p>
-          This whitepaper sits alongside the{" "}
-          <Link href="/docs" style={{ color: "var(--text-2)" }}>
-            AIR-SPEC 0.4 technical specification
-          </Link>{" "}
-          and the{" "}
-          <Link href="/governance" style={{ color: "var(--text-2)" }}>
-            governance charter
-          </Link>
-          . Reference implementation: {portalDomain}, operated by {operatorName}.
+          {t.rich("companionDocsBody", {
+            docsLink: (chunks) => (
+              <Link href="/docs" style={{ color: "var(--text-2)" }}>
+                {chunks}
+              </Link>
+            ),
+            govLink: (chunks) => (
+              <Link href="/governance" style={{ color: "var(--text-2)" }}>
+                {chunks}
+              </Link>
+            )
+          })}{" "}
+          {t("referenceImpl", { portalDomain, operatorName })}
         </p>
       </DocPanel>
     </DocPage>

@@ -2,6 +2,7 @@
 
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
@@ -65,6 +66,7 @@ export function ProviderEditForm({
   jurisdictions: RefRow[];
 }) {
   const router = useRouter();
+  const t = useTranslations("adminProviderEdit");
 
   const [displayName, setDisplayName] = useState(initial.displayName);
   const [legalName, setLegalName] = useState(initial.legalName ?? "");
@@ -126,13 +128,13 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Save failed");
+        setError(data.error ?? t("saveFailed"));
         return;
       }
-      setOkMsg("Saved.");
+      setOkMsg(t("saved"));
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setBusy(false);
     }
@@ -140,7 +142,7 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
 
   return (
     <div style={{ display: "grid", gap: 24, fontSize: 13 }}>
-      <Section title="Identity">
+<Section title="Identity">
         <Row>
           <Field id="pe-displayName" label="Display name" required>
             <Input
@@ -149,7 +151,7 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
               onChange={(e) => setDisplayName(e.target.value)}
             />
           </Field>
-          <Field id="pe-slug" label="Slug" immutable>
+<Field id="pe-slug" label="Slug" immutable>
             <Input id="pe-slug" value={initial.slug} disabled />
           </Field>
         </Row>
@@ -159,21 +161,21 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
               id="pe-legalName"
               value={legalName}
               onChange={(e) => setLegalName(e.target.value)}
-              placeholder="Corporate legal entity name"
+              placeholder={t("placeholderLegalName")}
             />
           </Field>
-          <Field id="pe-regNo" label="Registration number">
+<Field id="pe-regNo" label="Registration number">
             <Input
               id="pe-regNo"
               value={registrationNumber}
               onChange={(e) => setRegistrationNumber(e.target.value)}
-              placeholder="e.g. C123456"
+              placeholder={t("placeholderRegistrationNumber")}
             />
           </Field>
         </Row>
       </Section>
 
-      <Section title="Classification">
+<Section title="Classification">
         <Row>
           <Field id="pe-type" label="Provider type" required>
             <Select
@@ -181,14 +183,14 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
               value={typeCode}
               onChange={(e) => setTypeCode(e.target.value)}
             >
-              {providerTypes.map((t) => (
-                <option key={t.code} value={t.code}>
-                  {t.name} ({t.code})
+              {providerTypes.map((pt) => (
+                <option key={pt.code} value={pt.code}>
+                  {pt.name} ({pt.code})
                 </option>
               ))}
             </Select>
           </Field>
-          <Field id="pe-jur" label="Home jurisdiction" required>
+<Field id="pe-jur" label="Home jurisdiction" required>
             <Select
               id="pe-jur"
               value={jurisdictionCode}
@@ -203,7 +205,7 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
           </Field>
         </Row>
         <Row>
-          <Field
+<Field
             id="pe-status"
             label="Verification status"
             hint="Read-only · use the panel on the right"
@@ -219,7 +221,7 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
         </Row>
       </Section>
 
-      <Section title="Contact & links">
+<Section title="Contact & links">
         <Row>
           <Field id="pe-contact" label="Primary contact email" required>
             <Input
@@ -229,80 +231,80 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
               onChange={(e) => setContactEmail(e.target.value)}
             />
           </Field>
-          <Field id="pe-legalContact" label="Legal/compliance contact email">
+<Field id="pe-legalContact" label="Legal/compliance contact email">
             <Input
               id="pe-legalContact"
               type="email"
               value={legalContactEmail}
               onChange={(e) => setLegalContactEmail(e.target.value)}
-              placeholder="legal@example.com"
+              placeholder={t("placeholderLegalEmail")}
             />
           </Field>
         </Row>
         <Row>
-          <Field id="pe-website" label="Website URL">
+<Field id="pe-website" label="Website URL">
             <Input
               id="pe-website"
               type="url"
               value={websiteUrl}
               onChange={(e) => setWebsiteUrl(e.target.value)}
-              placeholder="https://example.com"
+              placeholder={t("placeholderWebsite")}
             />
           </Field>
-          <Field id="pe-docs" label="Documentation URL">
+<Field id="pe-docs" label="Documentation URL">
             <Input
               id="pe-docs"
               type="url"
               value={documentationUrl}
               onChange={(e) => setDocumentationUrl(e.target.value)}
-              placeholder="https://docs.example.com"
+              placeholder={t("placeholderDocumentation")}
             />
           </Field>
         </Row>
       </Section>
 
-      <Section title="Incident response">
+<Section title="Incident response">
         <Row>
           <Field id="pe-incCh" label="Incident channel">
             <Input
               id="pe-incCh"
               value={incidentChannel}
               onChange={(e) => setIncidentChannel(e.target.value)}
-              placeholder="Slack/Teams/Matrix handle for alerts"
+              placeholder={t("placeholderIncidentChannel")}
             />
           </Field>
-          <Field id="pe-oncall" label="On-call email">
+<Field id="pe-oncall" label="On-call email">
             <Input
               id="pe-oncall"
               type="email"
               value={oncallEmail}
               onChange={(e) => setOncallEmail(e.target.value)}
-              placeholder="oncall@example.com"
+              placeholder={t("placeholderOncallEmail")}
             />
           </Field>
         </Row>
         <Row>
-          <Field id="pe-webhook" label="Webhook URL">
+<Field id="pe-webhook" label="Webhook URL">
             <Input
               id="pe-webhook"
               type="url"
               value={webhookUrl}
               onChange={(e) => setWebhookUrl(e.target.value)}
-              placeholder="https://hooks.example.com/incidents"
+              placeholder={t("placeholderWebhookUrl")}
             />
           </Field>
           <div />
         </Row>
       </Section>
 
-      <Section title="Description">
+<Section title="Description">
         <Field id="pe-desc" label="Provider description">
           <TextArea
             id="pe-desc"
             rows={5}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Free-text summary of this provider"
+            placeholder={t("placeholderDescription")}
             style={{ resize: "vertical", fontFamily: "inherit" }}
           />
         </Field>
@@ -330,7 +332,7 @@ const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), 
           background: "var(--bg)"
         }}
       >
-        <Button href="/admin/providers" intent="secondary">
+<Button href="/admin/providers" intent="secondary">
           Back to grid
         </Button>
         <Button intent="primary" onClick={submit} disabled={busy}>

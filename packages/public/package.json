@@ -25,7 +25,8 @@
     "@airegistry/core": "workspace:*",
     "@airegistry/plugin-host": "workspace:*",
     "@airegistry/sdk": "workspace:*",
-    "@airegistry/ui-kit": "workspace:*"
+    "@airegistry/ui-kit": "workspace:*",
+    "next-intl": "^4.12.0"
   },
   "peerDependencies": {
     "next": "^16.0.0",

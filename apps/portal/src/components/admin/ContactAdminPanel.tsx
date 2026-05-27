@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/library";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 type Props = {
   contactId: string;
@@ -88,6 +89,7 @@ function ReplyCard({
   topic: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("adminContact");
   const [subject, setSubject] = useState(`Re: ${topic}`);
   const [body, setBody] = useState(`Hi ${recipientName},\n\n`);
   const [busy, setBusy] = useState(false);
@@ -96,7 +98,7 @@ function ReplyCard({
   async function send() {
     setMsg(null);
     if (body.trim().length < 4) {
-      setMsg({ kind: "err", text: "Message body is required" });
+      setMsg({ kind: "err", text: t("messageBodyRequired") });
       return;
     }
     setBusy(true);
@@ -108,22 +110,22 @@ function ReplyCard({
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setMsg({ kind: "err", text: data.error ?? "Send failed" });
+        setMsg({ kind: "err", text: data.error ?? t("sendFailed") });
         return;
       }
-      setMsg({ kind: "ok", text: "Reply sent" });
+      setMsg({ kind: "ok", text: t("replySent") });
       router.refresh();
     } catch {
-      setMsg({ kind: "err", text: "Network error" });
+      setMsg({ kind: "err", text: t("networkError") });
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <Shell title="Reply" subtitle={`To: ${recipientEmail}`}>
+    <Shell title={t("replyTitle")} subtitle={`To: ${recipientEmail}`}>
       <label style={{ display: "grid", gap: 6 }}>
-        <span style={{ fontSize: 11, color: "var(--text-3)" }}>Subject</span>
+        <span style={{ fontSize: 11, color: "var(--text-3)" }}>{t("labelSubject")}</span>
         <input
           className="glass"
           style={{ padding: 8, borderRadius: 8, fontSize: 13 }}
@@ -132,7 +134,7 @@ function ReplyCard({
         />
       </label>
       <label style={{ display: "grid", gap: 6 }}>
-        <span style={{ fontSize: 11, color: "var(--text-3)" }}>Message</span>
+        <span style={{ fontSize: 11, color: "var(--text-3)" }}>{t("labelMessage")}</span>
         <textarea
           className="glass"
           rows={8}
@@ -146,7 +148,7 @@ function ReplyCard({
           {msg.text}
         </p>
       ) : null}
-      <Button intent="primary" disabled={busy} onClick={() => void send()}>
+<Button intent="primary" disabled={busy} onClick={() => void send()}>
         {busy ? "Sending…" : "Send reply"}
       </Button>
     </Shell>
@@ -155,6 +157,7 @@ function ReplyCard({
 
 function DeleteCard({ contactId }: { contactId: string }) {
   const router = useRouter();
+  const t = useTranslations("adminContact");
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -168,20 +171,20 @@ function DeleteCard({ contactId }: { contactId: string }) {
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        setErr(data.error ?? "Delete failed");
+        setErr(data.error ?? t("deleteFailed"));
         setBusy(false);
         return;
       }
       router.push("/admin/contacts");
       router.refresh();
     } catch {
-      setErr("Network error");
+      setErr(t("networkError"));
       setBusy(false);
     }
   }
 
   return (
-    <Shell title="Danger zone">
+    <Shell title={t("dangerZone")}>
       {!confirming ? (
         <button
           type="button"
@@ -189,13 +192,12 @@ function DeleteCard({ contactId }: { contactId: string }) {
           style={{ color: "#f87171", borderColor: "#f87171" }}
           onClick={() => setConfirming(true)}
         >
-          Delete message
+          {t("deleteMessage")}
         </button>
       ) : (
         <>
           <p style={{ fontSize: 12, color: "var(--text-2)", margin: 0 }}>
-            This permanently removes the contact message. The audit log retains a record
-            of the deletion.
+            {t("deleteConfirmation")}
           </p>
           {err ? <p style={{ color: "#f87171", fontSize: 12, margin: 0 }}>{err}</p> : null}
           <div style={{ display: "flex", gap: 8 }}>
@@ -205,7 +207,7 @@ function DeleteCard({ contactId }: { contactId: string }) {
               onClick={() => setConfirming(false)}
               disabled={busy}
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               type="button"
@@ -214,7 +216,7 @@ function DeleteCard({ contactId }: { contactId: string }) {
               disabled={busy}
               onClick={() => void doDelete()}
             >
-              {busy ? "Deleting…" : "Confirm delete"}
+              {busy ? t("deleting") : t("confirmDelete")}
             </button>
           </div>
         </>

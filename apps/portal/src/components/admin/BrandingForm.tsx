@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 type Initial = {
   registryName: string;
@@ -53,6 +54,7 @@ const helpStyle: React.CSSProperties = {
 };
 
 export function BrandingForm({ initial, defaults }: { initial: Initial; defaults: Defaults }) {
+  const t = useTranslations("adminBranding");
   const router = useRouter();
 
   const [registryName, setRegistryName] = useState(initial.registryName);
@@ -105,7 +107,7 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
         const body = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(body.error ?? `HTTP ${res.status}`);
       }
-      setMessage({ kind: "ok", text: "Saved." });
+      setMessage({ kind: "ok", text: t("saved") });
       router.refresh();
     } catch (e) {
       setMessage({ kind: "error", text: e instanceof Error ? e.message : String(e) });
@@ -117,26 +119,26 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 32, maxWidth: 640 }}>
       <ImageSlot
-        title="Logo"
-        description="PNG, JPEG, SVG or WebP, up to 1 MB. Replaces the default gradient mark in the top navigation, the portal sidebar, and the footer brand block."
+        title={t("logoTitle")}
+        description={t("logoDescription")}
         slot="logo"
         url={logoUrl}
         onUploaded={(url) => setLogoUrl(url)}
         onCleared={() => setLogoUrl(null)}
-        confirmRemove="Remove the custom logo and fall back to the default mark?"
+        confirmRemove={t("logoConfirmRemove")}
         onMessage={setMessage}
         previewBackground={logoUrl ? "var(--bg)" : "var(--grad-accent)"}
         previewShadow={logoUrl ? "none" : "0 0 10px rgba(var(--primary-rgb), 0.35)"}
       />
 
       <ImageSlot
-        title="Hero chip icon"
-        description="Tiny image rendered to the left of the hero chip text on the homepage. Defaults to the Mauritius flag SVG when unset."
+        title={t("heroTitle")}
+        description={t("heroDescription")}
         slot="hero"
         url={heroIconUrl}
         onUploaded={(url) => setHeroIconUrl(url)}
         onCleared={() => setHeroIconUrl(null)}
-        confirmRemove="Remove the custom hero icon and fall back to the Mauritius flag?"
+        confirmRemove={t("heroConfirmRemove")}
         onMessage={setMessage}
       />
 
@@ -146,15 +148,15 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
         style={{ padding: "22px 24px", borderRadius: 12, display: "flex", flexDirection: "column", gap: 18 }}
       >
         <div>
-          <h2 className="p-card-title" style={{ marginBottom: 4 }}>Text</h2>
+          <h2 className="p-card-title" style={{ marginBottom: 4 }}>{t("textHeading")}</h2>
           <p style={{ fontSize: 13, color: "var(--text-2)", marginTop: 0, marginBottom: 4 }}>
-            Leave a field empty to fall back to the deployment default.
+            {t("textHelp")}
           </p>
         </div>
 
         <TextField
           id="b-registry-name"
-          label="Registry name"
+          label={t("registryNameLabel")}
           value={registryName}
           onChange={setRegistryName}
           placeholder={defaults.registryName}
@@ -163,7 +165,7 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
 
         <TextField
           id="b-hero-eyebrow"
-          label="Hero chip text"
+          label={t("heroChipTextLabel")}
           value={heroEyebrowText}
           onChange={setHeroEyebrowText}
           placeholder={defaults.heroEyebrowText}
@@ -172,7 +174,7 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
 
         <TextField
           id="b-copyright"
-          label="Copyright line"
+          label={t("copyrightLineLabel")}
           value={copyrightLine}
           onChange={setCopyrightLine}
           placeholder={defaults.copyrightLine}
@@ -181,7 +183,7 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
 
         <TextField
           id="b-build"
-          label="Build / timezone line"
+          label={t("buildLineLabel")}
           value={buildLine}
           onChange={setBuildLine}
           placeholder={defaults.buildLine}
@@ -190,16 +192,16 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
 
         <div style={{ borderTop: "1px dashed var(--border)", paddingTop: 18, marginTop: 4 }}>
           <h3 className="p-card-title" style={{ fontSize: 14, marginBottom: 12 }}>
-            Operator &amp; contact
+            {t("operatorHeading")}
           </h3>
           <p style={{ fontSize: 13, color: "var(--text-2)", marginTop: 0, marginBottom: 14 }}>
-            Shown on /contact, legal pages, and other public copy that references the operator.
+            {t("operatorHelp")}
           </p>
         </div>
 
         <TextField
           id="b-operator-name"
-          label="Operator name"
+          label={t("operatorNameLabel")}
           value={operatorName}
           onChange={setOperatorName}
           placeholder={defaults.operatorName}
@@ -208,7 +210,7 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
 
         <TextField
           id="b-operator-email"
-          label="Contact email"
+          label={t("contactEmailLabel")}
           value={operatorContactEmail}
           onChange={setOperatorContactEmail}
           placeholder={defaults.operatorContactEmail}
@@ -217,7 +219,7 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
 
         <TextField
           id="b-operator-office-name"
-          label="Office name (line 1)"
+          label={t("officeNameLabel")}
           value={operatorOfficeName}
           onChange={setOperatorOfficeName}
           placeholder={defaults.operatorOfficeName}
@@ -226,7 +228,7 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
 
         <TextAreaField
           id="b-operator-office-address"
-          label="Office address (lines 2+)"
+          label={t("officeAddressLabel")}
           value={operatorOfficeAddress}
           onChange={setOperatorOfficeAddress}
           placeholder={defaults.operatorOfficeAddress}
@@ -235,7 +237,7 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
 
         <TextField
           id="b-operator-hours"
-          label="Contact hours"
+          label={t("contactHoursLabel")}
           value={operatorContactHours}
           onChange={setOperatorContactHours}
           placeholder={defaults.operatorContactHours}
@@ -244,16 +246,16 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
 
         <div style={{ borderTop: "1px dashed var(--border)", paddingTop: 18, marginTop: 4 }}>
           <h3 className="p-card-title" style={{ fontSize: 14, marginBottom: 12 }}>
-            Marketing &amp; jurisdiction
+            {t("marketingHeading")}
           </h3>
           <p style={{ fontSize: 13, color: "var(--text-2)", marginTop: 0, marginBottom: 14 }}>
-            Home hero, /registry and /providers headlines, privacy law name, and repo links.
+            {t("marketingHelp")}
           </p>
         </div>
 
         <TextField
           id="b-jurisdiction-display"
-          label="Jurisdiction display name"
+          label={t("jurisdictionLabel")}
           value={jurisdictionDisplayName}
           onChange={setJurisdictionDisplayName}
           placeholder={defaults.jurisdictionDisplayName}
@@ -262,7 +264,7 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
 
         <TextField
           id="b-privacy-act"
-          label="Privacy: data protection act"
+          label={t("privacyActLabel")}
           value={privacyDataProtectionAct}
           onChange={setPrivacyDataProtectionAct}
           placeholder={defaults.privacyDataProtectionAct}
@@ -271,7 +273,7 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
 
         <TextField
           id="b-repo-url"
-          label="Open-source repository URL"
+          label={t("repoUrlLabel")}
           value={openSourceRepoUrl}
           onChange={setOpenSourceRepoUrl}
           placeholder={defaults.openSourceRepoUrl}
@@ -292,7 +294,7 @@ export function BrandingForm({ initial, defaults }: { initial: Initial; defaults
 
         <div>
           <button type="submit" className="btn btn-primary" disabled={savingText}>
-            {savingText ? "Saving…" : "Save text"}
+            {savingText ? t("saving") : t("saveText")}
           </button>
         </div>
       </form>
@@ -386,6 +388,7 @@ function ImageSlot({
   previewBackground?: string;
   previewShadow?: string;
 }) {
+  const t = useTranslations("adminBranding");
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -405,7 +408,7 @@ function ImageSlot({
       const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
       if (!res.ok) throw new Error(body.error ?? `HTTP ${res.status}`);
       if (body.url) onUploaded(body.url);
-      onMessage({ kind: "ok", text: `${title} uploaded.` });
+      onMessage({ kind: "ok", text: t("uploaded", { title }) });
       router.refresh();
     } catch (e) {
       onMessage({ kind: "error", text: e instanceof Error ? e.message : String(e) });
@@ -427,7 +430,7 @@ function ImageSlot({
         throw new Error(body.error ?? `HTTP ${res.status}`);
       }
       onCleared();
-      onMessage({ kind: "ok", text: `${title} cleared.` });
+      onMessage({ kind: "ok", text: t("cleared", { title }) });
       router.refresh();
     } catch (e) {
       onMessage({ kind: "error", text: e instanceof Error ? e.message : String(e) });
@@ -469,13 +472,13 @@ function ImageSlot({
           ) : null}
         </div>
         <div style={{ ...helpStyle, fontSize: 13 }}>
-          {url ? <code>{url}</code> : <em>Default (no custom {title.toLowerCase()} set).</em>}
+          {url ? <code>{url}</code> : <em>{t("defaultNoCustom", { title: title.toLowerCase() })}</em>}
         </div>
       </div>
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <label className="btn btn-primary" style={{ cursor: uploading ? "wait" : "pointer" }}>
-          {uploading ? "Uploading…" : `Upload ${title.toLowerCase()}`}
+          {uploading ? t("uploading") : t("uploadTitle", { title: title.toLowerCase() })}
           <input
             ref={fileRef}
             type="file"
@@ -492,7 +495,7 @@ function ImageSlot({
             onClick={onClear}
             disabled={clearing}
           >
-            {clearing ? "Removing…" : `Remove ${title.toLowerCase()}`}
+            {clearing ? t("removing") : t("removeTitle", { title: title.toLowerCase() })}
           </button>
         ) : null}
       </div>

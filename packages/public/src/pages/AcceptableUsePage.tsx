@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getBranding } from "@airegistry/core/branding";
 import { DocPage, DocPanel } from "../sections/DocPage";
 import { publicPageMetadata } from "../lib/page-metadata";
@@ -8,67 +9,57 @@ export async function generateMetadata() {
 }
 
 export default async function AcceptableUsePage() {
-  const { portalDomain } = await getBranding();
+  const [{ portalDomain }, t] = await Promise.all([
+    getBranding(),
+    getTranslations("acceptableUse")
+  ]);
   return (
     <DocPage
       crumb={
         <>
           <Link href="/" style={{ color: "var(--text-3)", textDecoration: "none" }}>
-            Home
+            {t("home")}
           </Link>{" "}
-          · Acceptable use
+          · {t("title")}
         </>
       }
-      title="Acceptable use"
-      subtitle="A short, plain-language policy on how to use the public portal, the discovery API and the submission flow."
+      title={t("title")}
+      subtitle={t("pageSubtitle")}
     >
-      <DocPanel title="When you submit a resource">
+      <DocPanel title={t("whenSubmitTitle")}>
         <ul style={{ paddingLeft: 22, display: "grid", gap: 8 }}>
-          <li>You must be authorised to publish the resource on behalf of the provider.</li>
-          <li>
-            Sovereignty claims must be backed by genuine evidence. False claims will be
-            rejected and may lead to a provider account being suspended.
-          </li>
-          <li>
-            Do not impersonate another provider or use a name or domain you don&rsquo;t
-            control.
-          </li>
-          <li>
-            Provider verification and official-resource endorsement require explicit
-            authorisation from the relevant party.
-          </li>
+          <li>{t("whenSubmitItem1")}</li>
+          <li>{t("whenSubmitItem2")}</li>
+          <li>{t("whenSubmitItem3")}</li>
+          <li>{t("whenSubmitItem4")}</li>
         </ul>
       </DocPanel>
 
-      <DocPanel title="When you call the public APIs">
+      <DocPanel title={t("whenCallApisTitle")}>
         <ul style={{ paddingLeft: 22, display: "grid", gap: 8 }}>
-          <li>Be a good citizen of the public API: use pagination, cache responses, identify your client in the User-Agent header.</li>
-          <li>Do not scrape aggressively or attempt denial-of-service.</li>
-          <li>
-            If you redistribute registry metadata, attribute back to the operating
-            instance (e.g. {portalDomain}).
-          </li>
+          <li>{t("whenCallApisItem1")}</li>
+          <li>{t("whenCallApisItem2")}</li>
+          <li>{t("whenCallApisItem3", { portalDomain })}</li>
         </ul>
       </DocPanel>
 
-      <DocPanel title="What the registry will not list">
+      <DocPanel title={t("willNotListTitle")}>
         <ul style={{ paddingLeft: 22, display: "grid", gap: 8 }}>
-          <li>Resources whose primary purpose is unlawful or harmful.</li>
-          <li>Resources that require runtime data the provider has no lawful basis to use.</li>
-          <li>Resources that misrepresent provider identity or official endorsement.</li>
+          <li>{t("willNotListItem1")}</li>
+          <li>{t("willNotListItem2")}</li>
+          <li>{t("willNotListItem3")}</li>
         </ul>
       </DocPanel>
 
-      <DocPanel title="Reporting and appeals">
+      <DocPanel title={t("reportingAppealsTitle")}>
         <p>
-          To report a listing that you believe breaches this policy, use the{" "}
+          {t("reportingAppealsBody1")}{" "}
           <Link href="/contact" style={{ color: "var(--text-2)" }}>
-            contact form
+            {t("contactForm")}
           </Link>
-          . If your resource was rejected or removed and you believe the decision was
-          wrong, see the{" "}
+          {t("reportingAppealsBody2")}{" "}
           <Link href="/governance#appeals" style={{ color: "var(--text-2)" }}>
-            appeals process
+            {t("appealsProcess")}
           </Link>
           .
         </p>

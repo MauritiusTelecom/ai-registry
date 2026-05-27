@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/components/public/AuthProvider";
 import { Button, Field, Input, Select, TextArea } from "@/components/library";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@airegistry/ui-kit";
 import { registryFetch } from "@airegistry/ui-kit";
 
@@ -34,6 +35,7 @@ export function ProviderOrganisationForm({
 }) {
   const router = useRouter();
   const { refresh } = useAuth();
+  const t = useTranslations("providerOrgForm");
   const [displayName, setDisplayName] = useState(initial.displayName);
   const [slug, setSlug] = useState(initial.slug);
   const [contactEmail, setContactEmail] = useState(initial.contactEmail);
@@ -71,14 +73,14 @@ export function ProviderOrganisationForm({
       });
       const data = (await res.json()) as { error?: string; ok?: boolean };
       if (!res.ok) {
-        setError(data.error ?? "Save failed");
+        setError(data.error ?? t("saveFailed"));
         return;
       }
-      setOk("Organisation saved. You can now publish resources.");
+      setOk(t("saveSuccess"));
       await refresh();
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setSaving(false);
     }
@@ -91,14 +93,13 @@ export function ProviderOrganisationForm({
       style={{ padding: "22px 24px", maxWidth: 560, borderRadius: 12 }}
     >
       <h2 className="p-card-title" style={{ marginBottom: 16 }}>
-        Organisation
+        {t("title")}
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-2)", marginTop: 0, marginBottom: 20 }}>
-        Complete these details to register your provider workspace. Required before you can create or
-        submit catalogue resources.
+        {t("description")}
       </p>
 
-      <div style={{ display: "grid", gap: 14, marginBottom: 20 }}>
+<div style={{ display: "grid", gap: 14, marginBottom: 20 }}>
         <Field id="org-display" label="Display name" required>
           <Input
             id="org-display"
@@ -113,7 +114,7 @@ export function ProviderOrganisationForm({
           id="org-slug"
           label="Organisation slug"
           required
-          hint="Lowercase letters, digits, and hyphens. Used in public provider URLs."
+hint="Lowercase letters, digits, and hyphens. Used in public provider URLs."
         >
           <Input
             id="org-slug"
@@ -193,7 +194,7 @@ export function ProviderOrganisationForm({
         </p>
       ) : null}
 
-      <Button type="submit" intent="primary" disabled={saving}>
+<Button type="submit" intent="primary" disabled={saving}>
         {saving ? "Saving…" : "Save organisation"}
       </Button>
     </form>

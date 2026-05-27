@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
 
 export function ResetPasswordForm({ token }: { token: string }) {
+  const t = useTranslations("auth");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
@@ -16,7 +18,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
     setBusy(true);
     setError(null);
     if (password !== confirm) {
-      setError("Passwords do not match.");
+      setError(t("passwordsNoMatch"));
       setBusy(false);
       return;
     }
@@ -28,7 +30,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Reset failed.");
+        setError(data.error ?? t("resetFailed"));
         return;
       }
       setDone(true);
@@ -41,10 +43,10 @@ export function ResetPasswordForm({ token }: { token: string }) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <p style={{ color: "var(--text-2)", fontSize: 14 }}>
-          Password updated. You can now sign in with your new password.
+          {t("passwordUpdated")}
         </p>
         <a href="/login" className="btn btn-primary">
-          Sign in
+          {t("signIn")}
         </a>
       </div>
     );
@@ -52,7 +54,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   return (
     <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <FormField label="New password" htmlFor="rp-pw">
+      <FormField label={t("newPassword")} htmlFor="rp-pw">
         <input
           id="rp-pw"
           type="password"
@@ -64,7 +66,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           className="auth-input"
         />
       </FormField>
-      <FormField label="Confirm new password" htmlFor="rp-pw2">
+      <FormField label={t("confirmNewPassword")} htmlFor="rp-pw2">
         <input
           id="rp-pw2"
           type="password"
@@ -82,7 +84,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         </div>
       ) : null}
       <button type="submit" className="btn btn-primary" disabled={busy}>
-        {busy ? "Updating…" : "Set new password"}
+        {busy ? t("updatingPassword") : t("setNewPassword")}
       </button>
     </form>
   );
@@ -115,4 +117,3 @@ function FormField({
     </div>
   );
 }
-

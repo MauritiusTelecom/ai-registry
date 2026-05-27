@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import type { SessionUser } from "@airegistry/sdk";
+import { getTranslations } from "next-intl/server";
 import type { PortalConfig } from "@/lib/portals/nav-config";
 import { getBranding } from "@/lib/branding";
 import { PortalSidebar } from "./PortalSidebar";
@@ -31,6 +32,8 @@ export async function ProviderPortalChrome({
   const isAdmin = user.roles.includes("admin");
   const currentRole: "admin" | "provider" = isAdmin ? "admin" : "provider";
   const branding = await getBranding();
+  const t = await getTranslations("portalShell");
+  const tHeader = await getTranslations("portalHeader");
 
   return (
     <div className="p-shell">
@@ -44,7 +47,7 @@ export async function ProviderPortalChrome({
           label={config.label}
           currentRole={currentRole}
           subCrumb={user.provider?.displayName ?? null}
-          searchPlaceholder="Search resources, complaints, contacts…"
+          searchPlaceholder={tHeader("searchProviderChrome")}
           user={user}
         />
 
@@ -61,12 +64,9 @@ export async function ProviderPortalChrome({
         <main>{children}</main>
 
         <footer className="p-footer">
-          <span>
-            Listing is not endorsement. The registry points; the provider operates; the
-            hosting environment secures.
-          </span>
+          <span>{t("disclaimer")}</span>
           <Link href="/governance" className="p-footer-link">
-            Governance charter →
+            {t("governanceCharter")}
           </Link>
         </footer>
       </div>

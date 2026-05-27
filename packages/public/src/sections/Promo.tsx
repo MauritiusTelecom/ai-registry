@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getPromoBanner } from "@airegistry/core/services/public-cms";
+import { getTranslations } from "next-intl/server";
 import { Icon } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";
 
@@ -17,28 +18,31 @@ type PromoData = {
  * brand-new install renders the section as hidden (returns null) until an
  * admin enables it via /admin/site/promo.
  */
-const FALLBACK_PROMO: PromoData = {
-  enabled: true,
-  heading: "List your sovereign AI resource.",
-  body:
-    "You keep hosting, access, runtime identity, and liability. The registry just helps the right people find you. Submission is open and reviewed within 10 working days.",
-  ctaLabel: "Submit a Resource",
-  ctaHref: "/contact"
-};
+function getFallbackPromo(t: (key: string) => string): PromoData {
+  return {
+    enabled: true,
+    heading: t("fallbackHeading"),
+    body: t("fallbackBody"),
+    ctaLabel: t("fallbackCtaLabel"),
+    ctaHref: "/contact"
+  };
+}
 
 export async function Promo() {
+  const t = await getTranslations("promo");
+  const fallbackPromo = getFallbackPromo(t);
   let promo: PromoData;
   try {
     const row = await getPromoBanner();
     promo = {
       enabled: row.enabled,
-      heading: row.heading?.trim() || FALLBACK_PROMO.heading,
-      body: row.body?.trim() || FALLBACK_PROMO.body,
+      heading: row.heading?.trim() || fallbackPromo.heading,
+      body: row.body?.trim() || fallbackPromo.body,
       ctaLabel: row.ctaLabel?.trim() || null,
       ctaHref: row.ctaHref?.trim() || null
     };
   } catch {
-    promo = FALLBACK_PROMO;
+    promo = fallbackPromo;
   }
 
   if (!promo.enabled) return null;
@@ -50,7 +54,7 @@ export async function Promo() {
           <div>
             <div className="eyebrow" style={{ marginBottom: 16 }}>
               <span className="dot" />
-              <span>For Providers</span>
+              <span>{t("eyebrow")}</span>
             </div>
             <h2>{promo.heading}</h2>
             <p style={{ fontSize: 16 }}>{promo.body}</p>

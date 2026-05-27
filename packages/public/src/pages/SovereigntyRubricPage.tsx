@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { DocPage, DocPanel } from "../sections/DocPage";
 import { publicPageMetadata } from "../lib/page-metadata";
 
@@ -6,55 +7,56 @@ export async function generateMetadata() {
   return publicPageMetadata("Sovereignty rubric");
 }
 
-const BASES: { code: string; name: string; meaning: string; evidence: string }[] = [
-  {
-    code: "LAW",
-    name: "Local law",
-    meaning:
-      "Encodes local legislation, regulation, official process or professional obligation.",
-    evidence:
-      "Citation of statute (e.g. Data Protection Act 2017), regulator reference, professional body mandate."
-  },
-  {
-    code: "DATA",
-    name: "Local data",
-    meaning: "Uses local datasets, records or locally collected knowledge.",
-    evidence: "Dataset name and provenance, source institution, collection methodology summary."
-  },
-  {
-    code: "SYSTEMS",
-    name: "Local systems",
-    meaning: "Integrates with or describes local institutional systems and workflows.",
-    evidence: "Named system (e.g. CBRD, MNS, MRA), integration contract or documented workflow."
-  },
-  {
-    code: "LANGUAGE_CULTURE",
-    name: "Local language & culture",
-    meaning: "Supports local language, culture, norms or context.",
-    evidence:
-      "Language asset (corpus, lexicon), cultural artefact reference, BCP-47 code (e.g. mfe)."
-  }
-];
+export default async function SovereigntyRubricPage() {
+  const t = await getTranslations("sovereigntyRubric");
 
-export default function SovereigntyRubricPage() {
+  const BASES = [
+    {
+      code: "LAW",
+      name: t("lawName"),
+      meaning: t("lawMeaning"),
+      evidence: t("lawEvidence")
+    },
+    {
+      code: "DATA",
+      name: t("dataName"),
+      meaning: t("dataMeaning"),
+      evidence: t("dataEvidence")
+    },
+    {
+      code: "SYSTEMS",
+      name: t("systemsName"),
+      meaning: t("systemsMeaning"),
+      evidence: t("systemsEvidence")
+    },
+    {
+      code: "LANGUAGE_CULTURE",
+      name: t("languageCultureName"),
+      meaning: t("languageCultureMeaning"),
+      evidence: t("languageCultureEvidence")
+    }
+  ];
+
   return (
     <DocPage
       crumb={
         <>
           <Link href="/governance" style={{ color: "var(--text-3)", textDecoration: "none" }}>
-            Governance
+            {t("governanceLink")}
           </Link>{" "}
-          · Sovereignty rubric
+          · {t("crumbLabel")}
         </>
       }
       title={
         <>
-          The <span className="gradient-text">sovereignty test</span>.
+          {t.rich("pageTitle", {
+            accent: (chunks) => <span className="gradient-text">{chunks}</span>
+          })}
         </>
       }
-      subtitle="To be elevated past draft, a resource must cite at least one sovereignty basis with concrete evidence. The aim is to keep ‘sovereign’ specific, not aspirational."
+      subtitle={t("pageSubtitle")}
     >
-      <DocPanel title="The four bases">
+      <DocPanel title={t("fourBasesTitle")}>
         <div style={{ display: "grid", gap: 16 }}>
           {BASES.map((b) => (
             <div
@@ -77,34 +79,31 @@ export default function SovereigntyRubricPage() {
               </div>
               <p style={{ marginTop: 8 }}>{b.meaning}</p>
               <p style={{ marginTop: 6, fontSize: 13.5, color: "var(--text-3)" }}>
-                <strong style={{ color: "var(--text-2)" }}>Evidence:</strong> {b.evidence}
+                <strong style={{ color: "var(--text-2)" }}>{t("evidenceLabel")}:</strong> {b.evidence}
               </p>
             </div>
           ))}
         </div>
       </DocPanel>
 
-      <DocPanel title="How a claim is reviewed">
-        <p>
-          For each claim, the reviewer applies a published checklist and records the
-          decision (<code>PENDING</code> · <code>ACCEPTED</code> · <code>REJECTED</code>),
-          plus public reviewer notes. Every claim is timestamped against the rubric
-          version applied at review time, so historical decisions remain interpretable
-          when the rubric is later updated.
-        </p>
+      <DocPanel title={t("howClaimReviewedTitle")}>
+        <p>{t("howClaimReviewedBody")}</p>
       </DocPanel>
 
-      <DocPanel title="Where this fits">
+      <DocPanel title={t("whereFitsTitle")}>
         <p>
-          Sovereignty review is one of three independent governance signals. See{" "}
-          <Link href="/verification" style={{ color: "var(--text-2)" }}>
-            verification proofs
-          </Link>{" "}
-          for the full picture, and{" "}
-          <Link href="/docs" style={{ color: "var(--text-2)" }}>
-            AIR-SPEC 0.4 §4
-          </Link>{" "}
-          for the normative form.
+          {t.rich("whereFitsBody", {
+            verificationLink: (chunks) => (
+              <Link href="/verification" style={{ color: "var(--text-2)" }}>
+                {chunks}
+              </Link>
+            ),
+            docsLink: (chunks) => (
+              <Link href="/docs" style={{ color: "var(--text-2)" }}>
+                {chunks}
+              </Link>
+            )
+          })}
         </p>
       </DocPanel>
     </DocPage>

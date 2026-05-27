@@ -1,4 +1,5 @@
 import type { SessionUser } from "@airegistry/sdk";
+import { getTranslations } from "next-intl/server";
 import { loadPortalNotifications } from "@/lib/portals/notifications";
 import { PortalSearch } from "./header/PortalSearch";
 // Palette is an operator/dev-only colour-token tool — removed from the
@@ -43,6 +44,7 @@ export async function PortalHeader({
   searchPlaceholder,
   user
 }: PortalHeaderProps) {
+  const t = await getTranslations("portalHeader");
   // Notifications are scoped per-role on the server so a provider never
   // sees admin-flavoured entries (and vice versa). Read state is
   // persisted server-side via NotificationRead — see
@@ -71,10 +73,10 @@ export async function PortalHeader({
           placeholder={
             searchPlaceholder ??
             (currentRole === "provider"
-              ? "Search your resources, complaints, pages…"
+              ? t("searchProvider")
               : currentRole === "admin"
-                ? "Search resources, providers, pages, actions…"
-                : "Search resources, providers, pages…")
+                ? t("searchAdmin")
+                : t("searchDefault"))
           }
         />
         <PortalThemeToggle />

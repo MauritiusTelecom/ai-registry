@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { registryFetch } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
 
@@ -51,6 +52,7 @@ type Props = {
 };
 
 export function ThreadConversation({ reviewId, viewerRole, canCompose }: Props) {
+  const t = useTranslations("threadConversation");
   const [thread, setThread] = useState<Thread>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +65,7 @@ export function ThreadConversation({ reviewId, viewerRole, canCompose }: Props) 
       const data = await res.json();
       setThread(data.thread);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load thread");
+      setError(err instanceof Error ? err.message : t("loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -73,8 +75,8 @@ export function ThreadConversation({ reviewId, viewerRole, canCompose }: Props) 
     void refresh();
   }, [refresh]);
 
-  if (loading) return <div className="p-4 text-sm opacity-70">Loading conversation...</div>;
-  if (error) return <div className="p-4 text-sm text-red-400">Error: {error}</div>;
+  if (loading) return <div className="p-4 text-sm opacity-70">{t("loading")}</div>;
+  if (error) return <div className="p-4 text-sm text-red-400">{t("error", { message: error })}</div>;
 
   const canManageStatus = viewerRole === "verifier" || viewerRole === "admin";
   const canOpenNew = canManageStatus;
@@ -97,7 +99,7 @@ export function ThreadConversation({ reviewId, viewerRole, canCompose }: Props) 
 
       {!thread && !canOpenNew && (
         <div className="p-4 text-sm opacity-70 bg-black/20 rounded">
-          No conversation yet on this review. A verifier can start one.
+          {t("noConversationYet")}
         </div>
       )}
 
@@ -114,7 +116,7 @@ export function ThreadConversation({ reviewId, viewerRole, canCompose }: Props) 
           )}
           {canCompose && isClosed && (
             <div className="text-xs opacity-60 italic">
-              Thread is {thread.status.name.toLowerCase()}. Reopen it to add a reply.
+              {t("threadClosed", { status: thread.status.name.toLowerCase() })}
             </div>
           )}
         </>
@@ -136,6 +138,7 @@ function ThreadHeader({
   reviewId: string;
   onChange: () => void;
 }) {
+  const t = useTranslations("threadConversation");
   const [busy, setBusy] = useState(false);
 
   async function setStatus(statusCode: string) {
@@ -158,7 +161,7 @@ function ThreadHeader({
 
   return (
     <div className="flex items-center gap-3 text-sm bg-black/20 rounded p-3">
-      <span className="font-medium">Status:</span>
+      <span className="font-medium">{t("status")}:</span>
       <StatusPill code={thread.status.code} name={thread.status.name} />
       {canManage && (
         <div className="ml-auto flex gap-2">
@@ -168,7 +171,7 @@ function ThreadHeader({
               disabled={busy}
               className="px-3 py-1 text-xs rounded bg-green-700 hover:bg-green-600 disabled:opacity-50"
             >
-              Mark resolved
+              {t("markResolved")}
             </button>
           )}
           {thread.status.code !== "closed" && (
@@ -177,7 +180,7 @@ function ThreadHeader({
               disabled={busy}
               className="px-3 py-1 text-xs rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50"
             >
-              Close
+              {t("close")}
             </button>
           )}
           {(thread.status.code === "resolved" || thread.status.code === "closed") && (
@@ -186,7 +189,7 @@ function ThreadHeader({
               disabled={busy}
               className="px-3 py-1 text-xs rounded bg-blue-700 hover:bg-blue-600 disabled:opacity-50"
             >
-              Reopen
+              {t("reopen")}
             </button>
           )}
         </div>
@@ -283,10 +286,11 @@ function AttachmentTile({ att, reviewId }: { att: Attachment; reviewId: string }
 }
 
 function NewThreadComposer({ reviewId, onOpened }: { reviewId: string; onOpened: () => void }) {
+  const t = useTranslations("threadConversation");
   return (
     <ComposerCore
-      placeholder="Send a message to the provider to start the conversation."
-      buttonLabel="Send to provider"
+      placeholder={t("newThreadPlaceholder")}
+      buttonLabel={t("sendToProvider")}
       onSubmit={async (body, files) => {
         const res = await registryFetch(`/api/portal/reviews/${reviewId}/thread`, {
           method: "POST",
@@ -306,10 +310,11 @@ function NewThreadComposer({ reviewId, onOpened }: { reviewId: string; onOpened:
 }
 
 function ReplyComposer({ reviewId, onSent }: { reviewId: string; onSent: () => void }) {
+  const t = useTranslations("threadConversation");
   return (
     <ComposerCore
-      placeholder="Type your reply..."
-      buttonLabel="Reply"
+      placeholder={t("replyPlaceholder")}
+      buttonLabel={t("reply")}
       onSubmit={async (body, files) => {
         const res = await registryFetch(
           `/api/portal/reviews/${reviewId}/thread/messages`,
@@ -355,6 +360,7 @@ function ComposerCore({
   buttonLabel: string;
   onSubmit: (body: string, files: File[]) => Promise<void>;
 }) {
+  const t = useTranslations("threadConversation");
   const [body, setBody] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [dragging, setDragging] = useState(false);
@@ -368,15 +374,15 @@ function ComposerCore({
     const errs: string[] = [];
     for (const f of arr) {
       if (next.length >= 5) {
-        errs.push(`${f.name}: max 5 attachments per message`);
+        errs.push(`${f.name}: ${t("maxAttachments")}`);
         continue;
       }
       if (!ALLOWED_TYPES.has(f.type)) {
-        errs.push(`${f.name}: type ${f.type || "unknown"} not allowed`);
+        errs.push(`${f.name}: ${t("typeNotAllowed", { type: f.type || "unknown" })}`);
         continue;
       }
       if (f.size > MAX_BYTES) {
-        errs.push(`${f.name}: exceeds 10 MB`);
+        errs.push(`${f.name}: ${t("exceeds10MB")}`);
         continue;
       }
       next.push(f);
@@ -389,7 +395,7 @@ function ComposerCore({
   async function handleSend() {
     if (busy) return;
     if (body.trim().length === 0 && files.length === 0) {
-      setErr("Message body or at least one attachment is required");
+      setErr(t("messageRequired"));
       return;
     }
     setBusy(true);
@@ -400,7 +406,7 @@ function ComposerCore({
       setFiles([]);
       if (fileInput.current) fileInput.current.value = "";
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Failed to send");
+      setErr(e instanceof Error ? e.message : t("sendFailed"));
     } finally {
       setBusy(false);
     }
@@ -424,7 +430,7 @@ function ComposerCore({
     >
       {dragging && (
         <div className="absolute inset-0 flex items-center justify-center text-sm font-medium pointer-events-none bg-cyan-900/40 rounded">
-          Drop file(s) to attach
+          {t("dropToAttach")}
         </div>
       )}
 
@@ -474,7 +480,7 @@ function ComposerCore({
             onClick={() => fileInput.current?.click()}
             className="text-xs px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700"
           >
-            📎 Attach
+            📎 {t("attach")}
           </button>
         </div>
         <button
@@ -482,7 +488,7 @@ function ComposerCore({
           disabled={busy}
           className="px-4 py-1.5 text-sm rounded bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50"
         >
-          {busy ? "Sending..." : buttonLabel}
+          {busy ? t("sending") : buttonLabel}
         </button>
       </div>
     </div>

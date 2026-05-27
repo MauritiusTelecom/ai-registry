@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { findResourceForDetail } from "@airegistry/sdk";
 import { toRegistryCardDetail } from "@airegistry/sdk";
 import { PageHero } from "@airegistry/ui-kit";
@@ -15,7 +16,10 @@ export default async function ResourceDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const row = await findResourceForDetail({ slug });
+  const [row, t] = await Promise.all([
+    findResourceForDetail({ slug }),
+    getTranslations("registryDetail")
+  ]);
   if (!row) notFound();
   if (row.lifecycleStatus.code === "removed") notFound();
 
@@ -31,15 +35,18 @@ export default async function ResourceDetailPage({
               href="/registry"
               style={{ color: "var(--text-3)", textDecoration: "none" }}
             >
-              Registry
+              {t("registryLink")}
             </Link>{" "}
             · {detail.kind} · {detail.title}
           </>
         }
         title={
           <>
-            {detail.title} by{" "}
-            <span className="gradient-text">{detail.provider}</span>
+            {t.rich("titleByProvider", {
+              title: detail.title,
+              provider: detail.provider,
+              accent: (chunks) => <span className="gradient-text">{chunks}</span>
+            })}
           </>
         }
         subtitle={detail.desc}
@@ -64,9 +71,7 @@ export default async function ResourceDetailPage({
                 style={{ background: "#f59e0b", boxShadow: "0 0 8px #f59e0b" }}
               />
               <div style={{ flex: 1, fontSize: 14 }}>
-                <strong>Deprecated</strong> - this resource is still publicly listed for
-                continuity, but its provider has marked it for retirement. New integrations
-                should look for a replacement.
+                <strong>{t("deprecated")}</strong> - {t("deprecatedDesc")}
               </div>
             </div>
           ) : null}
@@ -95,7 +100,7 @@ export default async function ResourceDetailPage({
                   color: "var(--text-3)"
                 }}
               >
-                AIR-ID not yet issued (resource has not reached <code>listed</code>).
+                {t("airIdNotIssued")}
               </div>
             )}
             <div className={`r-status ${detail.status}`}>
@@ -115,23 +120,23 @@ export default async function ResourceDetailPage({
           ) : null}
 
           {/* Governance panel */}
-          <h3 style={{ marginBottom: 12 }}>Governance</h3>
+          <h3 style={{ marginBottom: 12 }}>{t("governance")}</h3>
           <div className="glass" style={{ padding: 28, marginBottom: 24, display: "grid", gap: 16 }}>
-            <Row label="Declaration" value={detail.governance.declarationStatus.replace(/_/g, " ")} />
-            <Row label="Sovereignty review" value={detail.governance.sovereigntyReviewStatus.replace(/_/g, " ")} />
-            <Row label="Provider verification" value={detail.governance.providerVerificationStatus.replace(/_/g, " ")} />
-            <Row label="Last reviewed" value={detail.governance.lastReviewed ? formatDate(detail.governance.lastReviewed) : "-"} />
-            <Row label="Next review due" value={detail.governance.nextReviewDue ? formatDate(detail.governance.nextReviewDue) : "-"} />
-            <Row label="Lifecycle" value={detail.lifecycle.name} />
+            <Row label={t("declaration")} value={detail.governance.declarationStatus.replace(/_/g, " ")} />
+            <Row label={t("sovereigntyReview")} value={detail.governance.sovereigntyReviewStatus.replace(/_/g, " ")} />
+            <Row label={t("providerVerification")} value={detail.governance.providerVerificationStatus.replace(/_/g, " ")} />
+            <Row label={t("lastReviewed")} value={detail.governance.lastReviewed ? formatDate(detail.governance.lastReviewed) : "-"} />
+            <Row label={t("nextReviewDue")} value={detail.governance.nextReviewDue ? formatDate(detail.governance.nextReviewDue) : "-"} />
+            <Row label={t("lifecycle")} value={detail.lifecycle.name} />
             {detail.lifecycle.listedAt ? (
-              <Row label="Listed at" value={formatDate(detail.lifecycle.listedAt)} />
+              <Row label={t("listedAt")} value={formatDate(detail.lifecycle.listedAt)} />
             ) : null}
           </div>
 
           {/* Sovereignty bases + evidence */}
           {detail.sovereigntyBases.length > 0 || detail.evidence.length > 0 ? (
             <>
-              <h3 style={{ marginBottom: 12 }}>Sovereignty</h3>
+              <h3 style={{ marginBottom: 12 }}>{t("sovereignty")}</h3>
               <div className="glass" style={{ padding: 28, marginBottom: 24 }}>
                 {detail.sovereigntyBases.length > 0 ? (
                   <div style={{ marginBottom: 16, display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -169,9 +174,9 @@ export default async function ResourceDetailPage({
                             color: "var(--text-3)"
                           }}
                         >
-                          <span>type: {ev.evidenceType}</span>
-                          <span>basis: {ev.sovereigntyBasis}</span>
-                          {ev.issuingBody ? <span>issued by: {ev.issuingBody}</span> : null}
+                          <span>{t("evidenceType")}: {ev.evidenceType}</span>
+                          <span>{t("evidenceBasis")}: {ev.sovereigntyBasis}</span>
+                          {ev.issuingBody ? <span>{t("issuedBy")}: {ev.issuingBody}</span> : null}
                           {ev.referenceUrl ? (
                             <a
                               href={ev.referenceUrl}
@@ -179,7 +184,7 @@ export default async function ResourceDetailPage({
                               rel="noreferrer noopener"
                               style={{ color: "var(--text-2)" }}
                             >
-                              reference ↗
+                              {t("reference")} ↗
                             </a>
                           ) : null}
                         </div>
@@ -188,7 +193,7 @@ export default async function ResourceDetailPage({
                   </ul>
                 ) : (
                   <p style={{ fontSize: 14, color: "var(--text-3)" }}>
-                    No public sovereignty evidence has been attached yet.
+                    {t("noSovereigntyEvidence")}
                   </p>
                 )}
               </div>
@@ -198,7 +203,7 @@ export default async function ResourceDetailPage({
           {/* Endpoints */}
           {detail.endpoints.length > 0 ? (
             <>
-              <h3 style={{ marginBottom: 12 }}>Endpoints</h3>
+              <h3 style={{ marginBottom: 12 }}>{t("endpoints")}</h3>
               <div className="glass" style={{ padding: 28, marginBottom: 24 }}>
                 <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 14 }}>
                   {detail.endpoints.map((e, i) => (
@@ -219,12 +224,12 @@ export default async function ResourceDetailPage({
                         }}
                       >
                         <span className="tag">{e.protocol}</span>
-                        <span className="tag">auth: {e.authMethod}</span>
-                        <span className="tag">access: {e.accessModel}</span>
-                        {e.primary ? <span className="tag">primary</span> : null}
+                        <span className="tag">{t("authPrefix")}{e.authMethod}</span>
+                        <span className="tag">{t("accessPrefix")}{e.accessModel}</span>
+                        {e.primary ? <span className="tag">{t("primary")}</span> : null}
                         {!e.active ? (
                           <span className="tag" style={{ color: "#ef4444" }}>
-                            inactive
+                            {t("inactive")}
                           </span>
                         ) : null}
                       </div>
@@ -250,7 +255,7 @@ export default async function ResourceDetailPage({
                             marginTop: 4
                           }}
                         >
-                          documentation ↗
+                          {t("documentation")} ↗
                         </a>
                       ) : null}
                     </li>
@@ -263,15 +268,15 @@ export default async function ResourceDetailPage({
           {/* Tags */}
           {detail.tags.length > 0 ? (
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 32 }}>
-              {detail.tags.map((t) => (
-                <span key={t} className="tag">
-                  {t}
+              {detail.tags.map((tag) => (
+                <span key={tag} className="tag">
+                  {tag}
                 </span>
               ))}
             </div>
           ) : null}
 
-          {/* Report listing - opens the same ReportModal as before */}
+          {/* Report listing */}
           <div
             style={{
               marginTop: 8,
@@ -287,12 +292,10 @@ export default async function ResourceDetailPage({
           >
             <div style={{ flex: 1, minWidth: 240 }}>
               <div style={{ fontSize: 14, fontWeight: 500, color: "var(--text)" }}>
-                See something off about this listing?
+                {t("reportTitle")}
               </div>
               <div style={{ fontSize: 13, color: "var(--text-3)", marginTop: 4 }}>
-                Flag impersonation, broken endpoints, missing sovereignty evidence,
-                or anything else that doesn&rsquo;t match the registry&rsquo;s rules.
-                The operator reviews every report.
+                {t("reportDesc")}
               </div>
             </div>
             <ResourceReportButton
@@ -314,13 +317,13 @@ export default async function ResourceDetailPage({
               paddingTop: 18
             }}
           >
-            Listing is not endorsement. The registry points; the provider operates; the
-            hosting environment secures. Sovereignty review and official-resource
-            authorisation are independent governance signals - see the{" "}
-            <Link href="/governance" style={{ color: "var(--text-2)" }}>
-              governance charter
-            </Link>
-            .
+            {t.rich("footerDisclaimer", {
+              link: (chunks) => (
+                <Link href="/governance" style={{ color: "var(--text-2)" }}>
+                  {chunks}
+                </Link>
+              )
+            })}
           </div>
         </div>
       </section>

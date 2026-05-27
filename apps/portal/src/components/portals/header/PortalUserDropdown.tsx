@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Icon } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
@@ -24,11 +25,11 @@ export type PortalUser = {
   providerName: string | null;
 };
 
-const ROLE_PORTALS: { id: string; label: string; href: string; icon: "shield" | "layers" | "check" | "flag" }[] = [
-  { id: "admin", label: "Admin Portal", href: "/admin", icon: "shield" },
-  { id: "provider", label: "Provider Portal", href: "/provider", icon: "layers" },
-  { id: "verifier", label: "Verifier Portal", href: "/verifier", icon: "check" },
-  { id: "sovereign", label: "Sovereign Ops", href: "/sovereign", icon: "flag" }
+const ROLE_PORTALS: { id: string; labelKey: string; href: string; icon: "shield" | "layers" | "check" | "flag" }[] = [
+  { id: "admin", labelKey: "adminPortal", href: "/admin", icon: "shield" },
+  { id: "provider", labelKey: "providerPortal", href: "/provider", icon: "layers" },
+  { id: "verifier", labelKey: "verifierPortal", href: "/verifier", icon: "check" },
+  { id: "sovereign", labelKey: "sovereignOps", href: "/sovereign", icon: "flag" }
 ];
 
 function initialsOf(name: string): string {
@@ -39,6 +40,7 @@ function initialsOf(name: string): string {
 }
 
 export function PortalUserDropdown({ user, currentRole }: { user: PortalUser; currentRole: string }) {
+  const t = useTranslations("portalUserDropdown");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -95,7 +97,7 @@ export function PortalUserDropdown({ user, currentRole }: { user: PortalUser; cu
 
           {accessible.length > 0 ? (
             <>
-              <div className="p-dropdown-section">Switch role</div>
+              <div className="p-dropdown-section">{t("switchRole")}</div>
               {accessible.map((p) => (
                 <Link
                   key={p.id}
@@ -104,25 +106,25 @@ export function PortalUserDropdown({ user, currentRole }: { user: PortalUser; cu
                   onClick={() => setOpen(false)}
                 >
                   <Icon name={p.icon} size={14} />
-                  <span>{p.label}</span>
-                  {p.id === currentRole ? <span className="p-dropdown-tag">current</span> : null}
+                  <span>{t(p.labelKey)}</span>
+                  {p.id === currentRole ? <span className="p-dropdown-tag">{t("current")}</span> : null}
                 </Link>
               ))}
             </>
           ) : null}
 
-          <div className="p-dropdown-section">Account</div>
+          <div className="p-dropdown-section">{t("account")}</div>
           <Link href="/" className="p-dropdown-item" onClick={() => setOpen(false)}>
             <Icon name="globe" size={14} />
-            <span>Public site</span>
+            <span>{t("publicSite")}</span>
           </Link>
           <Link href="/provider/settings" className="p-dropdown-item" onClick={() => setOpen(false)}>
             <Icon name="user" size={14} />
-            <span>Settings</span>
+            <span>{t("settings")}</span>
           </Link>
           <button type="button" className="p-dropdown-item" onClick={handleLogout}>
             <Icon name="log-out" size={14} />
-            <span>Log out</span>
+            <span>{t("logOut")}</span>
           </button>
         </div>
       ) : null}

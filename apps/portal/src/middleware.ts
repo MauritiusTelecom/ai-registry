@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import createIntlMiddleware from "next-intl/middleware";
 import {
   isMutationMethod,
   checkMutationOrigin,
@@ -6,29 +7,27 @@ import {
   CSRF_COOKIE_NAME,
   CSRF_HEADER_NAME
 } from "@airegistry/core/security/mutation-origin";
+import { routing } from "./i18n/routing";
 
-/**
- * Phase 2 middleware: gate the authenticated portal surface.
- *
- * The middleware runs on the Edge runtime by default - Prisma cannot run
- * here. The check is therefore signature-only: we verify the session
- * cookie's HMAC and expiry. The server component / route handler that
- * receives the request then performs the canonical user lookup against the
- * database (see `src/lib/auth/current-user.ts`).
- *
- * Also enforces on `/api/*` mutations:
- *   - Origin / Referer allowlist (anti-CSRF)
- *   - Double-submit CSRF when session + CSRF cookies are present
- */
+const intlMiddleware = createIntlMiddleware(routing);
 
 const COOKIE_NAME = process.env.SESSION_COOKIE_NAME || "airegistry_session";
 const SECRET = process.env.AUTH_SECRET ?? "";
 
 const PROTECTED_PREFIXES = ["/portal", "/admin", "/provider", "/verifier", "/sovereign"];
 
+function stripLocalePrefix(pathname: string): string {
+  for (const locale of routing.locales) {
+    if (pathname === `/${locale}`) return "/";
+    if (pathname.startsWith(`/${locale}/`)) return pathname.slice(locale.length + 1);
+  }
+  return pathname;
+}
+
 function requiresSession(pathname: string): boolean {
+  const bare = stripLocalePrefix(pathname);
   return PROTECTED_PREFIXES.some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`)
+    (p) => bare === p || bare.startsWith(`${p}/`)
   );
 }
 
@@ -123,32 +122,42 @@ function checkApiMutation(req: NextRequest): NextResponse | null {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const requestHeaders = withPathnameHeader(req);
+
+  // Skip i18n for API routes and internal Next.js paths
+  if (pathname.startsWith("/api/") || pathname.startsWith("/_next/")) {
+    const requestHeaders = withPathnameHeader(req);
+    const mutationBlock = checkApiMutation(req);
+    if (mutationBlock) return mutationBlock;
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
 
   const mutationBlock = checkApiMutation(req);
   if (mutationBlock) return mutationBlock;
 
-  if (!requiresSession(pathname)) {
-    return NextResponse.next({ request: { headers: requestHeaders } });
-  }
+  // Auth check for protected routes
+  if (requiresSession(pathname)) {
+    const token = req.cookies.get(COOKIE_NAME)?.value;
+    const valid = token ? await verifyCookie(token) : false;
 
-  const token = req.cookies.get(COOKIE_NAME)?.value;
-  const valid = token ? await verifyCookie(token) : false;
-
-  if (!valid) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/login";
-    url.search = "";
-    url.searchParams.set("next", pathname);
-    const res = NextResponse.redirect(url);
-    if (token) {
-      res.cookies.set(COOKIE_NAME, "", { path: "/", maxAge: 0 });
-      res.cookies.set(CSRF_COOKIE_NAME, "", { path: "/", maxAge: 0 });
+    if (!valid) {
+      const bare = stripLocalePrefix(pathname);
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
+      url.search = "";
+      url.searchParams.set("next", bare);
+      const res = NextResponse.redirect(url);
+      if (token) {
+        res.cookies.set(COOKIE_NAME, "", { path: "/", maxAge: 0 });
+        res.cookies.set(CSRF_COOKIE_NAME, "", { path: "/", maxAge: 0 });
+      }
+      return res;
     }
-    return res;
   }
 
-  return NextResponse.next({ request: { headers: requestHeaders } });
+  // Apply next-intl locale routing
+  const response = intlMiddleware(req);
+  response.headers.set("x-pathname", pathname);
+  return response;
 }
 
 export const config = {

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import { useTranslations } from "next-intl";
 import { registryFetch } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
 
@@ -36,6 +37,7 @@ const ALLOWED = new Set([
 const MAX = 10 * 1024 * 1024;
 
 export function ProviderDocumentsCard({ documentTypes }: Props) {
+  const t = useTranslations("providerDocs");
   const [docs, setDocs] = useState<DocumentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export function ProviderDocumentsCard({ documentTypes }: Props) {
       const data = await res.json();
       setDocs(data.documents);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Failed to load documents");
+      setErr(e instanceof Error ? e.message : t("loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -63,9 +65,9 @@ export function ProviderDocumentsCard({ documentTypes }: Props) {
     <div className="glass" style={{ padding: 24, maxWidth: 720 }}>
       <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
         <div>
-          <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>Verification documents</h2>
+          <h2 style={{ fontSize: 16, fontWeight: 600, margin: 0 }}>{t("title")}</h2>
           <p style={{ fontSize: 12.5, color: "var(--text-3)", marginTop: 4, marginBottom: 0 }}>
-            Upload company registration, certifications, and other proof. Public docs appear on your public provider page.
+            {t("description")}
           </p>
         </div>
         <button
@@ -73,16 +75,16 @@ export function ProviderDocumentsCard({ documentTypes }: Props) {
           className="btn btn-primary"
           style={{ marginLeft: "auto" }}
         >
-          + Upload document
+          {t("uploadButton")}
         </button>
       </div>
 
-      {loading && <p style={{ fontSize: 13, opacity: 0.7 }}>Loading…</p>}
-      {err && <p style={{ fontSize: 13, color: "tomato" }}>Error: {err}</p>}
+      {loading && <p style={{ fontSize: 13, opacity: 0.7 }}>{t("loading")}</p>}
+      {err && <p style={{ fontSize: 13, color: "tomato" }}>{t("error", { message: err })}</p>}
 
       {!loading && docs.length === 0 && (
         <p style={{ fontSize: 13, opacity: 0.6, marginTop: 8 }}>
-          No documents uploaded yet.
+          {t("emptyState")}
         </p>
       )}
 
@@ -90,11 +92,11 @@ export function ProviderDocumentsCard({ documentTypes }: Props) {
         <table style={{ width: "100%", marginTop: 8, fontSize: 13 }}>
           <thead>
             <tr style={{ textAlign: "left", borderBottom: "1px solid var(--border-1)" }}>
-              <th style={{ padding: "8px 6px" }}>Type</th>
-              <th style={{ padding: "8px 6px" }}>Title</th>
-              <th style={{ padding: "8px 6px" }}>File</th>
-              <th style={{ padding: "8px 6px" }}>Visibility</th>
-              <th style={{ padding: "8px 6px" }}>Expires</th>
+              <th style={{ padding: "8px 6px" }}>{t("colType")}</th>
+              <th style={{ padding: "8px 6px" }}>{t("colTitle")}</th>
+              <th style={{ padding: "8px 6px" }}>{t("colFile")}</th>
+              <th style={{ padding: "8px 6px" }}>{t("colVisibility")}</th>
+              <th style={{ padding: "8px 6px" }}>{t("colExpires")}</th>
               <th style={{ padding: "8px 6px" }}></th>
             </tr>
           </thead>
@@ -110,7 +112,7 @@ export function ProviderDocumentsCard({ documentTypes }: Props) {
                   <span style={{ opacity: 0.5 }}>({formatSize(d.sizeBytes)})</span>
                 </td>
                 <td style={{ padding: "8px 6px" }}>
-                  {d.publicVisibility ? "Public" : "Verifier only"}
+                  {d.publicVisibility ? t("visPublic") : t("visVerifierOnly")}
                 </td>
                 <td style={{ padding: "8px 6px" }}>
                   {d.expiresAt ? formatDate(d.expiresAt) : "—"}
@@ -139,9 +141,10 @@ export function ProviderDocumentsCard({ documentTypes }: Props) {
 }
 
 function DeleteButton({ id, onDeleted }: { id: string; onDeleted: () => void }) {
+  const t = useTranslations("providerDocs");
   const [busy, setBusy] = useState(false);
   async function del() {
-    if (!confirm("Delete this document?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     setBusy(true);
     try {
       const res = await registryFetch(`/api/portal/provider/documents/${id}`, {
@@ -169,7 +172,7 @@ function DeleteButton({ id, onDeleted }: { id: string; onDeleted: () => void }) 
         opacity: busy ? 0.5 : 1
       }}
     >
-      Delete
+      {t("deleteButton")}
     </button>
   );
 }
@@ -183,6 +186,7 @@ function UploadDialog({
   onClose: () => void;
   onUploaded: () => void;
 }) {
+  const t = useTranslations("providerDocs");
   const [file, setFile] = useState<File | null>(null);
   const [documentTypeCode, setDocumentTypeCode] = useState(documentTypes[0]?.code ?? "");
   const [title, setTitle] = useState("");
@@ -194,19 +198,19 @@ function UploadDialog({
 
   async function submit() {
     if (!file) {
-      setErr("Pick a file");
+      setErr(t("pickFile"));
       return;
     }
     if (!ALLOWED.has(file.type)) {
-      setErr(`File type ${file.type || "unknown"} not allowed`);
+      setErr(t("typeNotAllowed", { type: file.type || "unknown" }));
       return;
     }
     if (file.size > MAX) {
-      setErr("File exceeds 10 MB");
+      setErr(t("fileExceeds10MB"));
       return;
     }
     if (title.trim().length === 0) {
-      setErr("Title is required");
+      setErr(t("titleRequired"));
       return;
     }
 
@@ -289,15 +293,15 @@ function UploadDialog({
         }}
       >
         <h3 style={{ margin: 0, marginBottom: 4, fontSize: 18, fontWeight: 600 }}>
-          Upload verification document
+          {t("uploadDialogTitle")}
         </h3>
         <p style={{ margin: 0, marginBottom: 20, fontSize: 13, color: "var(--text-3, rgba(255,255,255,0.55))" }}>
-          PDF, image, text, or zip - max 10 MB. Public documents appear on your public provider page.
+          {t("uploadDialogDescription")}
         </p>
 
         <div style={{ display: "grid", gap: 16 }}>
           <div>
-            <div style={labelStyle}>Type</div>
+            <div style={labelStyle}>{t("colType")}</div>
             <select
               value={documentTypeCode}
               onChange={(e) => setDocumentTypeCode(e.target.value)}
@@ -312,18 +316,18 @@ function UploadDialog({
           </div>
 
           <div>
-            <div style={labelStyle}>Title</div>
+            <div style={labelStyle}>{t("colTitle")}</div>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. MT Business Registration 2026"
+              placeholder={t("titlePlaceholder")}
               style={inputStyle}
             />
           </div>
 
           <div>
-            <div style={labelStyle}>Description (optional)</div>
+            <div style={labelStyle}>{t("descriptionOptional")}</div>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -333,12 +337,12 @@ function UploadDialog({
           </div>
 
           <div>
-            <div style={labelStyle}>File</div>
+            <div style={labelStyle}>{t("fileLabel")}</div>
             <FilePicker file={file} onPick={setFile} />
           </div>
 
           <div>
-            <div style={labelStyle}>Expires (optional)</div>
+            <div style={labelStyle}>{t("expiresOptional")}</div>
             <input
               type="date"
               value={expiresAt}
@@ -366,7 +370,7 @@ function UploadDialog({
               onChange={(e) => setPublicVisibility(e.target.checked)}
               style={{ accentColor: "var(--accent, #5ad1ff)" }}
             />
-            <span>Show on the public provider page</span>
+            <span>{t("showOnPublicPage")}</span>
           </label>
 
           {err && (
@@ -392,7 +396,7 @@ function UploadDialog({
             className="btn"
             style={{ minWidth: 100 }}
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button
             onClick={submit}
@@ -400,7 +404,7 @@ function UploadDialog({
             className="btn btn-primary"
             style={{ minWidth: 100 }}
           >
-            {busy ? "Uploading…" : "Upload"}
+            {busy ? t("uploading") : t("upload")}
           </button>
         </div>
       </div>
