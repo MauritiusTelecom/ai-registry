@@ -1,5 +1,24 @@
 # Deploying ai-registry
 
+> ## ⚠ Monorepo migration notice
+>
+> This document was written for the pre-monorepo layout (single Next.js app at
+> the repo root). After the split:
+>
+> - The Next.js app lives at `apps/portal/`. `next build` output is
+>   `apps/portal/.next/standalone/`, static assets at `apps/portal/.next/static`,
+>   and the portal's `public/` is at `apps/portal/public/`.
+> - The Prisma schema lives at `packages/core/prisma/schema.prisma`.
+> - The lockfile is `pnpm-lock.yaml`, not `package-lock.json`.
+> - Top-level commands are `pnpm <task>` instead of `npm run <task>`.
+> - `deploy/deploy.sh` and `scripts/deploy.sh` both carry a `MONOREPO MIGRATION
+>   NOTICE` and have not been rewritten yet — see `MIGRATION.md` for the rsync
+>   / build / staging path changes required before the next ship.
+>
+> The narrative below still describes the intended deploy shape; treat command
+> snippets as "the spirit of what to run" rather than literal copy-paste until
+> the deploy scripts themselves are updated.
+
 This is the deploy pipeline that runs from your laptop and ships the Next.js
 app to the production VPS. It is designed for the case where you have shell
 access to the server, want full control of what runs, and don't want to put
@@ -11,8 +30,8 @@ laptop  ──[ssh]──▶  VPS
   │                  ├─ /var/www/airegistry/
   │                  │    ├─ current ─▶ releases/<timestamp>
   │                  │    ├─ releases/<timestamp>/
-  │                  │    │    ├─ server.js  (Next.js standalone)
-  │                  │    │    ├─ .next/static, public/, prisma/
+  │                  │    │    ├─ server.js  (Next.js standalone, from apps/portal/.next/standalone/)
+  │                  │    │    ├─ .next/static, public/, prisma/  (sourced from apps/portal & packages/core)
   │                  │    │    └─ ecosystem.config.cjs
   │                  │    └─ shared/.env.production   (chmod 600)
   │                  ├─ pm2 (cluster mode, systemd-supervised)
@@ -168,7 +187,7 @@ If it shows commits, rotate everything in it.
 Once 1–2 are done, every release looks like this:
 
 ```bash
-npm run deploy
+pnpm deploy
 ```
 
 That runs the full pipeline:
@@ -194,9 +213,9 @@ That runs the full pipeline:
 **Useful flags:**
 
 ```bash
-DRY_RUN=1 npm run deploy        # everything up to the rsync
-RELEASE_TAG=hotfix npm run deploy
-SKIP_LINT=1 SKIP_TYPECHECK=1 npm run deploy   # emergency hot path
+DRY_RUN=1 pnpm deploy        # everything up to the rsync
+RELEASE_TAG=hotfix pnpm deploy
+SKIP_LINT=1 SKIP_TYPECHECK=1 pnpm deploy   # emergency hot path
 ```
 
 ---
@@ -221,11 +240,11 @@ ssh airegistry-prod '
 
 ## 5. Schema changes
 
-`npm run deploy` does **not** touch the database. Apply schema changes
+`pnpm deploy` does **not** touch the database. Apply schema changes
 explicitly:
 
 ```bash
-npm run deploy:db:remote
+pnpm deploy:db:remote
 ```
 
 That `prisma db push`es the schema currently shipped in the live release.
@@ -254,7 +273,7 @@ What this pipeline doesn't give you, and what's worth adding next as you
 grow:
 
 - Off-host build (so a compromised laptop can't ship a poisoned build).
-- Automated dependency-vulnerability gate (`npm audit --omit=dev` in the
+- Automated dependency-vulnerability gate (`pnpm audit --prod` in the
   quality-gates step).
 - Backups + tested restore for the Postgres data.
 - Centralised log shipping (right now logs live on the box in

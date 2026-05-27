@@ -1,0 +1,28 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "plugins": [{ "name": "next" }],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/components/library": ["../../src/components/library"],
+      "@/components/library/*": ["../../src/components/library/*"],
+
+      "@/lib/prisma": ["../../packages/core/src/lib/prisma"],
+
+      "@/lib/branding": ["./src/lib/branding"],
+      "@/lib/theme-cookie": ["./src/lib/theme-cookie"],
+      "@/lib/public-origin": ["./src/lib/public-origin"],
+      "@/lib/portal/*": ["./src/lib/portal/*"],
+      "@/lib/portals/*": ["./src/lib/portals/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", ".next", ".turbo"]
+}

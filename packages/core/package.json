@@ -1,0 +1,72 @@
+{
+  "name": "@airegistry/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI Registry core: Prisma schema, governance services, audit primitive, discovery queries, validators, deployment config.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./branding": "./src/lib/branding.ts",
+    "./config": "./src/lib/config.ts",
+    "./prisma": "./src/lib/prisma.ts",
+    "./email": "./src/lib/email.ts",
+    "./validators": "./src/lib/validators.ts",
+    "./with-base": "./src/lib/with-base.ts",
+    "./audit": "./src/lib/audit/write-audit.ts",
+    "./governance": "./src/lib/governance/sovereignty-checklist.ts",
+    "./discovery": "./src/lib/discovery/index.ts",
+    "./discovery/*": "./src/lib/discovery/*.ts",
+    "./email/*": "./src/lib/email/*.ts",
+    "./contacts/*": "./src/lib/contacts/*.ts",
+    "./admin/*": "./src/lib/admin/*.ts",
+    "./auth/*": "./src/lib/auth/*.ts",
+    "./auth/portal-for-role": "./src/lib/auth/portal-for-role.ts",
+    "./rate-limit": "./src/lib/rate-limit.ts",
+    "./security/mutation-origin": "./src/lib/security/mutation-origin.ts",
+    "./services/*": "./src/lib/services/*.ts",
+    "./generated/prisma": "./src/generated/prisma/index.js"
+  },
+  "scripts": {
+    "prisma:generate": "dotenv -e ../../.env -- prisma generate",
+    "prisma:validate": "dotenv -e ../../.env -- prisma validate",
+    "prisma:format": "dotenv -e ../../.env -- prisma format",
+    "prisma:migrate": "dotenv -e ../../.env -- prisma migrate deploy",
+    "db:push": "dotenv -e ../../.env -- prisma db push",
+    "db:push:skip-generate": "dotenv -e ../../.env -- prisma db push --skip-generate",
+    "db:seed": "dotenv -e ../../.env -- tsx prisma/seed.ts",
+    "db:reset": "dotenv -e ../../.env -- prisma db push --force-reset && pnpm db:seed",
+    "db:bootstrap": "pnpm prisma:generate && pnpm db:push:skip-generate && pnpm db:seed",
+    "deploy:db": "pnpm prisma:generate && pnpm db:push:skip-generate",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo \"(lint runs in @airegistry/portal until core has its own eslint config)\"",
+    "clean": "rm -rf src/generated .turbo"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma",
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "nodemailer": "^8.0.7",
+    "prisma": "^6.19.3"
+  },
+  "peerDependencies": {
+    "next": "^16.0.0"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "@types/nodemailer": "^6.4.17",
+    "dotenv": "^16.4.5",
+    "dotenv-cli": "^7.4.2",
+    "next": "^16.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5"
+  }
+}

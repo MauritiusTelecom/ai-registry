@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import type { CSSProperties, ReactNode } from "react";
 import { Icon, type IconName } from "../chrome/Icon";
 

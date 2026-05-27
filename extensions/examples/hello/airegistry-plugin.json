@@ -1,0 +1,33 @@
+{
+  "id": "hello",
+  "name": "Hello Example",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "maintainer": "AI Registry Contributors",
+  "coreRange": "^0.1.0",
+  "description": "Reference extension demonstrating a REST ping route and a slot below the public home hero.",
+  "rest": [
+    {
+      "path": "/ping",
+      "methods": ["GET"],
+      "handler": "@airegistry/extension-hello/rest/ping"
+    }
+  ],
+  "ui": [
+    {
+      "slotId": "public.home.hero.below",
+      "component": "@airegistry/extension-hello/ui/HeroBelow",
+      "order": 0
+    }
+  ],
+  "permissions": [
+    {
+      "code": "rest:mount",
+      "description": "Mount REST routes under /api/ext/hello/"
+    },
+    {
+      "code": "ui:slot:public.*",
+      "description": "Render UI in public site slots"
+    }
+  ]
+}

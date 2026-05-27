@@ -25,7 +25,8 @@ In scope:
 - Audit-log integrity bypasses (anything that lets a governance mutation skip `writeAudit()`).
 - Schema-level privilege escalation (e.g. a public read query reaching `internalNote` columns).
 - Anti-spam / rate-limit bypasses on public write endpoints (`/api/public/contact`, `/api/public/report`, future complaint intake).
-- Supply-chain risks introduced by direct dependencies in `package.json`.
+- Supply-chain risks introduced by direct dependencies in any workspace `package.json` (root, `packages/core`, `packages/sdk`, `packages/ui-kit`, `apps/portal`).
+- Plugin / extension boundary breaks: any extension that mutates the core `registry` Postgres schema, writes to `AuditLog` without going through `writeAudit()`, or claims a non-`/api/ext/` REST namespace or non-`ext.*` MCP namespace. See [`GOVERNANCE.md`](GOVERNANCE.md) §11–§12.
 
 Out of scope (per [`GOVERNANCE.md`](GOVERNANCE.md) §3):
 

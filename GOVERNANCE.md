@@ -52,7 +52,7 @@ When reviewing a contribution, maintainers must ask: *Does this change move us c
 | Decision class | Process |
 |---|---|
 | Routine code change (bug fix, minor refactor, doc edit) | One reviewer approval; maintainer merges. |
-| Schema change to `src/prisma/schema.prisma` | Two reviewer approvals (one of whom must be a maintainer). PR description must include the AIR-SPEC clause(s) the change traces to and an entry in `data-model.md`. |
+| Schema change to `packages/core/prisma/schema.prisma` | Two reviewer approvals (one of whom must be a maintainer). PR description must include the AIR-SPEC clause(s) the change traces to and an entry in `data-model.md`. |
 | New public REST endpoint | Update the relevant module's `api.yaml` first in `ai-registry-specs/`; reference the spec PR from the implementation PR. |
 | Feature touching a governance signal (provider verification, sovereignty review, official-resource authorisation) | Open an RFC issue; mandatory maintainer + at least one external reviewer. The §11 reviewer checklist must be re-validated. |
 | Anything intersecting §3 (out of scope) | **Refuse.** Document the refusal in the issue/PR for future contributors. |
@@ -65,7 +65,8 @@ The `ai-registry` reference implementation tracks AIR-SPEC 0.4. The §22 conform
 ## 7. Versioning
 
 - The AIR-SPEC version this codebase implements is declared in [`README.md`](README.md) and the `package.json` `version` reflects the registry **release**, not the AIR-SPEC version.
-- Breaking schema changes require a migration in `src/prisma/migrations/`. Drop-and-recreate migrations are NOT acceptable on `main`; production deployments rely on `prisma migrate deploy` against a non-empty database.
+- Breaking schema changes require a migration in `packages/core/prisma/migrations/`. Drop-and-recreate migrations are NOT acceptable on `main`; production deployments rely on `prisma migrate deploy` against a non-empty database.
+- Each workspace package (`@airegistry/core`, `@airegistry/sdk`, `@airegistry/ui-kit`, `@airegistry/portal`) carries its own `package.json` `version`. Core and SDK versions are the public SemVer surface for downstream consumers and may only break on a major bump.
 
 ## 8. Security
 
@@ -78,3 +79,30 @@ Every governance mutation in code MUST go through the `writeAudit()` primitive (
 ## 10. Changes to this document
 
 Changes to this `GOVERNANCE.md` require maintainer consensus and a 7-day comment window on the PR. The constitution at `../ai-registry-specs/.speckit/constitution.md` is the parent authority - this document refines it for the reference codebase but cannot override it.
+
+## 11. Per-package scope
+
+The monorepo is split so the stable parts (core, SDK) can hold a SemVer contract while the variable parts (portal, extensions) can move quickly. Maintainers reject PRs that put code in the wrong package.
+
+| Package | Scope (what belongs here) | Anti-scope (what doesn't) |
+|---|---|---|
+| `packages/core` (`@airegistry/core`) | Prisma schema + migrations, deployment config loader, `writeAudit()` primitive, governance services (provider verification, sovereignty review, official-resource elevation), discovery query helpers, validators (AIR-ID, URL, slug), transactional email sender, session/password/token helpers | React components, Next.js route handlers, CSS, branding mutators, jurisdiction-specific defaults, any feature in §3 |
+| `packages/sdk` (`@airegistry/sdk`) | Curated re-exports of core types intended for extensions and third-party portals; plugin manifest schema | Implementation code, deep core internals, anything that isn't part of the public SemVer surface |
+| `packages/ui-kit` (`@airegistry/ui-kit`) | Design tokens, headless React primitives (client-safe barrel) | Branding singletons, data fetching, plugin loaders, anything portal-route-specific |
+| `packages/public` (`@airegistry/public`) | Public marketing site: pages, sections, shell, auth-ui, public-only helpers; CMS-backed sections | API route handlers, role workspaces, Prisma schema |
+| `packages/plugin-host` (`@airegistry/plugin-host`) | Extension manifest loader, `/api/ext/*` dispatch, in-memory UI slot registry | Core schema, governance services, public page copy |
+| `apps/portal` (`@airegistry/portal`) | Next.js routes: `app/(public)/` shims, `app/(workspaces)/` role portals, REST `/api/...` and MCP `/api/mcp` handlers (thin shims over core services) | Prisma schema, audit primitive, governance services, public page bodies (those live in `@airegistry/public`) |
+| `extensions/*` | In-tree reference extensions following the `airegistry-plugin.json` manifest from `@airegistry/sdk/plugin`. New REST routes under `/api/ext/<id>/`, MCP tools under `ext.<id>.*`, additive schema in an `ext_<id>` Postgres schema, cron jobs, UI slot contributions, locale bundles. | The core `registry` schema, the core `/api/...` or `registry.*` MCP namespaces, direct writes to `AuditLog`, and anything in §3 |
+
+The portal owns the **default UI** for the reference deployment. It is fork-friendly but third-party portals are first-class: anyone may depend on `@airegistry/core` and ship their own UI without using `@airegistry/portal` at all.
+
+## 12. Plugin / extension governance
+
+Plugins are a third party's code running inside the registry process. Because of that, the plugin loader enforces (or will enforce, at v1.0):
+
+- **Namespacing.** REST routes mount under `/api/ext/<plugin-id>/`; MCP tools mount under `ext.<plugin-id>.*`. The plugin cannot claim a core path.
+- **Schema isolation.** Plugin migrations land in `ext_<plugin-id>` PostgreSQL schemas, never `registry`. The plugin's Prisma client (if any) has no read or write access to `registry` tables except through core SDK helpers.
+- **Audit discipline.** Governance writes flow through audit-aware core service helpers that call `writeAudit()` internally. Plugins cannot write to `AuditLog` directly; PRs that do are rejected.
+- **§3 still applies.** A plugin cannot do anything that core itself isn't allowed to do. The seven items in §3 are universal — they bind plugins as tightly as they bind core.
+
+The plugin manifest types are in [`packages/sdk/src/plugin.ts`](packages/sdk/src/plugin.ts). The reference loader is [`packages/plugin-host`](packages/plugin-host/); MCP tools, cron, and `ext_<id>` schema lifecycle remain v1.0 work. Disable extensions with `PLUGINS_ENABLED=false`.

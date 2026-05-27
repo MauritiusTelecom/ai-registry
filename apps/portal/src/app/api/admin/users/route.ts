@@ -1,0 +1,183 @@
+import { NextResponse } from "next/server";
+import {
+  getCurrentUser,
+  getReferenceRow,
+  prepareEmailVerificationToken,
+  sendEmail,
+  emailTemplates,
+  listAdminUsersWithCount,
+  findUserByEmailBasic,
+  findProviderBySlugForAssign,
+  createAdminUser
+} from "@airegistry/sdk/server";
+import { getConfig } from "@airegistry/sdk";
+import type { Prisma } from "@airegistry/sdk/server";
+import { getPublicOrigin } from "@/lib/public-origin";
+
+const EMAIL_RE = /^\S+@\S+\.\S+$/;
+
+/**
+ * GET /api/admin/users - list users with q + role + status + verified filters.
+ * POST /api/admin/users - create user (admins manually invite people who
+ *   cannot self-register, e.g. reviewers / sovereign operators).
+ *
+ * See `ai-registry-specs/shared/admin-crud.md` §5.3.
+ */
+
+function adminOnly(user: { roles: string[] } | null) {
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!user.roles.includes("admin")) {
+    return NextResponse.json({ error: "Admins only" }, { status: 403 });
+  }
+  return null;
+}
+
+export async function GET(req: Request) {
+  const actor = await getCurrentUser();
+  const guard = adminOnly(actor);
+  if (guard) return guard;
+
+  const url = new URL(req.url);
+  const q = url.searchParams.get("q")?.trim() || "";
+  const role = url.searchParams.get("role")?.trim() || "";
+  const status = url.searchParams.get("status")?.trim() || "";
+  const verified = url.searchParams.get("verified") || "";
+  const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1", 10) || 1);
+  const pageSize = Math.min(
+    100,
+    Math.max(1, parseInt(url.searchParams.get("pageSize") ?? "20", 10) || 20)
+  );
+
+  const where: Prisma.UserWhereInput = {};
+  if (q) {
+    where.OR = [
+      { name: { contains: q, mode: "insensitive" } },
+      { email: { contains: q, mode: "insensitive" } }
+    ];
+  }
+  if (role) where.role = { code: role.toLowerCase() };
+  if (status) where.status = { code: status.toLowerCase() };
+  if (verified === "true") where.emailVerified = true;
+  else if (verified === "false") where.emailVerified = false;
+
+  const { rows, total } = await listAdminUsersWithCount(
+    where as Record<string, unknown>,
+    page,
+    pageSize
+  );
+
+  return NextResponse.json({
+    rows: rows.map((u) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      roleCode: u.role.code,
+      roleName: u.role.name,
+      statusCode: u.status.code,
+      statusName: u.status.name,
+      emailVerified: u.emailVerified,
+      providerSlug: u.provider?.slug ?? null,
+      providerName: u.provider?.displayName ?? null,
+      createdAt: u.createdAt
+    })),
+    total,
+    page,
+    pageSize,
+    hasMore: page * pageSize < total
+  });
+}
+
+type CreateBody = {
+  name?: unknown;
+  email?: unknown;
+  roleCode?: unknown;
+  statusCode?: unknown;
+  providerSlug?: unknown;
+  sendInvite?: unknown;
+};
+
+export async function POST(req: Request) {
+  const actor = await getCurrentUser();
+  const guard = adminOnly(actor);
+  if (guard) return guard;
+
+  let body: CreateBody;
+  try {
+    body = (await req.json()) as CreateBody;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  const email =
+    typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const roleCode =
+    typeof body.roleCode === "string" ? body.roleCode.trim().toLowerCase() : "";
+  const statusCode =
+    typeof body.statusCode === "string" && body.statusCode.trim() !== ""
+      ? body.statusCode.trim().toLowerCase()
+      : "invited";
+  const providerSlug =
+    typeof body.providerSlug === "string" && body.providerSlug.trim() !== ""
+      ? body.providerSlug.trim().toLowerCase()
+      : null;
+  const sendInvite = body.sendInvite === undefined ? true : Boolean(body.sendInvite);
+
+  if (name.length < 2) {
+    return NextResponse.json({ error: "name is required" }, { status: 400 });
+  }
+  if (!EMAIL_RE.test(email)) {
+    return NextResponse.json({ error: "email must be a valid email" }, { status: 400 });
+  }
+  if (!roleCode) {
+    return NextResponse.json({ error: "roleCode is required" }, { status: 400 });
+  }
+
+  const [role, status, existing, provider] = await Promise.all([
+    getReferenceRow("userRoleType", roleCode),
+    getReferenceRow("userStatusType", statusCode),
+    findUserByEmailBasic(email),
+    providerSlug ? findProviderBySlugForAssign(providerSlug) : Promise.resolve(null)
+  ]);
+
+  if (!role) return NextResponse.json({ error: "Unknown roleCode" }, { status: 400 });
+  if (!status) return NextResponse.json({ error: "Unknown statusCode" }, { status: 400 });
+  if (existing) {
+    return NextResponse.json({ error: "Email already registered" }, { status: 409 });
+  }
+  if (providerSlug && !provider) {
+    return NextResponse.json({ error: "Unknown providerSlug" }, { status: 400 });
+  }
+
+  const verificationBundle = sendInvite ? prepareEmailVerificationToken() : null;
+  const created = await createAdminUser(actor!.id, {
+    email,
+    name,
+    passwordHash: null,
+    roleId: role.id,
+    statusId: status.id,
+    providerId: provider?.id ?? null,
+    emailVerified: false,
+    onboardingComplete: false,
+    verificationToken: verificationBundle?.hashedToken ?? null,
+    verificationTokenExpiry: verificationBundle?.expiry ?? null,
+    roleCode,
+    statusCode,
+    providerSlug
+  });
+
+  if (sendInvite && verificationBundle) {
+    const origin = getPublicOrigin(req);
+    const link = `${origin}/auth/verify?token=${encodeURIComponent(verificationBundle.rawToken)}`;
+    const tmpl = emailTemplates.verification({
+      name,
+      verifyUrl: link,
+      registryName: getConfig().registryName
+    });
+    await sendEmail({ to: email, subject: tmpl.subject, text: tmpl.text }).catch(() => {
+      /* email helper logs internally; never block the create. */
+    });
+  }
+
+  return NextResponse.json({ ok: true, id: created.id }, { status: 201 });
+}

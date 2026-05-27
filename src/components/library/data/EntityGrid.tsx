@@ -181,6 +181,10 @@ export function EntityGrid<Row extends EntityRow>({
     setState((s) => ({ ...s, loading: true, error: null }));
     void (async () => {
       try {
+        if (!url) {
+          setState({ rows: [], total: 0, loading: false, error: "Missing endpoint" });
+          return;
+        }
         const res = await fetch(url, { signal: ac.signal, cache: "no-store" });
         if (!res.ok) {
           const body = (await res.json().catch(() => ({}))) as { error?: string };

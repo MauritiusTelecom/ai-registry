@@ -1,0 +1,44 @@
+{
+  "name": "@airegistry/public",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Public-portal layer for AI Registry deployments: the marketing site, registry browse + discovery surface, governance/docs/ecosystem pages, and auth flows. Forkable independently of the role workspaces in @airegistry/portal.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./pages/*": "./src/pages/*.tsx",
+    "./sections/*": "./src/sections/*.tsx",
+    "./shell": "./src/shell/index.ts",
+    "./shell/*": "./src/shell/*",
+    "./auth-ui": "./src/auth-ui/index.ts",
+    "./auth-ui/*": "./src/auth-ui/*",
+    "./lib/*": "./src/lib/*.ts",
+    "./theme.css": "./src/theme/theme.css"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo"
+  },
+  "dependencies": {
+    "@airegistry/core": "workspace:*",
+    "@airegistry/plugin-host": "workspace:*",
+    "@airegistry/sdk": "workspace:*",
+    "@airegistry/ui-kit": "workspace:*",
+    "next-intl": "^4.12.0"
+  },
+  "peerDependencies": {
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "next": "^16.0.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "^5"
+  }
+}
