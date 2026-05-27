@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { EntityGrid, type EntityColumn } from "@/components/library";
 import { useTranslations } from "next-intl";
-import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
 import { StatusPill } from "../StatusPill";
 
 export type ProviderComplaintRow = {
@@ -23,7 +22,8 @@ type Props = {
 };
 
 export function ProviderComplaintsGrid({ rows, types }: Props) {
-const columns: EntityColumn<ProviderComplaintRow>[] = [
+  const t = useTranslations("provider.complaints");
+  const columns: EntityColumn<ProviderComplaintRow>[] = [
     { key: "ts", label: "Filed", render: (row) => row.ts, mono: true },
     {
       key: "target",
@@ -66,7 +66,7 @@ const columns: EntityColumn<ProviderComplaintRow>[] = [
     <EntityGrid
       rows={rows}
       columns={columns}
-emptyState="No complaints filed against your provider or resources."
+      emptyState="No complaints filed against your provider or resources."
       searchPlaceholder="Search complaints by target or text excerpt…"
       searchableKeys={["target", "excerpt"]}
       filters={[

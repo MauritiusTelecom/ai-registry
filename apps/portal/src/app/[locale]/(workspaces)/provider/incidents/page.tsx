@@ -52,7 +52,7 @@ export default async function ProviderIncidentsPage() {
       <div className="p-page-header">
         <h1 className="p-title">{t("title")}</h1>
         <p className="p-subtitle">
-          {t("subtitle", { provider: user?.provider?.displayName, count: projected.length })}
+          {t("subtitle", { provider: user?.provider?.displayName ?? "", count: projected.length })}
         </p>
       </div>
       <ProviderIncidentsGrid rows={projected} actionTypes={actionTypes} />

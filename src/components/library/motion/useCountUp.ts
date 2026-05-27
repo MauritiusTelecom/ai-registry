@@ -1,4 +1,4 @@
 /**
- * Re-export. The implementation lives in `components/public/useCountUp.ts`.
+ * Re-export from `@airegistry/public/shell` (same behavior as legacy hook).
  */
-export { useCountUp } from "@/components/public/useCountUp";
+export { useCountUp } from "@airegistry/public/shell";

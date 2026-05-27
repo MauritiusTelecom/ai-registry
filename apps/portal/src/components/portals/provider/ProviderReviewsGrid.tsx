@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { EntityGrid, type EntityColumn } from "@/components/library";
 import { useTranslations } from "next-intl";
-import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
 import { StatusPill } from "../StatusPill";
 
 export type ProviderReviewRow = {
@@ -23,7 +22,8 @@ type Props = {
 };
 
 export function ProviderReviewsGrid({ rows, types }: Props) {
-const columns: EntityColumn<ProviderReviewRow>[] = [
+  const t = useTranslations("provider.reviews");
+  const columns: EntityColumn<ProviderReviewRow>[] = [
     {
       key: "target",
       label: t("colTarget"),
@@ -85,7 +85,7 @@ const columns: EntityColumn<ProviderReviewRow>[] = [
     <EntityGrid
       rows={rows}
       columns={columns}
-emptyState="No reviews of your resources yet."
+      emptyState="No reviews of your resources yet."
       searchPlaceholder="Search reviews by target or decision summary…"
       searchableKeys={["target", "decisionSummary"]}
       filters={[
