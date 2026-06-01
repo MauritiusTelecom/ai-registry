@@ -1,0 +1,1155 @@
+// airegistry — Prisma schema (PostgreSQL `registry`)
+// Aligned with the normative data model in `airegistry-specs/data-model.md` and
+// the reference implementation in `ai-registry/src/prisma/schema.prisma`.
+//
+// Convention: every controlled vocabulary is a small reference table
+// (id / code / name / description / active / sortOrder). No SQL enums.
+
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../generated/prisma"
+  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["registry"]
+}
+
+// ─── Reference tables (replace former enums) ────────────
+
+model UserRoleType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users           User[]
+  roleAssignments UserRoleAssignment[]
+
+  @@schema("registry")
+}
+
+model UserStatusType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+
+  @@schema("registry")
+}
+
+model ProviderTypeRef {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  providers Provider[]
+
+  @@schema("registry")
+}
+
+model ProviderStatusType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  providers Provider[]
+
+  @@schema("registry")
+}
+
+model ResourceType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resources Resource[]
+
+  @@schema("registry")
+}
+
+model LifecycleStatus {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resources Resource[]
+
+  @@schema("registry")
+}
+
+model RiskLevel {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resources Resource[]
+
+  @@schema("registry")
+}
+
+model ListingOrigin {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resources Resource[]
+
+  @@schema("registry")
+}
+
+model EvidenceType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  evidence SovereigntyEvidence[]
+
+  @@schema("registry")
+}
+
+model JurisdictionType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  jurisdictions Jurisdiction[]
+
+  @@schema("registry")
+}
+
+model TrustSignalType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  signals TrustSignal[]
+
+  @@schema("registry")
+}
+
+model TrustSignalStatusType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  signals TrustSignal[]
+
+  @@schema("registry")
+}
+
+model ReviewType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  reviews Review[]
+
+  @@schema("registry")
+}
+
+model ReviewStatusType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  reviews Review[]
+
+  @@schema("registry")
+}
+
+model ChecklistResultType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  checklistItems ReviewChecklistItem[]
+
+  @@schema("registry")
+}
+
+model Protocol {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  endpoints ResourceEndpoint[]
+
+  @@schema("registry")
+}
+
+model AccessModelType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  endpoints ResourceEndpoint[]
+
+  @@schema("registry")
+}
+
+model AuthMethodType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  endpoints ResourceEndpoint[]
+
+  @@schema("registry")
+}
+
+model EndpointHealthType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  endpoints ResourceEndpoint[]
+
+  @@schema("registry")
+}
+
+model OfficialAuthorityType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorities OfficialAuthority[]
+
+  @@schema("registry")
+}
+
+model OfficialAuthorisationStatusType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorisations OfficialResourceAuthorisation[]
+
+  @@schema("registry")
+}
+
+model ComplaintType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  complaints Complaint[]
+
+  @@schema("registry")
+}
+
+model ComplaintSeverityType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  complaints Complaint[]
+
+  @@schema("registry")
+}
+
+model ComplaintStatusType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  complaints Complaint[]
+
+  @@schema("registry")
+}
+
+model EnforcementType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  actions EnforcementAction[]
+
+  @@schema("registry")
+}
+
+model SubmissionSourceType {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  providers Provider[]
+
+  @@schema("registry")
+}
+
+// ─── User ───────────────────────────────────────────────
+
+model User {
+  id                      String    @id @default(uuid()) @db.Uuid
+  email                   String    @unique
+  passwordHash            String?
+  name                    String
+  organisationName        String?
+  roleId                  String
+  statusId                String
+  providerId              String?
+  emailVerified           Boolean   @default(false)
+  verificationToken       String?
+  verificationTokenExpiry DateTime?
+  resetToken              String?
+  resetTokenExpiry        DateTime?
+  onboardingComplete      Boolean   @default(true)
+  image                   String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  role     UserRoleType   @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  status   UserStatusType @relation(fields: [statusId], references: [id], onDelete: Restrict)
+  provider Provider?      @relation(fields: [providerId], references: [id])
+
+  accounts                 Account[]
+  auditLogs                AuditLog[]
+  roleAssignments          UserRoleAssignment[]
+  reviewedReviews          Review[]                        @relation("ReviewerOfReview")
+  evidenceSubmissions      SovereigntyEvidence[]           @relation("EvidenceSubmittedBy")
+  resourceBasisSubmissions ResourceSovereigntyBasis[]      @relation("BasisSubmittedBy")
+  authorisationDecisions   OfficialResourceAuthorisation[] @relation("AuthorisationDecidedBy")
+  trustSignalDecisions     TrustSignal[]                   @relation("TrustSignalDecidedBy")
+  complaintsAssigned       Complaint[]                     @relation("ComplaintAssignedTo")
+  enforcementActions       EnforcementAction[]             @relation("EnforcementPerformedBy")
+  contacts                 Contact[]
+  notificationReads        NotificationRead[]
+
+  @@index([providerId])
+  @@index([roleId])
+  @@index([statusId])
+  @@schema("registry")
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String  @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@schema("registry")
+}
+
+model UserRoleAssignment {
+  id                  String   @id @default(uuid())
+  userId              String   @db.Uuid
+  roleId              String
+  scopeJurisdictionId String?
+  scopeProviderId     String?
+  scopeSectorId       String?
+  assignedAt          DateTime @default(now())
+  assignedById        String?  @db.Uuid
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role UserRoleType @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, roleId, scopeJurisdictionId, scopeProviderId, scopeSectorId])
+  @@index([userId])
+  @@index([roleId])
+  @@schema("registry")
+}
+
+// ─── Jurisdiction ───────────────────────────────────────
+
+model Jurisdiction {
+  id                   String   @id @default(uuid())
+  code                 String   @unique
+  name                 String
+  typeId               String
+  parentJurisdictionId String?
+  active               Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  type   JurisdictionType @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  parent Jurisdiction?    @relation("JurisdictionHierarchy", fields: [parentJurisdictionId], references: [id])
+
+  children            Jurisdiction[]      @relation("JurisdictionHierarchy")
+  providers           Provider[]
+  resources           Resource[]
+  officialAuthorities OfficialAuthority[]
+  federatedRegistries FederatedRegistry[]
+
+  @@index([active])
+  @@index([typeId])
+  @@schema("registry")
+}
+
+// ─── Provider ───────────────────────────────────────────
+
+model Provider {
+  id                 String   @id @default(uuid())
+  slug               String   @unique
+  displayName        String
+  legalName          String?
+  typeId             String
+  homeJurisdictionId String
+  websiteUrl         String?
+  documentationUrl   String?
+  contactEmail       String
+  legalContactEmail  String?
+  registrationNumber String?
+  description        String?
+  statusId           String
+  published          Boolean  @default(true)
+  adminSuspended     Boolean  @default(false)
+  srcId              String
+  // Provider notification preferences (modules/provider/settings/product.md §
+  // Notifications card). Free-form so the operator can use any chat handle
+  // (Slack, Teams, Matrix). Webhook is optional outbound for incident events.
+  incidentChannel    String?
+  oncallEmail        String?
+  webhookUrl         String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  type             ProviderTypeRef      @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  homeJurisdiction Jurisdiction         @relation(fields: [homeJurisdictionId], references: [id], onDelete: Restrict)
+  status           ProviderStatusType   @relation(fields: [statusId], references: [id], onDelete: Restrict)
+  src              SubmissionSourceType @relation(fields: [srcId], references: [id], onDelete: Restrict)
+
+  resources          Resource[]
+  users              User[]
+  trustSignals       TrustSignal[]
+  reviews            Review[]
+  complaints         Complaint[]
+  enforcementActions EnforcementAction[]
+
+  @@index([homeJurisdictionId])
+  @@index([statusId])
+  @@index([typeId])
+  @@index([published])
+  @@schema("registry")
+}
+
+// ─── Reference: Sector / Language / Tag / SovereigntyBasis ─
+
+model Sector {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resourceSectors ResourceSector[]
+
+  @@index([active])
+  @@schema("registry")
+}
+
+model Language {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resourceLanguages ResourceLanguage[]
+
+  @@index([active])
+  @@schema("registry")
+}
+
+model Tag {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  resourceTags ResourceTag[]
+
+  @@schema("registry")
+}
+
+model SovereigntyBasis {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  resourceBases ResourceSovereigntyBasis[]
+  evidence      SovereigntyEvidence[]
+
+  @@schema("registry")
+}
+
+// ─── Resource ───────────────────────────────────────────
+
+model Resource {
+  id                    String    @id @default(uuid())
+  airId                 String?   @unique
+  slug                  String
+  title                 String
+  shortDescription      String
+  longDescription       String?
+  resourceTypeId        String
+  providerId            String
+  primaryJurisdictionId String
+  listingOriginId       String
+  sourceRegistryId      String?
+  sourceAirId           String?
+  accessUrl             String?
+  sourceCodeUrl         String?
+  documentationUrl      String?
+  termsUrl              String?
+  license               String?
+  versionLabel          String?
+  versionNumber         String?
+  latencyTier           String?
+  lifecycleStatusId     String
+  riskLevelId           String
+  publicVisibility      Boolean   @default(true)
+  submittedAt           DateTime?
+  listedAt              DateTime?
+  lastProviderUpdateAt  DateTime?
+  lastReviewedAt        DateTime?
+  nextReviewDueAt       DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  resourceType        ResourceType       @relation(fields: [resourceTypeId], references: [id], onDelete: Restrict)
+  provider            Provider           @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  primaryJurisdiction Jurisdiction       @relation(fields: [primaryJurisdictionId], references: [id], onDelete: Restrict)
+  listingOrigin       ListingOrigin      @relation(fields: [listingOriginId], references: [id], onDelete: Restrict)
+  lifecycleStatus     LifecycleStatus    @relation(fields: [lifecycleStatusId], references: [id], onDelete: Restrict)
+  riskLevel           RiskLevel          @relation(fields: [riskLevelId], references: [id], onDelete: Restrict)
+  sourceRegistry      FederatedRegistry? @relation(fields: [sourceRegistryId], references: [id])
+
+  resourceLanguages   ResourceLanguage[]
+  resourceSectors     ResourceSector[]
+  resourceTags        ResourceTag[]
+  resourceBases       ResourceSovereigntyBasis[]
+  evidence            SovereigntyEvidence[]
+  endpoints           ResourceEndpoint[]
+  trustSignals        TrustSignal[]
+  reviews             Review[]
+  authorisations      OfficialResourceAuthorisation[]
+  complaints          Complaint[]
+  enforcementActions  EnforcementAction[]
+  runtimeBindings     RuntimeIdentityBinding[]
+  federatedReferences FederatedResourceReference[]
+
+  @@unique([providerId, slug])
+  @@index([providerId])
+  @@index([primaryJurisdictionId])
+  @@index([resourceTypeId])
+  @@index([lifecycleStatusId])
+  @@index([riskLevelId])
+  @@index([publicVisibility])
+  @@schema("registry")
+}
+
+// ─── Many-to-many joins ─────────────────────────────────
+
+model ResourceLanguage {
+  resourceId String
+  languageId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  language   Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@id([resourceId, languageId])
+  @@index([languageId])
+  @@schema("registry")
+}
+
+model ResourceSector {
+  resourceId String
+  sectorId   String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  sector     Sector   @relation(fields: [sectorId], references: [id], onDelete: Cascade)
+
+  @@id([resourceId, sectorId])
+  @@index([sectorId])
+  @@schema("registry")
+}
+
+model ResourceTag {
+  resourceId String
+  tagId      String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([resourceId, tagId])
+  @@index([tagId])
+  @@schema("registry")
+}
+
+model ResourceSovereigntyBasis {
+  resourceId         String
+  sovereigntyBasisId String
+  submittedById      String?  @db.Uuid
+  createdAt          DateTime @default(now())
+
+  resource         Resource         @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  sovereigntyBasis SovereigntyBasis @relation(fields: [sovereigntyBasisId], references: [id], onDelete: Cascade)
+  submittedBy      User?            @relation("BasisSubmittedBy", fields: [submittedById], references: [id])
+
+  @@id([resourceId, sovereigntyBasisId])
+  @@index([sovereigntyBasisId])
+  @@schema("registry")
+}
+
+// ─── Sovereignty evidence ───────────────────────────────
+
+model SovereigntyEvidence {
+  id                  String   @id @default(uuid())
+  resourceId          String
+  sovereigntyBasisId  String
+  evidenceTypeId      String
+  title               String
+  description         String?
+  referenceUrl        String?
+  referenceIdentifier String?
+  issuingBody         String?
+  publicVisibility    Boolean  @default(true)
+  submittedById       String?  @db.Uuid
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  resource         Resource         @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  sovereigntyBasis SovereigntyBasis @relation(fields: [sovereigntyBasisId], references: [id], onDelete: Restrict)
+  evidenceType     EvidenceType     @relation(fields: [evidenceTypeId], references: [id], onDelete: Restrict)
+  submittedBy      User?            @relation("EvidenceSubmittedBy", fields: [submittedById], references: [id])
+
+  @@index([resourceId])
+  @@index([sovereigntyBasisId])
+  @@index([evidenceTypeId])
+  @@schema("registry")
+}
+
+// ─── Endpoints ──────────────────────────────────────────
+
+model ResourceEndpoint {
+  id                String    @id @default(uuid())
+  resourceId        String
+  protocolId        String
+  endpointUrl       String
+  documentationUrl  String?
+  authMethodId      String
+  accessModelId     String
+  primary           Boolean   @default(false)
+  active            Boolean   @default(true)
+  lastCheckedAt     DateTime?
+  lastCheckStatusId String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  resource        Resource           @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  protocol        Protocol           @relation(fields: [protocolId], references: [id], onDelete: Restrict)
+  authMethod      AuthMethodType     @relation(fields: [authMethodId], references: [id], onDelete: Restrict)
+  accessModel     AccessModelType    @relation(fields: [accessModelId], references: [id], onDelete: Restrict)
+  lastCheckStatus EndpointHealthType @relation(fields: [lastCheckStatusId], references: [id], onDelete: Restrict)
+
+  @@index([resourceId])
+  @@index([protocolId])
+  @@schema("registry")
+}
+
+// ─── Trust signals ──────────────────────────────────────
+
+model TrustSignal {
+  id                    String    @id @default(uuid())
+  kindId                String
+  targetProviderId      String?
+  targetResourceId      String?
+  statusId              String
+  decisionSummary       String?
+  publicNote            String?
+  internalNote          String?
+  validFrom             DateTime?
+  validUntil            DateTime?
+  decidedAt             DateTime?
+  decidedById           String?   @db.Uuid
+  authorityOrganisation String?
+  nextReviewDueAt       DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  kind           TrustSignalType       @relation(fields: [kindId], references: [id], onDelete: Restrict)
+  status         TrustSignalStatusType @relation(fields: [statusId], references: [id], onDelete: Restrict)
+  targetProvider Provider?             @relation(fields: [targetProviderId], references: [id], onDelete: Cascade)
+  targetResource Resource?             @relation(fields: [targetResourceId], references: [id], onDelete: Cascade)
+  decidedBy      User?                 @relation("TrustSignalDecidedBy", fields: [decidedById], references: [id])
+
+  @@index([kindId])
+  @@index([targetProviderId])
+  @@index([targetResourceId])
+  @@index([statusId])
+  @@index([validUntil])
+  @@schema("registry")
+}
+
+// ─── Review ─────────────────────────────────────────────
+
+model Review {
+  id              String    @id @default(uuid())
+  resourceId      String?
+  providerId      String?
+  reviewTypeId    String
+  statusId        String
+  reviewerId      String?   @db.Uuid
+  reviewPanel     String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  decisionSummary String?
+  conditions      String?
+  internalNotes   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  reviewType ReviewType       @relation(fields: [reviewTypeId], references: [id], onDelete: Restrict)
+  status     ReviewStatusType @relation(fields: [statusId], references: [id], onDelete: Restrict)
+  resource   Resource?        @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  provider   Provider?        @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  reviewer   User?            @relation("ReviewerOfReview", fields: [reviewerId], references: [id])
+
+  checklistItems ReviewChecklistItem[]
+
+  @@index([resourceId])
+  @@index([providerId])
+  @@index([reviewTypeId])
+  @@index([statusId])
+  @@index([reviewerId])
+  @@schema("registry")
+}
+
+model ReviewChecklistItem {
+  id        String   @id @default(uuid())
+  reviewId  String
+  itemCode  String
+  question  String
+  resultId  String?
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  review Review               @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  result ChecklistResultType? @relation(fields: [resultId], references: [id], onDelete: SetNull)
+
+  @@index([reviewId])
+  @@schema("registry")
+}
+
+// ─── Official authority and authorisation ───────────────
+
+model OfficialAuthority {
+  id             String   @id @default(uuid())
+  jurisdictionId String
+  name           String
+  typeId         String
+  domainArea     String
+  websiteUrl     String?
+  contactEmail   String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  jurisdiction   Jurisdiction                    @relation(fields: [jurisdictionId], references: [id], onDelete: Restrict)
+  type           OfficialAuthorityType           @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  authorisations OfficialResourceAuthorisation[]
+
+  @@index([jurisdictionId])
+  @@index([active])
+  @@schema("registry")
+}
+
+model OfficialResourceAuthorisation {
+  id                       String    @id @default(uuid())
+  resourceId               String
+  officialAuthorityId      String
+  statusId                 String
+  authorisationReference   String?
+  authorisationDocumentUrl String?
+  validFrom                DateTime?
+  validUntil               DateTime?
+  publicNote               String?
+  internalNote             String?
+  decidedById              String?   @db.Uuid
+  decidedAt                DateTime?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  resource          Resource                        @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  officialAuthority OfficialAuthority               @relation(fields: [officialAuthorityId], references: [id], onDelete: Restrict)
+  status            OfficialAuthorisationStatusType @relation(fields: [statusId], references: [id], onDelete: Restrict)
+  decidedBy         User?                           @relation("AuthorisationDecidedBy", fields: [decidedById], references: [id])
+
+  @@index([resourceId])
+  @@index([officialAuthorityId])
+  @@index([statusId])
+  @@index([validUntil])
+  @@schema("registry")
+}
+
+// ─── Complaint and enforcement ──────────────────────────
+
+model Complaint {
+  id                String    @id @default(uuid())
+  targetResourceId  String?
+  targetProviderId  String?
+  complaintTypeId   String
+  severityId        String
+  complainantName   String?
+  complainantEmail  String?
+  description       String
+  statusId          String
+  assignedToId      String?   @db.Uuid
+  resolutionSummary String?
+  submittedAt       DateTime  @default(now())
+  resolvedAt        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  complaintType ComplaintType         @relation(fields: [complaintTypeId], references: [id], onDelete: Restrict)
+  severity      ComplaintSeverityType @relation(fields: [severityId], references: [id], onDelete: Restrict)
+  status        ComplaintStatusType   @relation(fields: [statusId], references: [id], onDelete: Restrict)
+
+  targetResource     Resource?           @relation(fields: [targetResourceId], references: [id])
+  targetProvider     Provider?           @relation(fields: [targetProviderId], references: [id])
+  assignedTo         User?               @relation("ComplaintAssignedTo", fields: [assignedToId], references: [id])
+  enforcementActions EnforcementAction[]
+
+  @@index([targetResourceId])
+  @@index([targetProviderId])
+  @@index([statusId])
+  @@index([severityId])
+  @@index([createdAt])
+  @@schema("registry")
+}
+
+model EnforcementAction {
+  id                 String   @id @default(uuid())
+  relatedComplaintId String?
+  targetResourceId   String?
+  targetProviderId   String?
+  actionTypeId       String
+  reason             String
+  performedById      String?  @db.Uuid
+  performedAt        DateTime @default(now())
+  publicNote         String?
+  internalNote       String?
+  createdAt          DateTime @default(now())
+
+  actionType       EnforcementType @relation(fields: [actionTypeId], references: [id], onDelete: Restrict)
+  relatedComplaint Complaint?      @relation(fields: [relatedComplaintId], references: [id])
+  targetResource   Resource?       @relation(fields: [targetResourceId], references: [id])
+  targetProvider   Provider?       @relation(fields: [targetProviderId], references: [id])
+  performedBy      User?           @relation("EnforcementPerformedBy", fields: [performedById], references: [id])
+
+  @@index([relatedComplaintId])
+  @@index([targetResourceId])
+  @@index([targetProviderId])
+  @@index([actionTypeId])
+  @@schema("registry")
+}
+
+// ─── Public contact form (operator desk) ────────────────
+
+model Contact {
+  id                      String    @id @default(uuid())
+  senderName              String
+  organisationName        String
+  email                   String
+  topic                   String
+  message                 String    @db.Text
+  emailVerified           Boolean   @default(false)
+  emailVerificationToken  String?
+  emailVerificationExpiry DateTime?
+  linkedUserId            String?   @db.Uuid
+  ipAddress               String?
+  userAgent               String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  linkedUser User? @relation(fields: [linkedUserId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([linkedUserId])
+  @@index([emailVerificationToken])
+  @@map("Contacts")
+  @@schema("registry")
+}
+
+// ─── Audit log ──────────────────────────────────────────
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  actorUserId   String?  @db.Uuid
+  entityType    String
+  entityId      String
+  action        String
+  previousValue Json?
+  newValue      Json?
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  actor User? @relation(fields: [actorUserId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([actorUserId])
+  @@index([createdAt])
+  @@schema("registry")
+}
+
+// ─── Runtime identity (schema only in MVP) ──────────────
+
+model RuntimeIdentityBinding {
+  id              String    @id @default(uuid())
+  resourceId      String
+  identityType    String
+  identityValue   String
+  issuer          String?
+  hostingProvider String?
+  validFrom       DateTime?
+  validUntil      DateTime?
+  status          String    @default("ACTIVE")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([resourceId])
+  @@schema("registry")
+}
+
+// ─── Federation (schema only in MVP) ────────────────────
+
+model FederatedRegistry {
+  id                 String    @id @default(uuid())
+  registryCode       String    @unique
+  name               String
+  jurisdictionId     String
+  baseUrl            String
+  discoveryApiUrl    String?
+  status             String    @default("PROPOSED")
+  trustModel         String    @default("METADATA_ONLY")
+  agreementReference String?
+  agreementUrl       String?
+  validFrom          DateTime?
+  validUntil         DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  jurisdiction     Jurisdiction                 @relation(fields: [jurisdictionId], references: [id], onDelete: Restrict)
+  references       FederatedResourceReference[]
+  sourcedResources Resource[]
+
+  @@index([jurisdictionId])
+  @@schema("registry")
+}
+
+model FederatedResourceReference {
+  id                 String    @id @default(uuid())
+  sourceRegistryId   String
+  sourceAirId        String
+  localResourceId    String?
+  sourceJurisdiction String?
+  sourceTrustLabels  Json?
+  localReviewStatus  String?
+  lastSyncedAt       DateTime?
+  syncStatus         String    @default("CREATED")
+  publicDisplayNote  String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  sourceRegistry FederatedRegistry @relation(fields: [sourceRegistryId], references: [id], onDelete: Cascade)
+  localResource  Resource?         @relation(fields: [localResourceId], references: [id])
+
+  @@unique([sourceRegistryId, sourceAirId])
+  @@index([sourceRegistryId])
+  @@index([localResourceId])
+  @@schema("registry")
+}
+
+/**
+ * Per-user read receipts for portal header notifications.
+ * The notification list is derived live from underlying tables (reviews,
+ * complaints, etc.) — there's no materialised Notification row. Each entry's
+ * stable id (e.g. "review:<uuid>", "complaint:<uuid>", "decision:<uuid>") is
+ * stored here against the user that dismissed it, so the unread flag survives
+ * page reloads and is consistent across devices.
+ * `notificationKey` is the same string id the loader hands the client.
+ * The composite unique constraint dedupes accidental double-posts (two tabs
+ * marking the same entry read in the same second).
+ */
+model NotificationRead {
+  id              String   @id @default(uuid())
+  userId          String   @db.Uuid
+  notificationKey String
+  readAt          DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, notificationKey])
+  @@index([userId])
+  @@index([readAt])
+  @@schema("registry")
+}
+
+/// Singleton holding portal branding overrides editable from /admin/branding.
+/// Any field left null means "use the built-in default" (env REGISTRY_NAME for
+/// the title, hardcoded footer copy for copyright/build line, CSS gradient for
+/// the logo). Enforced singleton via fixed id = "default".
+model SiteBranding {
+  id                 String   @id @default("default")
+  registryName       String?
+  logoUrl            String?
+  copyrightLine      String?
+  buildLine          String?
+  heroEyebrowText    String?
+  heroEyebrowIconUrl String?
+  updatedAt          DateTime @updatedAt
+  updatedById        String?  @db.Uuid
+
+  @@schema("registry")
+}
