@@ -293,6 +293,81 @@ export async function markRequirementRejected(opts: {
   });
 }
 
+/**
+ * Auto-verify a requirement on behalf of an extension - typically called
+ * by the extension itself after its REST handler successfully consulted
+ * an external registry API (e.g. Rwanda RDB, BoM, GST, etc.). NO admin
+ * user is required.
+ *
+ * Safety: an extension can only auto-verify rows whose extensionId
+ * matches its own. The caller must pass `extensionId` explicitly; the
+ * function refuses to update rows that don't match.
+ *
+ * Caller chooses providerId + extensionId + requirementCode (the unique
+ * key); the row is created or updated. verifiedById is left null - that
+ * tells the admin UI the verification was automatic, not a human click.
+ */
+export async function autoMarkRequirementVerified(opts: {
+  providerId: string;
+  extensionId: string;
+  requirementCode: string;
+  note?: string;
+}) {
+  if (!opts.extensionId || !opts.requirementCode || !opts.providerId) {
+    throw new VerificationError(
+      "invalid_args",
+      "providerId, extensionId, and requirementCode are required"
+    );
+  }
+
+  // Look up an existing row (idempotent re-verify).
+  const existing = await prisma.providerVerification.findUnique({
+    where: {
+      providerId_extensionId_requirementCode: {
+        providerId: opts.providerId,
+        extensionId: opts.extensionId,
+        requirementCode: opts.requirementCode
+      }
+    }
+  });
+
+  // For the label fallback we use the extension's manifest, if loaded.
+  const fromManifest = listAllVerificationRequirements().find(
+    (r) => r.extensionId === opts.extensionId && r.requirement.code === opts.requirementCode
+  );
+  const label = existing?.label ?? fromManifest?.requirement.label ?? opts.requirementCode;
+  const documentTypeHint =
+    existing?.documentTypeHint ?? fromManifest?.requirement.documentTypeHint ?? null;
+
+  // Auto-verification: verifiedById stays null. The admin queue / status
+  // card can detect (verifiedAt != null && verifiedById == null) and
+  // render an "Auto-verified" badge. We clear any previous rejection.
+  return prisma.providerVerification.upsert({
+    where: {
+      providerId_extensionId_requirementCode: {
+        providerId: opts.providerId,
+        extensionId: opts.extensionId,
+        requirementCode: opts.requirementCode
+      }
+    },
+    create: {
+      providerId: opts.providerId,
+      extensionId: opts.extensionId,
+      requirementCode: opts.requirementCode,
+      label,
+      documentTypeHint,
+      verifiedAt: new Date(),
+      verifiedById: null,
+      rejectionNote: null
+    },
+    update: {
+      verifiedAt: new Date(),
+      verifiedById: null,
+      rejectionNote: null
+    }
+  });
+}
+
 // ─── Admin queue ───────────────────────────────────────────
 
 export async function listPendingVerifications(opts?: {

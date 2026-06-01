@@ -201,6 +201,90 @@ All stack without coordination. The platform just AND-s them together.
 
 ---
 
+---
+
+## Optional: automatic verification via an upstream API
+
+If your registrar exposes an API (Rwanda RDB, BoM public registry, India
+GST verify, EU VAT VIES, etc.), your extension can verify a requirement
+**without an admin click**.
+
+### Pattern
+
+Add a second REST handler `/auto-verify` to your extension. It:
+
+1. Authenticates the calling provider (`getCurrentUser` from
+   `@airegistry/sdk/server`).
+2. Reads the registration number from the provider's settings or the
+   request body.
+3. Calls the upstream API.
+4. On success, calls `autoMarkRequirementVerified` from
+   `@airegistry/core/services/verification`.
+
+```ts
+// extensions/rwanda-rdb-check/src/rest/auto-verify.ts
+import { NextResponse } from "next/server";
+import { getCurrentUser } from "@airegistry/sdk/server";
+import { autoMarkRequirementVerified } from "@airegistry/core/services/verification";
+
+export async function POST(req: Request) {
+  const user = await getCurrentUser();
+  if (!user?.provider?.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { rdb } = (await req.json()) as { rdb: string };
+
+  // Real upstream call. Use AbortController + a timeout in production.
+  const res = await fetch(`https://api.rdb.rw/companies/${rdb}`, {
+    headers: { Authorization: `Bearer ${process.env.RDB_API_TOKEN}` }
+  });
+  if (!res.ok) {
+    return NextResponse.json({ verified: false, reason: "Upstream rejected" });
+  }
+  const data = (await res.json()) as { exists: boolean; companyName?: string };
+  if (!data.exists) {
+    return NextResponse.json({ verified: false, reason: "Not found in RDB" });
+  }
+
+  // Auto-verify. Note: verifiedById is null on auto rows; the admin
+  // queue and provider settings card show an "Auto-verified" badge.
+  await autoMarkRequirementVerified({
+    providerId: user.provider.id,
+    extensionId: "rw-rdb-check",
+    requirementCode: "rdb",
+    note: `Confirmed by RDB API (${data.companyName ?? "no name"})`
+  });
+
+  return NextResponse.json({ verified: true });
+}
+```
+
+### Trust boundary
+
+`autoMarkRequirementVerified` only updates rows whose `extensionId`
+matches what the caller passed. An extension cannot verify another
+extension's requirements. The caller's `extensionId` argument is the
+identity claim - which is safe because extensions are trusted code
+shipped with the operator's deployment.
+
+### Hybrid (auto-check + manual confirm)
+
+Some operators want a human in the loop even when an API is available.
+Two ways:
+
+- **Auto-verify on success, leave pending on doubt** - call
+  `autoMarkRequirementVerified` only when the upstream API is
+  unambiguous; otherwise leave the row pending so an admin reviews.
+- **Surface the auto-check result in the admin queue** - run the API
+  call from inside your extension's UI panel and render the verdict
+  next to the requirement; the admin still clicks Verify or Reject in
+  the generic `/admin/verifications` queue.
+
+The model doesn't force one approach; pick what fits your registrar.
+
+---
+
 ## What is intentionally NOT in this model (yet)
 
 - **Resource-level requirements** - a specific AI solution in one
