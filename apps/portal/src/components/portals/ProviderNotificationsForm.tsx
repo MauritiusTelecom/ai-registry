@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
 
@@ -22,6 +23,7 @@ type Props = {
  */
 export function ProviderNotificationsForm({ initial }: Props) {
   const router = useRouter();
+  const t = useTranslations("providerNotifForm");
   const [incidentChannel, setIncidentChannel] = useState(initial.incidentChannel ?? "");
   const [oncallEmail, setOncallEmail] = useState(initial.oncallEmail ?? "");
   const [webhookUrl, setWebhookUrl] = useState(initial.webhookUrl ?? "");
@@ -44,14 +46,14 @@ export function ProviderNotificationsForm({ initial }: Props) {
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Save failed");
+        setError(data.error ?? t("saveFailed"));
         setBusy(false);
         return;
       }
       setSavedAt(new Date().toLocaleTimeString());
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setBusy(false);
     }
@@ -60,17 +62,17 @@ export function ProviderNotificationsForm({ initial }: Props) {
   return (
     <div style={{ display: "grid", gap: 14, fontSize: 13 }}>
       <Field
-        label="Incident channel"
-        hint="Slack / Teams / Matrix handle for high-severity pages."
+        label={t("incidentChannel")}
+        hint={t("incidentChannelHint")}
       >
         <input
           className="auth-input"
           value={incidentChannel}
           onChange={(e) => setIncidentChannel(e.target.value)}
-          placeholder="#edu-air-ops (Slack)"
+          placeholder={t("incidentChannelPlaceholder")}
         />
       </Field>
-      <Field label="On-call email" hint="Fallback for incident + renewal reminders.">
+      <Field label={t("oncallEmail")} hint={t("oncallEmailHint")}>
         <input
           className="auth-input"
           type="email"
@@ -79,7 +81,7 @@ export function ProviderNotificationsForm({ initial }: Props) {
           placeholder="oncall@example.org"
         />
       </Field>
-      <Field label="Webhook (optional)" hint="Outbound POST for incident lifecycle events.">
+      <Field label={t("webhook")} hint={t("webhookHint")}>
         <input
           className="auth-input"
           type="url"
@@ -97,7 +99,7 @@ export function ProviderNotificationsForm({ initial }: Props) {
           disabled={busy}
           style={{ alignSelf: "start" }}
         >
-          {busy ? "Saving…" : "Save notifications"}
+          {busy ? t("saving") : t("saveButton")}
         </button>
         {savedAt ? (
           <span
@@ -107,7 +109,7 @@ export function ProviderNotificationsForm({ initial }: Props) {
               fontFamily: "IBM Plex Mono, monospace"
             }}
           >
-            saved {savedAt}
+            {t("savedAt", { time: savedAt })}
           </span>
         ) : null}
       </div>

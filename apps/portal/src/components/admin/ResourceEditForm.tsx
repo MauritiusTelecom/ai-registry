@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import { Icon } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
+
+import { useRouter } from "@/i18n/navigation";
+import { useMemo, useState } from "react";
+import { Icon, Button, Field, Input, Select, TextArea } from "@/components/library";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 type RefRow = { code: string; name: string };
 
@@ -96,6 +97,7 @@ export function ResourceEditForm({
   providers: ProviderOption[];
   listingOrigins: RefRow[];
 }) {
+  const t = useTranslations("adminResourceEdit");
   const router = useRouter();
 
   // ── Section 1: identity & classification ────────────────────────────────
@@ -183,7 +185,6 @@ export function ResourceEditForm({
   function updateEndpoint(idx: number, patch: Partial<EndpointRow>) {
     setEndpoints((rows) => {
       const next = rows.map((r, i) => (i === idx ? { ...r, ...patch } : r));
-      // Enforce single-primary: when a row is set primary, clear it on the others.
       if (patch.primary === true) {
         return next.map((r, i) => (i === idx ? r : { ...r, primary: false }));
       }
@@ -255,13 +256,13 @@ export function ResourceEditForm({
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Save failed");
+        setError(data.error ?? t("saveFailed"));
         return;
       }
-      setOkMsg("Saved.");
+      setOkMsg(t("saved"));
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setBusy(false);
     }
@@ -270,24 +271,22 @@ export function ResourceEditForm({
   return (
     <div style={{ display: "grid", gap: 24, fontSize: 13 }}>
       {/* ── 1. Identity & classification ───────────────────────────────── */}
-      <Section title="Identity & classification">
+      <Section title={t("sectionIdentity")}>
         <Row>
-          <Field label="Title">
-            <input
-              className="auth-input"
-              value={title}
+<Field label="Title">
+            <Input
+                            value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </Field>
           <Field label="Slug (immutable)">
-            <input className="auth-input" value={initial.slug} disabled />
+            <Input value={initial.slug} disabled />
           </Field>
         </Row>
         <Row>
           <Field label="Kind / resource type">
-            <select
-              className="auth-input"
-              value={kindCode}
+            <Select
+                            value={kindCode}
               onChange={(e) => setKindCode(e.target.value)}
             >
               {resourceTypes.map((rt) => (
@@ -295,12 +294,11 @@ export function ResourceEditForm({
                   {rt.name} ({rt.code})
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
-          <Field label="Provider">
-            <select
-              className="auth-input"
-              value={providerSlug}
+<Field label="Provider">
+            <Select
+                            value={providerSlug}
               onChange={(e) => setProviderSlug(e.target.value)}
             >
               {providers.map((p) => (
@@ -308,14 +306,13 @@ export function ResourceEditForm({
                   {p.displayName} ({p.slug})
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
         </Row>
         <Row>
-          <Field label="Primary jurisdiction">
-            <select
-              className="auth-input"
-              value={jurisdictionCode}
+<Field label="Primary jurisdiction">
+            <Select
+                            value={jurisdictionCode}
               onChange={(e) => setJurisdictionCode(e.target.value)}
             >
               {jurisdictions.map((j) => (
@@ -323,12 +320,11 @@ export function ResourceEditForm({
                   {j.name} ({j.code})
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
-          <Field label="Risk level">
-            <select
-              className="auth-input"
-              value={riskCode}
+<Field label="Risk level">
+            <Select
+                            value={riskCode}
               onChange={(e) => setRiskCode(e.target.value)}
             >
               {riskLevels.map((r) => (
@@ -336,14 +332,13 @@ export function ResourceEditForm({
                   {r.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
         </Row>
         <Row>
-          <Field label="Listing origin">
-            <select
-              className="auth-input"
-              value={listingOriginCode}
+<Field label="Listing origin">
+            <Select
+                            value={listingOriginCode}
               onChange={(e) => setListingOriginCode(e.target.value)}
             >
               {listingOrigins.map((lo) => (
@@ -351,17 +346,16 @@ export function ResourceEditForm({
                   {lo.name} ({lo.code})
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
-          <Field label="Lifecycle status (use the sidebar to change)">
-            <input
-              className="auth-input"
-              value={`${initial.lifecycleName} (${initial.lifecycleCode})`}
+<Field label="Lifecycle status (use the sidebar to change)">
+            <Input
+                            value={`${initial.lifecycleName} (${initial.lifecycleCode})`}
               disabled
             />
           </Field>
         </Row>
-        <Field label="Public visibility">
+        <Field label={t("fieldPublicVisibility")}>
           <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <input
               type="checkbox"
@@ -369,26 +363,24 @@ export function ResourceEditForm({
               onChange={(e) => setPublicVisibility(e.target.checked)}
             />
             <span style={{ color: "var(--text-2)" }}>
-              Listed publicly when lifecycle reaches <code>listed</code>.
+              {t("publicVisibilityHint")} <code>listed</code>.
             </span>
           </label>
         </Field>
       </Section>
 
       {/* ── 2. Descriptions ─────────────────────────────────────────────── */}
-      <Section title="Descriptions">
+<Section title={t("sectionDescriptions")}>
         <Field label="Short description (8+ chars, shown on cards)">
-          <textarea
-            className="auth-input"
-            style={{ minHeight: 70, fontFamily: "inherit" }}
+          <TextArea
+                          style={{ minHeight: 70, fontFamily: "inherit" }}
             value={shortDescription}
             onChange={(e) => setShortDescription(e.target.value)}
           />
         </Field>
-        <Field label="Long description (markdown OK, shown on detail page)">
-          <textarea
-            className="auth-input"
-            style={{ minHeight: 140, fontFamily: "inherit" }}
+<Field label="Long description (markdown OK, shown on detail page)">
+          <TextArea
+                          style={{ minHeight: 140, fontFamily: "inherit" }}
             value={longDescription}
             onChange={(e) => setLongDescription(e.target.value)}
           />
@@ -396,71 +388,63 @@ export function ResourceEditForm({
       </Section>
 
       {/* ── 3. Versioning & access URLs ─────────────────────────────────── */}
-      <Section title="Versioning & access">
+      <Section title={t("sectionVersioning")}>
         <Row>
-          <Field label="License">
-            <input
-              className="auth-input"
-              placeholder="Commercial, Apache-2.0, …"
+<Field label="License">
+            <Input
+                            placeholder="Commercial, Apache-2.0, …"
               value={license}
               onChange={(e) => setLicense(e.target.value)}
             />
           </Field>
-          <Field label="Version label">
-            <input
-              className="auth-input"
-              placeholder="200k tokens, Multi-step, …"
+<Field label="Version label">
+            <Input
+                            placeholder="200k tokens, Multi-step, …"
               value={versionLabel}
               onChange={(e) => setVersionLabel(e.target.value)}
             />
           </Field>
         </Row>
         <Row>
-          <Field label="Version number">
-            <input
-              className="auth-input"
-              placeholder="0.1.0"
+<Field label="Version number">
+            <Input
+                            placeholder="0.1.0"
               value={versionNumber}
               onChange={(e) => setVersionNumber(e.target.value)}
             />
           </Field>
-          <Field label="Latency tier">
-            <input
-              className="auth-input"
-              placeholder="0.8s, Async (job), …"
+<Field label="Latency tier">
+            <Input
+                            placeholder="0.8s, Async (job), …"
               value={latencyTier}
               onChange={(e) => setLatencyTier(e.target.value)}
             />
           </Field>
         </Row>
-        <Field label="Access URL">
-          <input
-            className="auth-input"
-            placeholder="https://…"
+<Field label="Access URL">
+          <Input
+                          placeholder="https://…"
             value={accessUrl}
             onChange={(e) => setAccessUrl(e.target.value)}
           />
         </Field>
-        <Field label="Source code URL">
-          <input
-            className="auth-input"
-            placeholder="https://github.com/…"
+<Field label="Source code URL">
+          <Input
+                          placeholder="https://github.com/…"
             value={sourceCodeUrl}
             onChange={(e) => setSourceCodeUrl(e.target.value)}
           />
         </Field>
-        <Field label="Documentation URL">
-          <input
-            className="auth-input"
-            placeholder="https://…"
+<Field label="Documentation URL">
+          <Input
+                          placeholder="https://…"
             value={documentationUrl}
             onChange={(e) => setDocumentationUrl(e.target.value)}
           />
         </Field>
-        <Field label="Terms URL">
-          <input
-            className="auth-input"
-            placeholder="https://…"
+<Field label="Terms URL">
+          <Input
+                          placeholder="https://…"
             value={termsUrl}
             onChange={(e) => setTermsUrl(e.target.value)}
           />
@@ -468,8 +452,8 @@ export function ResourceEditForm({
       </Section>
 
       {/* ── 4. Sovereignty ─────────────────────────────────────────────── */}
-      <Section title="Sovereignty">
-        <Field label="Sovereignty bases (one or more)">
+      <Section title={t("sectionSovereignty")}>
+        <Field label={t("fieldSovereigntyBases")}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {sovereigntyBases.map((b) => (
               <label
@@ -504,19 +488,19 @@ export function ResourceEditForm({
               alignItems: "baseline"
             }}
           >
-            <strong style={{ fontSize: 13 }}>Evidence ({evidence.length})</strong>
+            <strong style={{ fontSize: 13 }}>{t("evidenceCount", { count: evidence.length })}</strong>
             <button
               type="button"
               className="r-card-action-link"
               onClick={addEvidence}
               disabled={evidenceTypes.length === 0 || sovereigntyBases.length === 0}
             >
-              <Icon name="plus" size={12} /> Add evidence
+              <Icon name="plus" size={12} /> {t("addEvidence")}
             </button>
           </div>
           {evidence.length === 0 ? (
             <p style={{ color: "var(--text-3)", fontSize: 12, margin: 0 }}>
-              No evidence rows. Sovereignty evidence is required for §11 review.
+              {t("noEvidence")}
             </p>
           ) : null}
           {evidence.map((e, i) => (
@@ -526,25 +510,23 @@ export function ResourceEditForm({
               style={{ padding: 14, display: "grid", gap: 10 }}
             >
               <Row>
-                <Field label="Evidence type">
-                  <select
-                    className="auth-input"
-                    value={e.evidenceTypeCode}
+<Field label="Evidence type">
+                  <Select
+                                  value={e.evidenceTypeCode}
                     onChange={(ev) =>
                       updateEvidence(i, { evidenceTypeCode: ev.target.value })
                     }
                   >
-                    {evidenceTypes.map((t) => (
-                      <option key={t.code} value={t.code}>
-                        {t.name}
+                    {evidenceTypes.map((et) => (
+                      <option key={et.code} value={et.code}>
+                        {et.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </Field>
-                <Field label="Sovereignty basis">
-                  <select
-                    className="auth-input"
-                    value={e.sovereigntyBasisCode}
+<Field label="Sovereignty basis">
+                  <Select
+                                  value={e.sovereigntyBasisCode}
                     onChange={(ev) =>
                       updateEvidence(i, { sovereigntyBasisCode: ev.target.value })
                     }
@@ -554,20 +536,18 @@ export function ResourceEditForm({
                         {b.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </Field>
               </Row>
-              <Field label="Title">
-                <input
-                  className="auth-input"
-                  value={e.title}
+<Field label="Title">
+                <Input
+                                value={e.title}
                   onChange={(ev) => updateEvidence(i, { title: ev.target.value })}
                 />
               </Field>
               <Field label="Description">
-                <textarea
-                  className="auth-input"
-                  style={{ minHeight: 70, fontFamily: "inherit" }}
+                <TextArea
+                                style={{ minHeight: 70, fontFamily: "inherit" }}
                   value={e.description ?? ""}
                   onChange={(ev) =>
                     updateEvidence(i, { description: ev.target.value })
@@ -575,20 +555,18 @@ export function ResourceEditForm({
                 />
               </Field>
               <Row>
-                <Field label="Reference URL">
-                  <input
-                    className="auth-input"
-                    placeholder="https://…"
+<Field label="Reference URL">
+                  <Input
+                                  placeholder="https://…"
                     value={e.referenceUrl ?? ""}
                     onChange={(ev) =>
                       updateEvidence(i, { referenceUrl: ev.target.value })
                     }
                   />
                 </Field>
-                <Field label="Reference identifier">
-                  <input
-                    className="auth-input"
-                    placeholder="DPA 2017, MT-CLOUD-EBN, …"
+<Field label="Reference identifier">
+                  <Input
+                                  placeholder="DPA 2017, MT-CLOUD-EBN, …"
                     value={e.referenceIdentifier ?? ""}
                     onChange={(ev) =>
                       updateEvidence(i, { referenceIdentifier: ev.target.value })
@@ -596,10 +574,9 @@ export function ResourceEditForm({
                   />
                 </Field>
               </Row>
-              <Field label="Issuing body">
-                <input
-                  className="auth-input"
-                  placeholder="Data Protection Office, …"
+<Field label="Issuing body">
+                <Input
+                                placeholder="Data Protection Office, …"
                   value={e.issuingBody ?? ""}
                   onChange={(ev) =>
                     updateEvidence(i, { issuingBody: ev.target.value })
@@ -623,14 +600,14 @@ export function ResourceEditForm({
                       updateEvidence(i, { publicVisibility: ev.target.checked })
                     }
                   />
-                  Public
+                  {t("public")}
                 </label>
                 <button
                   type="button"
                   className="r-card-action-link"
                   onClick={() => removeEvidence(i)}
                 >
-                  <Icon name="trash" size={12} /> Remove
+                  <Icon name="trash" size={12} /> {t("remove")}
                 </button>
               </div>
             </div>
@@ -639,7 +616,7 @@ export function ResourceEditForm({
       </Section>
 
       {/* ── 5. Endpoints ───────────────────────────────────────────────── */}
-      <Section title="Endpoints">
+      <Section title={t("sectionEndpoints")}>
         <div
           style={{
             display: "flex",
@@ -647,7 +624,7 @@ export function ResourceEditForm({
             alignItems: "baseline"
           }}
         >
-          <strong style={{ fontSize: 13 }}>Endpoints ({endpoints.length})</strong>
+          <strong style={{ fontSize: 13 }}>{t("endpointsCount", { count: endpoints.length })}</strong>
           <button
             type="button"
             className="r-card-action-link"
@@ -658,12 +635,12 @@ export function ResourceEditForm({
               accessModels.length === 0
             }
           >
-            <Icon name="plus" size={12} /> Add endpoint
+            <Icon name="plus" size={12} /> {t("addEndpoint")}
           </button>
         </div>
         {endpoints.length === 0 ? (
           <p style={{ color: "var(--text-3)", fontSize: 12, margin: 0 }}>
-            No endpoints. A resource needs at least one before it can be approved.
+            {t("noEndpoints")}
           </p>
         ) : null}
         {endpoints.map((ep, i) => (
@@ -673,10 +650,9 @@ export function ResourceEditForm({
             style={{ padding: 14, display: "grid", gap: 10 }}
           >
             <Row>
-              <Field label="Protocol">
-                <select
-                  className="auth-input"
-                  value={ep.protocolCode}
+<Field label="Protocol">
+                <Select
+                                value={ep.protocolCode}
                   onChange={(e) => updateEndpoint(i, { protocolCode: e.target.value })}
                 >
                   {protocols.map((p) => (
@@ -684,21 +660,19 @@ export function ResourceEditForm({
                       {p.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
-              <Field label="Endpoint URL">
-                <input
-                  className="auth-input"
-                  placeholder="https://…"
+<Field label="Endpoint URL">
+                <Input
+                                placeholder="https://…"
                   value={ep.endpointUrl}
                   onChange={(e) => updateEndpoint(i, { endpointUrl: e.target.value })}
                 />
               </Field>
             </Row>
-            <Field label="Documentation URL">
-              <input
-                className="auth-input"
-                placeholder="https://…"
+<Field label="Documentation URL">
+              <Input
+                              placeholder="https://…"
                 value={ep.documentationUrl ?? ""}
                 onChange={(e) =>
                   updateEndpoint(i, { documentationUrl: e.target.value })
@@ -706,10 +680,9 @@ export function ResourceEditForm({
               />
             </Field>
             <Row>
-              <Field label="Auth method">
-                <select
-                  className="auth-input"
-                  value={ep.authMethodCode}
+<Field label="Auth method">
+                <Select
+                                value={ep.authMethodCode}
                   onChange={(e) =>
                     updateEndpoint(i, { authMethodCode: e.target.value })
                   }
@@ -719,12 +692,11 @@ export function ResourceEditForm({
                       {a.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
-              <Field label="Access model">
-                <select
-                  className="auth-input"
-                  value={ep.accessModelCode}
+<Field label="Access model">
+                <Select
+                                value={ep.accessModelCode}
                   onChange={(e) =>
                     updateEndpoint(i, { accessModelCode: e.target.value })
                   }
@@ -734,7 +706,7 @@ export function ResourceEditForm({
                       {a.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
             </Row>
             <div
@@ -754,7 +726,7 @@ export function ResourceEditForm({
                     checked={ep.primary}
                     onChange={(e) => updateEndpoint(i, { primary: e.target.checked })}
                   />
-                  Primary
+                  {t("primary")}
                 </label>
                 <label
                   style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 12 }}
@@ -764,7 +736,7 @@ export function ResourceEditForm({
                     checked={ep.active}
                     onChange={(e) => updateEndpoint(i, { active: e.target.checked })}
                   />
-                  Active
+                  {t("active")}
                 </label>
               </div>
               <button
@@ -772,7 +744,7 @@ export function ResourceEditForm({
                 className="r-card-action-link"
                 onClick={() => removeEndpoint(i)}
               >
-                <Icon name="trash" size={12} /> Remove
+                <Icon name="trash" size={12} /> {t("remove")}
               </button>
             </div>
           </div>
@@ -780,8 +752,8 @@ export function ResourceEditForm({
       </Section>
 
       {/* ── 6. Taxonomy tags ───────────────────────────────────────────── */}
-      <Section title="Languages & sectors">
-        <Field label={`Languages (${languageCodes.length})`}>
+      <Section title={t("sectionLanguagesSectors")}>
+        <Field label={`${t("fieldLanguages")} (${languageCodes.length})`}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {languages.map((l) => (
               <label
@@ -807,7 +779,7 @@ export function ResourceEditForm({
             ))}
           </div>
         </Field>
-        <Field label={`Sectors (${sectorCodes.length})`}>
+        <Field label={`${t("fieldSectors")} (${sectorCodes.length})`}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {sectors.map((s) => (
               <label
@@ -857,17 +829,16 @@ export function ResourceEditForm({
           background: "var(--bg)"
         }}
       >
-        <Link className="btn btn-secondary" href="/admin/resources">
+<Button href="/admin/resources" intent="secondary">
           Back to grid
-        </Link>
-        <button
-          type="button"
-          className="btn btn-primary"
+        </Button>
+        <Button
+          intent="primary"
           onClick={submit}
           disabled={busy}
         >
           {busy ? "Saving…" : "Save changes"}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -890,23 +861,5 @@ function Row({ children }: { children: React.ReactNode }) {
     <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
       {children}
     </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label style={{ display: "grid", gap: 6, fontSize: 13 }}>
-      <span
-        style={{
-          fontSize: 11,
-          color: "var(--text-3)",
-          letterSpacing: "0.08em",
-          textTransform: "uppercase"
-        }}
-      >
-        {label}
-      </span>
-      {children}
-    </label>
   );
 }

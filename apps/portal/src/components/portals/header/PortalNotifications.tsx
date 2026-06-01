@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Icon } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
@@ -39,6 +40,7 @@ export function PortalNotifications({
   /** Drives the destination of the dropdown's "View all" link. */
   currentRole: PortalRoleProp;
 }) {
+  const t = useTranslations("portalNotifications");
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState<Notification[]>(initial);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -123,7 +125,7 @@ export function PortalNotifications({
         type="button"
         className="p-icon-btn"
         onClick={() => setOpen((v) => !v)}
-        aria-label="Notifications"
+        aria-label={t("title")}
       >
         <Icon name="bell" size={15} />
         {unread > 0 ? <span className="p-icon-badge">{unread}</span> : null}
@@ -131,9 +133,9 @@ export function PortalNotifications({
       {open ? (
         <div className="p-dropdown p-notif-drop">
           <div className="p-dropdown-head">
-            <div className="p-dropdown-title">Notifications</div>
+            <div className="p-dropdown-title">{t("title")}</div>
             <button type="button" className="p-link" onClick={() => void markAllRead()}>
-              Mark all read
+              {t("markAllRead")}
             </button>
           </div>
           <div className="p-notif-list">
@@ -146,7 +148,7 @@ export function PortalNotifications({
                   textAlign: "center"
                 }}
               >
-                Nothing new for you right now.
+                {t("nothingNew")}
               </div>
             ) : (
               notifs.map((n) => (
@@ -177,7 +179,7 @@ export function PortalNotifications({
               className="p-link"
               onClick={() => setOpen(false)}
             >
-              View all notifications →
+              {t("viewAll")}
             </Link>
           </div>
         </div>

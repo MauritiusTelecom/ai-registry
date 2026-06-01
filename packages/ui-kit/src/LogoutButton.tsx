@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
 
@@ -10,6 +11,7 @@ import { registryFetch } from "@airegistry/ui-kit";
  * request.
  */
 export function LogoutButton({ next = "/" }: { next?: string }) {
+  const t = useTranslations("common");
   const [busy, setBusy] = useState(false);
   async function onClick() {
     setBusy(true);
@@ -26,7 +28,7 @@ export function LogoutButton({ next = "/" }: { next?: string }) {
       onClick={onClick}
       disabled={busy}
     >
-      {busy ? "Signing out…" : "Sign out"}
+      {busy ? t("signingOut") : t("signOut")}
     </button>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import type { PublicProviderCard, PublicProvidersListResponse } from "@airegistry/sdk";
 import { Icon, type IconName } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";
@@ -30,12 +31,12 @@ const MOCK_PROVIDERS: PublicProviderCard[] = [
   { id: "deloitte-sov", slug: "deloitte-sov", glyph: "DL", name: "Deloitte · Sovereign", kind: "integrator", status: "trusted", desc: "Implementation partner for sovereign deployments; participates in independent reviews.", jurisdiction: "Global", listings: 0, since: "2025-11", license: "Engagement", tags: ["integrator", "reviewer"], websiteUrl: null }
 ];
 
-const KINDS: { id: "all" | "sovereign" | "model" | "hosting" | "integrator"; label: string; icon: IconName }[] = [
-  { id: "all", label: "All providers", icon: "layers" },
-  { id: "sovereign", label: "Sovereign", icon: "flag" },
-  { id: "model", label: "Model providers", icon: "cpu" },
-  { id: "hosting", label: "Hosting & identity", icon: "shield" },
-  { id: "integrator", label: "Integrators", icon: "check" }
+const KINDS: { id: "all" | "sovereign" | "model" | "hosting" | "integrator"; labelKey: string; icon: IconName }[] = [
+  { id: "all", labelKey: "kindAll", icon: "layers" },
+  { id: "sovereign", labelKey: "kindSovereign", icon: "flag" },
+  { id: "model", labelKey: "kindModel", icon: "cpu" },
+  { id: "hosting", labelKey: "kindHosting", icon: "shield" },
+  { id: "integrator", labelKey: "kindIntegrators", icon: "check" }
 ];
 
 const STATUS_FILTERS: PublicProviderCard["status"][] = [
@@ -63,7 +64,7 @@ function providersListUrl(opts: {
   return withBase(q ? `/api/providers?${q}` : "/api/providers");
 }
 
-function ProviderCard({ provider }: { provider: PublicProviderCard }) {
+function ProviderCard({ provider, t }: { provider: PublicProviderCard; t: ReturnType<typeof useTranslations<"providersSection">> }) {
   return (
     <div className="r-card feature-card">
       <div className="r-card-head">
@@ -80,19 +81,19 @@ function ProviderCard({ provider }: { provider: PublicProviderCard }) {
       <div className="r-desc">{provider.desc}</div>
       <div className="r-meta">
         <div className="r-meta-row">
-          <span className="r-meta-label">Type</span>
+          <span className="r-meta-label">{t("type")}</span>
           <span className="r-meta-value">{provider.kind}</span>
         </div>
         <div className="r-meta-row">
-          <span className="r-meta-label">Listings</span>
+          <span className="r-meta-label">{t("listings")}</span>
           <span className="r-meta-value">{provider.listings}</span>
         </div>
         <div className="r-meta-row">
-          <span className="r-meta-label">Region</span>
+          <span className="r-meta-label">{t("region")}</span>
           <span className="r-meta-value">{provider.jurisdiction}</span>
         </div>
         <div className="r-meta-row">
-          <span className="r-meta-label">Listed</span>
+          <span className="r-meta-label">{t("listed")}</span>
           <span className="r-meta-value">{provider.since}</span>
         </div>
       </div>
@@ -103,14 +104,11 @@ function ProviderCard({ provider }: { provider: PublicProviderCard }) {
       </div>
       <div className="r-card-actions">
         <Link href={`/providers/${encodeURIComponent(provider.slug)}`} className="r-card-action-link">
-          <Icon name="eye" size={12} /> Profile
+          <Icon name="eye" size={12} /> {t("profile")}
         </Link>
         <Link href={`/registry?provider=${encodeURIComponent(provider.slug)}`} className="r-card-action-link">
-          <Icon name="layers" size={12} /> Listings
+          <Icon name="layers" size={12} /> {t("listings")}
         </Link>
-        {/* Contact CTA intentionally omitted — the public listing must not
-            invite messages directly from each card. Reach-out paths run
-            through the operator (/contact) instead, not the provider. */}
       </div>
     </div>
   );
@@ -125,6 +123,8 @@ export function ProvidersSection({
   dataSource?: "api" | "mock";
   pageSize?: number;
 }) {
+  const t = useTranslations("providersSection");
+  const tCommon = useTranslations("common");
   const { jurisdictionDisplayName } = usePublicBranding();
   const [activeKind, setActiveKind] = useState<(typeof KINDS)[number]["id"]>("all");
   const [activeStatus, setActiveStatus] = useState<PublicProviderCard["status"] | null>(null);
@@ -190,7 +190,7 @@ export function ProvidersSection({
         await fetchPage({ cursor: null, append: false, signal: ac.signal });
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
-        setError(e instanceof Error ? e.message : "Could not load providers");
+        setError(e instanceof Error ? e.message : t("errorLoad"));
         setApiRows([]);
       } finally {
         setLoading(false);
@@ -206,7 +206,7 @@ export function ProvidersSection({
     try {
       await fetchPage({ cursor: nextCursor, append: true, signal: new AbortController().signal });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Load more failed");
+      setError(e instanceof Error ? e.message : t("errorLoadMore"));
     } finally {
       setLoadingMore(false);
     }
@@ -251,20 +251,16 @@ export function ProvidersSection({
         <Reveal className="section-header">
           <div className="eyebrow">
             <span className="dot" />
-            <span>Providers</span>
+            <span>{t("eyebrow")}</span>
           </div>
           <h2>
-            Meet the organisations{" "}
-            <span className="gradient-text">{jurisdictionDisplayName} already trusts</span>.
+            {t("headingPrefix")}{" "}
+            <span className="gradient-text">{t("headingAccent", { jurisdiction: jurisdictionDisplayName })}</span>.
           </h2>
-          <p>
-            Every listing in the registry traces back to a verifiable provider. Browse who hosts,
-            operates, and stands behind the AI resources you can integrate locally - sovereign
-            operators, model labs, hosting partners, and accredited integrators.
-          </p>
+          <p>{t("description")}</p>
           {dataSource === "api" && !loading && !error ? (
             <p style={{ fontSize: 13, color: "var(--text-3)", marginTop: 8 }}>
-              Showing {filtered.length} of {apiTotal} public provider{apiTotal === 1 ? "" : "s"} (server-filtered).
+              {t("showingCount", { count: filtered.length, total: apiTotal })}
             </p>
           ) : null}
         </Reveal>
@@ -280,7 +276,7 @@ export function ProvidersSection({
           <div className="search-input" style={{ maxWidth: 520 }}>
             <Icon name="search" size={15} />
             <input
-              placeholder="Search providers, jurisdictions, capabilities…"
+              placeholder={t("searchPlaceholder")}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               aria-busy={dataSource === "api" && loading}
@@ -319,14 +315,14 @@ export function ProvidersSection({
             fontFamily: "IBM Plex Mono, monospace"
           }}
         >
-          Loading providers…
+          {t("loading")}
         </div>
       ) : null}
 
       <div className="registry-grid" style={{ opacity: dataSource === "api" && loading ? 0.4 : 1 }}>
         {filtered.map((provider, index) => (
           <Reveal key={provider.id} delay={index * 35}>
-            <ProviderCard provider={provider} />
+            <ProviderCard provider={provider} t={t} />
           </Reveal>
         ))}
         {!loading && filtered.length === 0 && (
@@ -339,7 +335,7 @@ export function ProvidersSection({
               fontFamily: "IBM Plex Mono, monospace"
             }}
           >
-            No providers match these filters.
+            {t("noMatch")}
           </div>
         )}
       </div>
@@ -352,7 +348,7 @@ export function ProvidersSection({
             disabled={loadingMore}
             onClick={() => void loadMore()}
           >
-            {loadingMore ? "Loading…" : "Load more"}
+            {loadingMore ? tCommon("loadingMore") : tCommon("loadMore")}
           </button>
         </div>
       ) : null}

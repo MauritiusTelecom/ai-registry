@@ -1,38 +1,65 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Icon } from "@airegistry/ui-kit";
 import { useTheme } from "@airegistry/ui-kit";
 import { useAuth } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { routing } from "@/i18n/routing";
 
-// Top-nav links. Ecosystem / Governance / Documentation moved out of the
-// top nav - they remain reachable from the footer columns (see Footer in
-// components/public/Footer.tsx) so this primary navigation stays focused on
-// the four core surfaces: Home, Registry, Providers, Contact.
-const NAV_ITEMS = [
-  { href: "/", label: "Home", id: "home" },
-  { href: "/registry", label: "Registry", id: "registry" },
-  { href: "/providers", label: "Providers", id: "providers" },
-  { href: "/contact", label: "Contact", id: "contact" }
-];
+const NAV_ITEM_IDS = ["home", "registry", "providers", "contact"] as const;
+const NAV_HREFS: Record<string, string> = {
+  home: "/",
+  registry: "/registry",
+  providers: "/providers",
+  contact: "/contact"
+};
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function LocaleSwitcherSlot() {
+  const t = useTranslations("localeSwitcher");
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname() ?? "/";
+
+  function switchTo(nextLocale: string) {
+    router.replace(pathname, { locale: nextLocale });
+  }
+
+  const otherLocale =
+    (routing.locales as readonly string[]).find((l) => l !== locale) ??
+    (locale === "fr" ? "en" : "fr");
+
+  return (
+    <button
+      type="button"
+      className="theme-toggle"
+      onClick={() => switchTo(otherLocale)}
+      aria-label={t("label")}
+      title={t(otherLocale)}
+      style={{ fontSize: 12, fontFamily: "IBM Plex Mono, monospace", letterSpacing: "0.04em" }}
+    >
+      {otherLocale.toUpperCase()}
+    </button>
+  );
+}
+
 function ThemeToggle() {
   const { theme, setTheme } = useTheme();
+  const t = useTranslations("nav");
   const next = theme === "dark" ? "light" : "dark";
   return (
     <button
       type="button"
       className="theme-toggle"
       onClick={() => setTheme(next)}
-      aria-label={`Switch to ${next} theme`}
+      aria-label={t("switchTheme", { theme: next })}
     >
       <Icon name={theme === "dark" ? "sun" : "moon"} size={15} />
     </button>
@@ -41,6 +68,7 @@ function ThemeToggle() {
 
 function UserMenu() {
   const { user, logout, loading } = useAuth();
+  const t = useTranslations("nav");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -60,14 +88,10 @@ function UserMenu() {
     };
   }, [open]);
 
-  // Pre-hydration: render the same Log-In affordance the server would have
-  // emitted, so the layout doesn't shift once `/api/auth/me` resolves.
-  // .hide-on-mobile so the mobile chrome can surface Log-In inside the
-  // hamburger instead.
   if (loading || !user) {
     return (
       <Link href="/login" className="nav-cta hide-on-mobile">
-        Log In
+        {t("logIn")}
         <Icon name="arrow-up-right" size={12} />
       </Link>
     );
@@ -100,30 +124,30 @@ function UserMenu() {
           <div style={{ display: "flex", flexDirection: "column", gap: 2, paddingTop: 6 }}>
             {isAdmin && (
               <Link href="/admin" className="dropdown-item" onClick={() => setOpen(false)}>
-                <Icon name="shield" size={14} /> Admin Portal
-                <span className="role-badge">admin</span>
+                <Icon name="shield" size={14} /> {t("adminPortal")}
+                <span className="role-badge">{t("roleAdmin")}</span>
               </Link>
             )}
             {isProvider && (
               <Link href="/provider" className="dropdown-item" onClick={() => setOpen(false)}>
-                <Icon name="layers" size={14} /> Provider Portal
-                <span className="role-badge">provider</span>
+                <Icon name="layers" size={14} /> {t("providerPortal")}
+                <span className="role-badge">{t("roleProvider")}</span>
               </Link>
             )}
             {isVerifier && (
               <Link href="/verifier" className="dropdown-item" onClick={() => setOpen(false)}>
-                <Icon name="check" size={14} /> Verifier Portal
-                <span className="role-badge">verifier</span>
+                <Icon name="check" size={14} /> {t("verifierPortal")}
+                <span className="role-badge">{t("roleVerifier")}</span>
               </Link>
             )}
             {isSovereign && (
               <Link href="/sovereign" className="dropdown-item" onClick={() => setOpen(false)}>
-                <Icon name="flag" size={14} /> Sovereign Portal
-                <span className="role-badge">sovereign</span>
+                <Icon name="flag" size={14} /> {t("sovereignPortal")}
+                <span className="role-badge">{t("roleSovereign")}</span>
               </Link>
             )}
             <button type="button" className="dropdown-item" onClick={() => setOpen(false)}>
-              <Icon name="user" size={14} /> Account settings
+              <Icon name="user" size={14} /> {t("accountSettings")}
             </button>
             <button
               type="button"
@@ -131,11 +155,10 @@ function UserMenu() {
               onClick={async () => {
                 await logout();
                 setOpen(false);
-                // Hard navigation so the next request reads the cleared cookie.
                 window.location.assign(withBase("/"));
               }}
             >
-              <Icon name="log-out" size={14} /> Log Out
+              <Icon name="log-out" size={14} /> {t("logOut")}
             </button>
           </div>
         </div>
@@ -146,6 +169,7 @@ function UserMenu() {
 
 function MobileMenu({ pathname }: { pathname: string }) {
   const { user, loading } = useAuth();
+  const t = useTranslations("nav");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -172,7 +196,7 @@ function MobileMenu({ pathname }: { pathname: string }) {
       <button
         type="button"
         className="theme-toggle"
-        aria-label={open ? "Close menu" : "Open menu"}
+        aria-label={open ? t("closeMenu") : t("openMenu")}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
@@ -181,17 +205,17 @@ function MobileMenu({ pathname }: { pathname: string }) {
       {open && (
         <div className="dropdown" role="menu" style={{ minWidth: 220 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {NAV_ITEMS.map((item) => (
+            {NAV_ITEM_IDS.map((id) => (
               <Link
-                key={item.id}
-                href={item.href}
+                key={id}
+                href={NAV_HREFS[id]!}
                 role="menuitem"
                 className={`dropdown-item ${
-                  isActive(pathname, item.href) ? "active" : ""
+                  isActive(pathname, NAV_HREFS[id]!) ? "active" : ""
                 }`}
                 onClick={() => setOpen(false)}
               >
-                {item.label}
+                {t(id)}
               </Link>
             ))}
             {showLogin ? (
@@ -208,7 +232,7 @@ function MobileMenu({ pathname }: { pathname: string }) {
                   className="dropdown-item"
                   onClick={() => setOpen(false)}
                 >
-                  <Icon name="arrow-up-right" size={14} /> Log In
+                  <Icon name="arrow-up-right" size={14} /> {t("logIn")}
                 </Link>
               </>
             ) : null}
@@ -227,6 +251,7 @@ export function TopNav({
   logoUrl?: string | null;
 }) {
   const pathname = usePathname() ?? "/";
+  const t = useTranslations("nav");
   return (
     <nav className="nav">
       <div className="nav-inner">
@@ -245,17 +270,18 @@ export function TopNav({
           <span className="nav-logo-text">{registryName}</span>
         </Link>
         <div className="nav-links">
-          {NAV_ITEMS.map((item) => (
+          {NAV_ITEM_IDS.map((id) => (
             <Link
-              key={item.id}
-              href={item.href}
-              className={`nav-link ${isActive(pathname, item.href) ? "active" : ""}`}
+              key={id}
+              href={NAV_HREFS[id]!}
+              className={`nav-link ${isActive(pathname, NAV_HREFS[id]!) ? "active" : ""}`}
             >
-              {item.label}
+              {t(id)}
             </Link>
           ))}
         </div>
         <div className="nav-actions">
+          <LocaleSwitcherSlot />
           <ThemeToggle />
           <UserMenu />
           <MobileMenu pathname={pathname} />
@@ -264,5 +290,3 @@ export function TopNav({
     </nav>
   );
 }
-
- 

@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { AuthShell } from "../auth-ui/AuthShell";
 import { ResendVerificationForm } from "../auth-ui/ResendVerificationForm";
 import { writeAudit } from "@airegistry/sdk";
@@ -32,27 +33,25 @@ export default async function VerifyEmailPage({
   searchParams: Promise<{ token?: string }>;
 }) {
   const { token } = await searchParams;
+  const t = await getTranslations("auth");
   const result: VerifyResult = token
     ? await consumeVerificationToken(token)
     : { ok: false, reason: "missing" };
 
   if (result.ok) {
-    // Email is now verified. Send the user to sign in — no session is
-    // issued on this page, so they must authenticate before reaching the
-    // portal. ?verified=1 lets /login show a confirmation banner.
     redirect("/login?verified=1");
   }
 
   if (result.reason === "missing") {
     return (
       <AuthShell
-        eyebrow="Email verification"
-        title={<>Missing verification link.</>}
-        subtitle="Open the link sent to your inbox after registration."
+        eyebrow={t("emailVerification")}
+        title={<>{t("missingVerificationLink")}</>}
+        subtitle={t("openVerificationLinkSubtitle")}
       >
         <div style={{ textAlign: "center" }}>
           <Link href="/login" className="btn btn-primary">
-            Back to sign in
+            {t("backToSignIn")}
           </Link>
         </div>
       </AuthShell>
@@ -61,9 +60,9 @@ export default async function VerifyEmailPage({
 
   return (
     <AuthShell
-      eyebrow="Email verification"
-      title={<>This link is no longer valid.</>}
-      subtitle="It may have expired or already been used. Enter your email below and we'll send you a fresh verification link."
+      eyebrow={t("emailVerification")}
+      title={<>{t("linkNoLongerValid")}</>}
+      subtitle={t("linkExpiredSubtitle")}
     >
       <ResendVerificationForm />
     </AuthShell>

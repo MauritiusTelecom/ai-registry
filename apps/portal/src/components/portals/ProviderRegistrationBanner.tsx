@@ -1,9 +1,10 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 
 /**
  * Shown under the provider portal header when the user cannot author resources yet.
  */
-export function ProviderRegistrationBanner({
+export async function ProviderRegistrationBanner({
   emailVerified,
   canAuthorResources
 }: {
@@ -11,6 +12,8 @@ export function ProviderRegistrationBanner({
   canAuthorResources: boolean;
 }) {
   if (canAuthorResources) return null;
+
+  const t = await getTranslations("portalRegistration");
 
   if (!emailVerified) {
     return (
@@ -28,13 +31,12 @@ export function ProviderRegistrationBanner({
           lineHeight: 1.45
         }}
       >
-        <strong style={{ display: "block", marginBottom: 4 }}>Verify your email</strong>
+        <strong style={{ display: "block", marginBottom: 4 }}>{t("verifyEmailTitle")}</strong>
         <span style={{ color: "var(--text-2)" }}>
-          Check your inbox for the verification link. Until your email is verified you cannot submit
-          resources.
+          {t("verifyEmailBody")}
         </span>{" "}
         <Link href="/auth/verify" className="p-footer-link" style={{ fontWeight: 500 }}>
-          Resend or open verification →
+          {t("resendVerification")}
         </Link>
       </div>
     );
@@ -55,12 +57,12 @@ export function ProviderRegistrationBanner({
         lineHeight: 1.45
       }}
     >
-      <strong style={{ display: "block", marginBottom: 4 }}>Complete your organisation profile</strong>
+      <strong style={{ display: "block", marginBottom: 4 }}>{t("completeProfileTitle")}</strong>
       <span style={{ color: "var(--text-2)" }}>
-        Finish your provider details in Settings before you can create or submit resources.
+        {t("completeProfileBody")}
       </span>{" "}
       <Link href="/provider/settings" className="p-footer-link" style={{ fontWeight: 500 }}>
-        Open Settings →
+        {t("openSettings")}
       </Link>
     </div>
   );

@@ -15,10 +15,11 @@
  *     verified their email (admins exempt — see comment inside).
  */
 
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import type { SessionUser } from "@airegistry/sdk";
 import type { PortalRole } from "./nav-config";
+import { localeRedirect } from "@/i18n/locale-redirect";
 
 // portalForRole moved to @airegistry/core/auth/portal-for-role so the public
 // LoginPage in @airegistry/public can reach it too. Re-exported here so the
@@ -47,7 +48,7 @@ export async function requireRole(
   const user = await getCurrentUser();
   if (!user) {
     const target = options.redirectTo ?? "/portal";
-    redirect(`/login?next=${encodeURIComponent(target)}`);
+    return await localeRedirect(`/login?next=${encodeURIComponent(target)}`);
   }
   const allowed = ROLE_ALIASES[role];
   if (!user.roles.some((r) => allowed.includes(r))) {
@@ -58,7 +59,7 @@ export async function requireRole(
   // may exist in future), the portal stays closed until the email is
   // verified. Admins are exempt so an operator can recover broken accounts.
   if (!user.emailVerified && !user.roles.includes("admin")) {
-    redirect("/login?verify=1");
+    return await localeRedirect("/login?verify=1");
   }
   return user;
 }

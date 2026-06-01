@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { getBranding } from "@airegistry/core/branding";
 import { PageHero } from "@airegistry/ui-kit";
 import { ProvidersSection } from "../sections/ProvidersSection";
@@ -8,18 +9,23 @@ export async function generateMetadata() {
 }
 
 export default async function ProvidersPage() {
-  const { jurisdictionDisplayName } = await getBranding();
+  const [{ jurisdictionDisplayName }, t] = await Promise.all([
+    getBranding(),
+    getTranslations("providersSection")
+  ]);
   return (
     <div>
       <PageHero
-        crumb="Providers · The organisations behind the registry"
+        crumb={t("crumb")}
         title={
           <>
-            Meet the organisations{" "}
-            <span className="gradient-text">{jurisdictionDisplayName} already trusts</span>.
+            {t.rich("heading", {
+              jurisdiction: jurisdictionDisplayName,
+              accent: (chunks) => <span className="gradient-text">{chunks}</span>
+            })}
           </>
         }
-        subtitle="Browse the sovereign operators, model labs, hosting partners and accredited integrators behind every listing in the registry. Each provider carries a verifiable status and a public profile."
+        subtitle={t("subtitle")}
       />
       <ProvidersSection withHeader={false} />
     </div>

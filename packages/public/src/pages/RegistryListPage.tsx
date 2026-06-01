@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { getBranding } from "@airegistry/core/branding";
 import { PageHero } from "@airegistry/ui-kit";
 import { RegistrySection } from "../sections/RegistrySection";
@@ -26,22 +27,25 @@ export default async function RegistryPage({
 }: {
   searchParams: Promise<{ provider?: string; kind?: string }>;
 }) {
-  const [{ provider, kind }, { jurisdictionDisplayName }] = await Promise.all([
+  const [{ provider, kind }, { jurisdictionDisplayName }, t] = await Promise.all([
     searchParams,
-    getBranding()
+    getBranding(),
+    getTranslations("registrySection")
   ]);
   const initialKind = normalizeKind(kind);
   return (
     <div>
       <PageHero
-        crumb="Registry · Discover sovereign AI"
+        crumb={t("crumb")}
         title={
           <>
-            Discover what {jurisdictionDisplayName} can{" "}
-            <span className="gradient-text">trust and integrate</span>.
+            {t.rich("heading", {
+              jurisdiction: jurisdictionDisplayName,
+              accent: (chunks) => <span className="gradient-text">{chunks}</span>
+            })}
           </>
         }
-        subtitle="Browse public listings and filter by kind. Listings carry verifiable providers and stable AIR-IDs."
+        subtitle={t("listPageSubtitle")}
       />
       <RegistrySection
         withHeader={false}

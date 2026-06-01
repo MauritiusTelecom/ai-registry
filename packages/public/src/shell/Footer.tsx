@@ -1,9 +1,7 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { ProviderPortalFooterLink } from "./ProviderPortalFooterLink";
 import { withBase } from "@airegistry/sdk";
-
-// Bundle B footer (matches the home composition in app.jsx + sections.jsx).
-// Six columns, brand block, then bottom row with build/operational tags.
 
 type FooterLink = { label: string; href: string; external?: boolean };
 type FooterProviderPortalItem = { kind: "provider-portal" };
@@ -11,44 +9,6 @@ type FooterColumnLink = FooterLink | FooterProviderPortalItem;
 
 function isProviderPortalFooterItem(link: FooterColumnLink): link is FooterProviderPortalItem {
   return "kind" in link && link.kind === "provider-portal";
-}
-
-const PRODUCT_LINKS: FooterLink[] = [
-  { label: "Registry", href: "/registry" },
-  { label: "Providers", href: "/providers" },
-  { label: "Ecosystem", href: "/ecosystem" }
-];
-
-const PROVIDER_LINKS: FooterColumnLink[] = [
-  { kind: "provider-portal" },
-  { label: "Sovereignty rubric", href: "/sovereignty-rubric" },
-  { label: "Verification proofs", href: "/verification" },
-  { label: "Pricing (free)", href: "/pricing" }
-];
-
-const GOVERNANCE_LINKS: FooterLink[] = [
-  { label: "Charter", href: "/governance#charter" },
-  { label: "Review board", href: "/governance#review-board" },
-  { label: "Appeals", href: "/governance#appeals" }
-];
-
-function footerLinkSets(openSourceRepoUrl: string) {
-  const repo = openSourceRepoUrl.replace(/\/$/, "");
-  return {
-    resources: [
-      { label: "Documentation", href: "/docs" },
-      { label: "Whitepaper", href: "/whitepaper" },
-      { label: "Open data", href: "/open-data" },
-      { label: "Reference impl", href: repo, external: true }
-    ] satisfies FooterLink[],
-    legal: [
-      { label: "Terms of use", href: "/terms" },
-      { label: "Privacy", href: "/privacy" },
-      { label: "Acceptable use", href: "/acceptable-use" },
-      { label: "License (Apache-2.0)", href: `${repo}/blob/main/LICENSE`, external: true },
-      { label: "Contact", href: "/contact" }
-    ] satisfies FooterLink[]
-  };
 }
 
 function FooterColumn({
@@ -103,7 +63,44 @@ export function Footer({
   buildLine: string;
   openSourceRepoUrl: string;
 }) {
-  const { resources, legal } = footerLinkSets(openSourceRepoUrl);
+  const t = useTranslations("footer");
+  const tc = useTranslations("common");
+  const repo = openSourceRepoUrl.replace(/\/$/, "");
+
+  const productLinks: FooterLink[] = [
+    { label: t("registry"), href: "/registry" },
+    { label: t("providers"), href: "/providers" },
+    { label: t("ecosystem"), href: "/ecosystem" }
+  ];
+
+  const providerLinks: FooterColumnLink[] = [
+    { kind: "provider-portal" },
+    { label: t("sovereigntyRubric"), href: "/sovereignty-rubric" },
+    { label: t("verificationProofs"), href: "/verification" },
+    { label: t("pricingFree"), href: "/pricing" }
+  ];
+
+  const governanceLinks: FooterLink[] = [
+    { label: t("charter"), href: "/governance#charter" },
+    { label: t("reviewBoard"), href: "/governance#review-board" },
+    { label: t("appeals"), href: "/governance#appeals" }
+  ];
+
+  const resourceLinks: FooterLink[] = [
+    { label: t("documentation"), href: "/docs" },
+    { label: t("whitepaper"), href: "/whitepaper" },
+    { label: t("openData"), href: "/open-data" },
+    { label: t("referenceImpl"), href: repo, external: true }
+  ];
+
+  const legalLinks: FooterLink[] = [
+    { label: t("termsOfUse"), href: "/terms" },
+    { label: t("privacy"), href: "/privacy" },
+    { label: t("acceptableUse"), href: "/acceptable-use" },
+    { label: t("licenseApache"), href: `${repo}/blob/main/LICENSE`, external: true },
+    { label: t("contact"), href: "/contact" }
+  ];
+
   return (
     <footer className="footer">
       <div className="footer-glow" />
@@ -123,22 +120,19 @@ export function Footer({
             )}
             <span style={{ fontSize: 15 }}>{registryName}</span>
           </Link>
-          <p className="footer-brand">
-            Open-source infrastructure for sovereign AI discovery. The registry points; the
-            provider operates; the hosting environment secures.
-          </p>
+          <p className="footer-brand">{t("brandDescription")}</p>
           <div style={{ marginTop: 18, display: "flex", gap: 8, flexWrap: "wrap" }}>
             <span className="tag" style={{ color: "#10b981" }}>
-              <span className="status-dot" style={{ background: "#10b981" }} /> Operational
+              <span className="status-dot" style={{ background: "#10b981" }} /> {tc("operational")}
             </span>
           </div>
         </div>
 
-        <FooterColumn title="Product" links={PRODUCT_LINKS} />
-        <FooterColumn title="Resources" links={resources} />
-        <FooterColumn title="Providers" links={PROVIDER_LINKS} />
-        <FooterColumn title="Governance" links={GOVERNANCE_LINKS} className="col-collapse" />
-        <FooterColumn title="Legal" links={legal} />
+        <FooterColumn title={t("product")} links={productLinks} />
+        <FooterColumn title={t("resources")} links={resourceLinks} />
+        <FooterColumn title={t("providers")} links={providerLinks} />
+        <FooterColumn title={t("governance")} links={governanceLinks} className="col-collapse" />
+        <FooterColumn title={t("legal")} links={legalLinks} />
       </div>
 
       <div className="footer-bottom">
@@ -148,3 +142,5 @@ export function Footer({
     </footer>
   );
 }
+
+export { FooterColumn };

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 export type PromoBannerFormInitial = {
   enabled: boolean;
@@ -31,6 +32,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 export function PromoBannerForm({ initial }: { initial: PromoBannerFormInitial }) {
+  const t = useTranslations("adminSitePromo");
   const router = useRouter();
   const [enabled, setEnabled] = useState(initial.enabled);
   const [heading, setHeading] = useState(initial.heading);
@@ -59,7 +61,7 @@ export function PromoBannerForm({ initial }: { initial: PromoBannerFormInitial }
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
-      setMessage({ kind: "ok", text: "Saved." });
+      setMessage({ kind: "ok", text: t("saved") });
       router.refresh();
     } catch (e) {
       setMessage({ kind: "error", text: e instanceof Error ? e.message : String(e) });
@@ -76,50 +78,50 @@ export function PromoBannerForm({ initial }: { initial: PromoBannerFormInitial }
           checked={enabled}
           onChange={(e) => setEnabled(e.target.checked)}
         />
-        <span style={{ fontWeight: 500 }}>Show the promo banner on the home page</span>
+        <span style={{ fontWeight: 500 }}>{t("showBanner")}</span>
       </label>
       <span style={{ fontSize: 12, color: "var(--text-3)", marginTop: -10 }}>
-        When unchecked the section is omitted entirely (no empty container).
+        {t("showBannerHelpText")}
       </span>
 
       <div style={{ display: "grid", gap: 6 }}>
-        <label htmlFor="promo-heading" style={labelStyle}>Heading</label>
+        <label htmlFor="promo-heading" style={labelStyle}>{t("heading")}</label>
         <input
           id="promo-heading"
           type="text"
           value={heading}
           onChange={(e) => setHeading(e.target.value)}
-          placeholder="List your sovereign AI resource."
+          placeholder={t("headingPlaceholder")}
           style={inputStyle}
         />
       </div>
 
       <div style={{ display: "grid", gap: 6 }}>
-        <label htmlFor="promo-body" style={labelStyle}>Body</label>
+        <label htmlFor="promo-body" style={labelStyle}>{t("body")}</label>
         <textarea
           id="promo-body"
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={4}
-          placeholder="One- or two-sentence explanation under the heading."
+          placeholder={t("bodyPlaceholder")}
           style={{ ...inputStyle, fontFamily: "inherit", resize: "vertical" }}
         />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
         <div style={{ display: "grid", gap: 6 }}>
-          <label htmlFor="promo-cta-label" style={labelStyle}>CTA label</label>
+          <label htmlFor="promo-cta-label" style={labelStyle}>{t("ctaLabel")}</label>
           <input
             id="promo-cta-label"
             type="text"
             value={ctaLabel}
             onChange={(e) => setCtaLabel(e.target.value)}
-            placeholder="Submit a Resource"
+            placeholder={t("ctaLabelPlaceholder")}
             style={inputStyle}
           />
         </div>
         <div style={{ display: "grid", gap: 6 }}>
-          <label htmlFor="promo-cta-href" style={labelStyle}>CTA URL</label>
+          <label htmlFor="promo-cta-href" style={labelStyle}>{t("ctaUrl")}</label>
           <input
             id="promo-cta-href"
             type="text"
@@ -131,7 +133,7 @@ export function PromoBannerForm({ initial }: { initial: PromoBannerFormInitial }
         </div>
       </div>
       <span style={{ fontSize: 12, color: "var(--text-3)", marginTop: -6 }}>
-        Leave both empty to render the banner without a call-to-action button.
+        {t("ctaHelpText")}
       </span>
 
       {message ? (
@@ -157,7 +159,7 @@ export function PromoBannerForm({ initial }: { initial: PromoBannerFormInitial }
 
       <div>
         <button type="submit" className="btn btn-primary" disabled={saving}>
-          {saving ? "Saving…" : "Save promo banner"}
+          {saving ? t("saving") : t("savePromoBanner")}
         </button>
       </div>
     </form>

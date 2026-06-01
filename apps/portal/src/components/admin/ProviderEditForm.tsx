@@ -1,10 +1,18 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
+
+import { useRouter } from "@/i18n/navigation";
+import { useState, type ReactNode } from "react";
+import {
+  Button,
+  Field,
+  Input,
+  Select,
+  TextArea
+} from "@/components/library";
 
 type RefRow = { code: string; name: string };
 
@@ -31,16 +39,22 @@ export type ProviderEditInitial = {
 };
 
 /**
- * Admin · Provider edit form. Mirrors the ResourceEditForm conventions:
- * `<Section>` glass cards, two-column `<Row>` grids of `<Field>` inputs, sticky
- * footer with Back/Save buttons. Submits a single PATCH against
- * `/api/admin/providers/:id` — the API enforces required fields, email and URL
- * shapes, and writes the audit-log diff.
+ * Admin · Provider edit form. The 5-section / 2-column layout is bespoke
+ * enough that fitting it through `<EntityForm>` would require library
+ * extensions (section markers + colSpan on field defs) that aren't yet
+ * justified by other consumers. Here the form keeps its `<Section>` +
+ * `<Row>` layout helpers and uses the library's `<Field>`/`<Input>`/
+ * `<Select>`/`<TextArea>` primitives for every input.
  *
- * Status (verified / suspended / official_provider / unverified) and the
- * publish/admin-suspended visibility toggles live in sibling panels on the
- * detail page, not in this form. Slug, status, and submission source are
- * immutable here.
+ * Aesthetic change vs. previous: labels move from `.auth-input`'s
+ * mono-uppercase style to the library's standard `.p-field` style. That
+ * matches `ProviderOrganisationForm` and is the right look for an admin
+ * surface.
+ *
+ * Submits a single PATCH against `/api/admin/providers/:id` — the API
+ * enforces required fields, email and URL shapes, and writes the audit
+ * diff. Status / publish / admin-suspended visibility live in sibling
+ * panels on the detail page; slug + status are immutable here.
  */
 export function ProviderEditForm({
   initial,
@@ -52,19 +66,17 @@ export function ProviderEditForm({
   jurisdictions: RefRow[];
 }) {
   const router = useRouter();
+  const t = useTranslations("adminProviderEdit");
 
-  // ── Section 1: identity ─────────────────────────────────────────────────
   const [displayName, setDisplayName] = useState(initial.displayName);
   const [legalName, setLegalName] = useState(initial.legalName ?? "");
   const [registrationNumber, setRegistrationNumber] = useState(
     initial.registrationNumber ?? ""
   );
-
-  // ── Section 2: classification ───────────────────────────────────────────
   const [typeCode, setTypeCode] = useState(initial.typeCode);
-  const [jurisdictionCode, setJurisdictionCode] = useState(initial.jurisdictionCode);
-
-  // ── Section 3: contact & links ──────────────────────────────────────────
+  const [jurisdictionCode, setJurisdictionCode] = useState(
+    initial.jurisdictionCode
+  );
   const [contactEmail, setContactEmail] = useState(initial.contactEmail);
   const [legalContactEmail, setLegalContactEmail] = useState(
     initial.legalContactEmail ?? ""
@@ -73,18 +85,13 @@ export function ProviderEditForm({
   const [documentationUrl, setDocumentationUrl] = useState(
     initial.documentationUrl ?? ""
   );
-
-  // ── Section 4: incident response ────────────────────────────────────────
   const [incidentChannel, setIncidentChannel] = useState(
     initial.incidentChannel ?? ""
   );
   const [oncallEmail, setOncallEmail] = useState(initial.oncallEmail ?? "");
   const [webhookUrl, setWebhookUrl] = useState(initial.webhookUrl ?? "");
-
-  // ── Section 5: description ──────────────────────────────────────────────
   const [description, setDescription] = useState(initial.description ?? "");
 
-  // ── Status / submit ─────────────────────────────────────────────────────
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
@@ -114,21 +121,20 @@ export function ProviderEditForm({
         oncallEmail: nullableTrim(oncallEmail),
         webhookUrl: nullableTrim(webhookUrl)
       };
-
-      const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), {
+const res = await registryFetch(withBase(`/api/admin/providers/${initial.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Save failed");
+        setError(data.error ?? t("saveFailed"));
         return;
       }
-      setOkMsg("Saved.");
+      setOkMsg(t("saved"));
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setBusy(false);
     }
@@ -136,59 +142,57 @@ export function ProviderEditForm({
 
   return (
     <div style={{ display: "grid", gap: 24, fontSize: 13 }}>
-      {/* ── 1. Identity ─────────────────────────────────────────────────── */}
-      <Section title="Identity">
+      <Section title={t("sectionIdentity")}>
         <Row>
-          <Field label="Display name">
-            <input
-              className="auth-input"
+          <Field id="pe-displayName" label="Display name" required>
+            <Input
+              id="pe-displayName"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
             />
           </Field>
-          <Field label="Slug (immutable)">
-            <input className="auth-input" value={initial.slug} disabled />
+<Field id="pe-slug" label="Slug" immutable>
+            <Input id="pe-slug" value={initial.slug} disabled />
           </Field>
         </Row>
         <Row>
-          <Field label="Legal name">
-            <input
-              className="auth-input"
+          <Field id="pe-legalName" label="Legal name">
+            <Input
+              id="pe-legalName"
               value={legalName}
               onChange={(e) => setLegalName(e.target.value)}
-              placeholder="Corporate legal entity name"
+              placeholder={t("placeholderLegalName")}
             />
           </Field>
-          <Field label="Registration number">
-            <input
-              className="auth-input"
+<Field id="pe-regNo" label="Registration number">
+            <Input
+              id="pe-regNo"
               value={registrationNumber}
               onChange={(e) => setRegistrationNumber(e.target.value)}
-              placeholder="e.g. C123456"
+              placeholder={t("placeholderRegistrationNumber")}
             />
           </Field>
         </Row>
       </Section>
 
-      {/* ── 2. Classification ─────────────────────────────────────────── */}
-      <Section title="Classification">
+      <Section title={t("sectionClassification")}>
         <Row>
-          <Field label="Provider type">
-            <select
-              className="auth-input"
+          <Field id="pe-type" label="Provider type" required>
+            <Select
+              id="pe-type"
               value={typeCode}
               onChange={(e) => setTypeCode(e.target.value)}
             >
-              {providerTypes.map((t) => (
-                <option key={t.code} value={t.code}>
-                  {t.name} ({t.code})
+              {providerTypes.map((pt) => (
+                <option key={pt.code} value={pt.code}>
+                  {pt.name} ({pt.code})
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
-          <Field label="Home jurisdiction">
-            <select
-              className="auth-input"
+<Field id="pe-jur" label="Home jurisdiction" required>
+            <Select
+              id="pe-jur"
               value={jurisdictionCode}
               onChange={(e) => setJurisdictionCode(e.target.value)}
             >
@@ -197,13 +201,18 @@ export function ProviderEditForm({
                   {j.name} ({j.code})
                 </option>
               ))}
-            </select>
+            </Select>
           </Field>
         </Row>
         <Row>
-          <Field label="Verification status (read-only · use the panel on the right)">
-            <input
-              className="auth-input"
+<Field
+            id="pe-status"
+            label="Verification status"
+            hint="Read-only · use the panel on the right"
+            immutable
+          >
+            <Input
+              id="pe-status"
               value={`${initial.statusName} (${initial.statusCode})`}
               disabled
             />
@@ -212,93 +221,90 @@ export function ProviderEditForm({
         </Row>
       </Section>
 
-      {/* ── 3. Contact & links ─────────────────────────────────────────── */}
-      <Section title="Contact & links">
+      <Section title={t("sectionContactLinks")}>
         <Row>
-          <Field label="Primary contact email">
-            <input
-              className="auth-input"
+          <Field id="pe-contact" label="Primary contact email" required>
+            <Input
+              id="pe-contact"
               type="email"
               value={contactEmail}
               onChange={(e) => setContactEmail(e.target.value)}
             />
           </Field>
-          <Field label="Legal/compliance contact email">
-            <input
-              className="auth-input"
+<Field id="pe-legalContact" label="Legal/compliance contact email">
+            <Input
+              id="pe-legalContact"
               type="email"
               value={legalContactEmail}
               onChange={(e) => setLegalContactEmail(e.target.value)}
-              placeholder="legal@example.com"
+              placeholder={t("placeholderLegalEmail")}
             />
           </Field>
         </Row>
         <Row>
-          <Field label="Website URL">
-            <input
-              className="auth-input"
+<Field id="pe-website" label="Website URL">
+            <Input
+              id="pe-website"
               type="url"
               value={websiteUrl}
               onChange={(e) => setWebsiteUrl(e.target.value)}
-              placeholder="https://example.com"
+              placeholder={t("placeholderWebsite")}
             />
           </Field>
-          <Field label="Documentation URL">
-            <input
-              className="auth-input"
+<Field id="pe-docs" label="Documentation URL">
+            <Input
+              id="pe-docs"
               type="url"
               value={documentationUrl}
               onChange={(e) => setDocumentationUrl(e.target.value)}
-              placeholder="https://docs.example.com"
+              placeholder={t("placeholderDocumentation")}
             />
           </Field>
         </Row>
       </Section>
 
-      {/* ── 4. Incident response ───────────────────────────────────────── */}
-      <Section title="Incident response">
+      <Section title={t("sectionIncidentResponse")}>
         <Row>
-          <Field label="Incident channel">
-            <input
-              className="auth-input"
+          <Field id="pe-incCh" label="Incident channel">
+            <Input
+              id="pe-incCh"
               value={incidentChannel}
               onChange={(e) => setIncidentChannel(e.target.value)}
-              placeholder="Slack/Teams/Matrix handle for alerts"
+              placeholder={t("placeholderIncidentChannel")}
             />
           </Field>
-          <Field label="On-call email">
-            <input
-              className="auth-input"
+<Field id="pe-oncall" label="On-call email">
+            <Input
+              id="pe-oncall"
               type="email"
               value={oncallEmail}
               onChange={(e) => setOncallEmail(e.target.value)}
-              placeholder="oncall@example.com"
+              placeholder={t("placeholderOncallEmail")}
             />
           </Field>
         </Row>
         <Row>
-          <Field label="Webhook URL">
-            <input
-              className="auth-input"
+<Field id="pe-webhook" label="Webhook URL">
+            <Input
+              id="pe-webhook"
               type="url"
               value={webhookUrl}
               onChange={(e) => setWebhookUrl(e.target.value)}
-              placeholder="https://hooks.example.com/incidents"
+              placeholder={t("placeholderWebhookUrl")}
             />
           </Field>
           <div />
         </Row>
       </Section>
 
-      {/* ── 5. Description ─────────────────────────────────────────────── */}
-      <Section title="Description">
-        <Field label="Provider description">
-          <textarea
-            className="auth-input"
+      <Section title={t("sectionDescription")}>
+        <Field id="pe-desc" label="Provider description">
+          <TextArea
+            id="pe-desc"
             rows={5}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Free-text summary of this provider"
+            placeholder={t("placeholderDescription")}
             style={{ resize: "vertical", fontFamily: "inherit" }}
           />
         </Field>
@@ -314,6 +320,7 @@ export function ProviderEditForm({
           {okMsg}
         </div>
       ) : null}
+
       <div
         style={{
           display: "flex",
@@ -325,56 +332,32 @@ export function ProviderEditForm({
           background: "var(--bg)"
         }}
       >
-        <Link className="btn btn-secondary" href="/admin/providers">
+<Button href="/admin/providers" intent="secondary">
           Back to grid
-        </Link>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={submit}
-          disabled={busy}
-        >
+        </Button>
+        <Button intent="primary" onClick={submit} disabled={busy}>
           {busy ? "Saving…" : "Save changes"}
-        </button>
+        </Button>
       </div>
     </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section
-      className="glass"
-      style={{ padding: 20, display: "grid", gap: 12 }}
-    >
-      <h2 style={{ margin: 0, fontSize: 14, letterSpacing: "0.04em" }}>{title}</h2>
+    <section className="glass" style={{ padding: 20, display: "grid", gap: 12 }}>
+      <h2 style={{ margin: 0, fontSize: 14, letterSpacing: "0.04em" }}>
+        {title}
+      </h2>
       {children}
     </section>
   );
 }
 
-function Row({ children }: { children: React.ReactNode }) {
+function Row({ children }: { children: ReactNode }) {
   return (
     <div style={{ display: "grid", gap: 12, gridTemplateColumns: "1fr 1fr" }}>
       {children}
     </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label style={{ display: "grid", gap: 6, fontSize: 13 }}>
-      <span
-        style={{
-          fontSize: 11,
-          color: "var(--text-3)",
-          letterSpacing: "0.08em",
-          textTransform: "uppercase"
-        }}
-      >
-        {label}
-      </span>
-      {children}
-    </label>
   );
 }

@@ -1,39 +1,16 @@
 import { getBranding } from "@airegistry/core/branding";
 import { listActiveFaqEntries } from "@airegistry/core/services/public-cms";
+import { getTranslations } from "next-intl/server";
 import { FaqClient, type FaqClientItem } from "./Faq.client";
 
-function fallbackFaqs(portalDomain: string): FaqClientItem[] {
+function fallbackFaqs(t: (key: string, values?: Record<string, string>) => string, portalDomain: string): FaqClientItem[] {
   return [
-  {
-    question: "Does the registry host any AI?",
-    answer:
-      "No. The registry only points. Providers operate their own resources, and hosting environments run the workloads. The registry is never on the runtime path."
-  },
-  {
-    question: "How is sovereignty defined?",
-    answer:
-      "A submission must cite at least one of: local law, local data, local systems, or local language and culture - with concrete evidence such as a referenced statute, dataset, or institutional integration."
-  },
-  {
-    question: 'What does "verified" mean?',
-    answer:
-      "Provider verification confirms that the listing is bound to the rightful operator via DNS and email proofs. It does not imply endorsement of the resource itself."
-  },
-  {
-    question: "Who can submit a resource?",
-    answer:
-      "Any organisation or accredited individual that operates a sovereign AI resource can submit. Government endorsement is a separate, stronger signal granted only by the responsible authority."
-  },
-  {
-    question: "Is the platform open source?",
-    answer:
-      `Yes. The reference implementation at ${portalDomain} and the AIR-SPEC are openly licensed. Each jurisdiction operates its own instance with local governance.`
-  },
-  {
-    question: "How are listings resolved at runtime?",
-    answer:
-      "AIR-IDs (under air://) resolve to provider endpoints described in the listing metadata. Optionally, hosting environments issue SPIFFE/SPIRE SVIDs for runtime identity."
-  }
+    { question: t("faq1Q"), answer: t("faq1A") },
+    { question: t("faq2Q"), answer: t("faq2A") },
+    { question: t("faq3Q"), answer: t("faq3A") },
+    { question: t("faq4Q"), answer: t("faq4A") },
+    { question: t("faq5Q"), answer: t("faq5A", { portalDomain }) },
+    { question: t("faq6Q"), answer: t("faq6A") }
   ];
 }
 
@@ -47,8 +24,9 @@ function fallbackFaqs(portalDomain: string): FaqClientItem[] {
  * Edited from the admin workspace at /admin/site/faq.
  */
 export async function Faq() {
+  const t = await getTranslations("faq");
   const { portalDomain } = await getBranding();
-  const fallback = fallbackFaqs(portalDomain);
+  const fallback = fallbackFaqs(t, portalDomain);
   let items: FaqClientItem[];
   try {
     const rows = await listActiveFaqEntries();

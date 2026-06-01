@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Icon } from "@airegistry/ui-kit";
 
 /**
@@ -8,6 +9,7 @@ import { Icon } from "@airegistry/ui-kit";
  * integrators can grab the canonical identifier without manual selection.
  */
 export function AirIdCopy({ airId }: { airId: string }) {
+  const t = useTranslations("common");
   const [copied, setCopied] = useState(false);
   async function onClick() {
     try {
@@ -23,7 +25,7 @@ export function AirIdCopy({ airId }: { airId: string }) {
     <button
       type="button"
       onClick={onClick}
-      title="Copy AIR-ID"
+      title={t("copyAirId")}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -43,7 +45,7 @@ export function AirIdCopy({ airId }: { airId: string }) {
       <span style={{ flex: 1 }}>{airId}</span>
       <Icon name={copied ? "check" : "doc"} size={12} />
       <span style={{ fontSize: 10.5, color: "var(--text-3)" }}>
-        {copied ? "Copied" : "Copy"}
+        {copied ? t("copied") : t("copy")}
       </span>
     </button>
   );

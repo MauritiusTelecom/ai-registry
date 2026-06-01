@@ -1,16 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
-import { registryFetch } from "@airegistry/ui-kit";
 
-const OPTIONS: { value: string; label: string }[] = [
-  { value: "verified", label: "Verified" },
-  { value: "official_provider", label: "Official provider" },
-  { value: "unverified", label: "Unverified (revert)" },
-  { value: "suspended", label: "Suspended" }
-];
+import { useState } from "react";
+import { useRouter } from "@/i18n/navigation";
+import { Button } from "@/components/library";
+import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
+
+const STATUS_VALUES = ["verified", "official_provider", "unverified", "suspended"] as const;
 
 export function ProviderVerifyForm({
   providerId,
@@ -20,6 +18,15 @@ export function ProviderVerifyForm({
   currentStatus: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("adminProviderVerify");
+
+  const OPTIONS = [
+    { value: "verified", label: t("statusVerified") },
+    { value: "official_provider", label: t("statusOfficialProvider") },
+    { value: "unverified", label: t("statusUnverified") },
+    { value: "suspended", label: t("statusSuspended") }
+  ];
+
   const [status, setStatus] = useState<string>(
     currentStatus === "unverified" ? "verified" : currentStatus
   );
@@ -50,7 +57,7 @@ export function ProviderVerifyForm({
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Request failed");
+        setError(data.error ?? t("requestFailed"));
         setBusy(false);
         return;
       }
@@ -59,7 +66,7 @@ export function ProviderVerifyForm({
       setPublicNote("");
       setInternalNote("");
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setBusy(false);
     }
@@ -86,7 +93,7 @@ export function ProviderVerifyForm({
   return (
     <div style={{ display: "grid", gap: 16, fontSize: 13 }}>
       <label style={{ display: "grid", gap: 8 }}>
-        <span style={fieldLabel}>New status</span>
+        <span style={fieldLabel}>{t("labelNewStatus")}</span>
         <select
           style={controlBase}
           value={status}
@@ -100,30 +107,30 @@ export function ProviderVerifyForm({
         </select>
       </label>
       <label style={{ display: "grid", gap: 8 }}>
-        <span style={fieldLabel}>Decision summary</span>
+        <span style={fieldLabel}>{t("labelDecisionSummary")}</span>
         <textarea
           style={{ ...controlBase, minHeight: 90, resize: "vertical" }}
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
-          placeholder="What changed and why? Recorded on the audit log."
+          placeholder={t("placeholderDecisionSummary")}
         />
       </label>
       <label style={{ display: "grid", gap: 8 }}>
-        <span style={fieldLabel}>Public note (optional)</span>
+        <span style={fieldLabel}>{t("labelPublicNote")}</span>
         <input
           style={controlBase}
           value={publicNote}
           onChange={(e) => setPublicNote(e.target.value)}
-          placeholder="Visible on the provider's public trust panel."
+          placeholder={t("placeholderPublicNote")}
         />
       </label>
       <label style={{ display: "grid", gap: 8 }}>
-        <span style={fieldLabel}>Internal note (optional)</span>
+        <span style={fieldLabel}>{t("labelInternalNote")}</span>
         <input
           style={controlBase}
           value={internalNote}
           onChange={(e) => setInternalNote(e.target.value)}
-          placeholder="Admins only - never shown publicly."
+          placeholder={t("placeholderInternalNote")}
         />
       </label>
       <label
@@ -142,20 +149,18 @@ export function ProviderVerifyForm({
           onChange={(e) => setNotifyByEmail(e.target.checked)}
           style={{ accentColor: "var(--primary)" }}
         />
-        <span>Email the provider's contacts about this decision</span>
+        <span>{t("emailContactsAboutDecision")}</span>
       </label>
       {error ? (
         <p style={{ color: "#d33", fontSize: 12, margin: 0 }}>{error}</p>
       ) : null}
-      <button
-        type="button"
-        className="btn btn-primary"
+      <Button intent="primary"
         disabled={busy || summary.trim().length < 4}
         onClick={submit}
         style={{ justifySelf: "start" }}
       >
-        {busy ? "Saving…" : "Record decision"}
-      </button>
+{busy ? "Saving…" : "Record decision"}
+      </Button>
     </div>
   );
 }

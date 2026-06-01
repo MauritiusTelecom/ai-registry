@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { AuthShell } from "../auth-ui/AuthShell";
 
 export const metadata = { title: "Verify contact email" };
@@ -11,16 +12,18 @@ export default async function ContactVerifyPage({
   searchParams: Promise<{ token?: string }>;
 }) {
   const { token } = await searchParams;
+  const t = await getTranslations("contactVerify");
+
   if (!token) {
     return (
       <AuthShell
-        eyebrow="Contact form"
-        title={<>Missing confirmation link.</>}
-        subtitle="Open the link from the email we sent after you submitted the contact form."
+        eyebrow={t("contactForm")}
+        title={<>{t("missingConfirmationLink")}</>}
+        subtitle={t("openLinkSubtitle")}
       >
         <div style={{ textAlign: "center" }}>
           <Link href="/contact" className="btn btn-primary">
-            Back to contact
+            {t("backToContact")}
           </Link>
         </div>
       </AuthShell>
@@ -42,23 +45,25 @@ export default async function ContactVerifyPage({
   if (result.ok) {
     return (
       <AuthShell
-        eyebrow="Email confirmed"
+        eyebrow={t("emailConfirmed")}
         title={
           <>
-            Thank you - your address is <span className="gradient-text">verified</span>.
+            {t.rich("thankYouTitle", {
+              accent: (chunks) => <span className="gradient-text">{chunks}</span>
+            })}
           </>
         }
-        subtitle={`We have marked your enquiry as verified for ${result.email}.`}
+        subtitle={t("verifiedSubtitle", { email: result.email })}
       >
         <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 12 }}>
           <Link href="/register" className="btn btn-primary">
-            Create an account
+            {t("createAccount")}
           </Link>
           <Link href="/login" className="btn btn-secondary">
-            Sign in
+            {t("signIn")}
           </Link>
           <Link href="/contact" style={{ color: "var(--text-2)", fontSize: 14 }}>
-            Back to contact
+            {t("backToContact")}
           </Link>
         </div>
       </AuthShell>
@@ -67,13 +72,13 @@ export default async function ContactVerifyPage({
 
   return (
     <AuthShell
-      eyebrow="Contact form"
-      title={<>This confirmation link is no longer valid.</>}
-      subtitle="It may have expired or already been used. You can submit the form again if you still need help."
+      eyebrow={t("contactForm")}
+      title={<>{t("linkNoLongerValid")}</>}
+      subtitle={t("linkExpiredSubtitle")}
     >
       <div style={{ textAlign: "center" }}>
         <Link href="/contact" className="btn btn-primary">
-          Back to contact
+          {t("backToContact")}
         </Link>
       </div>
     </AuthShell>

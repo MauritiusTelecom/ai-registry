@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadDotenv } from "dotenv";
+import createNextIntlPlugin from "next-intl/plugin";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,10 +57,18 @@ const securityHeaders = [
     : [])
 ];
 
+function primaryLanguageTag(code) {
+  return (code ?? "en").trim().toLowerCase().split("-")[0];
+}
+
 const nextConfig = {
   reactStrictMode: true,
   basePath,
   assetPrefix: basePath || undefined,
+
+  env: {
+    NEXT_PUBLIC_DEFAULT_LANGUAGE: primaryLanguageTag(process.env.DEFAULT_LANGUAGE)
+  },
 
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
@@ -86,6 +95,19 @@ const nextConfig = {
     "@airegistry/ui-kit"
   ],
 
+  // `src/components/library` (repo root) is compiled as part of this app via
+  // tsconfig path aliases. Module resolution for those files starts at the
+  // monorepo root, where pnpm does not link workspace packages; `@airegistry/*`
+  // only exists under `apps/portal/node_modules`. Prefer that folder first.
+  webpack(config) {
+    const portalNodeModules = path.join(__dirname, "node_modules");
+    const existing = config.resolve.modules ?? ["node_modules"];
+    if (!existing.includes(portalNodeModules)) {
+      config.resolve.modules = [portalNodeModules, ...existing];
+    }
+    return config;
+  },
+
   // AIR-SPEC §13 names `/.well-known/ai-registry` as the capability document
   // path. Next.js's App Router excludes dot-prefixed folders, so the route
   // handler lives at /api/well-known/ai-registry and is exposed at the
@@ -100,4 +122,6 @@ const nextConfig = {
   }
 };
 
-export default nextConfig;
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+export default withNextIntl(nextConfig);

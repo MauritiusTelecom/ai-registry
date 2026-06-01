@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCountUp } from "../shell/useCountUp";
 import { usePublicBranding } from "../lib/branding-context";
 
@@ -9,13 +10,6 @@ type Metric = {
   suffix: string;
   trend: string;
 };
-
-const BASE_METRICS: Omit<Metric, "trend">[] = [
-  { label: "Listed Resources", target: 7, suffix: "" },
-  { label: "Verified Providers", target: 1, suffix: "" },
-  { label: "Uptime", target: 99.97, suffix: "%" },
-  { label: "Jurisdictions", target: 1, suffix: "" }
-];
 
 function MetricCell({ label, target, suffix, trend }: Metric) {
   const isFloat = suffix === "%";
@@ -34,12 +28,13 @@ function MetricCell({ label, target, suffix, trend }: Metric) {
 }
 
 export function MetricsBar() {
+  const t = useTranslations("metrics");
   const { operatorName } = usePublicBranding();
   const metrics: Metric[] = [
-    { ...BASE_METRICS[0]!, trend: "live catalogue" },
-    { ...BASE_METRICS[1]!, trend: operatorName },
-    { ...BASE_METRICS[2]!, trend: "90-day SLO" },
-    { ...BASE_METRICS[3]!, trend: "MU" }
+    { label: t("listedResources"), target: 7, suffix: "", trend: t("liveCatalogue") },
+    { label: t("verifiedProviders"), target: 1, suffix: "", trend: operatorName },
+    { label: t("uptime"), target: 99.97, suffix: "%", trend: t("slo") },
+    { label: t("jurisdictions"), target: 1, suffix: "", trend: "MU" }
   ];
   return (
     <div className="metrics-bar">

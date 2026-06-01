@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Icon } from "@airegistry/ui-kit";
 import { useTheme } from "@airegistry/ui-kit";
 
@@ -10,6 +11,7 @@ import { useTheme } from "@airegistry/ui-kit";
  * app.
  */
 export function PortalThemeToggle() {
+  const t = useTranslations("nav");
   const { theme, setTheme } = useTheme();
   const next = theme === "dark" ? "light" : "dark";
   return (
@@ -17,7 +19,7 @@ export function PortalThemeToggle() {
       type="button"
       className="p-icon-btn"
       onClick={() => setTheme(next)}
-      aria-label={`Switch to ${next} mode`}
+      aria-label={t("switchTheme", { theme: next })}
     >
       <Icon name={theme === "dark" ? "sun" : "moon"} size={15} />
     </button>

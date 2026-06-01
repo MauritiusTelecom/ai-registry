@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { withBase } from "@airegistry/sdk";
+
+import { useState } from "react";
+import { useRouter } from "@/i18n/navigation";
+import { Button } from "@/components/library";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 type StatusOption = { id: string; code: string; name: string };
 type AdminUser = { id: string; name: string; email: string };
@@ -93,16 +96,17 @@ function ReplyCard({
   complainantEmail: string | null;
 }) {
   const router = useRouter();
-  const [subject, setSubject] = useState("Re: your complaint");
+  const t = useTranslations("adminComplaint");
+  const [subject, setSubject] = useState(t("defaultSubject"));
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
   if (!complainantEmail) {
     return (
-      <Shell title="Reply" subtitle="No email address was provided by the complainant.">
+      <Shell title={t("replyTitle")} subtitle={t("noEmailProvided")}>
         <p style={{ fontSize: 12, color: "var(--text-3)", margin: 0 }}>
-          Anonymous complaints cannot be replied to directly.
+          {t("anonymousCannotReply")}
         </p>
       </Shell>
     );
@@ -111,7 +115,7 @@ function ReplyCard({
   async function send() {
     setMsg(null);
     if (body.trim().length < 4) {
-      setMsg({ kind: "err", text: "Message body is required" });
+      setMsg({ kind: "err", text: t("messageBodyRequired") });
       return;
     }
     setBusy(true);
@@ -123,23 +127,23 @@ function ReplyCard({
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setMsg({ kind: "err", text: data.error ?? "Send failed" });
+        setMsg({ kind: "err", text: data.error ?? t("sendFailed") });
         return;
       }
-      setMsg({ kind: "ok", text: "Reply sent" });
+      setMsg({ kind: "ok", text: t("replySent") });
       setBody("");
       router.refresh();
     } catch {
-      setMsg({ kind: "err", text: "Network error" });
+      setMsg({ kind: "err", text: t("networkError") });
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <Shell title="Reply" subtitle={`To: ${complainantEmail}`}>
+    <Shell title={t("replyTitle")} subtitle={`To: ${complainantEmail}`}>
       <label style={{ display: "grid", gap: 6 }}>
-        <span style={{ fontSize: 11, color: "var(--text-3)" }}>Subject</span>
+        <span style={{ fontSize: 11, color: "var(--text-3)" }}>{t("labelSubject")}</span>
         <input
           className="glass"
           style={{ padding: 8, borderRadius: 8, fontSize: 13 }}
@@ -148,14 +152,14 @@ function ReplyCard({
         />
       </label>
       <label style={{ display: "grid", gap: 6 }}>
-        <span style={{ fontSize: 11, color: "var(--text-3)" }}>Message</span>
+        <span style={{ fontSize: 11, color: "var(--text-3)" }}>{t("labelMessage")}</span>
         <textarea
           className="glass"
           rows={6}
           style={{ padding: 10, borderRadius: 8, fontSize: 13 }}
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="Write your reply…"
+          placeholder={t("placeholderReply")}
         />
       </label>
       {msg ? (
@@ -163,14 +167,9 @@ function ReplyCard({
           {msg.text}
         </p>
       ) : null}
-      <button
-        type="button"
-        className="btn btn-primary"
-        disabled={busy}
-        onClick={() => void send()}
-      >
+<Button intent="primary" disabled={busy} onClick={() => void send()}>
         {busy ? "Sending…" : "Send reply"}
-      </button>
+      </Button>
     </Shell>
   );
 }
@@ -191,6 +190,7 @@ function ManageCard({
   resolutionSummary: string | null;
 }) {
   const router = useRouter();
+  const t = useTranslations("adminComplaint");
   const [statusId, setStatusId] = useState(currentStatusId);
   const [assignee, setAssignee] = useState(assignedToId ?? "");
   const [summary, setSummary] = useState(resolutionSummary ?? "");
@@ -228,28 +228,25 @@ function ManageCard({
         emailNotified?: boolean;
       };
       if (!res.ok) {
-        setMsg({ kind: "err", text: data.error ?? "Update failed" });
+        setMsg({ kind: "err", text: data.error ?? t("updateFailed") });
         return;
       }
-      // Compose a friendlier "what just happened" success line so the
-      // operator sees that the auto-bump fired and / or that the email
-      // went out.
-      const parts: string[] = ["Saved"];
-      if (data.autoBumped) parts.push("status moved to investigating");
-      if (data.emailNotified) parts.push("assignee notified by email");
+      const parts: string[] = [t("saved")];
+      if (data.autoBumped) parts.push(t("statusMovedToInvestigating"));
+      if (data.emailNotified) parts.push(t("assigneeNotifiedByEmail"));
       setMsg({ kind: "ok", text: parts.join(" · ") });
       router.refresh();
     } catch {
-      setMsg({ kind: "err", text: "Network error" });
+      setMsg({ kind: "err", text: t("networkError") });
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <Shell title="Manage">
+    <Shell title={t("manageTitle")}>
       <label style={{ display: "grid", gap: 6 }}>
-        <span style={{ fontSize: 11, color: "var(--text-3)" }}>Status</span>
+        <span style={{ fontSize: 11, color: "var(--text-3)" }}>{t("labelStatus")}</span>
         <select
           className="glass"
           style={{ padding: 8, borderRadius: 8, fontSize: 13 }}
@@ -264,22 +261,20 @@ function ManageCard({
         </select>
       </label>
       <label style={{ display: "grid", gap: 6 }}>
-        <span style={{ fontSize: 11, color: "var(--text-3)" }}>Assigned to</span>
+        <span style={{ fontSize: 11, color: "var(--text-3)" }}>{t("labelAssignedTo")}</span>
         <select
           className="glass"
           style={{ padding: 8, borderRadius: 8, fontSize: 13 }}
           value={assignee}
           onChange={(e) => setAssignee(e.target.value)}
         >
-          <option value="">— Unassigned —</option>
+          <option value="">{t("unassigned")}</option>
           {adminUsers.map((u) => (
             <option key={u.id} value={u.id}>
               {u.name} ({u.email})
             </option>
           ))}
         </select>
-        {/* Email toggle - only relevant on first-assign / reassign. We render
-            it inline so the operator can untick before saving. */}
         <label
           style={{
             display: "flex",
@@ -300,16 +295,16 @@ function ManageCard({
             style={{ accentColor: "var(--primary)" }}
           />
           <span>
-            Email the assignee when this changes
+            {t("emailAssigneeOnChange")}
             {willNotifyOnSave ? (
-              <span style={{ color: "var(--text)", marginLeft: 6 }}>· will send</span>
+              <span style={{ color: "var(--text)", marginLeft: 6 }}>{t("willSend")}</span>
             ) : null}
           </span>
         </label>
       </label>
       <label style={{ display: "grid", gap: 6 }}>
         <span style={{ fontSize: 11, color: "var(--text-3)" }}>
-          Resolution summary {isResolving ? <em style={{ color: "var(--text-2)" }}>(recommended)</em> : null}
+          {t("labelResolutionSummary")} {isResolving ? <em style={{ color: "var(--text-2)" }}>{t("recommended")}</em> : null}
         </span>
         <textarea
           className="glass"
@@ -317,7 +312,7 @@ function ManageCard({
           style={{ padding: 10, borderRadius: 8, fontSize: 13 }}
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
-          placeholder="What was the outcome?"
+          placeholder={t("placeholderOutcome")}
         />
       </label>
       {msg ? (
@@ -325,15 +320,16 @@ function ManageCard({
           {msg.text}
         </p>
       ) : null}
-      <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void save()}>
+<Button intent="primary" disabled={busy} onClick={() => void save()}>
         {busy ? "Saving…" : "Save changes"}
-      </button>
+      </Button>
     </Shell>
   );
 }
 
 function DeleteCard({ complaintId }: { complaintId: string }) {
   const router = useRouter();
+  const t = useTranslations("adminComplaint");
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -347,20 +343,20 @@ function DeleteCard({ complaintId }: { complaintId: string }) {
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string };
       if (!res.ok) {
-        setErr(data.error ?? "Delete failed");
+        setErr(data.error ?? t("deleteFailed"));
         setBusy(false);
         return;
       }
       router.push("/admin/complaints");
       router.refresh();
     } catch {
-      setErr("Network error");
+      setErr(t("networkError"));
       setBusy(false);
     }
   }
 
   return (
-    <Shell title="Danger zone">
+    <Shell title={t("dangerZone")}>
       {!confirming ? (
         <button
           type="button"
@@ -368,13 +364,12 @@ function DeleteCard({ complaintId }: { complaintId: string }) {
           style={{ color: "#f87171", borderColor: "#f87171" }}
           onClick={() => setConfirming(true)}
         >
-          Delete complaint
+          {t("deleteComplaint")}
         </button>
       ) : (
         <>
           <p style={{ fontSize: 12, color: "var(--text-2)", margin: 0 }}>
-            This permanently removes the complaint and unlinks any enforcement actions.
-            The audit log will retain a record of the deletion.
+            {t("deleteConfirmation")}
           </p>
           {err ? (
             <p style={{ color: "#f87171", fontSize: 12, margin: 0 }}>{err}</p>
@@ -386,7 +381,7 @@ function DeleteCard({ complaintId }: { complaintId: string }) {
               onClick={() => setConfirming(false)}
               disabled={busy}
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               type="button"
@@ -395,7 +390,7 @@ function DeleteCard({ complaintId }: { complaintId: string }) {
               disabled={busy}
               onClick={() => void doDelete()}
             >
-              {busy ? "Deleting…" : "Confirm delete"}
+              {busy ? t("deleting") : t("confirmDelete")}
             </button>
           </div>
         </>
@@ -403,3 +398,4 @@ function DeleteCard({ complaintId }: { complaintId: string }) {
     </Shell>
   );
 }
+// s

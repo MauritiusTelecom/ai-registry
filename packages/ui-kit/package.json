@@ -15,7 +15,8 @@
     "clean": "rm -rf .turbo"
   },
   "dependencies": {
-    "@airegistry/sdk": "workspace:*"
+    "@airegistry/sdk": "workspace:*",
+    "next-intl": "^4.12.0"
   },
   "peerDependencies": {
     "react": "^19.0.0",

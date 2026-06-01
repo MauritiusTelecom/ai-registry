@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { usePublicBranding } from "../lib/branding-context";
 import type {
@@ -9,6 +9,7 @@ import type {
   DisplayStatus
 } from "@airegistry/sdk";
 import { withBase } from "@airegistry/sdk";
+import { useTranslations } from "next-intl";
 import { Icon } from "@airegistry/ui-kit";
 import { Globe } from "./Globe";
 
@@ -63,21 +64,24 @@ const CARD_SLOTS: CSSProperties[] = [
   { bottom: "6%", left: "4%" }
 ];
 
-function buildFallbackCards(operatorName: string): FloatCardData[] {
+function buildFallbackCards(
+  operatorName: string,
+  t: ReturnType<typeof useTranslations<"hero">>
+): FloatCardData[] {
   return [
     {
-      title: "MytGPT Enterprise",
-      subtitle: `Verified · ${operatorName} · Chat`,
+      title: t("fallbackCard1Title"),
+      subtitle: `${t("verified")} · ${operatorName} · ${t("fallbackCard1Subtitle")}`,
       dot: "#10b981"
     },
     {
-      title: "my.t Vision AI",
-      subtitle: `Verified · ${operatorName} · Vision`,
+      title: t("fallbackCard2Title"),
+      subtitle: `${t("verified")} · ${operatorName} · ${t("fallbackCard2Subtitle")}`,
       dot: "#a855f7"
     },
     {
-      title: "my.t Document AI",
-      subtitle: `Verified · ${operatorName} · OCR`,
+      title: t("fallbackCard3Title"),
+      subtitle: `${t("verified")} · ${operatorName} · ${t("fallbackCard3Subtitle")}`,
       dot: "#22d3ee"
     }
   ];
@@ -108,9 +112,9 @@ function statusLabel(s: DisplayStatus): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function cardToFloat(card: RegistryCard): FloatCardData {
+function cardToFloat(card: RegistryCard, fallbackKindLabel: string): FloatCardData {
   const status = card.status;
-  const tail = card.context?.trim() || card.kind || "AI resource";
+  const tail = card.context?.trim() || card.kind || fallbackKindLabel;
   return {
     title: card.title,
     subtitle: `${statusLabel(status)} · ${card.provider} · ${tail}`,
@@ -128,13 +132,12 @@ function shuffle<T>(arr: T[]): T[] {
   return out;
 }
 
-function pickThree(rows: RegistryCard[], fallback: FloatCardData[]): FloatCardData[] {
+function pickThree(rows: RegistryCard[], fallback: FloatCardData[], fallbackKindLabel: string): FloatCardData[] {
   const eligible = rows.filter((r) =>
     ALLOWED_STATUSES.includes(r.status as DisplayStatus)
   );
   if (eligible.length === 0) return fallback;
-  const chosen = shuffle(eligible).slice(0, 3).map(cardToFloat);
-  // Pad with fallback entries if the registry has fewer than 3 eligible rows.
+  const chosen = shuffle(eligible).slice(0, 3).map((c) => cardToFloat(c, fallbackKindLabel));
   while (chosen.length < 3) chosen.push(fallback[chosen.length]!);
   return chosen;
 }
@@ -156,7 +159,8 @@ export function Hero({
     heroHeadlineAccent,
     portalDomain
   } = usePublicBranding();
-  const fallbackCards = useMemo(() => buildFallbackCards(operatorName), [operatorName]);
+  const t = useTranslations("hero");
+  const fallbackCards = useMemo(() => buildFallbackCards(operatorName, t), [operatorName, t]);
   const [cards, setCards] = useState<FloatCardData[]>(fallbackCards);
 
   useEffect(() => {
@@ -176,7 +180,7 @@ export function Hero({
         if (!res.ok) return; // silent fallback - hero never surfaces API errors
         const data = (await res.json()) as PublicRegistryListResponse;
         if (Array.isArray(data.rows) && data.rows.length > 0) {
-          setCards(pickThree(data.rows, fallbackCards));
+          setCards(pickThree(data.rows, fallbackCards, t("fallbackAiResource")));
         }
       } catch (e) {
         if ((e as Error)?.name === "AbortError") return;
@@ -184,7 +188,7 @@ export function Hero({
       }
     })();
     return () => ac.abort();
-  }, [fallbackCards]);
+  }, [fallbackCards, t]);
 
   return (
     <section className="hero">
@@ -241,18 +245,16 @@ export function Hero({
         </h1>
 
         <p className="hero-subtitle">
-          Govern, orchestrate, and monitor trusted AI agents, models, and MCP infrastructure from a
-          unified sovereign platform - built for nations, regulators, and the enterprises they
-          depend on.
+          {t("subtitle")}
         </p>
 
         <div className="hero-cta-row">
           <Link href="/registry" className="btn btn-primary">
-            Explore Registry
+            {t("exploreRegistry")}
             <Icon name="arrow-right" size={14} />
           </Link>
           <Link href="/ecosystem" className="btn btn-secondary">
-            Discover Ecosystem
+            {t("discoverEcosystem")}
           </Link>
         </div>
       </div>

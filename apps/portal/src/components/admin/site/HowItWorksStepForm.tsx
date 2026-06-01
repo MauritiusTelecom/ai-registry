@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 
 export type HowItWorksStepFormInitial = {
   code: string;
@@ -39,6 +40,7 @@ export function HowItWorksStepForm({
   mode: "create" | "edit";
   initial: HowItWorksStepFormInitial;
 }) {
+  const t = useTranslations("adminSiteHowItWorks");
   const router = useRouter();
   const [code, setCode] = useState(initial.code);
   const [title, setTitle] = useState(initial.title);
@@ -83,7 +85,7 @@ export function HowItWorksStepForm({
 
   async function onDelete() {
     if (mode !== "edit") return;
-    if (!confirm(`Delete step "${initial.code}"?`)) return;
+    if (!confirm(t("confirmDelete", { code: initial.code }))) return;
     setDeleting(true);
     try {
       const res = await registryFetch(
@@ -105,7 +107,7 @@ export function HowItWorksStepForm({
   return (
     <form onSubmit={onSubmit} style={{ maxWidth: 720, display: "grid", gap: 18 }}>
       <div style={{ display: "grid", gap: 6 }}>
-        <label htmlFor="hiw-code" style={labelStyle}>Code</label>
+        <label htmlFor="hiw-code" style={labelStyle}>{t("code")}</label>
         <input
           id="hiw-code"
           type="text"
@@ -113,13 +115,13 @@ export function HowItWorksStepForm({
           onChange={(e) => setCode(e.target.value)}
           required
           disabled={mode === "edit"}
-          placeholder='e.g. "submit", "review", "publish"'
+          placeholder={t("codePlaceholder")}
           style={{ ...inputStyle, opacity: mode === "edit" ? 0.55 : 1 }}
         />
       </div>
 
       <div style={{ display: "grid", gap: 6 }}>
-        <label htmlFor="hiw-title" style={labelStyle}>Title</label>
+        <label htmlFor="hiw-title" style={labelStyle}>{t("title")}</label>
         <input
           id="hiw-title"
           type="text"
@@ -131,7 +133,7 @@ export function HowItWorksStepForm({
       </div>
 
       <div style={{ display: "grid", gap: 6 }}>
-        <label htmlFor="hiw-desc" style={labelStyle}>Description</label>
+        <label htmlFor="hiw-desc" style={labelStyle}>{t("description")}</label>
         <textarea
           id="hiw-desc"
           value={description}
@@ -144,7 +146,7 @@ export function HowItWorksStepForm({
 
       <div style={{ display: "grid", gridTemplateColumns: "auto auto 1fr", gap: 18, alignItems: "center" }}>
         <div style={{ display: "grid", gap: 6 }}>
-          <label htmlFor="hiw-num" style={labelStyle}>Step #</label>
+          <label htmlFor="hiw-num" style={labelStyle}>{t("stepNumber")}</label>
           <input
             id="hiw-num"
             type="number"
@@ -155,7 +157,7 @@ export function HowItWorksStepForm({
           />
         </div>
         <div style={{ display: "grid", gap: 6 }}>
-          <label htmlFor="hiw-sort" style={labelStyle}>Sort order</label>
+          <label htmlFor="hiw-sort" style={labelStyle}>{t("sortOrder")}</label>
           <input
             id="hiw-sort"
             type="number"
@@ -172,7 +174,7 @@ export function HowItWorksStepForm({
               checked={highlight}
               onChange={(e) => setHighlight(e.target.checked)}
             />
-            Highlight (pink/purple "Off-registry" callout)
+            {t("highlightLabel")}
           </label>
           <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--text-2)" }}>
             <input
@@ -180,7 +182,7 @@ export function HowItWorksStepForm({
               checked={active}
               onChange={(e) => setActive(e.target.checked)}
             />
-            Active
+            {t("active")}
           </label>
         </div>
       </div>
@@ -202,7 +204,7 @@ export function HowItWorksStepForm({
 
       <div style={{ display: "flex", gap: 10 }}>
         <button type="submit" className="btn btn-primary" disabled={saving || deleting}>
-          {saving ? "Saving…" : mode === "create" ? "Create step" : "Save changes"}
+          {saving ? t("saving") : mode === "create" ? t("createStep") : t("saveChanges")}
         </button>
         {mode === "edit" ? (
           <button
@@ -212,7 +214,7 @@ export function HowItWorksStepForm({
             disabled={saving || deleting}
             style={{ color: "#ef4444", borderColor: "rgba(239, 68, 68, 0.45)" }}
           >
-            {deleting ? "Deleting…" : "Delete step"}
+            {deleting ? t("deleting") : t("deleteStep")}
           </button>
         ) : null}
       </div>

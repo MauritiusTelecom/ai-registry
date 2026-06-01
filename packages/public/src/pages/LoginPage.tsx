@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { portalForRole } from "@airegistry/core/auth/portal-for-role";
 import { AuthShell } from "../auth-ui/AuthShell";
@@ -19,34 +20,35 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
   const sanitized = sanitizeNext(params.next);
+  const t = await getTranslations("auth");
 
   const user = await getCurrentUser();
   if (user) {
-    // Already signed in - honour the deep-link if present, otherwise route
-    // to the user's role-specific portal.
     redirect(sanitized ?? portalForRole(user.role.code));
   }
 
-  const banner = pickBanner(params);
+  const banner = pickBanner(params, t);
 
   return (
     <AuthShell
-      eyebrow="Sign in"
+      eyebrow={t("signIn")}
       title={
         <>
-          Welcome <span className="gradient-text">back</span>.
+          {t.rich("signInWelcome", {
+            accent: (chunks) => <span className="gradient-text">{chunks}</span>
+          })}
         </>
       }
-      subtitle="Sign in with your registered email and password."
+      subtitle={t("signInSubtitle")}
       footer={
         <>
-          New here?{" "}
+          {t("newHere")}{" "}
           <Link href="/register" style={{ color: "var(--text-2)" }}>
-            Create an account
+            {t("createAccount")}
           </Link>{" "}
           ·{" "}
           <Link href="/auth/reset" style={{ color: "var(--text-2)" }}>
-            Forgot password
+            {t("forgotPassword")}
           </Link>
         </>
       }
@@ -73,20 +75,13 @@ export default async function LoginPage({
   );
 }
 
-function pickBanner(params: {
-  registered?: string;
-  verified?: string;
-  verify?: string;
-}): string | null {
-  if (params.verified === "1") {
-    return "Your email is verified. Sign in to continue.";
-  }
-  if (params.registered === "1") {
-    return "Account created. Check your email for a verification link, then sign in.";
-  }
-  if (params.verify === "1") {
-    return "Please verify your email before accessing the portal. Check your inbox or request a new link below.";
-  }
+function pickBanner(
+  params: { registered?: string; verified?: string; verify?: string },
+  t: Awaited<ReturnType<typeof getTranslations<"auth">>>
+): string | null {
+  if (params.verified === "1") return t("emailVerified");
+  if (params.registered === "1") return t("accountCreated");
+  if (params.verify === "1") return t("pleaseVerify");
   return null;
 }
 

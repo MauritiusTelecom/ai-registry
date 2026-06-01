@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import { Icon } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
+
+import { useRouter } from "@/i18n/navigation";
+import { useMemo, useState } from "react";
+import { Icon, Button, Field, Input, Select, TextArea } from "@/components/library";
+import { useTranslations } from "next-intl";
 import { registryFetch } from "@airegistry/ui-kit";
 import { EvidenceFileAttachment } from "@/components/portal/EvidenceFileAttachment";
 
@@ -94,6 +95,7 @@ export function ProviderResourceEditForm({
   postSubmitPath?: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("providerResourceEdit");
 
   // ── Editable scalars ────────────────────────────────────────────────────
   const [title, setTitle] = useState(initial.title);
@@ -252,7 +254,7 @@ export function ProviderResourceEditForm({
         evidenceIds?: string[] | null;
       };
       if (!res.ok) {
-        setError(data.error ?? "Save failed");
+        setError(data.error ?? t("saveFailed"));
         return;
       }
 
@@ -281,19 +283,19 @@ export function ProviderResourceEditForm({
           }
         }
         if (failures.length > 0) {
-          setError(`Saved, but some files failed to upload:\n${failures.join("\n")}`);
+          setError(t("fileUploadPartialFail", { details: failures.join("\n") }));
         } else {
           setOkMsg(
-            pending.some((f) => f) ? "Saved and uploaded attached files." : "Saved."
+            pending.some((f) => f) ? t("savedAndUploaded") : t("saved")
           );
         }
         setPendingEvidenceFiles(pending.map(() => null));
       } else {
-        setOkMsg("Saved.");
+        setOkMsg(t("saved"));
       }
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setPending(null);
     }
@@ -314,13 +316,13 @@ export function ProviderResourceEditForm({
       );
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Submit failed");
+        setError(data.error ?? t("submitFailed"));
         return;
       }
       router.push(postSubmitPath);
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setPending(null);
     }
@@ -337,8 +339,7 @@ export function ProviderResourceEditForm({
         color: "var(--text-2)"
       }}
     >
-      This resource is currently <strong>{initial.lifecycleName}</strong> and read-only. Only
-      <code> draft</code> or <code>needs_update</code> resources can be edited here.
+      {t("readOnlyNotice", { lifecycle: initial.lifecycleName })}
     </div>
   ) : null;
 
@@ -347,69 +348,62 @@ export function ProviderResourceEditForm({
       {readOnlyNotice}
 
       {/* ── 1. Identity (read-only context) ────────────────────────────── */}
-      <Section title="Identity">
+      <Section title={t("sectionIdentity")}>
         <Row>
-          <Field label="Title">
-            <input
-              className="auth-input"
-              value={title}
+<Field label="Title">
+            <Input
+                            value={title}
               disabled={!canEdit}
               onChange={(e) => setTitle(e.target.value)}
             />
           </Field>
-          <Field label="Slug (immutable)">
-            <input className="auth-input" value={initial.slug} disabled />
+<Field label="Slug (immutable)">
+            <Input value={initial.slug} disabled />
           </Field>
         </Row>
         <Row>
           <Field label="Kind (immutable)">
-            <input
-              className="auth-input"
-              value={`${initial.kindName} (${initial.kindCode})`}
+            <Input
+                            value={`${initial.kindName} (${initial.kindCode})`}
               disabled
             />
           </Field>
           <Field label="Provider (immutable)">
-            <input
-              className="auth-input"
-              value={`${initial.providerName} (${initial.providerSlug})`}
+            <Input
+                            value={`${initial.providerName} (${initial.providerSlug})`}
               disabled
             />
           </Field>
         </Row>
         <Row>
-          <Field label="Primary jurisdiction (admin-managed)">
-            <input
-              className="auth-input"
-              value={`${initial.jurisdictionName} (${initial.jurisdictionCode})`}
+<Field label="Primary jurisdiction (admin-managed)">
+            <Input
+                            value={`${initial.jurisdictionName} (${initial.jurisdictionCode})`}
               disabled
             />
           </Field>
           <Field label="Risk level (admin-managed)">
-            <input className="auth-input" value={initial.riskCode} disabled />
+            <Input value={initial.riskCode} disabled />
           </Field>
         </Row>
         <p style={{ fontSize: 12, color: "var(--text-3)", margin: 0 }}>
-          Lifecycle, risk, jurisdiction, and public visibility are managed by the registry
-          operator. Changes happen via the review and listing process.
+          {t("identityNote")}
         </p>
       </Section>
 
       {/* ── 2. Descriptions ─────────────────────────────────────────────── */}
-      <Section title="Descriptions">
+<Section title="Descriptions">
         <Field label="Short description (8+ chars, shown on cards)">
-          <textarea
-            className="auth-input"
-            style={{ minHeight: 70, fontFamily: "inherit" }}
+          <TextArea
+                          style={{ minHeight: 70, fontFamily: "inherit" }}
             value={shortDescription}
             disabled={!canEdit}
             onChange={(e) => setShortDescription(e.target.value)}
           />
         </Field>
-        <Field label="Long description (markdown OK, shown on detail page)">
-          <textarea
-            className="auth-input"
-            style={{ minHeight: 140, fontFamily: "inherit" }}
+<Field label="Long description (markdown OK, shown on detail page)">
+          <TextArea
+                          style={{ minHeight: 140, fontFamily: "inherit" }}
             value={longDescription}
             disabled={!canEdit}
             onChange={(e) => setLongDescription(e.target.value)}
@@ -418,21 +412,19 @@ export function ProviderResourceEditForm({
       </Section>
 
       {/* ── 3. Versioning & access URLs ─────────────────────────────────── */}
-      <Section title="Versioning & access">
+      <Section title={t("sectionVersioning")}>
         <Row>
-          <Field label="License">
-            <input
-              className="auth-input"
-              placeholder="Commercial, Apache-2.0, ..."
+<Field label="License">
+            <Input
+                            placeholder="Commercial, Apache-2.0, ..."
               value={license}
               disabled={!canEdit}
               onChange={(e) => setLicense(e.target.value)}
             />
           </Field>
-          <Field label="Version label">
-            <input
-              className="auth-input"
-              placeholder="200k tokens, Multi-step, ..."
+<Field label="Version label">
+            <Input
+                            placeholder="200k tokens, Multi-step, ..."
               value={versionLabel}
               disabled={!canEdit}
               onChange={(e) => setVersionLabel(e.target.value)}
@@ -440,56 +432,50 @@ export function ProviderResourceEditForm({
           </Field>
         </Row>
         <Row>
-          <Field label="Version number">
-            <input
-              className="auth-input"
-              placeholder="0.1.0"
+<Field label="Version number">
+            <Input
+                            placeholder="0.1.0"
               value={versionNumber}
               disabled={!canEdit}
               onChange={(e) => setVersionNumber(e.target.value)}
             />
           </Field>
-          <Field label="Latency tier">
-            <input
-              className="auth-input"
-              placeholder="0.8s, Async (job), ..."
+<Field label="Latency tier">
+            <Input
+                            placeholder="0.8s, Async (job), ..."
               value={latencyTier}
               disabled={!canEdit}
               onChange={(e) => setLatencyTier(e.target.value)}
             />
           </Field>
         </Row>
-        <Field label="Access URL">
-          <input
-            className="auth-input"
-            placeholder="https://..."
+<Field label="Access URL">
+          <Input
+                          placeholder="https://..."
             value={accessUrl}
             disabled={!canEdit}
             onChange={(e) => setAccessUrl(e.target.value)}
           />
         </Field>
-        <Field label="Source code URL">
-          <input
-            className="auth-input"
-            placeholder="https://github.com/..."
+<Field label="Source code URL">
+          <Input
+                          placeholder="https://github.com/..."
             value={sourceCodeUrl}
             disabled={!canEdit}
             onChange={(e) => setSourceCodeUrl(e.target.value)}
           />
         </Field>
-        <Field label="Documentation URL">
-          <input
-            className="auth-input"
-            placeholder="https://..."
+<Field label="Documentation URL">
+          <Input
+                          placeholder="https://..."
             value={documentationUrl}
             disabled={!canEdit}
             onChange={(e) => setDocumentationUrl(e.target.value)}
           />
         </Field>
-        <Field label="Terms URL">
-          <input
-            className="auth-input"
-            placeholder="https://..."
+<Field label="Terms URL">
+          <Input
+                          placeholder="https://..."
             value={termsUrl}
             disabled={!canEdit}
             onChange={(e) => setTermsUrl(e.target.value)}
@@ -498,8 +484,8 @@ export function ProviderResourceEditForm({
       </Section>
 
       {/* ── 4. Sovereignty ─────────────────────────────────────────────── */}
-      <Section title="Sovereignty">
-        <Field label="Sovereignty bases (one or more)">
+      <Section title={t("sectionSovereignty")}>
+        <Field label={t("fieldSovereigntyBases")}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {sovereigntyBases.map((b) => (
               <label
@@ -535,19 +521,19 @@ export function ProviderResourceEditForm({
               alignItems: "baseline"
             }}
           >
-            <strong style={{ fontSize: 13 }}>Evidence ({evidence.length})</strong>
+            <strong style={{ fontSize: 13 }}>{t("evidenceCount", { count: evidence.length })}</strong>
             <button
               type="button"
               className="r-card-action-link"
               onClick={addEvidence}
               disabled={!canEdit || evidenceTypes.length === 0 || sovereigntyBases.length === 0}
             >
-              <Icon name="plus" size={12} /> Add evidence
+              <Icon name="plus" size={12} /> {t("addEvidence")}
             </button>
           </div>
           {evidence.length === 0 ? (
             <p style={{ color: "var(--text-3)", fontSize: 12, margin: 0 }}>
-              No evidence rows. Sovereignty evidence helps reviewers approve faster.
+              {t("noEvidenceRows")}
             </p>
           ) : null}
           {evidence.map((e, i) => (
@@ -557,26 +543,24 @@ export function ProviderResourceEditForm({
               style={{ padding: 14, display: "grid", gap: 10 }}
             >
               <Row>
-                <Field label="Evidence type">
-                  <select
-                    className="auth-input"
-                    value={e.evidenceTypeCode}
+<Field label="Evidence type">
+                  <Select
+                                  value={e.evidenceTypeCode}
                     disabled={!canEdit}
                     onChange={(ev) =>
                       updateEvidence(i, { evidenceTypeCode: ev.target.value })
                     }
                   >
-                    {evidenceTypes.map((t) => (
-                      <option key={t.code} value={t.code}>
-                        {t.name}
+                    {evidenceTypes.map((et) => (
+                      <option key={et.code} value={et.code}>
+                        {et.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </Field>
-                <Field label="Sovereignty basis">
-                  <select
-                    className="auth-input"
-                    value={e.sovereigntyBasisCode}
+<Field label="Sovereignty basis">
+                  <Select
+                                  value={e.sovereigntyBasisCode}
                     disabled={!canEdit}
                     onChange={(ev) =>
                       updateEvidence(i, { sovereigntyBasisCode: ev.target.value })
@@ -587,21 +571,19 @@ export function ProviderResourceEditForm({
                         {b.name}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </Field>
               </Row>
-              <Field label="Title">
-                <input
-                  className="auth-input"
-                  value={e.title}
+<Field label="Title">
+                <Input
+                                value={e.title}
                   disabled={!canEdit}
                   onChange={(ev) => updateEvidence(i, { title: ev.target.value })}
                 />
               </Field>
-              <Field label="Description">
-                <textarea
-                  className="auth-input"
-                  style={{ minHeight: 70, fontFamily: "inherit" }}
+<Field label="Description">
+                <TextArea
+                                style={{ minHeight: 70, fontFamily: "inherit" }}
                   value={e.description ?? ""}
                   disabled={!canEdit}
                   onChange={(ev) =>
@@ -610,10 +592,9 @@ export function ProviderResourceEditForm({
                 />
               </Field>
               <Row>
-                <Field label="Reference URL">
-                  <input
-                    className="auth-input"
-                    placeholder="https://..."
+<Field label="Reference URL">
+                  <Input
+                                  placeholder="https://..."
                     value={e.referenceUrl ?? ""}
                     disabled={!canEdit}
                     onChange={(ev) =>
@@ -621,10 +602,9 @@ export function ProviderResourceEditForm({
                     }
                   />
                 </Field>
-                <Field label="Reference identifier">
-                  <input
-                    className="auth-input"
-                    placeholder="DPA 2017, ..."
+<Field label="Reference identifier">
+                  <Input
+                                  placeholder="DPA 2017, ..."
                     value={e.referenceIdentifier ?? ""}
                     disabled={!canEdit}
                     onChange={(ev) =>
@@ -633,10 +613,9 @@ export function ProviderResourceEditForm({
                   />
                 </Field>
               </Row>
-              <Field label="Issuing body">
-                <input
-                  className="auth-input"
-                  placeholder="Data Protection Office, ..."
+<Field label="Issuing body">
+                <Input
+                                placeholder="Data Protection Office, ..."
                   value={e.issuingBody ?? ""}
                   disabled={!canEdit}
                   onChange={(ev) =>
@@ -662,7 +641,7 @@ export function ProviderResourceEditForm({
                       updateEvidence(i, { publicVisibility: ev.target.checked })
                     }
                   />
-                  Public
+                  {t("public")}
                 </label>
                 <button
                   type="button"
@@ -670,7 +649,7 @@ export function ProviderResourceEditForm({
                   onClick={() => removeEvidence(i)}
                   disabled={!canEdit}
                 >
-                  <Icon name="trash" size={12} /> Remove
+                  <Icon name="trash" size={12} /> {t("remove")}
                 </button>
               </div>
               <EvidenceFileAttachment
@@ -691,7 +670,7 @@ export function ProviderResourceEditForm({
       </Section>
 
       {/* ── 5. Endpoints ───────────────────────────────────────────────── */}
-      <Section title="Endpoints">
+      <Section title={t("sectionEndpoints")}>
         <div
           style={{
             display: "flex",
@@ -699,19 +678,19 @@ export function ProviderResourceEditForm({
             alignItems: "baseline"
           }}
         >
-          <strong style={{ fontSize: 13 }}>Endpoints ({endpoints.length})</strong>
+          <strong style={{ fontSize: 13 }}>{t("endpointsCount", { count: endpoints.length })}</strong>
           <button
             type="button"
             className="r-card-action-link"
             onClick={addEndpoint}
             disabled={!canEdit || protocols.length === 0 || authMethods.length === 0 || accessModels.length === 0}
           >
-            <Icon name="plus" size={12} /> Add endpoint
+            <Icon name="plus" size={12} /> {t("addEndpoint")}
           </button>
         </div>
         {endpoints.length === 0 ? (
           <p style={{ color: "var(--text-3)", fontSize: 12, margin: 0 }}>
-            No endpoints yet.
+            {t("noEndpoints")}
           </p>
         ) : null}
         {endpoints.map((ep, i) => (
@@ -721,10 +700,9 @@ export function ProviderResourceEditForm({
             style={{ padding: 14, display: "grid", gap: 10 }}
           >
             <Row>
-              <Field label="Protocol">
-                <select
-                  className="auth-input"
-                  value={ep.protocolCode}
+<Field label="Protocol">
+                <Select
+                                value={ep.protocolCode}
                   disabled={!canEdit}
                   onChange={(e) => updateEndpoint(i, { protocolCode: e.target.value })}
                 >
@@ -733,22 +711,20 @@ export function ProviderResourceEditForm({
                       {p.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
-              <Field label="Endpoint URL">
-                <input
-                  className="auth-input"
-                  placeholder="https://..."
+<Field label="Endpoint URL">
+                <Input
+                                placeholder="https://..."
                   value={ep.endpointUrl}
                   disabled={!canEdit}
                   onChange={(e) => updateEndpoint(i, { endpointUrl: e.target.value })}
                 />
               </Field>
             </Row>
-            <Field label="Documentation URL">
-              <input
-                className="auth-input"
-                placeholder="https://..."
+<Field label="Documentation URL">
+              <Input
+                              placeholder="https://..."
                 value={ep.documentationUrl ?? ""}
                 disabled={!canEdit}
                 onChange={(e) =>
@@ -757,10 +733,9 @@ export function ProviderResourceEditForm({
               />
             </Field>
             <Row>
-              <Field label="Auth method">
-                <select
-                  className="auth-input"
-                  value={ep.authMethodCode}
+<Field label="Auth method">
+                <Select
+                                value={ep.authMethodCode}
                   disabled={!canEdit}
                   onChange={(e) =>
                     updateEndpoint(i, { authMethodCode: e.target.value })
@@ -771,12 +746,11 @@ export function ProviderResourceEditForm({
                       {a.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
-              <Field label="Access model">
-                <select
-                  className="auth-input"
-                  value={ep.accessModelCode}
+<Field label="Access model">
+                <Select
+                                value={ep.accessModelCode}
                   disabled={!canEdit}
                   onChange={(e) =>
                     updateEndpoint(i, { accessModelCode: e.target.value })
@@ -787,7 +761,7 @@ export function ProviderResourceEditForm({
                       {a.name}
                     </option>
                   ))}
-                </select>
+                </Select>
               </Field>
             </Row>
             <div
@@ -808,7 +782,7 @@ export function ProviderResourceEditForm({
                     disabled={!canEdit}
                     onChange={(e) => updateEndpoint(i, { primary: e.target.checked })}
                   />
-                  Primary
+                  {t("primary")}
                 </label>
                 <label
                   style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 12 }}
@@ -819,7 +793,7 @@ export function ProviderResourceEditForm({
                     disabled={!canEdit}
                     onChange={(e) => updateEndpoint(i, { active: e.target.checked })}
                   />
-                  Active
+                  {t("active")}
                 </label>
               </div>
               <button
@@ -828,7 +802,7 @@ export function ProviderResourceEditForm({
                 onClick={() => removeEndpoint(i)}
                 disabled={!canEdit}
               >
-                <Icon name="trash" size={12} /> Remove
+                <Icon name="trash" size={12} /> {t("remove")}
               </button>
             </div>
           </div>
@@ -836,7 +810,7 @@ export function ProviderResourceEditForm({
       </Section>
 
       {/* ── 6. Taxonomy tags ───────────────────────────────────────────── */}
-      <Section title="Languages & sectors">
+      <Section title={t("sectionLanguages")}>
         <Field label={`Languages (${languageCodes.length})`}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {languages.map((l) => (
@@ -915,28 +889,18 @@ export function ProviderResourceEditForm({
           background: "var(--bg)"
         }}
       >
-        <Link className="btn btn-secondary" href="/provider/resources">
+<Button href="/provider/resources" intent="secondary">
           Back to resources
-        </Link>
+        </Button>
         {canEdit ? (
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={save}
-            disabled={busy}
-          >
+          <Button intent="secondary" onClick={save} disabled={busy}>
             {pending === "save" ? "Saving..." : "Save changes"}
-          </button>
+          </Button>
         ) : null}
         {canSubmit ? (
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={submitForReview}
-            disabled={busy}
-          >
+          <Button intent="primary" onClick={submitForReview} disabled={busy}>
             {pending === "submit" ? "Submitting..." : "Submit for review"}
-          </button>
+          </Button>
         ) : null}
       </div>
       {canSubmit ? (
@@ -956,13 +920,12 @@ export function ProviderResourceEditForm({
             onChange={(e) => setNotifyOperators(e.target.checked)}
             style={{ accentColor: "var(--primary)" }}
           />
-          <span>Email operators that this resource is awaiting review</span>
+          <span>{t("notifyOperators")}</span>
         </label>
       ) : null}
       {canSubmit ? (
         <p style={{ fontSize: 12, color: "var(--text-3)", margin: 0 }}>
-          Submitting opens an operator review. You can keep editing until the registry moves
-          the record forward.
+          {t("submitHint")}
         </p>
       ) : null}
     </div>
@@ -986,20 +949,6 @@ function Row({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label style={{ display: "grid", gap: 6, fontSize: 13 }}>
-      <span
-        style={{
-          fontSize: 11,
-          color: "var(--text-3)",
-          letterSpacing: "0.08em",
-          textTransform: "uppercase"
-        }}
-      >
-        {label}
-      </span>
-      {children}
-    </label>
-  );
-}
+// Local Field helper removed — file now uses library `<Field>` via the
+// import at the top, which renders the standard `.p-field` aesthetic
+// matching the rest of the admin code.

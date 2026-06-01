@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
+import { Link } from "@/i18n/navigation";
+import { EntityGrid, type EntityColumn } from "@/components/library";
+import { useTranslations } from "next-intl";
 import { StatusPill } from "../StatusPill";
 
 export type ProviderReviewRow = {
@@ -22,13 +23,11 @@ type Props = {
 };
 
 export function ProviderReviewsGrid({ rows, types }: Props) {
-  const columns: FilteredColumn<ProviderReviewRow>[] = [
+  const t = useTranslations("provider.reviews");
+  const columns: EntityColumn<ProviderReviewRow>[] = [
     {
       key: "target",
-      label: "Target",
-      // Link to the provider's editable resource page (works for any
-      // lifecycle state). The public /registry/[slug] page 404s for
-      // non-listed resources, which is what owners hit if we link there.
+      label: t("colTarget"),
       render: (row) =>
         row.targetResourceId ? (
           <Link
@@ -43,24 +42,24 @@ export function ProviderReviewsGrid({ rows, types }: Props) {
     },
     {
       key: "type",
-      label: "Type",
+      label: t("colType"),
       render: (row) => <span className="tag">{row.type}</span>
     },
     {
       key: "status",
-      label: "Status",
+      label: t("colStatus"),
       render: (row) => <StatusPill status={row.status} />
     },
-    { key: "started", label: "Started", render: (row) => row.startedAt ?? "-", mono: true },
+    { key: "started", label: t("colStarted"), render: (row) => row.startedAt ?? "-", mono: true },
     {
       key: "completed",
-      label: "Completed",
+      label: t("colCompleted"),
       render: (row) => row.completedAt ?? "-",
       mono: true
     },
     {
       key: "summary",
-      label: "Decision",
+      label: t("colDecision"),
       render: (row) =>
         row.decisionSummary ? (
           <span style={{ color: "var(--text-2)" }}>{row.decisionSummary}</span>
@@ -84,26 +83,25 @@ export function ProviderReviewsGrid({ rows, types }: Props) {
   ];
 
   return (
-    <FilteredDataTable
+    <EntityGrid
       rows={rows}
       columns={columns}
-      keyOf={(r) => r.id}
       emptyState="No reviews of your resources yet."
       searchPlaceholder="Search reviews by target or decision summary…"
       searchableKeys={["target", "decisionSummary"]}
       filters={[
         {
           key: "type",
-          label: "Type",
-          options: types.map((t) => ({ value: t.name, label: t.name }))
+          label: t("colType"),
+          options: types.map((ty) => ({ value: ty.name, label: ty.name }))
         },
         {
           key: "status",
-          label: "Status",
+          label: t("colStatus"),
           options: [
-            { value: "verified", label: "Decided" },
-            { value: "experimental", label: "In flight" },
-            { value: "isolated", label: "Withdrawn" }
+            { value: "verified", label: t("statusDecided") },
+            { value: "experimental", label: t("statusInFlight") },
+            { value: "isolated", label: t("statusWithdrawn") }
           ]
         }
       ]}

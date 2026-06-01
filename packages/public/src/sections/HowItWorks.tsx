@@ -1,4 +1,5 @@
 import { listActiveHowItWorksSteps } from "@airegistry/core/services/public-cms";
+import { getTranslations } from "next-intl/server";
 import { Reveal } from "../shell/Reveal";
 
 // "How it works" — steps from submission to use. The "Use" step is
@@ -16,16 +17,20 @@ const HI_GRADIENT = `linear-gradient(13deg, ${HI_PRIMARY} 0%, ${HI_SECONDARY} 50
 type Step = { num: number; title: string; desc: string; highlight: boolean };
 
 /** Defence-in-depth fallback if cms_how_it_works_step is empty / unreachable. */
-const FALLBACK_STEPS: Step[] = [
-  { num: 1, title: "Submit", desc: "Provider submits the resource with metadata and sovereignty evidence.", highlight: false },
-  { num: 2, title: "Review", desc: "Reviewer applies the sovereignty rubric and records reviewer notes.", highlight: false },
-  { num: 3, title: "Publish", desc: "Operator publishes the listing and issues the stable AIR-ID.", highlight: false },
-  { num: 4, title: "Discover", desc: "Consumer finds the resource through the portal or discovery API.", highlight: false },
-  { num: 5, title: "Use", desc: "Consumer calls the provider directly - runtime never touches the registry.", highlight: true },
-  { num: 6, title: "Maintain", desc: "Provider keeps metadata accurate; status reflects any changes over time.", highlight: false }
-];
+function getFallbackSteps(t: (key: string) => string): Step[] {
+  return [
+    { num: 1, title: t("step1Title"), desc: t("step1Desc"), highlight: false },
+    { num: 2, title: t("step2Title"), desc: t("step2Desc"), highlight: false },
+    { num: 3, title: t("step3Title"), desc: t("step3Desc"), highlight: false },
+    { num: 4, title: t("step4Title"), desc: t("step4Desc"), highlight: false },
+    { num: 5, title: t("step5Title"), desc: t("step5Desc"), highlight: true },
+    { num: 6, title: t("step6Title"), desc: t("step6Desc"), highlight: false }
+  ];
+}
 
 export async function HowItWorks() {
+  const t = await getTranslations("howItWorks");
+  const fallbackSteps = getFallbackSteps(t);
   let steps: Step[];
   try {
     const rows = await listActiveHowItWorksSteps();
@@ -36,9 +41,9 @@ export async function HowItWorks() {
           desc: r.description,
           highlight: r.highlight
         }))
-      : FALLBACK_STEPS;
+      : fallbackSteps;
   } catch {
-    steps = FALLBACK_STEPS;
+    steps = fallbackSteps;
   }
 
   return (
@@ -46,11 +51,11 @@ export async function HowItWorks() {
       <Reveal className="section-header">
         <div className="eyebrow">
           <span className="dot" />
-          <span>How it works</span>
+          <span>{t("eyebrow")}</span>
         </div>
         <h2>
-          From submission to use,{" "}
-          <span className="gradient-text">in six steps.</span>
+          {t("heading")}{" "}
+          <span className="gradient-text">{t("headingAccent")}</span>
         </h2>
       </Reveal>
 
@@ -135,7 +140,7 @@ export async function HowItWorks() {
                       marginTop: 10
                     }}
                   >
-                    Off-registry
+                    {t("offRegistry")}
                   </div>
                 )}
               </div>

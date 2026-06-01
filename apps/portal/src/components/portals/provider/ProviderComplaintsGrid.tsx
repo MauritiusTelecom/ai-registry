@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { FilteredDataTable, type FilteredColumn } from "../FilteredDataTable";
+import { Link } from "@/i18n/navigation";
+import { EntityGrid, type EntityColumn } from "@/components/library";
+import { useTranslations } from "next-intl";
 import { StatusPill } from "../StatusPill";
 
 export type ProviderComplaintRow = {
@@ -21,11 +22,12 @@ type Props = {
 };
 
 export function ProviderComplaintsGrid({ rows, types }: Props) {
-  const columns: FilteredColumn<ProviderComplaintRow>[] = [
+  const t = useTranslations("provider.complaints");
+  const columns: EntityColumn<ProviderComplaintRow>[] = [
     { key: "ts", label: "Filed", render: (row) => row.ts, mono: true },
     {
       key: "target",
-      label: "Target",
+      label: t("colTarget"),
       render: (row) =>
         row.targetSlug ? (
           <Link
@@ -40,56 +42,55 @@ export function ProviderComplaintsGrid({ rows, types }: Props) {
     },
     {
       key: "type",
-      label: "Type",
+      label: t("colType"),
       render: (row) => <span className="tag">{row.type}</span>
     },
     {
       key: "severity",
-      label: "Severity",
+      label: t("colSeverity"),
       render: (row) => <StatusPill status={row.severity} />
     },
     {
       key: "status",
-      label: "Status",
+      label: t("colStatus"),
       render: (row) => <StatusPill status={row.status} />
     },
     {
       key: "excerpt",
-      label: "Excerpt",
+      label: t("colExcerpt"),
       render: (row) => <span style={{ color: "var(--text-2)" }}>{row.excerpt}</span>
     }
   ];
 
   return (
-    <FilteredDataTable
+    <EntityGrid
       rows={rows}
       columns={columns}
-      keyOf={(r) => r.id}
       emptyState="No complaints filed against your provider or resources."
       searchPlaceholder="Search complaints by target or text excerpt…"
       searchableKeys={["target", "excerpt"]}
       filters={[
         {
           key: "type",
-          label: "Type",
-          options: types.map((t) => ({ value: t.name, label: t.name }))
+          label: t("colType"),
+          options: types.map((ty) => ({ value: ty.name, label: ty.name }))
         },
         {
           key: "severity",
-          label: "Severity",
+          label: t("colSeverity"),
           options: [
-            { value: "active", label: "Low" },
-            { value: "experimental", label: "Medium" },
-            { value: "isolated", label: "High" }
+            { value: "active", label: t("severityLow") },
+            { value: "experimental", label: t("severityMedium") },
+            { value: "isolated", label: t("severityHigh") }
           ]
         },
         {
           key: "status",
-          label: "Status",
+          label: t("colStatus"),
           options: [
-            { value: "experimental", label: "Open / Investigating" },
-            { value: "verified", label: "Resolved" },
-            { value: "isolated", label: "Rejected" }
+            { value: "experimental", label: t("statusOpen") },
+            { value: "verified", label: t("statusResolved") },
+            { value: "isolated", label: t("statusRejected") }
           ]
         }
       ]}

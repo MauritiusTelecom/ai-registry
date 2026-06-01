@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { getBranding } from "@airegistry/core/branding";
 import { DocPage, DocPanel } from "../sections/DocPage";
 import { publicPageMetadata } from "../lib/page-metadata";
@@ -8,72 +9,60 @@ export async function generateMetadata() {
 }
 
 export default async function TermsPage() {
-  const { registryName, operatorName } = await getBranding();
+  const [{ registryName, operatorName }, t] = await Promise.all([
+    getBranding(),
+    getTranslations("terms")
+  ]);
   return (
     <DocPage
       crumb={
         <>
           <Link href="/" style={{ color: "var(--text-3)", textDecoration: "none" }}>
-            Home
+            {t("home")}
           </Link>{" "}
-          · Terms of use
+          · {t("title")}
         </>
       }
-      title="Terms of use"
-      subtitle={`The plain-language terms that govern the use of the ${registryName} public portal and APIs.`}
+      title={t("title")}
+      subtitle={t("pageSubtitle", { registryName })}
     >
-      <DocPanel title="The registry points; the provider operates">
-        <p>
-          {registryName} is a discovery layer. It lists, describes and resolves
-          locally relevant AI resources. It does not host, gateway, proxy, authenticate or
-          rate-limit calls to the resources it lists. When you discover a resource here,
-          you go directly to the provider; the provider&rsquo;s own terms apply to your
-          actual use of the resource.
-        </p>
+      <DocPanel title={t("registryPointsTitle")}>
+        <p>{t("registryPointsBody", { registryName })}</p>
       </DocPanel>
 
-      <DocPanel title="Listing is not endorsement">
+      <DocPanel title={t("listingNotEndorsementTitle")}>
         <p>
-          A public listing means a resource has been submitted and (where applicable)
-          reviewed. It is not a certification, a recommendation, or a guarantee of fitness
-          for any purpose. Read the{" "}
+          {t("listingNotEndorsementBody1")}{" "}
           <Link href="/verification" style={{ color: "var(--text-2)" }}>
-            three governance signals
+            {t("threeGovernanceSignals")}
           </Link>{" "}
-          on each listing to understand what trust is on offer.
+          {t("listingNotEndorsementBody2")}
         </p>
       </DocPanel>
 
-      <DocPanel title="Acceptable use">
+      <DocPanel title={t("acceptableUseTitle")}>
         <p>
-          Use of this portal and its APIs is subject to the{" "}
+          {t("acceptableUseBody1")}{" "}
           <Link href="/acceptable-use" style={{ color: "var(--text-2)" }}>
-            acceptable use policy
+            {t("acceptableUsePolicy")}
           </Link>
-          . In short: do not abuse the API; do not impersonate providers; do not submit
-          resources you do not have the right to publish.
+          {t("acceptableUseBody2")}
         </p>
       </DocPanel>
 
-      <DocPanel title="No warranty">
-        <p>
-          The portal and APIs are provided on an &ldquo;as is&rdquo; basis. The operator
-          ({operatorName}) makes no warranty about the accuracy or completeness of
-          third-party metadata, and is not responsible for the resources providers point
-          to. Liability for any resource rests with its provider.
-        </p>
+      <DocPanel title={t("noWarrantyTitle")}>
+        <p>{t("noWarrantyBody", { operatorName })}</p>
       </DocPanel>
 
-      <DocPanel title="Changes">
+      <DocPanel title={t("changesTitle")}>
         <p>
-          These terms may evolve as the registry matures. Material changes are recorded in
-          the{" "}
+          {t("changesBody1")}{" "}
           <Link href="/audit-log" style={{ color: "var(--text-2)" }}>
-            public audit log
+            {t("publicAuditLog")}
           </Link>
-          . Questions go to{" "}
+          {t("changesBody2")}{" "}
           <Link href="/contact" style={{ color: "var(--text-2)" }}>
-            the contact form
+            {t("theContactForm")}
           </Link>
           .
         </p>

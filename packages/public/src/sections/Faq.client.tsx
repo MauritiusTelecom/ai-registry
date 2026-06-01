@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Icon } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";
 
@@ -16,6 +17,7 @@ export type FaqClientItem = {
  * server while preserving the open/close interaction in the browser.
  */
 export function FaqClient({ items }: { items: FaqClientItem[] }) {
+  const t = useTranslations("faq");
   const [open, setOpen] = useState<number>(0);
   return (
     <section className="section">
@@ -25,10 +27,10 @@ export function FaqClient({ items }: { items: FaqClientItem[] }) {
       >
         <div className="eyebrow" style={{ margin: "0 auto" }}>
           <span className="dot" />
-          <span>Common questions</span>
+          <span>{t("eyebrow")}</span>
         </div>
         <h2 style={{ textAlign: "center" }}>
-          <span className="gradient-text">Frequently Asked Questions</span>
+          <span className="gradient-text">{t("heading")}</span>
         </h2>
       </Reveal>
       <div className="faq">

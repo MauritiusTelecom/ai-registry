@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useCallback, useState, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@airegistry/ui-kit";
-import { REGISTRATION_MSG } from "@/lib/portal/authoring-messages";
 
 type Props = {
   /** When true, server already knows user can author - skip client gate for first paint. */
@@ -30,6 +30,7 @@ export function GatedPublishButton({
   className,
   children
 }: Props) {
+  const t = useTranslations("portalPublish");
   const { user, loading } = useAuth();
   const [toast, setToast] = useState<string | null>(null);
 
@@ -38,7 +39,7 @@ export function GatedPublishButton({
   // Prefer the explicit server prop (always accurate at first paint). Fall
   // back to the client-hydrated useAuth value only when the prop wasn't
   // passed. If both are unknown — i.e. anonymous viewer — assume the email
-  // gate isn't the blocker; we'd rather show REGISTRATION_MSG than an
+  // gate isn't the blocker; we'd rather show the registration message than an
   // incorrect "Verify your email" notice.
   const effectiveEmailVerified =
     typeof emailVerified === "boolean"
@@ -47,11 +48,11 @@ export function GatedPublishButton({
 
   const showBlocked = useCallback(() => {
     if (!effectiveEmailVerified) {
-      setToast("Verify your email address first. Use the banner link or visit the verification page.");
+      setToast(t("verifyEmailFirst"));
       return;
     }
-    setToast(REGISTRATION_MSG);
-  }, [effectiveEmailVerified]);
+    setToast(t("registrationMsg"));
+  }, [effectiveEmailVerified, t]);
 
   if (allowed) {
     return (

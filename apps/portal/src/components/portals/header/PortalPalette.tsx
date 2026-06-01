@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Icon } from "@airegistry/ui-kit";
 
 /**
@@ -42,6 +43,7 @@ function applyPalette(p: Palette) {
 }
 
 export function PortalPalette() {
+  const t = useTranslations("portalPalette");
   const [open, setOpen] = useState(false);
   const [idx, setIdx] = useState<number>(0);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -92,14 +94,14 @@ export function PortalPalette() {
         type="button"
         className="p-icon-btn"
         onClick={() => setOpen((v) => !v)}
-        aria-label="Accent palette"
+        aria-label={t("title")}
       >
         <Icon name="palette" size={15} />
       </button>
       {open ? (
         <div className="p-dropdown" style={{ width: 220 }}>
           <div className="p-dropdown-head">
-            <div className="p-dropdown-title">Accent palette</div>
+            <div className="p-dropdown-title">{t("title")}</div>
           </div>
           <div
             style={{

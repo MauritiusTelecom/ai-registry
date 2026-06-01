@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { AuthShell } from "../auth-ui/AuthShell";
 import { ResetPasswordForm } from "../auth-ui/ResetPasswordForm";
 
@@ -9,15 +10,18 @@ export default async function ResetTokenPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+  const t = await getTranslations("auth");
   return (
     <AuthShell
-      eyebrow="Reset password"
+      eyebrow={t("resetPassword")}
       title={
         <>
-          Set a <span className="gradient-text">new password</span>.
+          {t.rich("setNewPasswordTitle", {
+            accent: (chunks) => <span className="gradient-text">{chunks}</span>
+          })}
         </>
       }
-      subtitle="Choose at least 8 characters. The link expires one hour after it was issued."
+      subtitle={t("setNewPasswordSubtitle")}
     >
       <ResetPasswordForm token={token} />
     </AuthShell>

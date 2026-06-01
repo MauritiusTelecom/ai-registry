@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 type Density = "compact" | "balanced" | "spacious";
 
@@ -65,6 +66,7 @@ function applyDensity(d: Density) {
  * Mirrors `tweaks-panel.jsx` from the prototype but only mounts in development.
  */
 export function TweaksPanel() {
+  const t = useTranslations("tweaks");
   const [palette, setPalette] = useState(0);
   const [density, setDensity] = useState<Density>("compact");
 
@@ -76,11 +78,11 @@ export function TweaksPanel() {
   }, [density]);
 
   return (
-    <aside className="tweaks-panel" aria-label="Design tweaks (dev only)">
-      <div className="tweaks-panel-title">Tweaks · dev</div>
+    <aside className="tweaks-panel" aria-label={t("title")}>
+      <div className="tweaks-panel-title">{t("title")}</div>
 
       <div className="tweaks-section">
-        <div className="tweaks-section-label">Palette</div>
+        <div className="tweaks-section-label">{t("palette")}</div>
         <div className="tweaks-options">
           {PALETTES.map((p, idx) => (
             <button
@@ -96,7 +98,7 @@ export function TweaksPanel() {
       </div>
 
       <div className="tweaks-section">
-        <div className="tweaks-section-label">Density</div>
+        <div className="tweaks-section-label">{t("density")}</div>
         <div className="tweaks-options">
           {(["compact", "balanced", "spacious"] as const).map((d) => (
             <button

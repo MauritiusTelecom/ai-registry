@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { SOVEREIGNTY_CHECKLIST_ITEMS, type ChecklistAnswerCode } from "@airegistry/sdk";
-import { withBase } from "@airegistry/sdk";
+import { useRouter } from "@/i18n/navigation";
+import { SOVEREIGNTY_CHECKLIST_ITEMS, type ChecklistAnswerCode, withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
+import { Button } from "@/components/library";
+import { useTranslations } from "next-intl";
 
 type Props = {
   reviewId: string;
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
+  const t = useTranslations("adminReviewDecide");
   const router = useRouter();
   const [decision, setDecision] = useState<"approve" | "reject" | "request_changes">("request_changes");
   const [summary, setSummary] = useState("");
@@ -20,8 +22,6 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
     for (const item of SOVEREIGNTY_CHECKLIST_ITEMS) init[item.itemCode] = "yes";
     return init;
   });
-  // Email toggle. Default ON so existing behavior is preserved; admins can
-  // untick to record the decision without notifying the provider.
   const [notifyByEmail, setNotifyByEmail] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -49,14 +49,14 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setError(data.error ?? "Request failed");
+        setError(data.error ?? t("requestFailed"));
         setBusy(false);
         return;
       }
       router.push("/admin/reviews");
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
       setBusy(false);
     }
   }
@@ -64,12 +64,12 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
   return (
     <div style={{ display: "grid", gap: 20 }}>
       <p style={{ fontSize: 14, color: "var(--text-2)" }}>
-        Resource: <strong>{resourceTitle}</strong>
+        {t("resourceLabel")} <strong>{resourceTitle}</strong>
       </p>
 
       <label style={{ display: "grid", gap: 8 }}>
         <span style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-3)" }}>
-          Decision
+          {t("decisionLabel")}
         </span>
         <select
           className="glass"
@@ -77,15 +77,15 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
           value={decision}
           onChange={(e) => setDecision(e.target.value as typeof decision)}
         >
-          <option value="approve">Approve (list publicly)</option>
-          <option value="reject">Reject → needs update</option>
-          <option value="request_changes">Request changes → needs update</option>
+          <option value="approve">{t("optionApprove")}</option>
+          <option value="reject">{t("optionReject")}</option>
+          <option value="request_changes">{t("optionRequestChanges")}</option>
         </select>
       </label>
 
       {decision === "approve" ? (
         <div style={{ display: "grid", gap: 14 }}>
-          <div style={{ fontSize: 13, fontWeight: 600 }}>§11 checklist</div>
+          <div style={{ fontSize: 13, fontWeight: 600 }}>{t("checklistTitle")}</div>
           {SOVEREIGNTY_CHECKLIST_ITEMS.map((item) => (
             <label key={item.itemCode} style={{ display: "grid", gap: 6 }}>
               <span style={{ fontSize: 13, color: "var(--text-2)" }}>{item.question}</span>
@@ -100,9 +100,9 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
                   }))
                 }
               >
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-                <option value="n_a">N/A</option>
+                <option value="yes">{t("checklistYes")}</option>
+                <option value="no">{t("checklistNo")}</option>
+                <option value="n_a">{t("checklistNA")}</option>
               </select>
             </label>
           ))}
@@ -111,7 +111,7 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
 
       <label style={{ display: "grid", gap: 8 }}>
         <span style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-3)" }}>
-          Summary (required)
+          {t("summaryLabel")}
         </span>
         <textarea
           className="glass"
@@ -119,7 +119,7 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
           style={{ padding: 12, borderRadius: 8 }}
           value={summary}
           onChange={(e) => setSummary(e.target.value)}
-          placeholder="Decision rationale for the audit trail"
+          placeholder={t("summaryPlaceholder")}
         />
       </label>
 
@@ -139,7 +139,7 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
           onChange={(e) => setNotifyByEmail(e.target.checked)}
           style={{ accentColor: "var(--primary)" }}
         />
-        <span>Email the provider's contacts about this decision</span>
+        <span>{t("emailProviderDecision")}</span>
       </label>
 
       {error ? (
@@ -148,9 +148,9 @@ export function ReviewDecideForm({ reviewId, resourceTitle }: Props) {
         </p>
       ) : null}
 
-      <button type="button" className="btn btn-primary" disabled={busy} onClick={() => void submit()}>
+<Button intent="primary" disabled={busy} onClick={() => void submit()}>
         {busy ? "Saving…" : "Submit decision"}
-      </button>
+      </Button>
     </div>
   );
 }

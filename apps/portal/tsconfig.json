@@ -5,6 +5,8 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./src/*"],
+      "@/components/library": ["../../src/components/library"],
+      "@/components/library/*": ["../../src/components/library/*"],
 
       "@/lib/prisma": ["../../packages/core/src/lib/prisma"],
 
@@ -12,7 +14,12 @@
       "@/lib/theme-cookie": ["./src/lib/theme-cookie"],
       "@/lib/public-origin": ["./src/lib/public-origin"],
       "@/lib/portal/*": ["./src/lib/portal/*"],
-      "@/lib/portals/*": ["./src/lib/portals/*"]
+      "@/lib/portals/*": ["./src/lib/portals/*"],
+
+      "@airegistry/ui-kit": ["../../packages/ui-kit/src/index.ts"],
+      "@airegistry/ui-kit/*": ["../../packages/ui-kit/src/*"],
+      "@airegistry/public": ["../../packages/public/src/index.ts"],
+      "@airegistry/public/*": ["../../packages/public/src/*"]
     }
   },
   "include": [

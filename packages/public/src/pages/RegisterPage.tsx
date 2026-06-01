@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { AuthShell } from "../auth-ui/AuthShell";
 import { RegisterForm } from "../auth-ui/RegisterForm";
@@ -9,22 +10,24 @@ export const metadata = { title: "Create an account" };
 export default async function RegisterPage() {
   const user = await getCurrentUser();
   if (user) redirect("/portal");
+  const t = await getTranslations("auth");
 
   return (
     <AuthShell
-      eyebrow="Create account"
+      eyebrow={t("register")}
       title={
         <>
-          Register as a{" "}
-          <span className="gradient-text">Sovereign AI provider</span>.
+          {t.rich("registerTitle", {
+            accent: (chunks) => <span className="gradient-text">{chunks}</span>
+          })}
         </>
       }
-      subtitle="Provider accounts can publish, maintain, and request reviews on the resources they operate."
+      subtitle={t("registerSubtitle")}
       footer={
         <>
-          Already have an account?{" "}
+          {t("alreadyRegistered")}{" "}
           <Link href="/login" style={{ color: "var(--text-2)" }}>
-            Sign in
+            {t("signIn")}
           </Link>
         </>
       }

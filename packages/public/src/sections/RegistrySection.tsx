@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import type { PublicRegistryListResponse, RegistryCard } from "@airegistry/sdk";
 import { Icon, type IconName } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";
@@ -38,11 +39,11 @@ const RESOURCES: Resource[] = [
   { id: "mcp-cadastre", kind: "skill", glyph: "MCP", title: "mcp/cadastre-search", provider: "Land Information & Mapping", status: "verified", desc: "Boundary, ownership and zoning lookups against the national cadastre.", context: "MCP 2025-06", latency: "450ms", region: "MU", license: "Public records", tags: ["mcp", "cadastre", "official"] }
 ];
 
-const KINDS: { id: "all" | Resource["kind"]; label: string; icon: IconName }[] = [
-  { id: "all", label: "All resources", icon: "layers" },
-  { id: "model", label: "Models", icon: "cpu" },
-  { id: "agent", label: "Agents", icon: "agent" },
-  { id: "skill", label: "Skills", icon: "zap" }
+const KINDS: { id: "all" | Resource["kind"]; labelKey: string; icon: IconName }[] = [
+  { id: "all", labelKey: "allResources", icon: "layers" },
+  { id: "model", labelKey: "models", icon: "cpu" },
+  { id: "agent", labelKey: "agents", icon: "agent" },
+  { id: "skill", labelKey: "skills", icon: "zap" }
 ];
 
 const STATUS_FILTERS: Resource["status"][] = [
@@ -55,10 +56,10 @@ const STATUS_FILTERS: Resource["status"][] = [
 
 const KIND_SET = new Set<string>(["model", "agent", "skill"]);
 
-const KIND_LABEL: Record<Resource["kind"], string> = {
-  model: "Model",
-  agent: "Agent",
-  skill: "Skill"
+const KIND_LABEL_KEY: Record<Resource["kind"], string> = {
+  model: "model",
+  agent: "agent",
+  skill: "skill"
 };
 
 function cardToResource(card: RegistryCard): Resource {
@@ -100,7 +101,7 @@ function resourcesListQuery(opts: {
   return withBase(q ? `/api/resources?${q}` : "/api/resources");
 }
 
-function FeatureResourceCard({ resource }: { resource: Resource }) {
+function FeatureResourceCard({ resource, t }: { resource: Resource; t: ReturnType<typeof useTranslations<"registrySection">> }) {
   const detailHref = resource.slug ? `/registry/${resource.slug}` : null;
   const body = (
     <>
@@ -111,25 +112,25 @@ function FeatureResourceCard({ resource }: { resource: Resource }) {
           <div className="r-provider">{resource.provider}</div>
         </div>
         <div className={`r-status ${resource.status}`}>
-          {KIND_LABEL[resource.kind]}
+          {t(KIND_LABEL_KEY[resource.kind] as "model" | "agent" | "skill")}
         </div>
       </div>
       <div className="r-desc">{resource.desc}</div>
       <div className="r-meta">
         <div className="r-meta-row">
-          <span className="r-meta-label">Context</span>
+          <span className="r-meta-label">{t("context")}</span>
           <span className="r-meta-value">{resource.context}</span>
         </div>
         <div className="r-meta-row">
-          <span className="r-meta-label">Latency</span>
+          <span className="r-meta-label">{t("latency")}</span>
           <span className="r-meta-value">{resource.latency}</span>
         </div>
         <div className="r-meta-row">
-          <span className="r-meta-label">Region</span>
+          <span className="r-meta-label">{t("region")}</span>
           <span className="r-meta-value">{resource.region}</span>
         </div>
         <div className="r-meta-row">
-          <span className="r-meta-label">License</span>
+          <span className="r-meta-label">{t("license")}</span>
           <span className="r-meta-value">{resource.license}</span>
         </div>
       </div>
@@ -140,7 +141,7 @@ function FeatureResourceCard({ resource }: { resource: Resource }) {
       </div>
       <div className="r-card-actions">
         <span className="r-card-action-link" aria-hidden="true">
-          <Icon name="eye" size={12} /> View details
+          <Icon name="eye" size={12} /> {t("viewDetails")}
         </span>
       </div>
     </>
@@ -182,6 +183,8 @@ export function RegistrySection({
   /** When set (e.g. from `/registry?kind=model`), the matching kind tab is pre-selected. */
   initialKind?: (typeof KINDS)[number]["id"];
 }) {
+  const t = useTranslations("registrySection");
+  const tCommon = useTranslations("common");
   const { jurisdictionDisplayName } = usePublicBranding();
   const [activeKind, setActiveKind] = useState<(typeof KINDS)[number]["id"]>(
     initialKind ?? "all"
@@ -255,7 +258,7 @@ export function RegistrySection({
         await fetchPage({ cursor: null, append: false, signal: ac.signal });
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
-        setError(e instanceof Error ? e.message : "Could not load registry");
+        setError(e instanceof Error ? e.message : t("errorLoad"));
         setApiRows([]);
       } finally {
         setLoading(false);
@@ -271,7 +274,7 @@ export function RegistrySection({
     try {
       await fetchPage({ cursor: nextCursor, append: true, signal: new AbortController().signal });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Load more failed");
+      setError(e instanceof Error ? e.message : t("errorLoadMore"));
     } finally {
       setLoadingMore(false);
     }
@@ -321,20 +324,22 @@ export function RegistrySection({
         <Reveal className="section-header">
           <div className="eyebrow">
             <span className="dot" />
-            <span>The Registry</span>
+            <span>{t("eyebrow")}</span>
           </div>
           <h2>
-            Discover what {jurisdictionDisplayName} can{" "}
-            <span className="gradient-text">trust and integrate</span>.
+            {t.rich("heading", {
+              jurisdiction: jurisdictionDisplayName,
+              accent: (chunks) => <span className="gradient-text">{chunks}</span>
+            })}
           </h2>
           <p>
-            The registry points to locally-relevant AI resources - never hosts them. Each listing
-            carries a verifiable provider, a sovereignty review, and a stable AIR-ID under{" "}
-            <span className="mono" style={{ color: "var(--text-2)" }}>air://</span>.
+            {t.rich("description", {
+              mono: (chunks) => <span className="mono" style={{ color: "var(--text-2)" }}>{chunks}</span>
+            })}
           </p>
           {dataSource === "api" && !loading && !error ? (
             <p style={{ fontSize: 13, color: "var(--text-3)", marginTop: 8 }}>
-              Showing {filtered.length} of {apiTotal} public listing{apiTotal === 1 ? "" : "s"}.
+              {t("showingCount", { count: filtered.length, total: apiTotal })}
             </p>
           ) : null}
         </Reveal>
@@ -345,7 +350,7 @@ export function RegistrySection({
           <div className="search-input">
             <Icon name="search" size={15} />
             <input
-              placeholder="Search resources, providers, AIR-IDs…"
+              placeholder={t("searchPlaceholder")}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               aria-busy={dataSource === "api" && loading}
@@ -361,7 +366,7 @@ export function RegistrySection({
                 onClick={() => setActiveKind(kind.id)}
               >
                 <Icon name={kind.icon} size={13} />
-                {kind.label}
+                {t(kind.labelKey as "allResources" | "models" | "agents" | "skills")}
                 <span className="tab-count">{counts[kind.id] ?? 0}</span>
               </button>
             ))}
@@ -396,14 +401,14 @@ export function RegistrySection({
             fontFamily: "IBM Plex Mono, monospace"
           }}
         >
-          Loading catalogue…
+          {t("loadingCatalogue")}
         </div>
       ) : null}
 
       <div className="registry-grid" style={{ opacity: dataSource === "api" && loading ? 0.4 : 1 }}>
         {filtered.map((resource, index) => (
           <Reveal key={resource.id} delay={index * 35}>
-            <FeatureResourceCard resource={resource} />
+            <FeatureResourceCard resource={resource} t={t} />
           </Reveal>
         ))}
         {!loading && filtered.length === 0 && (
@@ -416,7 +421,7 @@ export function RegistrySection({
               fontFamily: "IBM Plex Mono, monospace"
             }}
           >
-            No resources match these filters.
+            {t("noMatch")}
           </div>
         )}
       </div>
@@ -429,7 +434,7 @@ export function RegistrySection({
             disabled={loadingMore}
             onClick={() => void loadMore()}
           >
-            {loadingMore ? "Loading…" : "Load more"}
+            {loadingMore ? tCommon("loadingMore") : tCommon("loadMore")}
           </button>
         </div>
       ) : null}

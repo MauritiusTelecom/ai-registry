@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { Icon, type IconName } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";
 
@@ -13,36 +14,36 @@ type ResourceKind = "model" | "agent" | "skill";
 
 const TYPES: {
   icon: IconName;
-  eyebrow: string;
-  title: string;
-  desc: string;
+  eyebrowKey: string;
+  titleKey: string;
+  descKey: string;
   sample: string;
   tone: Tone;
   kind: ResourceKind;
 }[] = [
   {
     icon: "doc",
-    eyebrow: "Type · Model",
-    title: "Models",
-    desc: "Language, vision or domain models trained on or aware of local context, language and norms.",
+    eyebrowKey: "modelEyebrow",
+    titleKey: "modelTitle",
+    descKey: "modelDesc",
     sample: "model/mu-llm/kreol-1",
     tone: "primary",
     kind: "model"
   },
   {
     icon: "agent",
-    eyebrow: "Type · Agent",
-    title: "Agents",
-    desc: "Autonomous workflows that act on local processes - registrations, filings, public-service navigation.",
+    eyebrowKey: "agentEyebrow",
+    titleKey: "agentTitle",
+    descKey: "agentDesc",
     sample: "agent/mu-agent/service-finder",
     tone: "tertiary",
     kind: "agent"
   },
   {
     icon: "shield",
-    eyebrow: "Type · Skill",
-    title: "Skills",
-    desc: "Packaged expertise - tax, legal, accounting workflows - ready to plug into agents.",
+    eyebrowKey: "skillEyebrow",
+    titleKey: "skillTitle",
+    descKey: "skillDesc",
     sample: "skill/mu-skill/fiscaliste-mu",
     tone: "emerald",
     kind: "skill"
@@ -79,34 +80,31 @@ const TONE: Record<
   }
 };
 
-export function WhatGetsListed() {
+export async function WhatGetsListed() {
+  const t = await getTranslations("whatGetsListed");
   return (
     <section className="section">
       <Reveal className="section-header">
         <div className="eyebrow">
           <span className="dot" />
-          <span>What gets listed</span>
+          <span>{t("eyebrow")}</span>
         </div>
         <h2>
-          Three resource types.{" "}
-          <span className="gradient-text">Composable by AI.</span>
+          {t("heading")}{" "}
+          <span className="gradient-text">{t("headingAccent")}</span>
         </h2>
-        <p>
-          The registry covers three kinds of sovereign AI resource - models, agents
-          and skills. Each has its own listing template and stable AIR-ID, so consumers
-          and AI systems can find and combine them programmatically.
-        </p>
+        <p>{t("description")}</p>
       </Reveal>
 
       <Reveal>
         <div className="types-grid">
-          {TYPES.map((t) => {
-            const tone = TONE[t.tone];
+          {TYPES.map((typ) => {
+            const tone = TONE[typ.tone];
             return (
               <Link
-                href={`/registry?kind=${t.kind}`}
+                href={`/registry?kind=${typ.kind}`}
                 className="feature-card type-card"
-                key={t.title}
+                key={typ.titleKey}
                 style={{
                   position: "relative",
                   padding: 26,
@@ -148,7 +146,7 @@ export function WhatGetsListed() {
                     zIndex: 1
                   }}
                 >
-                  <Icon name={t.icon} size={22} stroke={1.8} />
+                  <Icon name={typ.icon} size={22} stroke={1.8} />
                 </div>
                 <div
                   style={{
@@ -162,7 +160,7 @@ export function WhatGetsListed() {
                     zIndex: 1
                   }}
                 >
-                  {t.eyebrow}
+                  {t(typ.eyebrowKey as any)}
                 </div>
                 <h4
                   style={{
@@ -175,7 +173,7 @@ export function WhatGetsListed() {
                     color: "var(--text)"
                   }}
                 >
-                  {t.title}
+                  {t(typ.titleKey as any)}
                 </h4>
                 <p
                   style={{
@@ -187,7 +185,7 @@ export function WhatGetsListed() {
                     zIndex: 1
                   }}
                 >
-                  {t.desc}
+                  {t(typ.descKey as any)}
                 </p>
                 <span
                   style={{
@@ -203,7 +201,7 @@ export function WhatGetsListed() {
                     zIndex: 1
                   }}
                 >
-                  {t.sample}
+                  {typ.sample}
                 </span>
               </Link>
             );

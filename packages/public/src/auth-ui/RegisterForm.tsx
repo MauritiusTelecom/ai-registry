@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { withBase } from "@airegistry/sdk";
 import { registryFetch } from "@airegistry/ui-kit";
 
 export function RegisterForm() {
+  const t = useTranslations("auth");
   const [name, setName] = useState("");
   const [organisationName, setOrganisationName] = useState("");
   const [email, setEmail] = useState("");
@@ -32,7 +34,7 @@ export function RegisterForm() {
         redirectTo?: string;
       };
       if (res.status !== 201) {
-        setError(data.error ?? "Registration failed.");
+        setError(data.error ?? t("registrationFailed"));
         return;
       }
       if (data.verifyUrl) setDevVerifyUrl(data.verifyUrl);
@@ -50,8 +52,10 @@ export function RegisterForm() {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         <p style={{ color: "var(--text-2)", lineHeight: 1.5 }}>
-          We sent a verification link to <strong>{submittedEmail}</strong>. Open it within 24
-          hours to activate your account, then sign in to access the provider portal.
+          {t.rich("verificationSent", {
+            email: submittedEmail,
+            strong: (chunks) => <strong>{chunks}</strong>
+          })}
         </p>
         {devVerifyUrl ? (
           <div
@@ -66,15 +70,15 @@ export function RegisterForm() {
               wordBreak: "break-all"
             }}
           >
-            Dev: open this verification link → {devVerifyUrl}
+            {t("devVerifyLink")} {devVerifyUrl}
           </div>
         ) : null}
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <Link href="/login?registered=1" className="btn btn-primary">
-            Go to sign in
+            {t("goToSignIn")}
           </Link>
           <Link href="/auth/verify" className="btn" style={{ color: "var(--text-2)" }}>
-            Resend verification email
+            {t("resendVerification")}
           </Link>
         </div>
       </div>
@@ -83,7 +87,7 @@ export function RegisterForm() {
 
   return (
     <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <FormField label="Full name" htmlFor="reg-name">
+      <FormField label={t("fullName")} htmlFor="reg-name">
         <input
           id="reg-name"
           type="text"
@@ -95,7 +99,7 @@ export function RegisterForm() {
           className="auth-input"
         />
       </FormField>
-      <FormField label="Organisation (optional)" htmlFor="reg-org">
+      <FormField label={t("organisationOptional")} htmlFor="reg-org">
         <input
           id="reg-org"
           type="text"
@@ -105,7 +109,7 @@ export function RegisterForm() {
           className="auth-input"
         />
       </FormField>
-      <FormField label="Email" htmlFor="reg-email">
+      <FormField label={t("email")} htmlFor="reg-email">
         <input
           id="reg-email"
           type="email"
@@ -116,7 +120,7 @@ export function RegisterForm() {
           className="auth-input"
         />
       </FormField>
-      <FormField label="Password (min 8 chars)" htmlFor="reg-password">
+      <FormField label={t("passwordMin")} htmlFor="reg-password">
         <input
           id="reg-password"
           type="password"
@@ -139,7 +143,7 @@ export function RegisterForm() {
         disabled={busy}
         style={{ marginTop: 6 }}
       >
-        {busy ? "Creating account…" : "Create account"}
+        {busy ? t("creatingAccount") : t("createAccount")}
       </button>
     </form>
   );
@@ -172,4 +176,3 @@ function FormField({
     </div>
   );
 }
-

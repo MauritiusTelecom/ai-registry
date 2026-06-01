@@ -1,5 +1,6 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { findProviderForDetail } from "@airegistry/sdk";
 import {
   deriveDisplayStatus,
@@ -22,7 +23,10 @@ export default async function ProviderDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const provider = await findProviderForDetail({ slug });
+  const [provider, t] = await Promise.all([
+    findProviderForDetail({ slug }),
+    getTranslations("providerDetail")
+  ]);
   if (!provider) notFound();
 
   const status = deriveProviderDisplayStatus(provider.status.code);
@@ -30,7 +34,6 @@ export default async function ProviderDetailPage({
   const glyph = deriveGlyph(provider.displayName || provider.slug);
   const since = provider.createdAt.toISOString().slice(0, 7);
 
-  // Public verification documents for this provider.
   const publicDocuments = await loadProviderDocuments({
     providerId: provider.id,
     includePrivate: false
@@ -47,7 +50,7 @@ export default async function ProviderDetailPage({
               href="/providers"
               style={{ color: "var(--text-3)", textDecoration: "none" }}
             >
-              Providers
+              {t("providersLink")}
             </Link>{" "}
             · {kind} · {provider.displayName}
           </>
@@ -88,11 +91,11 @@ export default async function ProviderDetailPage({
                   color: "var(--text-3)"
                 }}
               >
-                {kind} · listed {since}
+                {kind} · {t("listedSince")} {since}
               </div>
               {provider.legalName && provider.legalName !== provider.displayName ? (
                 <div style={{ fontSize: 14, color: "var(--text-2)", marginTop: 4 }}>
-                  Trading as <strong>{provider.displayName}</strong> · legal name{" "}
+                  {t("tradingAs")} <strong>{provider.displayName}</strong> · {t("legalName")}{" "}
                   {provider.legalName}
                 </div>
               ) : null}
@@ -104,30 +107,30 @@ export default async function ProviderDetailPage({
           </div>
 
           {/* Profile panel */}
-          <h3 style={{ marginBottom: 12 }}>Profile</h3>
+          <h3 style={{ marginBottom: 12 }}>{t("profile")}</h3>
           <div className="glass" style={{ padding: 28, marginBottom: 24, display: "grid", gap: 16 }}>
-            <Row label="Type" value={`${provider.type.name} (${kind})`} />
+            <Row label={t("type")} value={`${provider.type.name} (${kind})`} />
             <Row
-              label="Home jurisdiction"
+              label={t("homeJurisdiction")}
               value={`${provider.homeJurisdiction.code}${
                 provider.homeJurisdiction.name
                   ? ` · ${provider.homeJurisdiction.name}`
                   : ""
               }`}
             />
-            <Row label="Operator status" value={provider.status.name} />
-            <Row label="Listed since" value={since} />
-            <Row label="Public listings" value={String(listings.length)} />
+            <Row label={t("operatorStatus")} value={provider.status.name} />
+            <Row label={t("listedSince")} value={since} />
+            <Row label={t("publicListings")} value={String(listings.length)} />
           </div>
 
           {/* Contact panel */}
           {(provider.websiteUrl || provider.documentationUrl || provider.contactEmail) ? (
             <>
-              <h3 style={{ marginBottom: 12 }}>Reach the provider</h3>
+              <h3 style={{ marginBottom: 12 }}>{t("reachProvider")}</h3>
               <div className="glass" style={{ padding: 28, marginBottom: 24, display: "grid", gap: 16 }}>
                 {provider.websiteUrl ? (
                   <Row
-                    label="Website"
+                    label={t("website")}
                     value={
                       <a
                         href={provider.websiteUrl}
@@ -142,7 +145,7 @@ export default async function ProviderDetailPage({
                 ) : null}
                 {provider.documentationUrl ? (
                   <Row
-                    label="Documentation"
+                    label={t("documentation")}
                     value={
                       <a
                         href={provider.documentationUrl}
@@ -157,7 +160,7 @@ export default async function ProviderDetailPage({
                 ) : null}
                 {provider.contactEmail ? (
                   <Row
-                    label="Public contact"
+                    label={t("publicContact")}
                     value={
                       <a
                         href={`mailto:${provider.contactEmail}`}
@@ -173,7 +176,7 @@ export default async function ProviderDetailPage({
           ) : null}
 
           {/* Listings */}
-          <h3 style={{ marginBottom: 12 }}>Public listings ({listings.length})</h3>
+          <h3 style={{ marginBottom: 12 }}>{t("publicListingsCount", { count: listings.length })}</h3>
           {listings.length === 0 ? (
             <div
               className="glass"
@@ -184,7 +187,7 @@ export default async function ProviderDetailPage({
                 fontSize: 14
               }}
             >
-              This provider has no public resources in the registry yet.
+              {t("noPublicResources")}
             </div>
           ) : (
             <div className="glass" style={{ padding: 28, marginBottom: 24 }}>
@@ -226,7 +229,7 @@ export default async function ProviderDetailPage({
                           }}
                         >
                           <span>{r.resourceType.name}</span>
-                          <span>lifecycle: {r.lifecycleStatus.code}</span>
+                          <span>{t("lifecycleLabel")}: {r.lifecycleStatus.code}</span>
                         </div>
                       </div>
                       <div className={`r-status ${rStatus}`}>
@@ -240,7 +243,7 @@ export default async function ProviderDetailPage({
             </div>
           )}
 
-          {/* Verification documents (public ones) */}
+          {/* Verification documents */}
           {publicDocuments.length > 0 && (
             <div
               className="glass"
@@ -254,7 +257,7 @@ export default async function ProviderDetailPage({
                   marginBottom: 12
                 }}
               >
-                Verification documents
+                {t("verificationDocuments")}
               </h2>
               <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "grid", gap: 8 }}>
                 {publicDocuments.map((d) => (
@@ -304,13 +307,13 @@ export default async function ProviderDetailPage({
               paddingTop: 18
             }}
           >
-            Listing is not endorsement. The registry points; the provider operates; the
-            hosting environment secures. Sovereignty review and official-resource
-            authorisation are independent governance signals - see the{" "}
-            <Link href="/governance" style={{ color: "var(--text-2)" }}>
-              governance charter
-            </Link>
-            .
+            {t.rich("footerDisclaimer", {
+              link: (chunks) => (
+                <Link href="/governance" style={{ color: "var(--text-2)" }}>
+                  {chunks}
+                </Link>
+              )
+            })}
           </div>
         </div>
       </section>

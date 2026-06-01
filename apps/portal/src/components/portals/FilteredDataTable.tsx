@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 /**
  * Client-side filterable / searchable wrapper around DataTable's layout.
@@ -71,25 +71,13 @@ export function FilteredDataTable<Row extends Record<string, unknown>>({
   columns,
   keyOf,
   emptyState,
-  searchPlaceholder = "Search…",
+  searchPlaceholder,
   searchableKeys = [],
   filters = []
 }: FilteredDataTableProps<Row>) {
-  // Seed q + filter values from the URL on first paint so a deep link
-  // (e.g. /provider/complaints?q=alice) lands pre-filtered. The header
-  // search uses this pattern when it routes a complaint/review/incident
-  // hit into the provider CRUD list pages.
-  const searchParams = useSearchParams();
-  const initialQ = searchParams.get("q") ?? "";
-  const initialFilters: Record<string, string> = {};
-  for (const f of filters) {
-    const v = searchParams.get(f.key);
-    if (v) initialFilters[f.key] = v;
-  }
-
-  const [q, setQ] = useState(initialQ);
-  const [filterValues, setFilterValues] =
-    useState<Record<string, string>>(initialFilters);
+  const t = useTranslations("portalDataTable");
+  const [q, setQ] = useState("");
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
 
   const filteredRows = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -128,8 +116,8 @@ export function FilteredDataTable<Row extends Record<string, unknown>>({
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder={searchPlaceholder}
-          aria-label="Search"
+          placeholder={searchPlaceholder ?? t("searchPlaceholder")}
+          aria-label={t("searchAria")}
           className="p-grid-search"
         />
         {filters.map((f) => (
@@ -141,7 +129,7 @@ export function FilteredDataTable<Row extends Record<string, unknown>>({
                 setFilterValues((prev) => ({ ...prev, [f.key]: e.target.value }))
               }
             >
-              <option value="">All</option>
+              <option value="">{t("all")}</option>
               {f.options.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}
@@ -155,13 +143,13 @@ export function FilteredDataTable<Row extends Record<string, unknown>>({
             type="button"
             className="p-grid-clear"
             onClick={resetAll}
-            aria-label="Clear search and filters"
+            aria-label={t("clearFiltersAria")}
           >
-            Clear
+            {t("clear")}
           </button>
         ) : null}
         <span className="p-grid-count" aria-live="polite">
-          {filteredRows.length} of {rows.length}
+          {t("rowCount", { shown: filteredRows.length, total: rows.length })}
         </span>
       </div>
 
@@ -169,7 +157,7 @@ export function FilteredDataTable<Row extends Record<string, unknown>>({
         <div className="p-empty">
           <div className="p-empty-text">
             {anyFilterActive
-              ? "No rows match your search and filters."
+              ? t("noRowsMatch")
               : emptyState}
           </div>
         </div>

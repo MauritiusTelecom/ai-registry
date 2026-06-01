@@ -1,10 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useAuth } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
-import { registryFetch } from "@airegistry/ui-kit";
+
+import { useRouter } from "@/i18n/navigation";
+import { useState } from "react";
+import { Button, Field, Input, Select, TextArea } from "@/components/library";
+import { useTranslations } from "next-intl";
+import { registryFetch, useAuth } from "@airegistry/ui-kit";
 
 export type OrgFormOption = { code: string; name: string };
 
@@ -31,6 +33,7 @@ export function ProviderOrganisationForm({
 }) {
   const router = useRouter();
   const { refresh } = useAuth();
+  const t = useTranslations("providerOrgForm");
   const [displayName, setDisplayName] = useState(initial.displayName);
   const [slug, setSlug] = useState(initial.slug);
   const [contactEmail, setContactEmail] = useState(initial.contactEmail);
@@ -68,14 +71,14 @@ export function ProviderOrganisationForm({
       });
       const data = (await res.json()) as { error?: string; ok?: boolean };
       if (!res.ok) {
-        setError(data.error ?? "Save failed");
+        setError(data.error ?? t("saveFailed"));
         return;
       }
-      setOk("Organisation saved. You can now publish resources.");
+      setOk(t("saveSuccess"));
       await refresh();
       router.refresh();
     } catch {
-      setError("Network error");
+      setError(t("networkError"));
     } finally {
       setSaving(false);
     }
@@ -88,105 +91,94 @@ export function ProviderOrganisationForm({
       style={{ padding: "22px 24px", maxWidth: 560, borderRadius: 12 }}
     >
       <h2 className="p-card-title" style={{ marginBottom: 16 }}>
-        Organisation
+        {t("title")}
       </h2>
       <p style={{ fontSize: 13, color: "var(--text-2)", marginTop: 0, marginBottom: 20 }}>
-        Complete these details to register your provider workspace. Required before you can create or
-        submit catalogue resources.
+        {t("description")}
       </p>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label htmlFor="org-display">Display name</label>
-        <input
-          id="org-display"
-          className="p-input"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          required
-          minLength={2}
-        />
-      </div>
+<div style={{ display: "grid", gap: 14, marginBottom: 20 }}>
+        <Field id="org-display" label="Display name" required>
+          <Input
+            id="org-display"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            required
+            minLength={2}
+          />
+        </Field>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label htmlFor="org-slug">Organisation slug</label>
-        <input
+        <Field
           id="org-slug"
-          className="p-input"
-          value={slug}
-          onChange={(e) => setSlug(e.target.value.toLowerCase())}
+          label="Organisation slug"
           required
-          pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
-          minLength={2}
-          maxLength={80}
-        />
-        <span style={{ fontSize: 12, color: "var(--text-3)" }}>
-          Lowercase letters, digits, and hyphens. Used in public provider URLs.
-        </span>
-      </div>
-
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label htmlFor="org-email">Contact email</label>
-        <input
-          id="org-email"
-          type="email"
-          className="p-input"
-          value={contactEmail}
-          onChange={(e) => setContactEmail(e.target.value)}
-          required
-        />
-      </div>
-
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label htmlFor="org-type">Provider type</label>
-        <select
-          id="org-type"
-          className="p-input p-select"
-          value={providerTypeCode}
-          onChange={(e) => setProviderTypeCode(e.target.value)}
+hint="Lowercase letters, digits, and hyphens. Used in public provider URLs."
         >
-          {providerTypes.map((t) => (
-            <option key={t.code} value={t.code}>
-              {t.name}
-            </option>
-          ))}
-        </select>
-      </div>
+          <Input
+            id="org-slug"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value.toLowerCase())}
+            required
+            pattern="[a-z0-9]+(?:-[a-z0-9]+)*"
+            minLength={2}
+            maxLength={80}
+          />
+        </Field>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label htmlFor="org-jur">Home jurisdiction</label>
-        <select
-          id="org-jur"
-          className="p-input p-select"
-          value={jurisdictionCode}
-          onChange={(e) => setJurisdictionCode(e.target.value)}
-        >
-          {jurisdictions.map((j) => (
-            <option key={j.code} value={j.code}>
-              {j.name} ({j.code})
-            </option>
-          ))}
-        </select>
-      </div>
+        <Field id="org-email" label="Contact email" required>
+          <Input
+            id="org-email"
+            type="email"
+            value={contactEmail}
+            onChange={(e) => setContactEmail(e.target.value)}
+            required
+          />
+        </Field>
 
-      <div className="p-field" style={{ marginBottom: 14 }}>
-        <label htmlFor="org-legal">Legal name (optional)</label>
-        <input
-          id="org-legal"
-          className="p-input"
-          value={legalName}
-          onChange={(e) => setLegalName(e.target.value)}
-        />
-      </div>
+        <Field id="org-type" label="Provider type" required>
+          <Select
+            id="org-type"
+            value={providerTypeCode}
+            onChange={(e) => setProviderTypeCode(e.target.value)}
+          >
+            {providerTypes.map((t) => (
+              <option key={t.code} value={t.code}>
+                {t.name}
+              </option>
+            ))}
+          </Select>
+        </Field>
 
-      <div className="p-field" style={{ marginBottom: 20 }}>
-        <label htmlFor="org-desc">Public description (optional)</label>
-        <textarea
-          id="org-desc"
-          className="p-input"
-          rows={3}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+        <Field id="org-jur" label="Home jurisdiction" required>
+          <Select
+            id="org-jur"
+            value={jurisdictionCode}
+            onChange={(e) => setJurisdictionCode(e.target.value)}
+          >
+            {jurisdictions.map((j) => (
+              <option key={j.code} value={j.code}>
+                {j.name} ({j.code})
+              </option>
+            ))}
+          </Select>
+        </Field>
+
+        <Field id="org-legal" label="Legal name (optional)">
+          <Input
+            id="org-legal"
+            value={legalName}
+            onChange={(e) => setLegalName(e.target.value)}
+          />
+        </Field>
+
+        <Field id="org-desc" label="Public description (optional)">
+          <TextArea
+            id="org-desc"
+            rows={3}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </Field>
       </div>
 
       {error ? (
@@ -200,9 +192,9 @@ export function ProviderOrganisationForm({
         </p>
       ) : null}
 
-      <button type="submit" className="btn btn-primary" disabled={saving}>
+<Button type="submit" intent="primary" disabled={saving}>
         {saving ? "Saving…" : "Save organisation"}
-      </button>
+      </Button>
     </form>
   );
 }

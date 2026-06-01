@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Icon, type IconName } from "@airegistry/ui-kit";
+import { useTranslations } from "next-intl";
 import { Reveal } from "../shell/Reveal";
 import { PageHero } from "@airegistry/ui-kit";
 import { usePublicBranding } from "../lib/branding-context";
@@ -10,180 +11,82 @@ import { usePublicBranding } from "../lib/branding-context";
 // Section content - sourced from AI_Registry_Decision_Makers_Guide.html
 // ============================================================
 
-const LAYERS: { num: string; label: string; title: string; desc: string; meta: string }[] = [
-  {
-    num: "01",
-    label: "Layer 01 · Discovery",
-    title: "Registry Operator",
-    desc: "Runs the public portal, discovery API and review workflow. Issues AIR-IDs and maintains the audit log.",
-    meta: "Issues: air://air.mu/{type}/..."
-  },
-  {
-    num: "02",
-    label: "Layer 02 · Operations",
-    title: "Provider",
-    desc: "Owns the resource: endpoints, documentation, terms of access, version control. Remains fully responsible.",
-    meta: "Owns: endpoint · ToS · versioning"
-  },
-  {
-    num: "03",
-    label: "Layer 03 · Workload",
-    title: "Hosting Environment",
-    desc: "Runs the actual workload - sovereign cloud, GPU, on-prem - and may issue runtime SVIDs via SPIFFE/SPIRE.",
-    meta: "Provides: compute · runtime identity"
-  }
-];
+type TranslationFn = ReturnType<typeof useTranslations>;
 
-const OPERATOR_PROFILES = [
-  "National telcos",
-  "Govt digital agencies",
-  "Identity authorities",
-  "Sovereign cloud operators",
-  "Public-interest tech",
-  "Standards bodies",
-  "National CERTs"
-];
+function getLayers(t: TranslationFn) {
+  return [
+    { num: "01", label: t("layer1Label"), title: t("layer1Title"), desc: t("layer1Desc"), meta: t("layer1Meta") },
+    { num: "02", label: t("layer2Label"), title: t("layer2Title"), desc: t("layer2Desc"), meta: t("layer2Meta") },
+    { num: "03", label: t("layer3Label"), title: t("layer3Title"), desc: t("layer3Desc"), meta: t("layer3Meta") }
+  ];
+}
 
-const INTEGRATOR_ROLES: { icon: IconName; title: string; desc: string; tone: "primary" | "tertiary" | "secondary" | "emerald" }[] = [
-  {
-    icon: "flow",
-    title: "Implementation & onboarding",
-    desc: "Help providers prepare submissions, gather sovereignty evidence and integrate AIR-IDs into existing systems.",
-    tone: "primary"
-  },
-  {
-    icon: "edit",
-    title: "Independent review",
-    desc: "Supply reviewer capacity, subject-matter expertise and second-opinion checks for the sovereignty rubric.",
-    tone: "tertiary"
-  },
-  {
-    icon: "layers",
-    title: "Custom build & extension",
-    desc: "Extend AIR-Core for a jurisdiction - schema additions, sector configuration, federation tooling.",
-    tone: "secondary"
-  },
-  {
-    icon: "users",
-    title: "Adoption & enablement",
-    desc: "Train provider teams, run discovery workshops and embed the registry into national AI strategies.",
-    tone: "emerald"
-  }
-];
+function getOperatorProfiles(t: TranslationFn) {
+  return [
+    t("operatorProfile1"),
+    t("operatorProfile2"),
+    t("operatorProfile3"),
+    t("operatorProfile4"),
+    t("operatorProfile5"),
+    t("operatorProfile6"),
+    t("operatorProfile7")
+  ];
+}
 
-const AUDIENCES: { icon: IconName; title: string; sub: string; points: string[] }[] = [
-  {
-    icon: "flag",
-    title: "Governments & policy-makers",
-    sub: "Sovereign AI strategy",
-    points: [
-      "A sovereign locus for AI discovery, distinct from global platforms and free of vendor lock-in.",
-      "Practical instrument for national AI strategy: visible capabilities, named providers, transparent review.",
-      "Foundation for DPI that complements identity, payments and data-exchange platforms."
-    ]
-  },
-  {
-    icon: "shield",
-    title: "Industry & providers",
-    sub: "Credible publication",
-    points: [
-      "A credible place to publish locally relevant AI resources to a known audience.",
-      "Provider verification and official-resource status - signals trust without legal exposure.",
-      "Standardised metadata that lets resources plug into AI systems, agents and integrations."
-    ]
-  },
-  {
-    icon: "cpu",
-    title: "Developers & AI systems",
-    sub: "Machine-readable discovery",
-    points: [
-      "Single, machine-readable place to discover sovereign AI by jurisdiction, capability or sovereignty basis.",
-      "Stable identifiers (AIR-IDs) that survive provider rebrands or endpoint changes.",
-      "Clear endpoint and protocol metadata: REST today, MCP and A2A as ecosystems mature."
-    ]
-  },
-  {
-    icon: "users",
-    title: "Citizens & businesses",
-    sub: "Local relevance, visible trust",
-    points: [
-      "AI systems that can find and use locally accurate tools - tax calculators, legal references, services.",
-      "Visible governance signals that distinguish 'officially endorsed' from 'self-declared'.",
-      "A sovereign alternative to opaque global directories where local relevance is invisible."
-    ]
-  }
-];
+function getIntegratorRoles(t: TranslationFn): { icon: IconName; title: string; desc: string; tone: "primary" | "tertiary" | "secondary" | "emerald" }[] {
+  return [
+    { icon: "flow", title: t("integratorRole1Title"), desc: t("integratorRole1Desc"), tone: "primary" },
+    { icon: "edit", title: t("integratorRole2Title"), desc: t("integratorRole2Desc"), tone: "tertiary" },
+    { icon: "layers", title: t("integratorRole3Title"), desc: t("integratorRole3Desc"), tone: "secondary" },
+    { icon: "users", title: t("integratorRole4Title"), desc: t("integratorRole4Desc"), tone: "emerald" }
+  ];
+}
 
-const FEDERATION_PRINCIPLES = [
-  {
-    label: "Principle 01",
-    title: "Bilateral & explicit",
-    desc: "Registries federate by deliberate agreement; no automatic or transitive trust."
-  },
-  {
-    label: "Principle 02",
-    title: "Metadata first",
-    desc: "Discovery references - not shared databases or runtime access."
-  },
-  {
-    label: "Principle 03",
-    title: "Runtime identity external",
-    desc: "Hosting providers may bind workloads to AIR-IDs via SPIFFE/SPIRE - outside registry scope."
-  },
-  {
-    label: "Principle 04",
-    title: "Sovereignty preserved",
-    desc: "Each registry remains independently operated, governed and populated."
-  }
-];
+function getAudiences(t: TranslationFn): { icon: IconName; title: string; sub: string; points: string[] }[] {
+  return [
+    { icon: "flag", title: t("audience1Title"), sub: t("audience1Sub"), points: [t("audience1Point1"), t("audience1Point2"), t("audience1Point3")] },
+    { icon: "shield", title: t("audience2Title"), sub: t("audience2Sub"), points: [t("audience2Point1"), t("audience2Point2"), t("audience2Point3")] },
+    { icon: "cpu", title: t("audience3Title"), sub: t("audience3Sub"), points: [t("audience3Point1"), t("audience3Point2"), t("audience3Point3")] },
+    { icon: "users", title: t("audience4Title"), sub: t("audience4Sub"), points: [t("audience4Point1"), t("audience4Point2"), t("audience4Point3")] }
+  ];
+}
 
-const TRACKS: { num: string; title: string; desc: string; cta?: string; href?: string; featured: boolean }[] = [
-  {
-    num: "Track 01",
-    title: "Adopt",
-    desc: "Stand up a national or municipal AI Registry using the open-source AIR-Core platform with your own configuration.",
-    cta: "Deploy AIR-Core",
-    href: "https://github.com/MauritiusTelecom/ai-registry",
-    featured: true
-  },
-  {
-    num: "Track 02",
-    title: "Contribute",
-    desc: "Improve the open-source codebase, propose schema changes, share country-specific configuration or sovereignty rubrics.",
-    cta: "Open a PR",
-    href: "https://github.com/MauritiusTelecom/ai-registry/pulls",
-    featured: false
-  },
-  {
-    num: "Track 03",
-    title: "Partner",
-    desc: "Co-publish governance models, federation agreements, or shared reviewer rosters with peer registries.",
-    cta: "Start a conversation",
-    href: "/contact",
-    featured: false
-  },
-  {
-    num: "Track 04",
-    title: "Observe",
-    desc: "Track this registry, study the operating model, and decide if and how to deploy in your context.",
-    featured: false
-  }
-];
+function getFederationPrinciples(t: TranslationFn) {
+  return [
+    { label: t("federationPrinciple1Label"), title: t("federationPrinciple1Title"), desc: t("federationPrinciple1Desc") },
+    { label: t("federationPrinciple2Label"), title: t("federationPrinciple2Title"), desc: t("federationPrinciple2Desc") },
+    { label: t("federationPrinciple3Label"), title: t("federationPrinciple3Title"), desc: t("federationPrinciple3Desc") },
+    { label: t("federationPrinciple4Label"), title: t("federationPrinciple4Title"), desc: t("federationPrinciple4Desc") }
+  ];
+}
 
-const NAV_ITEMS = [
-  { id: "platform", label: "The AI Registry" },
-  { id: "operators", label: "Operators" },
-  { id: "integrators", label: "Integrators" },
-  { id: "audiences", label: "Audiences" },
-  { id: "federation", label: "Federation" },
-  { id: "engage", label: "Engage" }
-];
+function getTracks(t: TranslationFn): { num: string; title: string; desc: string; cta?: string; href?: string; featured: boolean }[] {
+  return [
+    { num: t("track1Label"), title: t("track1Title"), desc: t("track1Desc"), cta: t("track1Cta"), href: "https://github.com/MauritiusTelecom/ai-registry", featured: true },
+    { num: t("track2Label"), title: t("track2Title"), desc: t("track2Desc"), cta: t("track2Cta"), href: "https://github.com/MauritiusTelecom/ai-registry/pulls", featured: false },
+    { num: t("track3Label"), title: t("track3Title"), desc: t("track3Desc"), cta: t("track3Cta"), href: "/contact", featured: false },
+    { num: t("track4Label"), title: t("track4Title"), desc: t("track4Desc"), featured: false }
+  ];
+}
+
+function getNavItems(t: TranslationFn) {
+  return [
+    { id: "platform", label: t("navPlatform") },
+    { id: "operators", label: t("navOperators") },
+    { id: "integrators", label: t("navIntegrators") },
+    { id: "audiences", label: t("navAudiences") },
+    { id: "federation", label: t("navFederation") },
+    { id: "engage", label: t("navEngage") }
+  ];
+}
 
 // ============================================================
 // Sub-sections
 // ============================================================
 
 function AnchorNav() {
+  const t = useTranslations("ecosystem");
+  const navItems = getNavItems(t);
   return (
     <div
       style={{
@@ -211,7 +114,7 @@ function AnchorNav() {
             background: "rgba(var(--primary-rgb), 0.04)"
           }}
         >
-          {NAV_ITEMS.map((n) => (
+          {navItems.map((n) => (
             <a
               key={n.id}
               href={`#${n.id}`}
@@ -244,22 +147,20 @@ function AnchorNav() {
 }
 
 function ThePlatform() {
+  const t = useTranslations("ecosystem");
+  const layers = getLayers(t);
   return (
     <section className="section" id="platform" style={{ scrollMarginTop: 120 }}>
       <Reveal className="section-header">
         <div className="eyebrow">
           <span className="dot" />
-          <span>The AI Registry</span>
+          <span>{t("platformEyebrow")}</span>
         </div>
         <h2>
-          A small, focused idea:{" "}
-          <span className="gradient-text">a registry that points.</span>
+          {t("platformHeading")}{" "}
+          <span className="gradient-text">{t("platformHeadingAccent")}</span>
         </h2>
-        <p>
-          The AI Registry separates three things that other platforms collapse.
-          Discovery, provider operations, and hosting - each operated by a different
-          party. The registry is only the first layer, and it is never on the runtime path.
-        </p>
+        <p>{t("platformDescription")}</p>
       </Reveal>
 
       <Reveal>
@@ -270,7 +171,7 @@ function ThePlatform() {
             gap: 16
           }}
         >
-          {LAYERS.map((layer) => (
+          {layers.map((layer) => (
             <div
               key={layer.num}
               className="feature-card"
@@ -361,8 +262,8 @@ function ThePlatform() {
             fontSize: 14
           }}
         >
-          <strong style={{ color: "var(--text)" }}>The registry points.</strong>{" "}
-          &nbsp;The provider operates.&nbsp; The hosting environment secures.
+          <strong style={{ color: "var(--text)" }}>{t("registryPoints")}</strong>{" "}
+          &nbsp;{t("providerOperates")}&nbsp; {t("hostingSecures")}
         </div>
       </Reveal>
     </section>
@@ -370,34 +271,36 @@ function ThePlatform() {
 }
 
 function WhoRunsIt() {
+  const t = useTranslations("ecosystem");
   const { operatorName, portalDomain } = usePublicBranding();
   const portalUrl = `https://${portalDomain}`;
+  const operatorProfiles = getOperatorProfiles(t);
   return (
     <section className="section" id="operators" style={{ scrollMarginTop: 120 }}>
       <Reveal className="section-header">
         <div className="eyebrow">
           <span className="dot" />
-          <span>Who runs it</span>
+          <span>{t("operatorsEyebrow")}</span>
         </div>
         <h2>
-          Built for <span className="gradient-text">DPI enablers.</span>
+          {t("operatorsHeading")} <span className="gradient-text">{t("operatorsHeadingAccent")}</span>
         </h2>
         <p>
-          Best operated by organisations that already run trusted, neutral,
-          national-scale digital services on behalf of broader ecosystems - the
-          legitimacy, capability and convening power matter as much as the technology.{" "}
-          <strong style={{ color: "var(--text)" }}>
-            {operatorName} operates the reference instance at{" "}
-            <a
-              href={portalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: "var(--primary)", textDecoration: "none" }}
-            >
-              {portalDomain}
-            </a>
-            .
-          </strong>
+          {t.rich("operatorsDescription", {
+            operatorName,
+            portalDomain,
+            strong: (chunks) => <strong style={{ color: "var(--text)" }}>{chunks}</strong>,
+            link: (chunks) => (
+              <a
+                href={portalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: "var(--primary)", textDecoration: "none" }}
+              >
+                {chunks}
+              </a>
+            )
+          })}
         </p>
       </Reveal>
 
@@ -435,7 +338,7 @@ function WhoRunsIt() {
               <Icon name="check" size={18} stroke={1.8} />
             </div>
             <h4 style={{ margin: "0 0 14px", fontSize: 17, fontWeight: 500 }}>
-              What makes a DPI enabler
+              {t("dpiEnablerTitle")}
             </h4>
             <ul
               style={{
@@ -448,10 +351,10 @@ function WhoRunsIt() {
                 gap: 8
               }}
             >
-              <li>Trusted to operate critical digital infrastructure for many parties, not just for themselves.</li>
-              <li>Already integrated with government, industry and developer ecosystems.</li>
-              <li>Comfortable with standards, interconnection and long-lived public services.</li>
-              <li>Predictable governance and operational continuity over years, not project cycles.</li>
+              <li>{t("dpiEnablerPoint1")}</li>
+              <li>{t("dpiEnablerPoint2")}</li>
+              <li>{t("dpiEnablerPoint3")}</li>
+              <li>{t("dpiEnablerPoint4")}</li>
             </ul>
           </div>
 
@@ -480,13 +383,13 @@ function WhoRunsIt() {
               <Icon name="users" size={18} stroke={1.8} />
             </div>
             <h4 style={{ margin: "0 0 6px", fontSize: 17, fontWeight: 500 }}>
-              Natural operator profiles
+              {t("operatorProfilesTitle")}
             </h4>
             <p style={{ color: "var(--text-2)", fontSize: 13.5, margin: "0 0 14px" }}>
-              In any given country, one or two organisations typically stand out.
+              {t("operatorProfilesDesc")}
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {OPERATOR_PROFILES.map((p) => (
+              {operatorProfiles.map((p) => (
                 <span
                   key={p}
                   style={{
@@ -540,12 +443,10 @@ function WhoRunsIt() {
               <Icon name="layers" size={18} stroke={1.8} />
             </div>
             <h5 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 500 }}>
-              Telcos - operator
+              {t("telcosTitle")}
             </h5>
             <p style={{ margin: 0, color: "var(--text-2)", fontSize: 13.5, lineHeight: 1.55 }}>
-              National infrastructure, enterprise ecosystems, interconnection, deep
-              government relationships, hosting adjacency and sovereign-cloud ambitions
-              - though hosting AI remains separate from operating the registry.
+              {t("telcosDesc")}
             </p>
           </div>
 
@@ -574,12 +475,10 @@ function WhoRunsIt() {
               <Icon name="shield" size={18} stroke={1.8} />
             </div>
             <h5 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 500 }}>
-              Government - policy sponsor
+              {t("governmentTitle")}
             </h5>
             <p style={{ margin: 0, color: "var(--text-2)", fontSize: 13.5, lineHeight: 1.55 }}>
-              The most resilient model is a partnership: government provides policy
-              legitimacy and sector convening; the operator (telco or other DPI
-              enabler) provides platform operations and technical implementation.
+              {t("governmentDesc")}
             </p>
           </div>
         </div>
@@ -589,6 +488,8 @@ function WhoRunsIt() {
 }
 
 function Integrators() {
+  const t = useTranslations("ecosystem");
+  const integratorRoles = getIntegratorRoles(t);
   const tones: Record<string, { rgb: string; color: string }> = {
     primary: { rgb: "var(--primary-rgb)", color: "var(--primary)" },
     tertiary: { rgb: "var(--tertiary-rgb)", color: "var(--tertiary)" },
@@ -601,17 +502,12 @@ function Integrators() {
       <Reveal className="section-header">
         <div className="eyebrow">
           <span className="dot" />
-          <span>Integration partners</span>
+          <span>{t("integratorsEyebrow")}</span>
         </div>
         <h2>
-          The connective tissue - <span className="gradient-text">Integrators.</span>
+          {t("integratorsHeading")} <span className="gradient-text">{t("integratorsHeadingAccent")}</span>
         </h2>
-        <p>
-          Registry, providers, hosting and identity are the operating layers. Integrators
-          are the connective tissue - the system integrators, advisories, reviewer pools
-          and specialists who help providers publish, jurisdictions deploy and ecosystems
-          mature.
-        </p>
+        <p>{t("integratorsDescription")}</p>
       </Reveal>
 
       <Reveal>
@@ -622,7 +518,7 @@ function Integrators() {
             gap: 14
           }}
         >
-          {INTEGRATOR_ROLES.map((r) => {
+          {integratorRoles.map((r) => {
             const tone = tones[r.tone];
             return (
               <div
@@ -680,17 +576,19 @@ function Integrators() {
 }
 
 function ForWhom() {
+  const t = useTranslations("ecosystem");
+  const audiences = getAudiences(t);
   return (
     <section className="section" id="audiences" style={{ scrollMarginTop: 120 }}>
       <Reveal className="section-header">
         <div className="eyebrow">
           <span className="dot" />
-          <span>For whom</span>
+          <span>{t("audiencesEyebrow")}</span>
         </div>
         <h2>
-          Value at <span className="gradient-text">every layer of the ecosystem.</span>
+          {t("audiencesHeading")} <span className="gradient-text">{t("audiencesHeadingAccent")}</span>
         </h2>
-        <p>Small in scope, broad in impact. Here&rsquo;s what changes for each audience.</p>
+        <p>{t("audiencesDescription")}</p>
       </Reveal>
 
       <Reveal>
@@ -701,7 +599,7 @@ function ForWhom() {
             gap: 16
           }}
         >
-          {AUDIENCES.map((a, idx) => {
+          {audiences.map((a, idx) => {
             const tones = [
               { rgb: "var(--primary-rgb)", color: "var(--primary)" },
               { rgb: "var(--tertiary-rgb)", color: "var(--tertiary)" },
@@ -775,23 +673,20 @@ function ForWhom() {
 }
 
 function LongTermVision() {
+  const t = useTranslations("ecosystem");
   const { registryName } = usePublicBranding();
+  const federationPrinciples = getFederationPrinciples(t);
   return (
     <section className="section" id="federation" style={{ scrollMarginTop: 120 }}>
       <Reveal className="section-header">
         <div className="eyebrow">
           <span className="dot" />
-          <span>The long-term vision</span>
+          <span>{t("federationEyebrow")}</span>
         </div>
         <h2>
-          Federation - <span className="gradient-text">trust without merging.</span>
+          {t("federationHeading")} <span className="gradient-text">{t("federationHeadingAccent")}</span>
         </h2>
-        <p>
-          No country&rsquo;s AI ecosystem exists in isolation. Federation lets registries
-          trust each other&rsquo;s metadata <em>without merging</em>. Each side keeps its
-          sovereignty rubric, status labels and audit trail. Not an MVP requirement -
-          but the registry is designed so it doesn&rsquo;t preclude federation later.
-        </p>
+        <p>{t("federationDescription")}</p>
       </Reveal>
 
       <Reveal>
@@ -843,7 +738,7 @@ function LongTermVision() {
                 color: "var(--text-2)"
               }}
             >
-              Bilateral · Metadata-only
+              {t("federationBilateral")}
             </div>
             <div
               style={{
@@ -863,7 +758,7 @@ function LongTermVision() {
                 color: "var(--text-2)"
               }}
             >
-              Sovereignty preserved
+              {t("federationSovereigntyLabel")}
             </div>
           </div>
 
@@ -896,7 +791,7 @@ function LongTermVision() {
                 peer
               </span>
             </div>
-            <div style={{ fontSize: 12, color: "var(--text-2)" }}>Peer Registry</div>
+            <div style={{ fontSize: 12, color: "var(--text-2)" }}>{t("federationPeerRegistry")}</div>
           </div>
         </div>
 
@@ -907,7 +802,7 @@ function LongTermVision() {
             gap: 14
           }}
         >
-          {FEDERATION_PRINCIPLES.map((fp) => (
+          {federationPrinciples.map((fp) => (
             <div
               key={fp.label}
               className="feature-card"
@@ -943,30 +838,30 @@ function LongTermVision() {
 }
 
 function GetInvolved() {
+  const t = useTranslations("ecosystem");
   const { operatorName, portalDomain, openSourceRepoUrl } = usePublicBranding();
+  const baseTracks = getTracks(t);
   const tracks = [
-    { ...TRACKS[0]!, href: openSourceRepoUrl },
-    { ...TRACKS[1]!, href: `${openSourceRepoUrl.replace(/\/$/, "")}/pulls` },
-    TRACKS[2]!,
-    {
-      ...TRACKS[3]!,
-      desc: `Track ${portalDomain}, study the operating model, and decide if and how to deploy in your context.`
-    }
+    { ...baseTracks[0]!, href: openSourceRepoUrl },
+    { ...baseTracks[1]!, href: `${openSourceRepoUrl.replace(/\/$/, "")}/pulls` },
+    baseTracks[2]!,
+    { ...baseTracks[3]!, desc: t("track4Desc", { portalDomain }) }
   ];
   return (
     <section className="section" id="engage" style={{ scrollMarginTop: 120 }}>
       <Reveal className="section-header">
         <div className="eyebrow">
           <span className="dot" />
-          <span>Get involved</span>
+          <span>{t("engageEyebrow")}</span>
         </div>
         <h2>
-          Four ways to engage. <span className="gradient-text">Pick yours.</span>
+          {t("engageHeading")} <span className="gradient-text">{t("engageHeadingAccent")}</span>
         </h2>
         <p>
-          Intentionally small, open and sovereign. The value comes from <em>restraint</em>
-          {" "}- and from others deploying and governing their own. {operatorName} is
-          building the reference; the next steps are adoption, contribution and partnership.
+          {t.rich("engageDescription", {
+            operatorName,
+            em: (chunks) => <em>{chunks}</em>
+          })}
         </p>
       </Reveal>
 
@@ -978,14 +873,14 @@ function GetInvolved() {
             gap: 16
           }}
         >
-          {tracks.map((t) => {
-            const hasHref = Boolean(t.href);
-            const isExternal = hasHref && t.href!.startsWith("http");
+          {tracks.map((track) => {
+            const hasHref = Boolean(track.href);
+            const isExternal = hasHref && track.href!.startsWith("http");
             const LinkEl: React.ElementType = hasHref ? (isExternal ? "a" : Link) : "div";
             return (
               <LinkEl
-                key={t.num}
-                {...(hasHref ? { href: t.href } : {})}
+                key={track.num}
+                {...(hasHref ? { href: track.href } : {})}
                 {...(isExternal
                   ? { target: "_blank", rel: "noopener noreferrer" }
                   : {})}
@@ -994,10 +889,10 @@ function GetInvolved() {
                   position: "relative",
                   padding: 22,
                   borderRadius: 14,
-                  border: t.featured
+                  border: track.featured
                     ? "1px solid rgba(var(--primary-rgb), 0.40)"
                     : "1px solid var(--border)",
-                  background: t.featured
+                  background: track.featured
                     ? "linear-gradient(160deg, rgba(var(--primary-rgb), 0.10), var(--panel))"
                     : "var(--panel)",
                   textDecoration: "none",
@@ -1012,11 +907,11 @@ function GetInvolved() {
                     fontSize: 11,
                     letterSpacing: "0.12em",
                     textTransform: "uppercase",
-                    color: t.featured ? "var(--primary)" : "var(--text-2)",
+                    color: track.featured ? "var(--primary)" : "var(--text-2)",
                     marginBottom: 10
                   }}
                 >
-                  {t.num}
+                  {track.num}
                 </div>
                 <h4
                   style={{
@@ -1024,7 +919,7 @@ function GetInvolved() {
                     fontSize: 18,
                     fontWeight: 500,
                     letterSpacing: "-0.01em",
-                    ...(t.featured
+                    ...(track.featured
                       ? {
                           background: "var(--grad-text)",
                           WebkitBackgroundClip: "text",
@@ -1034,7 +929,7 @@ function GetInvolved() {
                       : { color: "var(--text)" })
                   }}
                 >
-                  {t.title}
+                  {track.title}
                 </h4>
                 <p
                   style={{
@@ -1044,20 +939,20 @@ function GetInvolved() {
                     lineHeight: 1.55
                   }}
                 >
-                  {t.desc}
+                  {track.desc}
                 </p>
-                {t.cta ? (
+                {track.cta ? (
                   <div
                     style={{
                       fontSize: 13,
                       fontWeight: 500,
-                      color: t.featured ? "var(--primary)" : "var(--text)",
+                      color: track.featured ? "var(--primary)" : "var(--text)",
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 6
                     }}
                   >
-                    {t.cta}
+                    {track.cta}
                     <span aria-hidden>&rarr;</span>
                   </div>
                 ) : null}
@@ -1071,6 +966,7 @@ function GetInvolved() {
 }
 
 function ClosingCta() {
+  const t = useTranslations("ecosystem");
   return (
     <section className="section">
       <Reveal>
@@ -1095,10 +991,10 @@ function ClosingCta() {
               lineHeight: 1.2
             }}
           >
-            Build the{" "}
-            <span className="gradient-text">sovereign discovery layer</span>
+            {t("ctaHeadingPrefix")}{" "}
+            <span className="gradient-text">{t("ctaHeadingAccent")}</span>
             <br />
-            for your country.
+            {t("ctaHeadingSuffix")}
           </h2>
           <p
             style={{
@@ -1109,8 +1005,7 @@ function ClosingCta() {
               lineHeight: 1.55
             }}
           >
-            Open code. Local control. Sovereign discovery. Reach out for a private
-            preview, a partnership discussion or a technical walk-through.
+            {t("ctaDescription")}
           </p>
           <div
             style={{
@@ -1137,7 +1032,7 @@ function ClosingCta() {
                 border: "1px solid rgba(var(--primary-rgb), 0.40)"
               }}
             >
-              Talk to the team
+              {t("ctaButton")}
               <span aria-hidden>&rarr;</span>
             </Link>
           </div>
@@ -1152,16 +1047,19 @@ function ClosingCta() {
 // ============================================================
 
 export function EcosystemContent() {
+  const t = useTranslations("ecosystem");
   return (
     <div>
       <PageHero
-        crumb="Ecosystem · Partners & Operators"
+        crumb={t("crumb")}
         title={
           <>
-            An ecosystem of <span className="gradient-text">independent stakeholders</span>.
+            {t.rich("pageTitle", {
+              accent: (chunks) => <span className="gradient-text">{chunks}</span>
+            })}
           </>
         }
-        subtitle="The AI Registry, the operators who run it, the integrators who connect it, the audiences it serves, and the path to federation - independent parties held together only by open standards and stable identifiers."
+        subtitle={t("pageSubtitle")}
       />
 
       <AnchorNav />
