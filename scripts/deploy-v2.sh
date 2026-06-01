@@ -70,6 +70,7 @@ rsync -avzR --delete -e "${SSH}" \
   packages/ui-kit \
   packages/plugin-host \
   extensions \
+  scripts \
   docker docker-compose.yml \
   package.json pnpm-lock.yaml pnpm-workspace.yaml \
   "${HOST}:${REMOTE_APP}/"
