@@ -9,7 +9,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./slot": "./src/PluginSlot.tsx",
-    "./registry": "./src/registry.ts"
+    "./registry": "./src/registry.ts",
+    "./discover": "./src/discover.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

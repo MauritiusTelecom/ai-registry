@@ -13,6 +13,11 @@ import {
 import { importRestHandler, importUiComponent } from "./resolve-module.server";
 import { setVerificationManifestSource } from "@airegistry/core/services/verification";
 
+// Re-exported synchronous manifest discovery lives in ./discover.ts so
+// non-Next contexts (tsx scripts) can read manifests without pulling in
+// server-only. The Next.js loader below uses the same helpers but adds
+// REST/UI registration.
+
 const MANIFEST_FILE = "airegistry-plugin.json";
 
 let loadPromise: Promise<void> | null = null;
