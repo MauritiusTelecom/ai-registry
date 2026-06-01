@@ -258,14 +258,14 @@ function validateApiBaseUrl(value: string): string {
 }
 
 function validateLanguageCode(code: string): string {
-  // Light BCP-47 sanity check: lowercase 2–8 letters, optionally followed by
-  // `-XX` region or other subtags. Strict validation is out of scope.
-  if (!/^[a-z]{2,8}(-[A-Za-z0-9]{2,8})*$/.test(code)) {
+  // Normalize env values such as FR, " fr ", en-US → fr, fr, en-us.
+  const normalized = code.trim().toLowerCase();
+  if (!/^[a-z]{2,8}(-[a-z0-9]{2,8})*$/.test(normalized)) {
     throw new ConfigError(
       `Language code "${code}" does not look like a BCP-47 tag (expected e.g. "en", "fr", "mfe", "en-US").`
     );
   }
-  return code;
+  return normalized;
 }
 
 function validateResourceTypeCode(code: string): string {
