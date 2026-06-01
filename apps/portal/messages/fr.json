@@ -930,7 +930,7 @@
       "subtitle": "Corpus de benchmarks implicite — étiquettes de capacité partagées par 2+ ressources listées.",
       "subtitleParagraph": "Corpus de benchmarks implicite pour {jurisdiction} — étiquettes de capacité partagées par 2+ ressources listées. Un modèle Benchmark dédié arrive lorsque la spécification ajoutera les métadonnées du harnais et les entrées de référence.",
       "emptyState": "Aucune étiquette de capacité partagée pour l'instant. Étiquetez les ressources listées avec des codes de capacité (p. ex. summarization, language-detection) pour former le corpus implicite.",
-      "footerParagraph": "Découverte de capacités : GET /api/discover?capability=<tag> renvoie toutes les ressources listées étiquetées avec la capacité donnée. Voir",
+      "footerParagraph": "Découverte de capacités : GET /api/discover?capability=[tag] renvoie toutes les ressources listées étiquetées avec la capacité donnée. Voir",
       "linkEvalRuns": "Exécutions d'évaluation"
     },
     "redteam": {
@@ -1243,7 +1243,7 @@
     "section_overview_label": "Aperçu",
     "section_overview_body": "AIR-SPEC 0.4 définit le schéma d'inscription, la grille de souveraineté, le format d'identifiant et les preuves de vérification que le registre implémente.",
     "section_air-id_label": "Format AIR-ID",
-    "section_air-id_body": "air://<juridiction>/<type>/<fournisseur>/<nom>@<version> — stable, résolvable et lisible par l'humain.",
+    "section_air-id_body": "air://[juridiction]/[type]/[fournisseur]/[nom]@[version] — stable, résolvable et lisible par l'humain.",
     "section_metadata_label": "Métadonnées d'inscription",
     "section_metadata_body": "Fournisseur, type, bases de souveraineté avec preuves, contact, conditions, licence, région, domaine de confiance SPIFFE optionnel.",
     "section_verification_label": "Vérification du fournisseur",

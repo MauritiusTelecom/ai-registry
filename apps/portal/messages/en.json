@@ -929,7 +929,7 @@
       "subtitle": "Implicit benchmark corpus — capability tags shared by 2+ listed resources.",
       "subtitleParagraph": "Implicit benchmark corpus for {jurisdiction} — capability tags shared by 2+ listed resources. A first-class Benchmark model lands once the spec adds harness metadata and reference inputs.",
       "emptyState": "No shared capability tags yet. Tag listed resources with capability codes (e.g. summarization, language-detection) so the implicit corpus forms.",
-      "footerParagraph": "Capability discovery: GET /api/discover?capability=<tag> returns every listed resource tagged with the given capability. See",
+      "footerParagraph": "Capability discovery: GET /api/discover?capability=[tag] returns every listed resource tagged with the given capability. See",
       "linkEvalRuns": "Eval runs"
     },
     "redteam": {
@@ -1242,7 +1242,7 @@
     "section_overview_label": "Overview",
     "section_overview_body": "AIR-SPEC 0.4 defines the listing schema, sovereignty rubric, identifier format, and verification proofs the registry implements.",
     "section_air-id_label": "AIR-ID format",
-    "section_air-id_body": "air://<jurisdiction>/<kind>/<provider>/<name>@<version> - stable, resolvable, and human-readable.",
+    "section_air-id_body": "air://[jurisdiction]/[kind]/[provider]/[name]@[version] - stable, resolvable, and human-readable.",
     "section_metadata_label": "Listing metadata",
     "section_metadata_body": "Provider, kind, sovereignty bases with evidence, contact, terms, license, region, optional SPIFFE trust domain.",
     "section_verification_label": "Provider verification",
