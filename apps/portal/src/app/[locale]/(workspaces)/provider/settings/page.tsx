@@ -8,6 +8,7 @@ import { ProviderDocumentsCard } from "@/components/portal/ProviderDocumentsCard
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadProviderForSettings } from "@airegistry/sdk/server";
 import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+import { PluginSlot } from "@airegistry/plugin-host/slot";
 
 export async function generateMetadata() {
   return workspaceMetadata("provider.settings");
@@ -96,6 +97,9 @@ export default async function ProviderSettingsPage() {
           jurisdictions={jurisdictions}
           defaultJurisdictionCode={cfg.jurisdiction}
         />
+
+        {/* Country-specific extensions hook in here (e.g. Mauritius BRN check) */}
+        <PluginSlot id="provider.settings.organisation.below" />
 
         <ProviderDocumentsCard
           documentTypes={documentTypes.map((t) => ({ code: t.code, name: t.name }))}

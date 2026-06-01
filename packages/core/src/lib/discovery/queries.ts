@@ -150,7 +150,18 @@ function displayStatusWhereClause(status: DisplayStatus): Prisma.ResourceWhereIn
 export async function buildResourceWhere(
   filters: ListFilters
 ): Promise<Prisma.ResourceWhereInput> {
-  const and: Prisma.ResourceWhereInput[] = [{ publicVisibility: true }];
+  const and: Prisma.ResourceWhereInput[] = [
+    { publicVisibility: true },
+    // MU providers must have their BRN manually verified before any of
+    // their resources can appear on the public catalog. Non-MU providers
+    // are not gated by BRN (no business registration number to check).
+    {
+      OR: [
+        { provider: { brnVerifiedAt: { not: null } } },
+        { provider: { homeJurisdiction: { code: { not: "MU" } } } }
+      ]
+    }
+  ];
 
   const badge = normalizeDisplayStatus(filters.status);
   if (badge) {
@@ -307,7 +318,12 @@ export async function findResourceForDetail(args: {
         slug: args.slug,
         ...(args.type ? { resourceType: { code: args.type } } : {}),
         publicVisibility: true,
-        lifecycleStatus: { code: { in: PUBLIC_LIFECYCLE_CODES } }
+        lifecycleStatus: { code: { in: PUBLIC_LIFECYCLE_CODES } },
+        // BRN gate (see buildResourceWhere): MU providers must be verified.
+        OR: [
+          { provider: { brnVerifiedAt: { not: null } } },
+          { provider: { homeJurisdiction: { code: { not: "MU" } } } }
+        ]
       },
       include: RESOURCE_DETAIL_INCLUDE
     });

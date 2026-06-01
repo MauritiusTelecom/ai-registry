@@ -1,0 +1,25 @@
+{
+  "name": "@airegistry/extension-mauritius-brn-check",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mauritius-specific provider verification: checks the Business Registration Number (BRN) against the Registrar of Companies. Reference example of a country-specific extension on the AI Registry platform.",
+  "type": "module",
+  "exports": {
+    "./lib/validate-brn": "./src/lib/validate-brn.ts",
+    "./rest/validate": "./src/rest/validate.ts",
+    "./ui/ProviderBrnPanel": "./src/ui/ProviderBrnPanel.tsx"
+  },
+  "dependencies": {
+    "@airegistry/sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "next": "^16.0.0",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2",
+    "next": "^16.0.1",
+    "react": "^19.2.0",
+    "typescript": "^5"
+  }
+}

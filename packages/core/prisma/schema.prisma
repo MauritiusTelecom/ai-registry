@@ -466,6 +466,7 @@ model User {
   resourceVersionsCreated  ResourceVersion[]         @relation("ResourceVersionCreatedBy")
   resourceVersionsApproved ResourceVersion[]         @relation("ResourceVersionApprovedBy")
   resourceVersionsRejected ResourceVersion[]         @relation("ResourceVersionRejectedBy")
+  providersBrnVerified     Provider[]                @relation("ProviderBrnVerifiedBy")
 
   @@index([providerId])
   @@index([roleId])
@@ -563,6 +564,12 @@ model Provider {
   incidentChannel    String?
   oncallEmail        String?
   webhookUrl         String?
+  // Mauritius BRN verification (manual, via the mu-brn-check extension).
+  // brnVerifiedAt is the gate for public visibility of MU providers.
+  // Non-MU providers ignore this column.
+  brnVerifiedAt      DateTime?
+  brnVerifiedById    String?   @db.Uuid
+  brnVerificationNote String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -570,6 +577,7 @@ model Provider {
   homeJurisdiction Jurisdiction         @relation(fields: [homeJurisdictionId], references: [id], onDelete: Restrict)
   status           ProviderStatusType   @relation(fields: [statusId], references: [id], onDelete: Restrict)
   src              SubmissionSourceType @relation(fields: [srcId], references: [id], onDelete: Restrict)
+  brnVerifiedBy    User?                @relation("ProviderBrnVerifiedBy", fields: [brnVerifiedById], references: [id])
 
   resources          Resource[]
   users              User[]

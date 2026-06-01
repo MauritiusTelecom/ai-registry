@@ -114,6 +114,11 @@ ${SSH} "${HOST}" "
   # (same db-push limitation). Idempotent.
   pnpm tsx scripts/backfill-resource-versions.ts
 
+  # Grandfather every existing Provider as BRN-verified, so the public
+  # visibility gate added by the mu-brn-check extension doesn't hide
+  # already-listed providers. Idempotent.
+  pnpm tsx scripts/backfill-brn-grandfather.ts
+
   pm2 restart ${PM2_NAME}
 "
 echo

@@ -49,7 +49,19 @@ function normalizeDisplayStatus(raw: string | null): DisplayStatus | null {
 }
 
 export async function buildProviderWhere(filters: ProviderListFilters): Promise<Prisma.ProviderWhereInput> {
-  const and: Prisma.ProviderWhereInput[] = [{ published: true, adminSuspended: false }];
+  // Public catalog gate:
+  //   - published + not admin-suspended (existing rule)
+  //   - MU providers must have brnVerifiedAt set (manual verification);
+  //     non-MU providers are not gated by BRN
+  const and: Prisma.ProviderWhereInput[] = [
+    { published: true, adminSuspended: false },
+    {
+      OR: [
+        { brnVerifiedAt: { not: null } },
+        { homeJurisdiction: { code: { not: "MU" } } }
+      ]
+    }
+  ];
 
   const badge = normalizeDisplayStatus(filters.status);
   if (badge) {
@@ -143,6 +155,13 @@ export async function findProviderForDetail({
   });
   if (!provider) return null;
   if (!provider.published || provider.adminSuspended) return null;
+  // MU providers without a verified BRN are hidden from the public profile.
+  if (
+    provider.homeJurisdiction.code === "MU" &&
+    provider.brnVerifiedAt == null
+  ) {
+    return null;
+  }
   return provider;
 }
 

@@ -23,6 +23,9 @@ importers:
       '@airegistry/extension-hello':
         specifier: workspace:*
         version: link:../../extensions/examples/hello
+      '@airegistry/extension-mauritius-brn-check':
+        specifier: workspace:*
+        version: link:../../extensions/mauritius-brn-check
       '@airegistry/plugin-host':
         specifier: workspace:*
         version: link:../../packages/plugin-host
@@ -101,6 +104,25 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  extensions/mauritius-brn-check:
+    dependencies:
+      '@airegistry/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.2
+        version: 19.2.14
+      next:
+        specifier: ^16.0.1
+        version: 16.2.6(@babel/core@7.29.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+      react:
+        specifier: ^19.2.0
+        version: 19.2.6
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
   packages/core:
     dependencies:
       '@prisma/client':
@@ -140,6 +162,9 @@ importers:
       '@airegistry/extension-hello':
         specifier: workspace:*
         version: link:../../extensions/examples/hello
+      '@airegistry/extension-mauritius-brn-check':
+        specifier: workspace:*
+        version: link:../../extensions/mauritius-brn-check
       '@airegistry/sdk':
         specifier: workspace:*
         version: link:../sdk
