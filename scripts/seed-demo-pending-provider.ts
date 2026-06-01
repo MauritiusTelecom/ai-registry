@@ -25,22 +25,6 @@ import { readAllManifestsSync } from "@airegistry/plugin-host/discover";
 const DEMO_PROVIDER_SLUG = "demobank-mauritius-ltd";
 const DEMO_RESOURCE_SLUG = "demobank-credit-scoring-agent";
 
-async function refByCode<T extends { id: string; code: string }>(
-  table: string,
-  candidates: string[],
-  rows: T[]
-): Promise<T> {
-  for (const c of candidates) {
-    const hit = rows.find((r) => r.code === c);
-    if (hit) return hit;
-  }
-  throw new Error(
-    `No matching row in ${table}. Looked for codes: ${candidates.join(
-      ", "
-    )}. Available: ${rows.map((r) => r.code).join(", ")}`
-  );
-}
-
 async function main() {
   // Wire the verification source so we know which requirements apply.
   setVerificationManifestSource(() => readAllManifestsSync());
@@ -70,30 +54,60 @@ async function main() {
 
   if (!muJurisdiction) throw new Error("Jurisdiction 'MU' not found in DB");
 
-  const providerType = await refByCode("ProviderTypeRef", ["private", "public_agency", "company"], providerTypes);
-  const providerStatus = await refByCode(
+  // Available codes vary per deployment — try a few likely options and
+  // fall back to the first row of each table if none match.
+  function firstOrDefault<T extends { id: string; code: string }>(
+    name: string,
+    candidates: string[],
+    rows: T[]
+  ): T {
+    for (const c of candidates) {
+      const hit = rows.find((r) => r.code === c);
+      if (hit) return hit;
+    }
+    if (rows.length === 0) throw new Error(`${name} is empty in the DB - run db:seed first`);
+    console.log(
+      `${name}: no exact match for [${candidates.join(", ")}], falling back to first row '${rows[0].code}'`
+    );
+    return rows[0];
+  }
+
+  const providerType = firstOrDefault(
+    "ProviderTypeRef",
+    ["integrator", "private", "company", "hosting"],
+    providerTypes
+  );
+  const providerStatus = firstOrDefault(
     "ProviderStatusType",
-    ["verified", "active", "registered"],
+    ["verified", "active", "registered", "listed"],
     providerStatuses
   );
-  const submissionSource = await refByCode(
+  const submissionSource = firstOrDefault(
     "SubmissionSourceType",
-    ["self", "self_registered", "manual"],
+    ["self", "self_registered", "manual", "self_submitted"],
     submissionSources
   );
-  const resourceType = await refByCode("ResourceType", ["agent", "model", "tool"], resourceTypes);
-  const lifecycleStatus = await refByCode(
+  const resourceType = firstOrDefault("ResourceType", ["agent", "model", "tool", "skill"], resourceTypes);
+  const lifecycleStatus = firstOrDefault(
     "LifecycleStatus",
-    ["listed", "submitted", "draft"],
+    ["listed", "submitted", "draft", "needs_update"],
     lifecycleStatuses
   );
-  const riskLevel = await refByCode("RiskLevel", ["moderate", "low", "medium"], riskLevels);
-  const listingOrigin = await refByCode(
+  const riskLevel = firstOrDefault(
+    "RiskLevel",
+    ["moderate", "low", "medium", "limited"],
+    riskLevels
+  );
+  const listingOrigin = firstOrDefault(
     "ListingOrigin",
-    ["local", "self_submitted", "direct"],
+    ["local", "self_submitted", "direct", "operator_published"],
     listingOrigins
   );
-  const financeSector = await refByCode("Sector", ["finance", "banking", "financial_services"], sectors);
+  const financeSector = firstOrDefault(
+    "Sector",
+    ["finance", "banking", "financial_services", "fintech"],
+    sectors
+  );
 
   // ── Upsert the demo provider ────────────────────────────
   const provider = await prisma.provider.upsert({
