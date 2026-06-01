@@ -1,0 +1,21 @@
+{
+  "name": "@airegistry/extension-mauritius-bom-banking-license",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mauritius Bank of Mauritius licence check. Applies to MU providers operating in the finance/banking/insurance sectors. Proof point that two extensions can stack verification requirements on the same provider.",
+  "type": "module",
+  "exports": {
+    "./lib/validate-bom-license": "./src/lib/validate-bom-license.ts",
+    "./rest/validate": "./src/rest/validate.ts"
+  },
+  "dependencies": {
+    "@airegistry/sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "next": "^16.0.0"
+  },
+  "devDependencies": {
+    "next": "^16.0.1",
+    "typescript": "^5"
+  }
+}

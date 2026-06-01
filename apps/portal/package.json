@@ -18,6 +18,7 @@
   "dependencies": {
     "@airegistry/core": "workspace:*",
     "@airegistry/extension-hello": "workspace:*",
+    "@airegistry/extension-mauritius-bom-banking-license": "workspace:*",
     "@airegistry/extension-mauritius-brn-check": "workspace:*",
     "@airegistry/plugin-host": "workspace:*",
     "@airegistry/public": "workspace:*",

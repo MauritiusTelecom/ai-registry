@@ -5,11 +5,13 @@ import type { PluginManifest, PluginRestRoute, PluginUiSlot } from "@airegistry/
 import {
   clearRegistry,
   isPluginsEnabled,
+  listPlugins,
   registerPlugin,
   registerRestRoute,
   registerUiSlot
 } from "./registry";
 import { importRestHandler, importUiComponent } from "./resolve-module.server";
+import { setVerificationManifestSource } from "@airegistry/core/services/verification";
 
 const MANIFEST_FILE = "airegistry-plugin.json";
 
@@ -139,6 +141,11 @@ export async function loadPlugins(): Promise<void> {
   for (const manifestPath of manifests) {
     await loadManifestFile(manifestPath);
   }
+
+  // Make the verification service in @airegistry/core aware of every
+  // extension's verificationRequirements without creating a direct
+  // dependency on plugin-host (which would be circular).
+  setVerificationManifestSource(() => listPlugins().map((p) => p.manifest));
 }
 
 export function ensurePluginsLoaded(): Promise<void> {

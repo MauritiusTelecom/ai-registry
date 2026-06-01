@@ -1,0 +1,33 @@
+{
+  "id": "mu-bom-banking-license",
+  "name": "Mauritius Bank of Mauritius licence check",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "maintainer": "Mauritius Telecom <airegistry@telecom.mu>",
+  "coreRange": "^0.2.0",
+  "description": "Adds a Bank of Mauritius licence verification requirement for Mauritian providers operating in finance, banking, or insurance sectors. Provided as a proof of point that multiple extensions can compose verification requirements on the same provider.",
+  "verificationRequirements": [
+    {
+      "code": "bom-license",
+      "label": "Bank of Mauritius licence",
+      "appliesWhen": {
+        "providerJurisdiction": ["MU"],
+        "providerSectors": ["finance", "banking", "insurance"]
+      },
+      "documentTypeHint": "compliance_bom"
+    }
+  ],
+  "rest": [
+    {
+      "path": "/validate",
+      "methods": ["POST", "GET"],
+      "handler": "@airegistry/extension-mauritius-bom-banking-license/rest/validate"
+    }
+  ],
+  "permissions": [
+    {
+      "code": "rest:mount",
+      "description": "Mount REST routes under /api/ext/mu-bom-banking-license/"
+    }
+  ]
+}

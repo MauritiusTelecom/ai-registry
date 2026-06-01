@@ -1,12 +1,22 @@
 {
   "id": "mu-brn-check",
   "name": "Mauritius BRN Check",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "Apache-2.0",
   "maintainer": "Mauritius Telecom <airegistry@telecom.mu>",
-  "coreRange": "^0.1.0",
-  "description": "Verifies a provider's Mauritius Business Registration Number (BRN) against the Registrar of Companies. Reference example of a country-specific extension; safe to disable in non-MU deployments.",
+  "coreRange": "^0.2.0",
+  "description": "Declares the Mauritius Business Registration Number verification requirement for every MU-jurisdiction provider. Verification is performed manually by an admin against the uploaded company-registration certificate; the BRN format is validated locally via the REST handler.",
   "homepage": "https://www.airegistry.mu/",
+  "verificationRequirements": [
+    {
+      "code": "brn",
+      "label": "Business Registration Number (Mauritius)",
+      "appliesWhen": {
+        "providerJurisdiction": ["MU"]
+      },
+      "documentTypeHint": "company_registration"
+    }
+  ],
   "rest": [
     {
       "path": "/validate",
@@ -14,21 +24,10 @@
       "handler": "@airegistry/extension-mauritius-brn-check/rest/validate"
     }
   ],
-  "ui": [
-    {
-      "slotId": "provider.settings.organisation.below",
-      "component": "@airegistry/extension-mauritius-brn-check/ui/ProviderBrnPanel",
-      "order": 10
-    }
-  ],
   "permissions": [
     {
       "code": "rest:mount",
       "description": "Mount REST routes under /api/ext/mu-brn-check/"
-    },
-    {
-      "code": "ui:slot:provider.*",
-      "description": "Render in provider portal slots"
     }
   ]
 }

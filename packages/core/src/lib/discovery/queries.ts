@@ -152,15 +152,10 @@ export async function buildResourceWhere(
 ): Promise<Prisma.ResourceWhereInput> {
   const and: Prisma.ResourceWhereInput[] = [
     { publicVisibility: true },
-    // MU providers must have their BRN manually verified before any of
-    // their resources can appear on the public catalog. Non-MU providers
-    // are not gated by BRN (no business registration number to check).
-    {
-      OR: [
-        { provider: { brnVerifiedAt: { not: null } } },
-        { provider: { homeJurisdiction: { code: { not: "MU" } } } }
-      ]
-    }
+    // Provider must have every applicable verification requirement
+    // satisfied. "Applicable" is determined by the loaded extension
+    // manifests; see packages/core/src/lib/services/verification.ts.
+    { provider: { verifications: { none: { verifiedAt: null } } } }
   ];
 
   const badge = normalizeDisplayStatus(filters.status);
@@ -319,11 +314,9 @@ export async function findResourceForDetail(args: {
         ...(args.type ? { resourceType: { code: args.type } } : {}),
         publicVisibility: true,
         lifecycleStatus: { code: { in: PUBLIC_LIFECYCLE_CODES } },
-        // BRN gate (see buildResourceWhere): MU providers must be verified.
-        OR: [
-          { provider: { brnVerifiedAt: { not: null } } },
-          { provider: { homeJurisdiction: { code: { not: "MU" } } } }
-        ]
+        // Verification gate (see buildResourceWhere): provider must have
+        // every applicable verification requirement satisfied.
+        provider: { verifications: { none: { verifiedAt: null } } }
       },
       include: RESOURCE_DETAIL_INCLUDE
     });

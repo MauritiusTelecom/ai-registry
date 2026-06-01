@@ -51,16 +51,18 @@ function normalizeDisplayStatus(raw: string | null): DisplayStatus | null {
 export async function buildProviderWhere(filters: ProviderListFilters): Promise<Prisma.ProviderWhereInput> {
   // Public catalog gate:
   //   - published + not admin-suspended (existing rule)
-  //   - MU providers must have brnVerifiedAt set (manual verification);
-  //     non-MU providers are not gated by BRN
+  //   - every applicable verification requirement must be verified.
+  //     "Applicable" is computed from the loaded plugin manifests; see
+  //     packages/core/src/lib/services/verification.ts.
+  //
+  // SQL-level encoding: we have NO unverified ProviderVerification row.
+  // (Pending rows have verifiedAt = NULL; verified rows have it set;
+  // rejected rows have rejectionNote != NULL and verifiedAt = NULL).
+  // A provider with zero requirement rows passes the gate trivially -
+  // that covers operators who deploy with no verification extensions.
   const and: Prisma.ProviderWhereInput[] = [
     { published: true, adminSuspended: false },
-    {
-      OR: [
-        { brnVerifiedAt: { not: null } },
-        { homeJurisdiction: { code: { not: "MU" } } }
-      ]
-    }
+    { verifications: { none: { verifiedAt: null } } }
   ];
 
   const badge = normalizeDisplayStatus(filters.status);
@@ -155,13 +157,12 @@ export async function findProviderForDetail({
   });
   if (!provider) return null;
   if (!provider.published || provider.adminSuspended) return null;
-  // MU providers without a verified BRN are hidden from the public profile.
-  if (
-    provider.homeJurisdiction.code === "MU" &&
-    provider.brnVerifiedAt == null
-  ) {
-    return null;
-  }
+  // Any unverified applicable requirement hides the provider from public.
+  const anyUnverified = await prisma.providerVerification.findFirst({
+    where: { providerId: provider.id, verifiedAt: null },
+    select: { id: true }
+  });
+  if (anyUnverified) return null;
   return provider;
 }
 

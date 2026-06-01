@@ -81,7 +81,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         label: "governance",
         items: [
           { id: "reviews", label: "reviews", href: "/admin/reviews", icon: "check" },
-          { id: "brn-pending", label: "brnPending", href: "/admin/brn-pending", icon: "shield" },
+          { id: "verifications", label: "verifications", href: "/admin/verifications", icon: "shield" },
           { id: "complaints", label: "complaints", href: "/admin/complaints", icon: "flag" },
           { id: "policies", label: "policies", href: "/admin/policies", icon: "doc" }
         ]

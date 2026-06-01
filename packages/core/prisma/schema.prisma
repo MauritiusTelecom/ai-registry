@@ -466,7 +466,7 @@ model User {
   resourceVersionsCreated  ResourceVersion[]         @relation("ResourceVersionCreatedBy")
   resourceVersionsApproved ResourceVersion[]         @relation("ResourceVersionApprovedBy")
   resourceVersionsRejected ResourceVersion[]         @relation("ResourceVersionRejectedBy")
-  providersBrnVerified     Provider[]                @relation("ProviderBrnVerifiedBy")
+  providerVerificationsDone ProviderVerification[]   @relation("ProviderVerificationVerifiedBy")
 
   @@index([providerId])
   @@index([roleId])
@@ -564,12 +564,6 @@ model Provider {
   incidentChannel    String?
   oncallEmail        String?
   webhookUrl         String?
-  // Mauritius BRN verification (manual, via the mu-brn-check extension).
-  // brnVerifiedAt is the gate for public visibility of MU providers.
-  // Non-MU providers ignore this column.
-  brnVerifiedAt      DateTime?
-  brnVerifiedById    String?   @db.Uuid
-  brnVerificationNote String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -577,7 +571,6 @@ model Provider {
   homeJurisdiction Jurisdiction         @relation(fields: [homeJurisdictionId], references: [id], onDelete: Restrict)
   status           ProviderStatusType   @relation(fields: [statusId], references: [id], onDelete: Restrict)
   src              SubmissionSourceType @relation(fields: [srcId], references: [id], onDelete: Restrict)
-  brnVerifiedBy    User?                @relation("ProviderBrnVerifiedBy", fields: [brnVerifiedById], references: [id])
 
   resources          Resource[]
   users              User[]
@@ -586,6 +579,10 @@ model Provider {
   complaints         Complaint[]
   enforcementActions EnforcementAction[]
   documents          ProviderDocument[]
+  // Multi-requirement verification. Each extension contributes its
+  // own requirements; the platform composes them. See
+  // docs/specs/multi-requirement-verification.md.
+  verifications      ProviderVerification[]
 
   @@index([homeJurisdictionId])
   @@index([statusId])
@@ -920,6 +917,34 @@ model ProviderDocument {
   @@index([providerId])
   @@index([documentTypeId])
   @@index([publicVisibility])
+  @@schema("registry")
+}
+
+// ─── Multi-requirement provider verification ────────────
+// See docs/specs/multi-requirement-verification.md. Every extension
+// contributes its own requirements via its plugin manifest; each row
+// here represents one applicable requirement for one provider.
+
+model ProviderVerification {
+  id              String    @id @default(uuid())
+  providerId      String
+  extensionId     String
+  requirementCode String
+  label           String
+  documentTypeHint String?
+  verifiedAt      DateTime?
+  verifiedById    String?   @db.Uuid
+  rejectionNote   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  verifiedBy User?    @relation("ProviderVerificationVerifiedBy", fields: [verifiedById], references: [id])
+
+  @@unique([providerId, extensionId, requirementCode])
+  @@index([providerId])
+  @@index([extensionId])
+  @@index([verifiedAt])
   @@schema("registry")
 }
 

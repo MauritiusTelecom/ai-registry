@@ -35,6 +35,35 @@ export type PluginManifest = {
   locales?: PluginLocaleBundle[];
   /** Audit event subscriptions. */
   events?: string[];
+  /** Provider verification requirements this extension contributes.
+   *  See docs/specs/multi-requirement-verification.md. */
+  verificationRequirements?: PluginVerificationRequirement[];
+};
+
+export type PluginVerificationRequirement = {
+  /** Stable code within the extension (e.g. "brn", "bom-license"). */
+  code: string;
+  /** Human-readable label shown to providers + verifiers. */
+  label: string;
+  /** Conditions that select which providers this requirement applies to.
+   *  Empty object = applies to every provider. All listed conditions are
+   *  AND-combined; within each array, OR. */
+  appliesWhen?: PluginVerificationApplicability;
+  /** Hint for the admin UI: which ProviderDocumentType code best matches
+   *  the supporting document for this requirement (e.g. "company_registration"). */
+  documentTypeHint?: string;
+};
+
+export type PluginVerificationApplicability = {
+  /** Jurisdiction codes (e.g. "MU", "RW"). Provider's homeJurisdiction
+   *  must match one of them. Omit for "any jurisdiction". */
+  providerJurisdiction?: string[];
+  /** Sector codes (e.g. "finance", "health"). Provider must have at least
+   *  one resource in any of these sectors. Omit for "any sector". */
+  providerSectors?: string[];
+  /** Provider type codes (e.g. "sovereign_operator", "private"). Provider's
+   *  type code must match one of them. Omit for "any type". */
+  providerKinds?: string[];
 };
 
 export type PluginRestRoute = {

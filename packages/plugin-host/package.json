@@ -16,7 +16,9 @@
     "clean": "rm -rf .turbo"
   },
   "dependencies": {
+    "@airegistry/core": "workspace:*",
     "@airegistry/extension-hello": "workspace:*",
+    "@airegistry/extension-mauritius-bom-banking-license": "workspace:*",
     "@airegistry/extension-mauritius-brn-check": "workspace:*",
     "@airegistry/sdk": "workspace:*",
     "server-only": "^0.0.1"

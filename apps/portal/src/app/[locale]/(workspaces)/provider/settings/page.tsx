@@ -5,6 +5,7 @@ import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { getConfig } from "@airegistry/sdk";
 import { ProviderOrganisationForm } from "@/components/portals/ProviderOrganisationForm";
 import { ProviderDocumentsCard } from "@/components/portal/ProviderDocumentsCard";
+import ProviderVerificationStatusCard from "@/components/portal/ProviderVerificationStatusCard";
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadProviderForSettings } from "@airegistry/sdk/server";
 import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
@@ -98,7 +99,10 @@ export default async function ProviderSettingsPage() {
           defaultJurisdictionCode={cfg.jurisdiction}
         />
 
-        {/* Country-specific extensions hook in here (e.g. Mauritius BRN check) */}
+        {/* Multi-requirement verification status — driven by loaded extensions */}
+        <ProviderVerificationStatusCard />
+
+        {/* Country / sector extension UI slot (rendered below the status card) */}
         <PluginSlot id="provider.settings.organisation.below" />
 
         <ProviderDocumentsCard

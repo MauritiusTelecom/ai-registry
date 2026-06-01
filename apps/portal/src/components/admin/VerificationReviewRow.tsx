@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { registryFetch } from "@airegistry/ui-kit";
 
-type Props = { providerId: string };
+type Props = { verificationId: string };
 
-export function BrnReviewRow({ providerId }: Props) {
+export function VerificationReviewRow({ verificationId }: Props) {
   const router = useRouter();
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState<"verify" | "reject" | null>(null);
@@ -16,10 +16,10 @@ export function BrnReviewRow({ providerId }: Props) {
     setBusy("verify");
     setErr(null);
     try {
-      const res = await registryFetch("/api/admin/brn/verify", {
+      const res = await registryFetch(`/api/admin/verifications/${verificationId}/verify`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ providerId, note: note.trim() || undefined })
+        body: JSON.stringify({ note: note.trim() || undefined })
       });
       if (!res.ok) {
         setErr((await res.json().catch(() => ({}))).error ?? `HTTP ${res.status}`);
@@ -36,16 +36,16 @@ export function BrnReviewRow({ providerId }: Props) {
       setErr("A reason is required when rejecting.");
       return;
     }
-    if (!confirm("Reject this BRN? The provider will see your reason on their settings page.")) {
+    if (!confirm("Reject this requirement? The provider will see your reason on their settings page.")) {
       return;
     }
     setBusy("reject");
     setErr(null);
     try {
-      const res = await registryFetch("/api/admin/brn/reject", {
+      const res = await registryFetch(`/api/admin/verifications/${verificationId}/reject`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ providerId, note: note.trim() })
+        body: JSON.stringify({ note: note.trim() })
       });
       if (!res.ok) {
         setErr((await res.json().catch(() => ({}))).error ?? `HTTP ${res.status}`);
@@ -66,7 +66,7 @@ export function BrnReviewRow({ providerId }: Props) {
         value={note}
         onChange={(e) => setNote(e.target.value)}
         rows={2}
-        placeholder="e.g. BRN matches the uploaded company-registration certificate."
+        placeholder="e.g. Matches the uploaded company-registration certificate."
         style={{
           width: "100%",
           padding: 8,
@@ -79,9 +79,7 @@ export function BrnReviewRow({ providerId }: Props) {
           resize: "vertical"
         }}
       />
-      {err && (
-        <div style={{ fontSize: 12, color: "#ff8a95", marginTop: 6 }}>{err}</div>
-      )}
+      {err && <div style={{ fontSize: 12, color: "#ff8a95", marginTop: 6 }}>{err}</div>}
       <div style={{ display: "flex", gap: 8, marginTop: 10, justifyContent: "flex-end" }}>
         <button
           onClick={reject}
@@ -97,7 +95,7 @@ export function BrnReviewRow({ providerId }: Props) {
           className="btn btn-primary"
           style={{ background: "rgba(22, 163, 74, 0.85)", borderColor: "rgba(22, 163, 74, 1)" }}
         >
-          {busy === "verify" ? "Verifying…" : "✓ Verify BRN"}
+          {busy === "verify" ? "Verifying…" : "✓ Verify"}
         </button>
       </div>
     </div>
