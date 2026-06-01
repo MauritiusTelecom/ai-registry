@@ -2,7 +2,12 @@ import { getTranslations } from "next-intl/server";
 import { getPromoBanner } from "@airegistry/core/services/public-cms";
 import { PromoBannerForm } from "@/components/admin/site/PromoBannerForm";
 
-export const metadata = { title: "Admin · Site · Promo banner" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.sitePromo");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminPromoPage() {

@@ -5,7 +5,12 @@ import { loadSovereignCatalog } from "@airegistry/sdk/server";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 import { StatusPill } from "@/components/portals/StatusPill";
 
-export const metadata = { title: "Sovereign · National catalogue" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("sovereign.catalog");
+}
+
 export const dynamic = "force-dynamic";
 
 type Row = {

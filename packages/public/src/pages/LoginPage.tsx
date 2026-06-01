@@ -5,8 +5,11 @@ import { getCurrentUser } from "@airegistry/sdk/server";
 import { portalForRole } from "@airegistry/core/auth/portal-for-role";
 import { AuthShell } from "../auth-ui/AuthShell";
 import { LoginForm } from "../auth-ui/LoginForm";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = { title: "Sign in" };
+export async function generateMetadata() {
+  return publicPageMetadata("public.signIn");
+}
 
 export default async function LoginPage({
   searchParams

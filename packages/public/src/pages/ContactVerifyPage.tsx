@@ -2,7 +2,11 @@ import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { AuthShell } from "../auth-ui/AuthShell";
 
-export const metadata = { title: "Verify contact email" };
+import { publicPageMetadata } from "../lib/page-metadata";
+
+export async function generateMetadata() {
+  return publicPageMetadata("public.verifyContact");
+}
 
 type VerifyResult = { ok: true; email: string } | { ok: false; reason: string };
 

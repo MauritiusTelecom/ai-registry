@@ -8,7 +8,12 @@ import { ProviderEditForm } from "@/components/admin/ProviderEditForm";
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadAdminProviderDetail } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Admin · Provider" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.providerDetail");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminProviderDetailPage({

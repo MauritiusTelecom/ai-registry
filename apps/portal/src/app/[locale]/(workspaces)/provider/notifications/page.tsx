@@ -3,7 +3,12 @@ import { getCurrentUser } from "@airegistry/sdk/server";
 import { loadPortalNotifications } from "@/lib/portals/notifications";
 import { NotificationsBrowser } from "@/components/portals/NotificationsBrowser";
 
-export const metadata = { title: "Provider · Notifications" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("provider.notifications");
+}
+
 export const dynamic = "force-dynamic";
 
 /**

@@ -101,7 +101,7 @@ export function GatedPublishButton({
         >
           {toast}{" "}
           <Link href="/provider/settings" style={{ fontWeight: 600, whiteSpace: "nowrap" }}>
-            Settings →
+            {t("settingsLink")}
           </Link>
           <button
             type="button"
@@ -114,7 +114,7 @@ export function GatedPublishButton({
               color: "var(--text-3)",
               fontSize: 12
             }}
-            aria-label="Dismiss"
+            aria-label={t("dismiss")}
           >
             ×
           </button>

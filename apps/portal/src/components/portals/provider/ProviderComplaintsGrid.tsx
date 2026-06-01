@@ -22,9 +22,9 @@ type Props = {
 };
 
 export function ProviderComplaintsGrid({ rows, types }: Props) {
-  const t = useTranslations("provider.complaints");
+  const t = useTranslations("providerComplaints");
   const columns: EntityColumn<ProviderComplaintRow>[] = [
-    { key: "ts", label: "Filed", render: (row) => row.ts, mono: true },
+    { key: "ts", label: t("colFiled"), render: (row) => row.ts, mono: true },
     {
       key: "target",
       label: t("colTarget"),
@@ -66,8 +66,8 @@ export function ProviderComplaintsGrid({ rows, types }: Props) {
     <EntityGrid
       rows={rows}
       columns={columns}
-      emptyState="No complaints filed against your provider or resources."
-      searchPlaceholder="Search complaints by target or text excerpt…"
+      emptyState={t("emptyState")}
+      searchPlaceholder={t("searchPlaceholder")}
       searchableKeys={["target", "excerpt"]}
       filters={[
         {

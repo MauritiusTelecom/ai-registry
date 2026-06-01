@@ -20,9 +20,9 @@ type Props = {
 };
 
 export function ProviderIncidentsGrid({ rows, actionTypes }: Props) {
-  const t = useTranslations("provider.incidents");
+  const t = useTranslations("providerIncidents");
   const columns: EntityColumn<ProviderIncidentRow>[] = [
-    { key: "ts", label: "Performed", render: (row) => row.ts, mono: true },
+    { key: "ts", label: t("colPerformed"), render: (row) => row.ts, mono: true },
     {
       key: "action",
       label: t("colAction"),
@@ -64,8 +64,8 @@ export function ProviderIncidentsGrid({ rows, actionTypes }: Props) {
     <EntityGrid
       rows={rows}
       columns={columns}
-      emptyState="No enforcement actions on record. Quiet is good."
-      searchPlaceholder="Search incidents by target or reason…"
+      emptyState={t("emptyState")}
+      searchPlaceholder={t("searchPlaceholder")}
       searchableKeys={["target", "reason", "publicNote"]}
       filters={[
         {

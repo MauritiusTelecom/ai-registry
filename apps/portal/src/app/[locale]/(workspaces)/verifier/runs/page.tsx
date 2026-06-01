@@ -2,7 +2,12 @@ import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { loadVerifierEvalRuns } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Verifier · Eval runs" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("verifier.runs");
+}
+
 export const dynamic = "force-dynamic";
 
 /**

@@ -37,7 +37,6 @@
     "copied": "Copié !",
     "copy": "Copier"
   },
-
   "nav": {
     "home": "Accueil",
     "registry": "Registre",
@@ -58,7 +57,6 @@
     "roleVerifier": "vérificateur",
     "roleSovereign": "souverain"
   },
-
   "footer": {
     "product": "Produit",
     "resources": "Ressources",
@@ -85,7 +83,6 @@
     "brandDescription": "Infrastructure open-source pour la découverte souveraine de l'IA. Le registre pointe ; le fournisseur opère ; l'environnement d'hébergement sécurise.",
     "providerPortal": "Portail fournisseur"
   },
-
   "hero": {
     "subtitle": "Gouvernez, orchestrez et surveillez les agents IA de confiance, les modèles et l'infrastructure MCP depuis une plateforme souveraine unifiée — conçue pour les nations, les régulateurs et les entreprises dont ils dépendent.",
     "exploreRegistry": "Explorer le registre",
@@ -101,7 +98,6 @@
     "fallbackCard3Subtitle": "OCR",
     "fallbackAiResource": "Ressource IA"
   },
-
   "registrySection": {
     "eyebrow": "Le Registre",
     "heading": "Découvrez ce que {jurisdiction} peut <accent>faire confiance et intégrer</accent>.",
@@ -127,7 +123,6 @@
     "listPageSubtitle": "Parcourez les inscriptions publiques et filtrez par type. Les inscriptions portent des fournisseurs vérifiables et des AIR-ID stables.",
     "viewDetails": "Voir les détails"
   },
-
   "providersSection": {
     "crumb": "Fournisseurs · Les organisations derrière le registre",
     "heading": "Rencontrez les organisations en qui <accent>{jurisdiction} fait déjà confiance</accent>.",
@@ -159,7 +154,6 @@
     "errorLoad": "Impossible de charger les fournisseurs",
     "errorLoadMore": "Échec du chargement supplémentaire"
   },
-
   "governance": {
     "eyebrow": "Gouvernance, pas contrôle d'accès",
     "heading": "L'inscription n'est pas un endorsement.",
@@ -186,7 +180,6 @@
     "languageCultureDesc": "Prend en charge la langue locale, la culture, les normes ou le contexte.",
     "qualityNote": "La qualité compte plus que la quantité. Un registre de cinquante ressources crédibles est plus utile qu'un registre de mille inscriptions génériques."
   },
-
   "governancePage": {
     "crumb": "Gouvernance · Charte et revue",
     "pageTitle": "Gouvernance <accent>sans excès</accent>.",
@@ -221,7 +214,6 @@
     "publicLogTitle": "Journal public",
     "publicLogBody": "Chaque action modifiant l'état — émission d'AIR-ID, revue de souveraineté, endorsement de ressource officielle, transition de cycle de vie — est enregistrée dans un <link>journal d'audit</link> en ajout seul. Le journal derrière une ressource supprimée est conservé indéfiniment afin que la trace de gouvernance reste traçable."
   },
-
   "auth": {
     "signIn": "Connexion",
     "signingIn": "Connexion en cours…",
@@ -285,7 +277,6 @@
     "devVerifyLink": "Lien de vérification dev",
     "devLabel": "Lien dev"
   },
-
   "contactVerify": {
     "contactForm": "Formulaire de contact",
     "emailConfirmed": "Email confirmé",
@@ -299,7 +290,6 @@
     "linkNoLongerValid": "Ce lien de confirmation n'est plus valide.",
     "linkExpiredSubtitle": "Il a peut-être expiré ou a déjà été utilisé. Vous pouvez soumettre le formulaire à nouveau si vous avez encore besoin d'aide."
   },
-
   "registryDetail": {
     "registryLink": "Registre",
     "titleByProvider": "{title} par <accent>{provider}</accent>",
@@ -330,7 +320,6 @@
     "reportDesc": "Signalez une usurpation d'identité, des points d'accès cassés, des preuves de souveraineté manquantes, ou tout ce qui ne correspond pas aux règles du registre. L'opérateur examine chaque signalement.",
     "footerDisclaimer": "L'inscription n'est pas un endorsement. Le registre pointe ; le fournisseur opère ; l'environnement d'hébergement sécurise. La revue de souveraineté et l'autorisation de ressource officielle sont des signaux de gouvernance indépendants — voir la <link>charte de gouvernance</link>."
   },
-
   "providerDetail": {
     "providersLink": "Fournisseurs",
     "listedSince": "listé",
@@ -351,7 +340,6 @@
     "verificationDocuments": "Documents de vérification",
     "footerDisclaimer": "L'inscription n'est pas un endorsement. Le registre pointe ; le fournisseur opère ; l'environnement d'hébergement sécurise. La revue de souveraineté et l'autorisation de ressource officielle sont des signaux de gouvernance indépendants — voir la <link>charte de gouvernance</link>."
   },
-
   "admin": {
     "title": "Admin",
     "dashboard": {
@@ -435,7 +423,6 @@
       "manageRefTables": "Gérer les tables de référence →",
       "authSessions": "Auth. + sessions",
       "cookieName": "Nom du cookie",
-
       "sessionTtl": "Durée de session",
       "authSecret": "Secret d'auth",
       "missing": "manquant",
@@ -690,7 +677,6 @@
       "visibilityDescription": "Contrôle si ce fournisseur apparaît dans le registre public. Le journal d'audit enregistre toujours chaque modification."
     }
   },
-
   "adminNav": {
     "overview": "Aperçu",
     "dashboard": "Tableau de bord",
@@ -718,7 +704,6 @@
     "referenceTables": "Tables de référence",
     "allTables": "Toutes les tables"
   },
-
   "provider": {
     "title": "Fournisseur",
     "resources": {
@@ -769,7 +754,8 @@
       "subtitle": "Identité de l'organisation. Complétez les détails de l'organisation pour débloquer la création de ressources.",
       "notProviderMessage": "Vous êtes connecté en tant que {role}, et non en tant que fournisseur. Pour gérer les fournisseurs en tant qu'opérateur, accédez à l'interface d'administration.",
       "openAdminProviders": "Ouvrir admin · Fournisseurs →",
-      "providerMissing": "Dossier fournisseur introuvable."
+      "providerMissing": "Dossier fournisseur introuvable.",
+      "notificationsHeading": "Notifications"
     },
     "publish": {
       "title": "Publier une ressource",
@@ -848,7 +834,6 @@
       "incidentsDesc": "Actions d'application de l'opérateur prises contre vos enregistrements."
     }
   },
-
   "providerNav": {
     "overview": "Aperçu",
     "dashboard": "Tableau de bord",
@@ -863,7 +848,6 @@
     "account": "Compte",
     "settings": "Paramètres"
   },
-
   "verifier": {
     "title": "Vérificateur",
     "dashboard": {
@@ -996,7 +980,6 @@
       "subtitle": "Alertes spécifiques à la file d'attente du vérificateur."
     }
   },
-
   "verifierNav": {
     "overview": "Aperçu",
     "dashboard": "Tableau de bord",
@@ -1011,7 +994,6 @@
     "reports": "Rapports",
     "settings": "Paramètres"
   },
-
   "sovereign": {
     "title": "Opérations souveraines",
     "dashboard": {
@@ -1177,7 +1159,6 @@
       "subtitle": "Alertes spécifiques à la juridiction souveraine."
     }
   },
-
   "sovereignNav": {
     "overview": "Aperçu",
     "dashboard": "Tableau de bord",
@@ -1194,7 +1175,6 @@
     "reports": "Rapports",
     "settings": "Paramètres"
   },
-
   "contact": {
     "eyebrow": "Contact",
     "title": "Prenez <accent>contact</accent>.",
@@ -1233,7 +1213,6 @@
     "placeholderOrg": "Ministère de …",
     "placeholderEmail": "vous@org.mu"
   },
-
   "docs": {
     "title": "Documentation",
     "subtitle": "Documentation technique pour les opérateurs, fournisseurs et intégrateurs.",
@@ -1251,7 +1230,6 @@
     "section_review_label": "Flux de revue",
     "section_review_body": "Les réviseurs appliquent la checklist publiée, enregistrent des notes signées et attribuent un statut. Les recours sont publics."
   },
-
   "ecosystem": {
     "title": "Écosystème",
     "subtitle": "L'écosystème IA plus large connecté au registre.",
@@ -1288,14 +1266,12 @@
     "ctaHeadingSuffix": "?",
     "ctaDescription": "Que vous soyez un organisme gouvernemental, un fournisseur de modèles, un partenaire d'hébergement ou un intégrateur — le registre est ouvert à la participation.",
     "ctaButton": "Contactez-nous",
-
     "navPlatform": "Le registre IA",
     "navOperators": "Opérateurs",
     "navIntegrators": "Intégrateurs",
     "navAudiences": "Publics",
     "navFederation": "Fédération",
     "navEngage": "Participer",
-
     "layer1Label": "Couche 01 · Découverte",
     "layer1Title": "Opérateur du registre",
     "layer1Desc": "Gère le portail public, l'API de découverte et le flux de revue. Émet les AIR-ID et maintient le journal d'audit.",
@@ -1308,7 +1284,6 @@
     "layer3Title": "Environnement d'hébergement",
     "layer3Desc": "Exécute la charge de travail réelle — cloud souverain, GPU, sur site — et peut émettre des SVID d'exécution via SPIFFE/SPIRE.",
     "layer3Meta": "Fournit : calcul · identité d'exécution",
-
     "operatorsDescription": "Idéalement opéré par des organisations qui gèrent déjà des services numériques de confiance, neutres et à l'échelle nationale au nom d'écosystèmes plus larges — la légitimité, la capacité et le pouvoir de rassemblement comptent autant que la technologie. <strong>{operatorName} opère l'instance de référence sur <link>{portalDomain}</link>.</strong>",
     "dpiEnablerTitle": "Ce qui fait un facilitateur DPI",
     "dpiEnablerPoint1": "Capable d'exploiter une infrastructure numérique critique pour de nombreuses parties, pas seulement pour soi-même.",
@@ -1328,7 +1303,6 @@
     "telcosDesc": "Infrastructure nationale, écosystèmes d'entreprise, interconnexion, relations profondes avec le gouvernement, proximité d'hébergement et ambitions de cloud souverain — bien que l'hébergement IA reste distinct de l'exploitation du registre.",
     "governmentTitle": "Gouvernement - sponsor politique",
     "governmentDesc": "Le modèle le plus résilient est un partenariat : le gouvernement apporte la légitimité politique et la capacité de rassemblement sectoriel ; l'opérateur (télécoms ou autre facilitateur DPI) assure les opérations de plateforme et la mise en œuvre technique.",
-
     "integratorRole1Title": "Mise en œuvre et intégration",
     "integratorRole1Desc": "Aider les fournisseurs à préparer les soumissions, rassembler les preuves de souveraineté et intégrer les AIR-ID dans les systèmes existants.",
     "integratorRole2Title": "Revue indépendante",
@@ -1337,7 +1311,6 @@
     "integratorRole3Desc": "Étendre AIR-Core pour une juridiction — ajouts de schéma, configuration sectorielle, outillage de fédération.",
     "integratorRole4Title": "Adoption et accompagnement",
     "integratorRole4Desc": "Former les équipes fournisseurs, animer des ateliers de découverte et intégrer le registre dans les stratégies IA nationales.",
-
     "audience1Title": "Gouvernements et décideurs",
     "audience1Sub": "Stratégie IA souveraine",
     "audience1Point1": "Un point souverain pour la découverte de l'IA, distinct des plateformes mondiales et sans dépendance fournisseur.",
@@ -1358,7 +1331,6 @@
     "audience4Point1": "Des systèmes IA capables de trouver et d'utiliser des outils localement précis — calculateurs fiscaux, références juridiques, services.",
     "audience4Point2": "Des signaux de gouvernance visibles qui distinguent « officiellement approuvé » de « auto-déclaré ».",
     "audience4Point3": "Une alternative souveraine aux annuaires mondiaux opaques où la pertinence locale est invisible.",
-
     "federationBilateral": "Bilatéral · Métadonnées uniquement",
     "federationSovereigntyLabel": "Souveraineté préservée",
     "federationPeerRegistry": "Registre pair",
@@ -1374,7 +1346,6 @@
     "federationPrinciple4Label": "Principe 04",
     "federationPrinciple4Title": "Souveraineté préservée",
     "federationPrinciple4Desc": "Chaque registre reste exploité, gouverné et peuplé de manière indépendante.",
-
     "engageDescription": "Intentionnellement petit, ouvert et souverain. La valeur vient de la <em>retenue</em> — et du fait que d'autres déploient et gouvernent le leur. {operatorName} construit la référence ; les prochaines étapes sont l'adoption, la contribution et le partenariat.",
     "track1Label": "Piste 01",
     "track1Title": "Adopter",
@@ -1392,7 +1363,6 @@
     "track4Title": "Observer",
     "track4Desc": "Suivre {portalDomain}, étudier le modèle opérationnel, et décider si et comment déployer dans votre contexte."
   },
-
   "pricing": {
     "title": "Tarification",
     "subtitle": "Le registre est gratuit et open-source.",
@@ -1413,7 +1383,6 @@
     "theWhitepaper": "le livre blanc",
     "forFullModel": "pour le modèle économique complet."
   },
-
   "terms": {
     "title": "Conditions d'utilisation",
     "home": "Accueil",
@@ -1436,7 +1405,6 @@
     "changesBody2": ". Les questions vont à",
     "theContactForm": "le formulaire de contact"
   },
-
   "privacy": {
     "title": "Politique de confidentialité",
     "home": "Accueil",
@@ -1456,7 +1424,6 @@
     "operatorTitle": "Opérateur",
     "operatorBody": "{registryName} est opéré par {operatorName} en collaboration avec le Ministère de l'Information."
   },
-
   "acceptableUse": {
     "title": "Politique d'utilisation acceptable",
     "home": "Accueil",
@@ -1480,7 +1447,6 @@
     "reportingAppealsBody2": ". Si votre ressource a été rejetée ou supprimée et que vous pensez que la décision était erronée, consultez la",
     "appealsProcess": "procédure de recours"
   },
-
   "whitepaper": {
     "title": "Livre blanc",
     "home": "Accueil",
@@ -1503,7 +1469,6 @@
     "companionDocsBody": "Ce livre blanc accompagne la <docsLink>spécification technique AIR-SPEC 0.4</docsLink> et la <govLink>charte de gouvernance</govLink>.",
     "referenceImpl": "Implémentation de référence : {portalDomain}, opérée par {operatorName}."
   },
-
   "openData": {
     "title": "Données ouvertes",
     "home": "Accueil",
@@ -1522,7 +1487,6 @@
     "seeAlsoBody2": "pour les points d'accès API et les formats d'export, ou parcourez le",
     "publicAuditLog": "journal d'audit public"
   },
-
   "verification": {
     "title": "Vérification",
     "governanceLink": "Gouvernance",
@@ -1543,7 +1507,6 @@
     "whyThreeTitle": "Pourquoi trois",
     "whyThreeBody": "Fusionner ceux-ci en un seul numéro de niveau transforme le registre en certificateur de facto et attire une responsabilité qui n'était jamais prévue. Trois signaux indépendants maintiennent la responsabilité là où elle appartient : le fournisseur opère et reste responsable ; le registre expose des signaux légers pour que les utilisateurs puissent distinguer « cette ressource existe » de « un organisme autorisé a officiellement endorsé cette ressource »."
   },
-
   "sovereigntyRubric": {
     "title": "Grille de souveraineté",
     "governanceLink": "Gouvernance",
@@ -1569,7 +1532,6 @@
     "whereFitsTitle": "Où cela s'inscrit",
     "whereFitsBody": "La revue de souveraineté est l'un des trois signaux de gouvernance indépendants. Voir <verificationLink>preuves de vérification</verificationLink> pour la vue d'ensemble, et <docsLink>AIR-SPEC 0.4 §4</docsLink> pour la forme normative."
   },
-
   "publicAudit": {
     "governanceLink": "Gouvernance",
     "crumbLabel": "Journal d'audit",
@@ -1587,7 +1549,6 @@
     "publicLogTitle": "Journal public",
     "publicLogBody": "Un journal public en lecture seule des événements récents apparaîtra ici. Tandis que la surface d'inscription est en cours de développement, les données d'audit sous-jacentes sont déjà capturées pour chaque action de gouvernance. Voir <docsLink>AIR-SPEC 0.4 §8</docsLink> pour la forme normative, et <govLink>gouvernance</govLink> pour qui décide quoi."
   },
-
   "portal": {
     "title": "Votre compte",
     "resources": {
@@ -1617,7 +1578,6 @@
       "backToList": "Retour à la liste"
     }
   },
-
   "portalHome": {
     "crumb": "Portail · Connecté",
     "welcomeBack": "Bon retour,",
@@ -1644,19 +1604,16 @@
     "contactOperator": "Contacter l'opérateur",
     "clickConfirmationLink": "et cliquez sur le lien de confirmation dans la réponse automatique."
   },
-
   "portalSidebar": {
     "defaultRegistryName": "Registre IA",
     "publicSite": "Site public",
     "stub": "Phase 4"
   },
-
   "localeSwitcher": {
     "label": "Langue",
     "en": "English",
     "fr": "Français"
   },
-
   "adminResources": {
     "filterKind": "Type",
     "filterLifecycle": "Cycle de vie",
@@ -1707,7 +1664,6 @@
     "actionFailed": "Échec de l'action",
     "saveFailed": "Échec de l'enregistrement"
   },
-
   "adminUsers": {
     "filterRole": "Rôle",
     "filterStatus": "Statut",
@@ -1761,7 +1717,6 @@
     "deleteFailed": "Échec de la suppression",
     "saveFailed": "Échec de l'enregistrement"
   },
-
   "adminProviders": {
     "filterType": "Type",
     "filterStatus": "Statut",
@@ -1800,7 +1755,6 @@
     "deleteFailed": "Échec de la suppression",
     "saveFailed": "Échec de l'enregistrement"
   },
-
   "adminReviewDecide": {
     "resourceLabel": "Ressource :",
     "decisionLabel": "Décision",
@@ -1819,7 +1773,6 @@
     "networkError": "Erreur réseau",
     "requestFailed": "Échec de la requête"
   },
-
   "adminResourceEdit": {
     "sectionIdentity": "Identité et classification",
     "sectionDescriptions": "Descriptions",
@@ -1879,7 +1832,6 @@
     "networkError": "Erreur réseau",
     "saveFailed": "Échec de l'enregistrement"
   },
-
   "adminProviderEdit": {
     "sectionIdentity": "Identité",
     "sectionClassification": "Classification",
@@ -1917,7 +1869,6 @@
     "networkError": "Erreur réseau",
     "saveFailed": "Échec de l'enregistrement"
   },
-
   "adminProviderVerify": {
     "statusVerified": "Vérifié",
     "statusOfficialProvider": "Fournisseur officiel",
@@ -1936,7 +1887,6 @@
     "networkError": "Erreur réseau",
     "requestFailed": "Échec de la requête"
   },
-
   "adminProviderVisibility": {
     "visibleOnRegistry": "Visible sur le registre public",
     "hiddenFromRegistry": "Masqué du registre public",
@@ -1956,7 +1906,6 @@
     "networkError": "Erreur réseau",
     "requestFailed": "Échec de la requête"
   },
-
   "adminContact": {
     "replyTitle": "Répondre",
     "labelSubject": "Sujet",
@@ -1975,7 +1924,6 @@
     "sendFailed": "Échec de l'envoi",
     "deleteFailed": "Échec de la suppression"
   },
-
   "adminComplaintDetail": {
     "breadcrumbAdmin": "Admin",
     "breadcrumbComplaints": "Plaintes",
@@ -1999,7 +1947,6 @@
     "cardEnforcementActions": "Actions d'application",
     "by": "par"
   },
-
   "adminComplaint": {
     "replyTitle": "Répondre",
     "noEmailProvided": "Aucune adresse email n'a été fournie par le plaignant.",
@@ -2037,7 +1984,6 @@
     "updateFailed": "Échec de la mise à jour",
     "deleteFailed": "Échec de la suppression"
   },
-
   "adminBranding": {
     "logoTitle": "Logo",
     "logoDescription": "PNG, JPEG, SVG ou WebP, jusqu'à 1 Mo. Remplace le marquage dégradé par défaut dans la navigation supérieure, la barre latérale du portail et le bloc de marque du pied de page.",
@@ -2074,7 +2020,6 @@
     "uploadTitle": "Téléverser {title}",
     "removeTitle": "Supprimer {title}"
   },
-
   "adminGrid": {
     "addNew": "Ajouter",
     "loading": "Chargement…",
@@ -2088,7 +2033,6 @@
     "perPage": "{n} / page",
     "allFilter": "Tous les {label}"
   },
-
   "adminRefGrid": {
     "search": "Rechercher…",
     "all": "Tout",
@@ -2117,7 +2061,6 @@
     "active": "actif",
     "inactive": "inactif"
   },
-
   "adminRefRow": {
     "cancel": "Annuler",
     "saving": "Enregistrement…",
@@ -2126,7 +2069,6 @@
     "active": "Actif",
     "inactive": "Inactif"
   },
-
   "adminLifecycle": {
     "currentStatus": "Statut actuel",
     "noTransitions": "Aucune transition de cycle de vie disponible depuis ce statut.",
@@ -2147,11 +2089,9 @@
     "networkError": "Erreur réseau",
     "actionFailed": "Échec de l'action"
   },
-
   "adminActions": {
     "moreActions": "Plus d'actions"
   },
-
   "adminSiteFaq": {
     "code": "Code",
     "question": "Question",
@@ -2168,7 +2108,6 @@
     "deleteEntry": "Supprimer l'entrée",
     "saved": "Enregistré."
   },
-
   "adminSiteHowItWorks": {
     "code": "Code",
     "title": "Titre",
@@ -2185,7 +2124,6 @@
     "deleting": "Suppression…",
     "deleteStep": "Supprimer l'étape"
   },
-
   "adminSiteCriteria": {
     "code": "Code",
     "title": "Titre",
@@ -2203,7 +2141,6 @@
     "deleting": "Suppression…",
     "deleteCriterion": "Supprimer le critère"
   },
-
   "adminSitePromo": {
     "showBanner": "Afficher la bannière promotionnelle sur la page d'accueil",
     "showBannerHelpText": "Lorsque décoché, la section est entièrement omise (pas de conteneur vide).",
@@ -2219,7 +2156,6 @@
     "savePromoBanner": "Enregistrer la bannière",
     "saved": "Enregistré."
   },
-
   "reportModal": {
     "title": "Signaler cette inscription",
     "received": "Signalement reçu",
@@ -2247,7 +2183,6 @@
     "reportListing": "Signaler cette inscription",
     "placeholderEmail": "vous@org.example"
   },
-
   "tweaks": {
     "title": "Ajustements · dev",
     "palette": "Palette",
@@ -2262,7 +2197,6 @@
     "kigali": "Kigali",
     "mauritius": "Maurice"
   },
-
   "whatGetsListed": {
     "eyebrow": "Ce qui est répertorié",
     "heading": "Trois types de ressources.",
@@ -2278,7 +2212,6 @@
     "skillTitle": "Compétences et outils MCP",
     "skillDesc": "Capacités discrètes — wrappers API, connecteurs de données, vérifications de conformité — appelables par des agents ou directement."
   },
-
   "listingCriteria": {
     "eyebrow": "Test de souveraineté",
     "headingPrefix": "Spécifique, pas aspirationnel.",
@@ -2297,7 +2230,6 @@
     "base4Name": "Langue et culture locales",
     "base4Desc": "Prend en charge la langue, la culture, les normes ou le contexte locaux."
   },
-
   "howItWorks": {
     "eyebrow": "Comment ça marche",
     "heading": "De la soumission à l'utilisation.",
@@ -2316,14 +2248,12 @@
     "step6Title": "Maintenir",
     "step6Desc": "Le fournisseur maintient les métadonnées à jour ; le statut reflète tout changement au fil du temps."
   },
-
   "promo": {
     "eyebrow": "Ouvert aux soumissions",
     "fallbackHeading": "Inscrivez votre ressource IA souveraine.",
     "fallbackBody": "Vous conservez l'hébergement, l'accès, l'identité d'exécution et la responsabilité. Le registre aide simplement les bonnes personnes à vous trouver. La soumission est ouverte et examinée sous 10 jours ouvrés.",
     "fallbackCtaLabel": "Soumettre une ressource"
   },
-
   "orchestration": {
     "eyebrow": "Orchestration du cycle de vie",
     "heading": "Le parcours d'une ressource à travers",
@@ -2343,7 +2273,6 @@
     "stage6Title": "Maintenir",
     "stage6Desc": "Le fournisseur maintient les métadonnées à jour ; le statut reflète les changements au fil du temps."
   },
-
   "metrics": {
     "listedResources": "Ressources répertoriées",
     "verifiedProviders": "Fournisseurs vérifiés",
@@ -2352,7 +2281,6 @@
     "liveCatalogue": "catalogue actif",
     "slo": "SLO"
   },
-
   "faq": {
     "eyebrow": "FAQ",
     "heading": "Questions fréquemment posées",
@@ -2369,19 +2297,16 @@
     "faq6Q": "Comment les inscriptions sont-elles résolues à l'exécution ?",
     "faq6A": "Les AIR-ID (sous air://) pointent vers les endpoints du fournisseur décrits dans les métadonnées de l'inscription. En option, les environnements d'hébergement émettent des SVID SPIFFE/SPIRE pour l'identité à l'exécution."
   },
-
   "portalShell": {
     "disclaimer": "Pré-version · les données peuvent être réinitialisées sans préavis.",
     "governanceCharter": "Charte de gouvernance"
   },
-
   "portalHeader": {
     "searchProvider": "Rechercher ressources, soumissions…",
     "searchAdmin": "Rechercher ressources, fournisseurs, utilisateurs…",
     "searchDefault": "Rechercher…",
     "searchProviderChrome": "Rechercher vos ressources…"
   },
-
   "portalNotificationsBrowser": {
     "searchPlaceholder": "Rechercher des notifications…",
     "kind": "Type",
@@ -2406,7 +2331,6 @@
     "prev": "Précédent",
     "next": "Suivant"
   },
-
   "portalDataTable": {
     "searchPlaceholder": "Rechercher…",
     "searchAria": "Rechercher",
@@ -2417,7 +2341,6 @@
     "noRowsMatch": "Aucune ligne ne correspond à votre recherche et à vos filtres.",
     "rowCount": "{shown} sur {total}"
   },
-
   "portalRegistration": {
     "verifyEmailTitle": "Vérifiez votre courriel",
     "verifyEmailBody": "Consultez votre boîte de réception pour le lien de vérification envoyé lors de votre inscription.",
@@ -2426,23 +2349,21 @@
     "completeProfileBody": "Ajoutez les détails de votre organisation pour commencer à soumettre des ressources.",
     "openSettings": "Ouvrir les paramètres"
   },
-
   "portalPublish": {
     "verifyEmailFirst": "Vérifiez votre courriel avant de publier",
-    "registrationMsg": "Complétez votre inscription en tant que fournisseur avant de soumettre une ressource. Ouvrez les Paramètres pour finaliser le profil de votre organisation."
+    "registrationMsg": "Complétez votre inscription en tant que fournisseur avant de soumettre une ressource. Ouvrez les Paramètres pour finaliser le profil de votre organisation.",
+    "settingsLink": "Paramètres →",
+    "dismiss": "Fermer"
   },
-
   "portalStub": {
     "eyebrow": "Bientôt disponible",
     "title": "Ce module est en cours de développement",
     "body": "L'interface est prête mais l'intégration backend n'est pas encore connectée. Revenez bientôt.",
     "moduleContract": "Contrat de module"
   },
-
   "portalPalette": {
     "title": "Palette de commandes"
   },
-
   "portalUserDropdown": {
     "switchRole": "Changer de rôle",
     "current": "Actuel",
@@ -2455,14 +2376,12 @@
     "verifierPortal": "Portail vérificateur",
     "sovereignOps": "Opérations souveraines"
   },
-
   "portalNotifications": {
     "title": "Notifications",
     "markAllRead": "Tout marquer comme lu",
     "nothingNew": "Rien de nouveau.",
     "viewAll": "Tout voir"
   },
-
   "portalSearch": {
     "defaultPlaceholder": "Rechercher…",
     "openPalette": "Ouvrir la palette de commandes",
@@ -2479,9 +2398,63 @@
     "groupReviews": "Évaluations",
     "groupIncidents": "Incidents",
     "groupProviders": "Fournisseurs",
-    "groupUsers": "Utilisateurs"
+    "groupUsers": "Utilisateurs",
+    "pages": {
+      "provider_dashboard_title": "Tableau de bord",
+      "provider_dashboard_subtitle": "Fournisseur · aperçu",
+      "provider_resources_title": "Mes ressources",
+      "provider_resources_subtitle": "Fournisseur · catalogue",
+      "provider_submissions_title": "Soumissions",
+      "provider_submissions_subtitle": "Fournisseur · en cours",
+      "provider_publish_title": "Publier une ressource",
+      "provider_publish_subtitle": "Fournisseur · nouveau brouillon",
+      "provider_complaints_title": "Plaintes",
+      "provider_complaints_subtitle": "Fournisseur · boîte de réception",
+      "provider_reviews_title": "Revues",
+      "provider_reviews_subtitle": "Fournisseur · boîte de réception",
+      "provider_incidents_title": "Incidents",
+      "provider_incidents_subtitle": "Fournisseur · boîte de réception",
+      "provider_settings_title": "Paramètres",
+      "provider_settings_subtitle": "Fournisseur · compte",
+      "admin_dashboard_title": "Tableau de bord",
+      "admin_dashboard_subtitle": "Admin · aperçu",
+      "admin_resources_title": "Ressources",
+      "admin_resources_subtitle": "Admin · catalogue",
+      "admin_providers_title": "Fournisseurs",
+      "admin_providers_subtitle": "Admin · catalogue",
+      "admin_reviews_title": "File de revue",
+      "admin_reviews_subtitle": "Admin · gouvernance",
+      "admin_complaints_title": "Signalements et incidents",
+      "admin_complaints_subtitle": "Admin · gouvernance",
+      "admin_policies_title": "Politiques",
+      "admin_policies_subtitle": "Admin · gouvernance",
+      "admin_users_title": "Utilisateurs et rôles",
+      "admin_users_subtitle": "Admin · compte",
+      "admin_audit_title": "Journal d'audit",
+      "admin_audit_subtitle": "Admin · gouvernance",
+      "admin_integrations_title": "Intégrations",
+      "admin_integrations_subtitle": "Admin · plateforme",
+      "admin_settings_title": "Paramètres",
+      "admin_settings_subtitle": "Admin · compte",
+      "verifier_dashboard_title": "Tableau de bord",
+      "verifier_dashboard_subtitle": "Vérificateur · file",
+      "verifier_settings_title": "Paramètres",
+      "verifier_settings_subtitle": "Vérificateur · compte",
+      "sovereign_dashboard_title": "Tableau de bord",
+      "sovereign_dashboard_subtitle": "Souverain · aperçu",
+      "dismiss": "Fermer",
+      "settingsLink": "Paramètres →",
+      "providerRecordFallback": "Fournisseur",
+      "legalNameOptional": "Raison sociale (facultatif)",
+      "publicDescriptionOptional": "Description publique (facultatif)",
+      "organisationSlug": "Identifiant de l'organisation",
+      "saveOrganisation": "Enregistrer l'organisation",
+      "pickFile": "Cliquez pour choisir un fichier…",
+      "removeFile": "Supprimer le fichier",
+      "removeStagedFile": "Supprimer le fichier joint",
+      "notificationsSection": "Notifications"
+    }
   },
-
   "providerNotifForm": {
     "saveFailed": "Impossible d'enregistrer les paramètres de notification.",
     "networkError": "Erreur réseau. Veuillez réessayer.",
@@ -2496,7 +2469,6 @@
     "saveButton": "Enregistrer les paramètres",
     "savedAt": "Enregistré à {time}"
   },
-
   "providerOrgForm": {
     "saveFailed": "Impossible d'enregistrer les détails de l'organisation.",
     "saveSuccess": "Détails de l'organisation enregistrés.",
@@ -2504,17 +2476,16 @@
     "title": "Détails de l'organisation",
     "description": "Informations de base sur votre organisation. Ceci est affiché sur votre profil public de fournisseur.",
     "displayName": "Nom d'affichage",
-    "orgSlug": "Identifiant",
-    "slugHint": "Identifiant compatible URL. Ne peut pas être modifié après la première soumission.",
+    "orgSlug": "Identifiant de l'organisation",
+    "slugHint": "Lettres minuscules, chiffres et tirets. Utilisé dans les URL publiques du fournisseur.",
     "contactEmail": "Courriel de contact",
     "providerType": "Type de fournisseur",
     "homeJurisdiction": "Juridiction d'origine",
-    "legalName": "Raison sociale",
-    "publicDescription": "Description publique",
+    "legalName": "Raison sociale (facultatif)",
+    "publicDescription": "Description publique (facultatif)",
     "saving": "Enregistrement…",
-    "saveButton": "Enregistrer"
+    "saveButton": "Enregistrer l'organisation"
   },
-
   "providerIncidents": {
     "colPerformed": "Effectué",
     "colAction": "Action",
@@ -2524,7 +2495,6 @@
     "emptyState": "Aucun incident enregistré.",
     "searchPlaceholder": "Rechercher des incidents…"
   },
-
   "providerComplaints": {
     "colFiled": "Déposée",
     "colTarget": "Cible",
@@ -2541,7 +2511,6 @@
     "statusResolved": "Résolue",
     "statusRejected": "Rejetée"
   },
-
   "providerReviews": {
     "colTarget": "Cible",
     "colType": "Type",
@@ -2553,9 +2522,10 @@
     "searchPlaceholder": "Rechercher des évaluations…",
     "statusDecided": "Décidée",
     "statusInFlight": "En cours",
-    "statusWithdrawn": "Retirée"
+    "statusWithdrawn": "Retirée",
+    "colConversation": "Conversation",
+    "openLink": "Ouvrir →"
   },
-
   "providerSubmissions": {
     "colTitle": "Titre",
     "colKind": "Type",
@@ -2568,7 +2538,6 @@
     "emptyState": "Aucune soumission pour le moment.",
     "searchPlaceholder": "Rechercher des soumissions…"
   },
-
   "providerResources": {
     "colTitle": "Titre",
     "noAirId": "en attente",
@@ -2586,7 +2555,6 @@
     "statusExperimental": "Expérimental",
     "statusIsolated": "Isolé"
   },
-
   "providerResourceEdit": {
     "saveFailed": "Impossible d'enregistrer les modifications.",
     "saved": "Modifications enregistrées.",
@@ -2644,9 +2612,19 @@
     "submitting": "Soumission…",
     "submitForReview": "Soumettre pour évaluation",
     "notifyOperators": "Cela notifiera les opérateurs du registre.",
-    "submitHint": "Assurez-vous que tous les champs sont complets avant de soumettre."
+    "submitHint": "Assurez-vous que tous les champs sont complets avant de soumettre.",
+    "fieldSlugImmutable": "Identifiant (immuable)",
+    "fieldKindImmutable": "Type (immuable)",
+    "fieldProviderImmutable": "Fournisseur (immuable)",
+    "fieldPrimaryJurisdictionAdmin": "Juridiction principale (gérée par l'admin)",
+    "fieldRiskLevelAdmin": "Niveau de risque (géré par l'admin)",
+    "fieldShortDescCards": "Description courte (8+ caractères, affichée sur les cartes)",
+    "fieldLongDescMarkdown": "Description longue (markdown OK, page de détail)",
+    "fieldEvidenceTitle": "Titre",
+    "fieldEndpointDocUrl": "URL de la documentation",
+    "fieldLanguages": "Langues",
+    "fieldSectors": "Secteurs"
   },
-
   "providerDocs": {
     "loadFailed": "Impossible de charger les documents.",
     "title": "Documents",
@@ -2676,9 +2654,12 @@
     "expiresOptional": "Expire (facultatif)",
     "cancel": "Annuler",
     "uploading": "Téléversement…",
-    "upload": "Téléverser"
+    "upload": "Téléverser",
+    "pickFilePrompt": "Cliquez pour choisir un fichier…",
+    "removeFileAria": "Supprimer le fichier",
+    "uploadDialogDescription": "PDF, images, texte brut ou ZIP jusqu'à 10 Mo.",
+    "deleteFailed": "Échec de la suppression"
   },
-
   "threadConversation": {
     "loadFailed": "Impossible de charger la conversation.",
     "loading": "Chargement…",
@@ -2702,7 +2683,6 @@
     "attach": "Joindre",
     "sending": "Envoi…"
   },
-
   "verificationDocs": {
     "title": "Documents de vérification",
     "emptyState": "Aucun document soumis.",
@@ -2711,7 +2691,6 @@
     "private": "Privé",
     "evidenceDocs": "Documents de preuves de souveraineté"
   },
-
   "profileForm": {
     "updateFailed": "Impossible de mettre à jour le profil.",
     "saved": "Profil enregistré.",
@@ -2723,7 +2702,6 @@
     "saving": "Enregistrement…",
     "saveProfile": "Enregistrer le profil"
   },
-
   "editResource": {
     "saveFailed": "Impossible d'enregistrer les modifications.",
     "networkError": "Erreur réseau. Veuillez réessayer.",
@@ -2739,7 +2717,6 @@
     "submitForReview": "Soumettre pour évaluation",
     "submitHint": "Assurez-vous que tous les champs sont complets avant de soumettre."
   },
-
   "newResource": {
     "failed": "Impossible de créer la ressource.",
     "networkError": "Erreur réseau. Veuillez réessayer.",
@@ -2754,7 +2731,6 @@
     "creating": "Création…",
     "createDraft": "Créer un brouillon"
   },
-
   "evidenceFile": {
     "typeNotAllowed": "Type de fichier non autorisé.",
     "fileExceeds10MB": "Le fichier dépasse la limite de 10 Mo.",
@@ -2763,7 +2739,11 @@
     "remove": "Supprimer",
     "noFileAttached": "Aucun fichier joint",
     "uploading": "Téléversement…",
-    "uploadFile": "Téléverser un fichier"
+    "uploadFile": "Téléverser un fichier",
+    "attachOptional": "Joindre un fichier (facultatif)",
+    "fileTypesHint": "PDF, image, txt, zip · max 10 Mo",
+    "uploadOnSave": "sera téléversé lors de l'enregistrement",
+    "removeStagedAria": "Supprimer le fichier joint"
   },
   "adminSettings": {
     "title": "Paramètres",
@@ -2806,5 +2786,114 @@
     "wellKnown": "Well-known :",
     "auditLog": "Journal d'audit →",
     "integrations": "Intégrations →"
+  },
+  "metadata": {
+    "admin": {
+      "dashboard": "Admin · Tableau de bord",
+      "layout": "Admin · Registre IA",
+      "resources": "Admin · Ressources",
+      "resourcesEdit": "Admin · Modifier la ressource",
+      "providers": "Admin · Fournisseurs",
+      "providerDetail": "Admin · Fournisseur",
+      "reviews": "File de revue",
+      "reviewDecision": "Décision d'évaluation",
+      "complaints": "Admin · Plaintes",
+      "complaintDetail": "Admin · Plainte",
+      "contacts": "Admin · Messages de contact",
+      "contactDetail": "Admin · Message de contact",
+      "users": "Admin · Utilisateurs et rôles",
+      "audit": "Admin · Journal d'audit",
+      "policies": "Admin · Politiques",
+      "settings": "Admin · Paramètres",
+      "integrations": "Admin · Intégrations",
+      "branding": "Admin · Image de marque",
+      "notifications": "Admin · Notifications",
+      "ref": "Admin · Tables de référence",
+      "site": "Admin · Contenu du site",
+      "sitePromo": "Admin · Site · Bannière promotionnelle",
+      "siteListingCriteria": "Admin · Contenu du site · Critères d'inscription",
+      "siteListingCriteriaNew": "Admin · Site · Critères · Nouveau",
+      "siteListingCriteriaEdit": "Admin · Site · Critères · Modifier",
+      "siteHowItWorks": "Admin · Contenu du site · Comment ça marche",
+      "siteHowItWorksNew": "Admin · Site · Comment ça marche · Nouveau",
+      "siteHowItWorksEdit": "Admin · Site · Comment ça marche · Modifier",
+      "siteFaq": "Admin · Contenu du site · FAQ",
+      "siteFaqNew": "Admin · Site · FAQ · Nouveau",
+      "siteFaqEdit": "Admin · Site · FAQ · Modifier"
+    },
+    "provider": {
+      "layout": "Fournisseur · Registre IA",
+      "dashboard": "Fournisseur · Tableau de bord",
+      "resources": "Fournisseur · Ressources",
+      "resourcesEdit": "Fournisseur · Modifier la ressource",
+      "submissions": "Fournisseur · Soumissions",
+      "publish": "Fournisseur · Publier",
+      "reviews": "Fournisseur · Revues",
+      "reviewDetail": "Fournisseur · Revue",
+      "complaints": "Fournisseur · Plaintes",
+      "incidents": "Fournisseur · Incidents",
+      "settings": "Fournisseur · Paramètres",
+      "notifications": "Fournisseur · Notifications",
+      "analytics": "Fournisseur · Analytique",
+      "contactRequests": "Fournisseur · Demandes de contact"
+    },
+    "verifier": {
+      "layout": "Vérificateur · Registre IA",
+      "dashboard": "Vérificateur · Tableau de bord",
+      "queue": "Vérificateur · File d'attente",
+      "reviewDetail": "Vérificateur · Revue",
+      "decided": "Vérificateur · Décidées",
+      "runs": "Vérificateur · Exécutions d'évaluation",
+      "benchmarks": "Vérificateur · Benchmarks",
+      "redteam": "Vérificateur · Équipe rouge",
+      "reports": "Vérificateur · Rapports",
+      "settings": "Vérificateur · Paramètres",
+      "notifications": "Vérificateur · Notifications"
+    },
+    "sovereign": {
+      "layout": "Opérations souveraines · Registre IA",
+      "dashboard": "Opérations souveraines · Tableau de bord",
+      "catalog": "Souverain · Catalogue national",
+      "topology": "Souverain · Topologie",
+      "sectors": "Souverain · Secteurs",
+      "partners": "Souverain · Partenaires",
+      "risk": "Souverain · Risque",
+      "policies": "Souverain · Politiques",
+      "incidents": "Souverain · Incidents",
+      "reports": "Souverain · Rapports",
+      "settings": "Souverain · Paramètres",
+      "notifications": "Souverain · Notifications"
+    },
+    "portal": {
+      "home": "Votre compte",
+      "resources": "Mes ressources",
+      "resourcesNew": "Nouvelle ressource",
+      "resourcesEdit": "Modifier la ressource"
+    },
+    "public": {
+      "signIn": "Connexion",
+      "register": "Créer un compte",
+      "resetPassword": "Réinitialiser le mot de passe",
+      "setNewPassword": "Définir le nouveau mot de passe",
+      "verifyEmail": "Vérifier l'email",
+      "verifyContact": "Confirmer l'email de contact",
+      "resourceDetail": "Détail de la ressource",
+      "registry": "Registre",
+      "providers": "Fournisseurs",
+      "provider": "Fournisseur",
+      "contact": "Contact",
+      "docs": "Documentation",
+      "ecosystem": "Écosystème",
+      "governance": "Gouvernance",
+      "pricing": "Tarification",
+      "terms": "Conditions d'utilisation",
+      "privacy": "Confidentialité",
+      "acceptableUse": "Politique d'utilisation acceptable",
+      "whitepaper": "Livre blanc",
+      "openData": "Données ouvertes",
+      "verification": "Preuves de vérification",
+      "sovereigntyRubric": "Grille de souveraineté",
+      "audit": "Journal d'audit"
+    }
   }
 }

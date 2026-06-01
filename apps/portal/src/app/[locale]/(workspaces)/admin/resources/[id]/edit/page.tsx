@@ -7,7 +7,12 @@ import { ResourceLifecyclePanel } from "@/components/admin/ResourceLifecyclePane
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadAdminResourceForEdit } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Admin · Edit resource" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.resourcesEdit");
+}
+
 export const dynamic = "force-dynamic";
 
 /**

@@ -37,7 +37,6 @@
     "copied": "Copied!",
     "copy": "Copy"
   },
-
   "nav": {
     "home": "Home",
     "registry": "Registry",
@@ -58,7 +57,6 @@
     "roleVerifier": "verifier",
     "roleSovereign": "sovereign"
   },
-
   "footer": {
     "product": "Product",
     "resources": "Resources",
@@ -85,7 +83,6 @@
     "brandDescription": "Open-source infrastructure for sovereign AI discovery. The registry points; the provider operates; the hosting environment secures.",
     "providerPortal": "Provider portal"
   },
-
   "hero": {
     "subtitle": "Govern, orchestrate, and monitor trusted AI agents, models, and MCP infrastructure from a unified sovereign platform - built for nations, regulators, and the enterprises they depend on.",
     "exploreRegistry": "Explore Registry",
@@ -101,7 +98,6 @@
     "fallbackCard3Subtitle": "OCR",
     "fallbackAiResource": "AI resource"
   },
-
   "registrySection": {
     "eyebrow": "The Registry",
     "heading": "Discover what {jurisdiction} can <accent>trust and integrate</accent>.",
@@ -127,7 +123,6 @@
     "listPageSubtitle": "Browse public listings and filter by kind. Listings carry verifiable providers and stable AIR-IDs.",
     "viewDetails": "View details"
   },
-
   "providersSection": {
     "crumb": "Providers · The organisations behind the registry",
     "heading": "Meet the organisations <accent>{jurisdiction} already trusts</accent>.",
@@ -159,7 +154,6 @@
     "errorLoad": "Could not load providers",
     "errorLoadMore": "Load more failed"
   },
-
   "governance": {
     "eyebrow": "Governance, not Gatekeeping",
     "heading": "Listing is not endorsement.",
@@ -186,7 +180,6 @@
     "languageCultureDesc": "Supports local language, culture, norms or context.",
     "qualityNote": "Quality matters more than quantity. A registry of fifty credible resources is more useful than one of a thousand generic listings."
   },
-
   "governancePage": {
     "crumb": "Governance · Charter & Review",
     "pageTitle": "Governance <accent>without overreach</accent>.",
@@ -221,7 +214,6 @@
     "publicLogTitle": "Public log",
     "publicLogBody": "Every state-changing action - AIR-ID issuance, sovereignty review, official-resource endorsement, lifecycle transition - is recorded in an append-only <link>audit log</link>. The log behind a removed resource is preserved indefinitely so the governance trail remains traceable."
   },
-
   "auth": {
     "signIn": "Sign in",
     "signingIn": "Signing in…",
@@ -285,7 +277,6 @@
     "devVerifyLink": "Dev verify link",
     "devLabel": "Dev link"
   },
-
   "contactVerify": {
     "contactForm": "Contact form",
     "emailConfirmed": "Email confirmed",
@@ -299,7 +290,6 @@
     "linkNoLongerValid": "This confirmation link is no longer valid.",
     "linkExpiredSubtitle": "It may have expired or already been used. You can submit the form again if you still need help."
   },
-
   "registryDetail": {
     "registryLink": "Registry",
     "titleByProvider": "{title} by <accent>{provider}</accent>",
@@ -330,7 +320,6 @@
     "reportDesc": "Flag impersonation, broken endpoints, missing sovereignty evidence, or anything else that doesn't match the registry's rules. The operator reviews every report.",
     "footerDisclaimer": "Listing is not endorsement. The registry points; the provider operates; the hosting environment secures. Sovereignty review and official-resource authorisation are independent governance signals - see the <link>governance charter</link>."
   },
-
   "providerDetail": {
     "providersLink": "Providers",
     "listedSince": "listed",
@@ -351,7 +340,6 @@
     "verificationDocuments": "Verification documents",
     "footerDisclaimer": "Listing is not endorsement. The registry points; the provider operates; the hosting environment secures. Sovereignty review and official-resource authorisation are independent governance signals - see the <link>governance charter</link>."
   },
-
   "admin": {
     "title": "Admin",
     "dashboard": {
@@ -689,7 +677,6 @@
       "visibilityDescription": "Controls whether this provider appears on the public registry. Audit log still records every change."
     }
   },
-
   "adminNav": {
     "overview": "Overview",
     "dashboard": "Dashboard",
@@ -717,7 +704,6 @@
     "referenceTables": "Reference Tables",
     "allTables": "All tables"
   },
-
   "provider": {
     "title": "Provider",
     "resources": {
@@ -768,7 +754,8 @@
       "subtitle": "Organisation identity. Complete organisation details to unlock resource authoring.",
       "notProviderMessage": "You're signed in as {role}, not as a provider. To manage providers as an operator, switch to the admin surface.",
       "openAdminProviders": "Open admin · Providers →",
-      "providerMissing": "Provider record missing."
+      "providerMissing": "Provider record missing.",
+      "notificationsHeading": "Notifications"
     },
     "publish": {
       "title": "Publish a resource",
@@ -847,7 +834,6 @@
       "incidentsDesc": "Operator enforcement actions taken against your records."
     }
   },
-
   "providerNav": {
     "overview": "Overview",
     "dashboard": "Dashboard",
@@ -862,7 +848,6 @@
     "account": "Account",
     "settings": "Settings"
   },
-
   "verifier": {
     "title": "Verifier",
     "dashboard": {
@@ -995,7 +980,6 @@
       "subtitle": "Verifier-scoped queue alerts."
     }
   },
-
   "verifierNav": {
     "overview": "Overview",
     "dashboard": "Dashboard",
@@ -1010,7 +994,6 @@
     "reports": "Reports",
     "settings": "Settings"
   },
-
   "sovereign": {
     "title": "Sovereign Ops",
     "dashboard": {
@@ -1176,7 +1159,6 @@
       "subtitle": "Sovereign-scoped alerts."
     }
   },
-
   "sovereignNav": {
     "overview": "Overview",
     "dashboard": "Dashboard",
@@ -1193,7 +1175,6 @@
     "reports": "Reports",
     "settings": "Settings"
   },
-
   "contact": {
     "eyebrow": "Contact",
     "title": "Get in <accent>touch</accent>.",
@@ -1232,7 +1213,6 @@
     "placeholderOrg": "Ministry of …",
     "placeholderEmail": "you@org.mu"
   },
-
   "docs": {
     "title": "Documentation",
     "subtitle": "Technical documentation for operators, providers, and integrators.",
@@ -1250,7 +1230,6 @@
     "section_review_label": "Review workflow",
     "section_review_body": "Reviewers apply the published checklist, record signed notes, and assign a status. Appeals are public."
   },
-
   "ecosystem": {
     "title": "Ecosystem",
     "subtitle": "The broader AI ecosystem connected to the registry.",
@@ -1287,14 +1266,12 @@
     "ctaHeadingSuffix": "?",
     "ctaDescription": "Whether you're a government body, a model provider, a hosting partner or an integrator — the registry is open for participation.",
     "ctaButton": "Contact us",
-
     "navPlatform": "The AI Registry",
     "navOperators": "Operators",
     "navIntegrators": "Integrators",
     "navAudiences": "Audiences",
     "navFederation": "Federation",
     "navEngage": "Engage",
-
     "layer1Label": "Layer 01 · Discovery",
     "layer1Title": "Registry Operator",
     "layer1Desc": "Runs the public portal, discovery API and review workflow. Issues AIR-IDs and maintains the audit log.",
@@ -1307,7 +1284,6 @@
     "layer3Title": "Hosting Environment",
     "layer3Desc": "Runs the actual workload - sovereign cloud, GPU, on-prem - and may issue runtime SVIDs via SPIFFE/SPIRE.",
     "layer3Meta": "Provides: compute · runtime identity",
-
     "operatorsDescription": "Best operated by organisations that already run trusted, neutral, national-scale digital services on behalf of broader ecosystems - the legitimacy, capability and convening power matter as much as the technology. <strong>{operatorName} operates the reference instance at <link>{portalDomain}</link>.</strong>",
     "dpiEnablerTitle": "What makes a DPI enabler",
     "dpiEnablerPoint1": "Trusted to operate critical digital infrastructure for many parties, not just for themselves.",
@@ -1327,7 +1303,6 @@
     "telcosDesc": "National infrastructure, enterprise ecosystems, interconnection, deep government relationships, hosting adjacency and sovereign-cloud ambitions - though hosting AI remains separate from operating the registry.",
     "governmentTitle": "Government - policy sponsor",
     "governmentDesc": "The most resilient model is a partnership: government provides policy legitimacy and sector convening; the operator (telco or other DPI enabler) provides platform operations and technical implementation.",
-
     "integratorRole1Title": "Implementation & onboarding",
     "integratorRole1Desc": "Help providers prepare submissions, gather sovereignty evidence and integrate AIR-IDs into existing systems.",
     "integratorRole2Title": "Independent review",
@@ -1336,7 +1311,6 @@
     "integratorRole3Desc": "Extend AIR-Core for a jurisdiction - schema additions, sector configuration, federation tooling.",
     "integratorRole4Title": "Adoption & enablement",
     "integratorRole4Desc": "Train provider teams, run discovery workshops and embed the registry into national AI strategies.",
-
     "audience1Title": "Governments & policy-makers",
     "audience1Sub": "Sovereign AI strategy",
     "audience1Point1": "A sovereign locus for AI discovery, distinct from global platforms and free of vendor lock-in.",
@@ -1357,7 +1331,6 @@
     "audience4Point1": "AI systems that can find and use locally accurate tools - tax calculators, legal references, services.",
     "audience4Point2": "Visible governance signals that distinguish 'officially endorsed' from 'self-declared'.",
     "audience4Point3": "A sovereign alternative to opaque global directories where local relevance is invisible.",
-
     "federationBilateral": "Bilateral · Metadata-only",
     "federationSovereigntyLabel": "Sovereignty preserved",
     "federationPeerRegistry": "Peer Registry",
@@ -1373,7 +1346,6 @@
     "federationPrinciple4Label": "Principle 04",
     "federationPrinciple4Title": "Sovereignty preserved",
     "federationPrinciple4Desc": "Each registry remains independently operated, governed and populated.",
-
     "engageDescription": "Intentionally small, open and sovereign. The value comes from <em>restraint</em> - and from others deploying and governing their own. {operatorName} is building the reference; the next steps are adoption, contribution and partnership.",
     "track1Label": "Track 01",
     "track1Title": "Adopt",
@@ -1391,7 +1363,6 @@
     "track4Title": "Observe",
     "track4Desc": "Track {portalDomain}, study the operating model, and decide if and how to deploy in your context."
   },
-
   "pricing": {
     "title": "Pricing",
     "subtitle": "The registry is free and open-source.",
@@ -1412,7 +1383,6 @@
     "theWhitepaper": "the whitepaper",
     "forFullModel": "for the full economic model."
   },
-
   "terms": {
     "title": "Terms of Use",
     "home": "Home",
@@ -1435,7 +1405,6 @@
     "changesBody2": ". Questions go to",
     "theContactForm": "the contact form"
   },
-
   "privacy": {
     "title": "Privacy Policy",
     "home": "Home",
@@ -1455,7 +1424,6 @@
     "operatorTitle": "Operator",
     "operatorBody": "{registryName} is operated by {operatorName} in collaboration with the Ministry of Information."
   },
-
   "acceptableUse": {
     "title": "Acceptable Use Policy",
     "home": "Home",
@@ -1479,7 +1447,6 @@
     "reportingAppealsBody2": ". If your resource was rejected or removed and you believe the decision was wrong, see the",
     "appealsProcess": "appeals process"
   },
-
   "whitepaper": {
     "title": "Whitepaper",
     "home": "Home",
@@ -1502,7 +1469,6 @@
     "companionDocsBody": "This whitepaper sits alongside the <docsLink>AIR-SPEC 0.4 technical specification</docsLink> and the <govLink>governance charter</govLink>.",
     "referenceImpl": "Reference implementation: {portalDomain}, operated by {operatorName}."
   },
-
   "openData": {
     "title": "Open Data",
     "home": "Home",
@@ -1521,7 +1487,6 @@
     "seeAlsoBody2": "for API endpoints and export formats, or browse the",
     "publicAuditLog": "public audit log"
   },
-
   "verification": {
     "title": "Verification",
     "governanceLink": "Governance",
@@ -1542,7 +1507,6 @@
     "whyThreeTitle": "Why three",
     "whyThreeBody": "Collapsing these into a single tier number turns the registry into a de-facto certifier and attracts liability that was never intended. Three independent signals keep responsibility where it belongs: the provider operates and remains liable; the registry exposes lightweight signals so users can tell \"this resource exists\" from \"an authorised body has officially endorsed this resource.\""
   },
-
   "sovereigntyRubric": {
     "title": "Sovereignty Rubric",
     "governanceLink": "Governance",
@@ -1568,7 +1532,6 @@
     "whereFitsTitle": "Where this fits",
     "whereFitsBody": "Sovereignty review is one of three independent governance signals. See <verificationLink>verification proofs</verificationLink> for the full picture, and <docsLink>AIR-SPEC 0.4 §4</docsLink> for the normative form."
   },
-
   "publicAudit": {
     "governanceLink": "Governance",
     "crumbLabel": "Audit log",
@@ -1586,7 +1549,6 @@
     "publicLogTitle": "Public log",
     "publicLogBody": "A read-only public log of recent events will appear here. While the listing surface is being built out, the underlying audit data is already captured for every governance action. See <docsLink>AIR-SPEC 0.4 §8</docsLink> for the normative form, and <govLink>governance</govLink> for who decides what."
   },
-
   "portal": {
     "title": "Your account",
     "resources": {
@@ -1616,7 +1578,6 @@
       "backToList": "Back to list"
     }
   },
-
   "portalHome": {
     "crumb": "Portal · Signed in",
     "welcomeBack": "Welcome back,",
@@ -1643,19 +1604,16 @@
     "contactOperator": "Contact the operator",
     "clickConfirmationLink": "and click the confirmation link in the auto-reply."
   },
-
   "portalSidebar": {
     "defaultRegistryName": "AI Registry",
     "publicSite": "Public site",
     "stub": "Phase 4"
   },
-
   "localeSwitcher": {
     "label": "Language",
     "en": "English",
     "fr": "Français"
   },
-
   "adminResources": {
     "filterKind": "Kind",
     "filterLifecycle": "Lifecycle",
@@ -1706,7 +1664,6 @@
     "actionFailed": "Action failed",
     "saveFailed": "Save failed"
   },
-
   "adminUsers": {
     "filterRole": "Role",
     "filterStatus": "Status",
@@ -1760,7 +1717,6 @@
     "deleteFailed": "Delete failed",
     "saveFailed": "Save failed"
   },
-
   "adminProviders": {
     "filterType": "Type",
     "filterStatus": "Status",
@@ -1799,7 +1755,6 @@
     "deleteFailed": "Delete failed",
     "saveFailed": "Save failed"
   },
-
   "adminReviewDecide": {
     "resourceLabel": "Resource:",
     "decisionLabel": "Decision",
@@ -1818,7 +1773,6 @@
     "networkError": "Network error",
     "requestFailed": "Request failed"
   },
-
   "adminResourceEdit": {
     "sectionIdentity": "Identity & classification",
     "sectionDescriptions": "Descriptions",
@@ -1878,7 +1832,6 @@
     "networkError": "Network error",
     "saveFailed": "Save failed"
   },
-
   "adminProviderEdit": {
     "sectionIdentity": "Identity",
     "sectionClassification": "Classification",
@@ -1916,7 +1869,6 @@
     "networkError": "Network error",
     "saveFailed": "Save failed"
   },
-
   "adminProviderVerify": {
     "statusVerified": "Verified",
     "statusOfficialProvider": "Official provider",
@@ -1935,7 +1887,6 @@
     "networkError": "Network error",
     "requestFailed": "Request failed"
   },
-
   "adminProviderVisibility": {
     "visibleOnRegistry": "Visible on public registry",
     "hiddenFromRegistry": "Hidden from public registry",
@@ -1955,7 +1906,6 @@
     "networkError": "Network error",
     "requestFailed": "Request failed"
   },
-
   "adminContact": {
     "replyTitle": "Reply",
     "labelSubject": "Subject",
@@ -1974,7 +1924,6 @@
     "sendFailed": "Send failed",
     "deleteFailed": "Delete failed"
   },
-
   "adminComplaintDetail": {
     "breadcrumbAdmin": "Admin",
     "breadcrumbComplaints": "Complaints",
@@ -1998,7 +1947,6 @@
     "cardEnforcementActions": "Enforcement actions",
     "by": "by"
   },
-
   "adminComplaint": {
     "replyTitle": "Reply",
     "noEmailProvided": "No email address was provided by the complainant.",
@@ -2036,7 +1984,6 @@
     "updateFailed": "Update failed",
     "deleteFailed": "Delete failed"
   },
-
   "adminBranding": {
     "logoTitle": "Logo",
     "logoDescription": "PNG, JPEG, SVG or WebP, up to 1 MB. Replaces the default gradient mark in the top navigation, the portal sidebar, and the footer brand block.",
@@ -2073,7 +2020,6 @@
     "uploadTitle": "Upload {title}",
     "removeTitle": "Remove {title}"
   },
-
   "adminGrid": {
     "addNew": "Add new",
     "loading": "Loading…",
@@ -2087,7 +2033,6 @@
     "perPage": "{n} / page",
     "allFilter": "All {label}"
   },
-
   "adminRefGrid": {
     "search": "Search…",
     "all": "All",
@@ -2116,7 +2061,6 @@
     "active": "active",
     "inactive": "inactive"
   },
-
   "adminRefRow": {
     "cancel": "Cancel",
     "saving": "Saving…",
@@ -2125,7 +2069,6 @@
     "active": "Active",
     "inactive": "Inactive"
   },
-
   "adminLifecycle": {
     "currentStatus": "Current status",
     "noTransitions": "No lifecycle transitions available from this status.",
@@ -2146,11 +2089,9 @@
     "networkError": "Network error",
     "actionFailed": "Action failed"
   },
-
   "adminActions": {
     "moreActions": "More actions"
   },
-
   "adminSiteFaq": {
     "code": "Code",
     "question": "Question",
@@ -2167,7 +2108,6 @@
     "deleteEntry": "Delete entry",
     "saved": "Saved."
   },
-
   "adminSiteHowItWorks": {
     "code": "Code",
     "title": "Title",
@@ -2184,7 +2124,6 @@
     "deleting": "Deleting…",
     "deleteStep": "Delete step"
   },
-
   "adminSiteCriteria": {
     "code": "Code",
     "title": "Title",
@@ -2202,7 +2141,6 @@
     "deleting": "Deleting…",
     "deleteCriterion": "Delete criterion"
   },
-
   "adminSitePromo": {
     "showBanner": "Show the promo banner on the home page",
     "showBannerHelpText": "When unchecked the section is omitted entirely (no empty container).",
@@ -2218,7 +2156,6 @@
     "savePromoBanner": "Save promo banner",
     "saved": "Saved."
   },
-
   "reportModal": {
     "title": "Report this listing",
     "received": "Report received",
@@ -2246,7 +2183,6 @@
     "reportListing": "Report this listing",
     "placeholderEmail": "you@org.example"
   },
-
   "tweaks": {
     "title": "Tweaks · dev",
     "palette": "Palette",
@@ -2261,7 +2197,6 @@
     "kigali": "Kigali",
     "mauritius": "Mauritius"
   },
-
   "whatGetsListed": {
     "eyebrow": "What Gets Listed",
     "heading": "Three resource types.",
@@ -2277,7 +2212,6 @@
     "skillTitle": "Skills & MCP tools",
     "skillDesc": "Discrete capabilities — API wrappers, data connectors, compliance checks — callable by agents or directly."
   },
-
   "listingCriteria": {
     "eyebrow": "Sovereignty Test",
     "headingPrefix": "Specific, not aspirational.",
@@ -2296,7 +2230,6 @@
     "base4Name": "Local language & culture",
     "base4Desc": "Supports local language, culture, norms or context."
   },
-
   "howItWorks": {
     "eyebrow": "How It Works",
     "heading": "From submission to use.",
@@ -2315,14 +2248,12 @@
     "step6Title": "Maintain",
     "step6Desc": "Provider keeps metadata accurate; status reflects any changes over time."
   },
-
   "promo": {
     "eyebrow": "Open for submissions",
     "fallbackHeading": "List your sovereign AI resource.",
     "fallbackBody": "You keep hosting, access, runtime identity, and liability. The registry just helps the right people find you. Submission is open and reviewed within 10 working days.",
     "fallbackCtaLabel": "Submit a Resource"
   },
-
   "orchestration": {
     "eyebrow": "Lifecycle Orchestration",
     "heading": "A resource's journey through",
@@ -2342,7 +2273,6 @@
     "stage6Title": "Maintain",
     "stage6Desc": "Provider keeps metadata accurate; status reflects changes over time."
   },
-
   "metrics": {
     "listedResources": "Listed resources",
     "verifiedProviders": "Verified providers",
@@ -2351,7 +2281,6 @@
     "liveCatalogue": "live catalogue",
     "slo": "SLO"
   },
-
   "faq": {
     "eyebrow": "FAQ",
     "heading": "Frequently asked questions",
@@ -2368,19 +2297,16 @@
     "faq6Q": "How are listings resolved at runtime?",
     "faq6A": "AIR-IDs (under air://) resolve to provider endpoints described in the listing metadata. Optionally, hosting environments issue SPIFFE/SPIRE SVIDs for runtime identity."
   },
-
   "portalShell": {
     "disclaimer": "Pre-release · data may reset without notice.",
     "governanceCharter": "Governance charter"
   },
-
   "portalHeader": {
     "searchProvider": "Search resources, submissions…",
     "searchAdmin": "Search resources, providers, users…",
     "searchDefault": "Search…",
     "searchProviderChrome": "Search your resources…"
   },
-
   "portalNotificationsBrowser": {
     "searchPlaceholder": "Search notifications…",
     "kind": "Kind",
@@ -2405,7 +2331,6 @@
     "prev": "Previous",
     "next": "Next"
   },
-
   "portalDataTable": {
     "searchPlaceholder": "Search…",
     "searchAria": "Search",
@@ -2416,7 +2341,6 @@
     "noRowsMatch": "No rows match your search and filters.",
     "rowCount": "{shown} of {total}"
   },
-
   "portalRegistration": {
     "verifyEmailTitle": "Verify your email",
     "verifyEmailBody": "Check your inbox for the verification link we sent when you registered.",
@@ -2425,23 +2349,21 @@
     "completeProfileBody": "Add your organisation details so you can start submitting resources.",
     "openSettings": "Open settings"
   },
-
   "portalPublish": {
     "verifyEmailFirst": "Verify your email before publishing",
-    "registrationMsg": "Complete your provider registration before submitting a resource. Open Settings to finish your organisation profile."
+    "registrationMsg": "Complete your provider registration before submitting a resource. Open Settings to finish your organisation profile.",
+    "settingsLink": "Settings →",
+    "dismiss": "Dismiss"
   },
-
   "portalStub": {
     "eyebrow": "Coming soon",
     "title": "This module is under development",
     "body": "The interface is ready but the backend integration is not yet connected. Check back soon.",
     "moduleContract": "Module contract"
   },
-
   "portalPalette": {
     "title": "Command palette"
   },
-
   "portalUserDropdown": {
     "switchRole": "Switch role",
     "current": "Current",
@@ -2454,14 +2376,12 @@
     "verifierPortal": "Verifier portal",
     "sovereignOps": "Sovereign ops"
   },
-
   "portalNotifications": {
     "title": "Notifications",
     "markAllRead": "Mark all read",
     "nothingNew": "Nothing new.",
     "viewAll": "View all"
   },
-
   "portalSearch": {
     "defaultPlaceholder": "Search…",
     "openPalette": "Open command palette",
@@ -2478,9 +2398,63 @@
     "groupReviews": "Reviews",
     "groupIncidents": "Incidents",
     "groupProviders": "Providers",
-    "groupUsers": "Users"
+    "groupUsers": "Users",
+    "pages": {
+      "provider_dashboard_title": "Dashboard",
+      "provider_dashboard_subtitle": "Provider · overview",
+      "provider_resources_title": "My resources",
+      "provider_resources_subtitle": "Provider · catalogue",
+      "provider_submissions_title": "Submissions",
+      "provider_submissions_subtitle": "Provider · in flight",
+      "provider_publish_title": "Publish new resource",
+      "provider_publish_subtitle": "Provider · new draft",
+      "provider_complaints_title": "Complaints",
+      "provider_complaints_subtitle": "Provider · inbox",
+      "provider_reviews_title": "Reviews",
+      "provider_reviews_subtitle": "Provider · inbox",
+      "provider_incidents_title": "Incidents",
+      "provider_incidents_subtitle": "Provider · inbox",
+      "provider_settings_title": "Settings",
+      "provider_settings_subtitle": "Provider · account",
+      "admin_dashboard_title": "Dashboard",
+      "admin_dashboard_subtitle": "Admin · overview",
+      "admin_resources_title": "Resources",
+      "admin_resources_subtitle": "Admin · catalogue",
+      "admin_providers_title": "Providers",
+      "admin_providers_subtitle": "Admin · catalogue",
+      "admin_reviews_title": "Review queue",
+      "admin_reviews_subtitle": "Admin · governance",
+      "admin_complaints_title": "Flags & incidents",
+      "admin_complaints_subtitle": "Admin · governance",
+      "admin_policies_title": "Policies",
+      "admin_policies_subtitle": "Admin · governance",
+      "admin_users_title": "Users & roles",
+      "admin_users_subtitle": "Admin · account",
+      "admin_audit_title": "Audit log",
+      "admin_audit_subtitle": "Admin · governance",
+      "admin_integrations_title": "Integrations",
+      "admin_integrations_subtitle": "Admin · platform",
+      "admin_settings_title": "Settings",
+      "admin_settings_subtitle": "Admin · account",
+      "verifier_dashboard_title": "Dashboard",
+      "verifier_dashboard_subtitle": "Verifier · queue",
+      "verifier_settings_title": "Settings",
+      "verifier_settings_subtitle": "Verifier · account",
+      "sovereign_dashboard_title": "Dashboard",
+      "sovereign_dashboard_subtitle": "Sovereign · overview",
+      "dismiss": "Dismiss",
+      "settingsLink": "Settings →",
+      "providerRecordFallback": "Provider record",
+      "legalNameOptional": "Legal name (optional)",
+      "publicDescriptionOptional": "Public description (optional)",
+      "organisationSlug": "Organisation slug",
+      "saveOrganisation": "Save organisation",
+      "pickFile": "Click to choose a file…",
+      "removeFile": "Remove file",
+      "removeStagedFile": "Remove staged file",
+      "notificationsSection": "Notifications"
+    }
   },
-
   "providerNotifForm": {
     "saveFailed": "Could not save notification settings.",
     "networkError": "Network error. Please retry.",
@@ -2495,7 +2469,6 @@
     "saveButton": "Save settings",
     "savedAt": "Saved at {time}"
   },
-
   "providerOrgForm": {
     "saveFailed": "Could not save organisation details.",
     "saveSuccess": "Organisation details saved.",
@@ -2503,17 +2476,16 @@
     "title": "Organisation details",
     "description": "Basic information about your organisation. This is shown on your public provider profile.",
     "displayName": "Display name",
-    "orgSlug": "Slug",
-    "slugHint": "URL-safe identifier. Cannot be changed after first submission.",
+    "orgSlug": "Organisation slug",
+    "slugHint": "Lowercase letters, digits, and hyphens. Used in public provider URLs.",
     "contactEmail": "Contact email",
     "providerType": "Provider type",
     "homeJurisdiction": "Home jurisdiction",
-    "legalName": "Legal name",
-    "publicDescription": "Public description",
+    "legalName": "Legal name (optional)",
+    "publicDescription": "Public description (optional)",
     "saving": "Saving…",
-    "saveButton": "Save"
+    "saveButton": "Save organisation"
   },
-
   "providerIncidents": {
     "colPerformed": "Performed",
     "colAction": "Action",
@@ -2523,7 +2495,6 @@
     "emptyState": "No incidents recorded.",
     "searchPlaceholder": "Search incidents…"
   },
-
   "providerComplaints": {
     "colFiled": "Filed",
     "colTarget": "Target",
@@ -2540,7 +2511,6 @@
     "statusResolved": "Resolved",
     "statusRejected": "Rejected"
   },
-
   "providerReviews": {
     "colTarget": "Target",
     "colType": "Type",
@@ -2552,9 +2522,10 @@
     "searchPlaceholder": "Search reviews…",
     "statusDecided": "Decided",
     "statusInFlight": "In flight",
-    "statusWithdrawn": "Withdrawn"
+    "statusWithdrawn": "Withdrawn",
+    "colConversation": "Conversation",
+    "openLink": "Open →"
   },
-
   "providerSubmissions": {
     "colTitle": "Title",
     "colKind": "Kind",
@@ -2567,7 +2538,6 @@
     "emptyState": "No submissions yet.",
     "searchPlaceholder": "Search submissions…"
   },
-
   "providerResources": {
     "colTitle": "Title",
     "noAirId": "pending",
@@ -2585,7 +2555,6 @@
     "statusExperimental": "Experimental",
     "statusIsolated": "Isolated"
   },
-
   "providerResourceEdit": {
     "saveFailed": "Could not save changes.",
     "saved": "Changes saved.",
@@ -2643,9 +2612,19 @@
     "submitting": "Submitting…",
     "submitForReview": "Submit for review",
     "notifyOperators": "This will notify the registry operators.",
-    "submitHint": "Ensure all fields are complete before submitting."
+    "submitHint": "Ensure all fields are complete before submitting.",
+    "fieldSlugImmutable": "Slug (immutable)",
+    "fieldKindImmutable": "Kind (immutable)",
+    "fieldProviderImmutable": "Provider (immutable)",
+    "fieldPrimaryJurisdictionAdmin": "Primary jurisdiction (admin-managed)",
+    "fieldRiskLevelAdmin": "Risk level (admin-managed)",
+    "fieldShortDescCards": "Short description (8+ chars, shown on cards)",
+    "fieldLongDescMarkdown": "Long description (markdown OK, shown on detail page)",
+    "fieldEvidenceTitle": "Title",
+    "fieldEndpointDocUrl": "Documentation URL",
+    "fieldLanguages": "Languages",
+    "fieldSectors": "Sectors"
   },
-
   "providerDocs": {
     "loadFailed": "Could not load documents.",
     "title": "Documents",
@@ -2675,9 +2654,12 @@
     "expiresOptional": "Expires (optional)",
     "cancel": "Cancel",
     "uploading": "Uploading…",
-    "upload": "Upload"
+    "upload": "Upload",
+    "uploadDialogDescription": "PDF, images, plain text, or ZIP up to 10 MB.",
+    "pickFilePrompt": "Click to choose a file…",
+    "removeFileAria": "Remove file",
+    "deleteFailed": "Delete failed"
   },
-
   "threadConversation": {
     "loadFailed": "Could not load conversation.",
     "loading": "Loading…",
@@ -2701,7 +2683,6 @@
     "attach": "Attach",
     "sending": "Sending…"
   },
-
   "verificationDocs": {
     "title": "Verification documents",
     "emptyState": "No documents submitted.",
@@ -2710,7 +2691,6 @@
     "private": "Private",
     "evidenceDocs": "Sovereignty evidence documents"
   },
-
   "profileForm": {
     "updateFailed": "Could not update profile.",
     "saved": "Profile saved.",
@@ -2722,7 +2702,6 @@
     "saving": "Saving…",
     "saveProfile": "Save profile"
   },
-
   "editResource": {
     "saveFailed": "Could not save changes.",
     "networkError": "Network error. Please retry.",
@@ -2738,7 +2717,6 @@
     "submitForReview": "Submit for review",
     "submitHint": "Ensure all fields are complete before submitting."
   },
-
   "newResource": {
     "failed": "Could not create resource.",
     "networkError": "Network error. Please retry.",
@@ -2753,7 +2731,6 @@
     "creating": "Creating…",
     "createDraft": "Create draft"
   },
-
   "evidenceFile": {
     "typeNotAllowed": "File type not allowed.",
     "fileExceeds10MB": "File exceeds 10 MB limit.",
@@ -2762,7 +2739,11 @@
     "remove": "Remove",
     "noFileAttached": "No file attached",
     "uploading": "Uploading…",
-    "uploadFile": "Upload file"
+    "uploadFile": "Upload file",
+    "attachOptional": "Attach file (optional)",
+    "fileTypesHint": "PDF, image, txt, zip · max 10 MB",
+    "uploadOnSave": "will upload when you Save changes",
+    "removeStagedAria": "Remove staged file"
   },
   "adminSettings": {
     "title": "Settings",
@@ -2805,5 +2786,114 @@
     "wellKnown": "Well-known:",
     "auditLog": "Audit log →",
     "integrations": "Integrations →"
+  },
+  "metadata": {
+    "admin": {
+      "dashboard": "Admin · Dashboard",
+      "layout": "Admin · AI Registry",
+      "resources": "Admin · Resources",
+      "resourcesEdit": "Admin · Edit resource",
+      "providers": "Admin · Providers",
+      "providerDetail": "Admin · Provider",
+      "reviews": "Review queue",
+      "reviewDecision": "Review decision",
+      "complaints": "Admin · Complaints",
+      "complaintDetail": "Admin · Complaint",
+      "contacts": "Admin · Contact messages",
+      "contactDetail": "Admin · Contact message",
+      "users": "Admin · Users & roles",
+      "audit": "Admin · Audit log",
+      "policies": "Admin · Policies",
+      "settings": "Admin · Settings",
+      "integrations": "Admin · Integrations",
+      "branding": "Admin · Branding",
+      "notifications": "Admin · Notifications",
+      "ref": "Admin · Reference tables",
+      "site": "Admin · Site content",
+      "sitePromo": "Admin · Site · Promo banner",
+      "siteListingCriteria": "Admin · Site content · Listing criteria",
+      "siteListingCriteriaNew": "Admin · Site · Listing criteria · New",
+      "siteListingCriteriaEdit": "Admin · Site · Listing criteria · Edit",
+      "siteHowItWorks": "Admin · Site content · How it works",
+      "siteHowItWorksNew": "Admin · Site · How it works · New",
+      "siteHowItWorksEdit": "Admin · Site · How it works · Edit",
+      "siteFaq": "Admin · Site content · FAQ",
+      "siteFaqNew": "Admin · Site · FAQ · New",
+      "siteFaqEdit": "Admin · Site · FAQ · Edit"
+    },
+    "provider": {
+      "layout": "Provider · AI Registry",
+      "dashboard": "Provider · Dashboard",
+      "resources": "Provider · Resources",
+      "resourcesEdit": "Provider · Edit resource",
+      "submissions": "Provider · Submissions",
+      "publish": "Provider · Publish",
+      "reviews": "Provider · Reviews",
+      "reviewDetail": "Provider · Review",
+      "complaints": "Provider · Complaints",
+      "incidents": "Provider · Incidents",
+      "settings": "Provider · Settings",
+      "notifications": "Provider · Notifications",
+      "analytics": "Provider · Analytics",
+      "contactRequests": "Provider · Contact requests"
+    },
+    "verifier": {
+      "layout": "Verifier · AI Registry",
+      "dashboard": "Verifier · Dashboard",
+      "queue": "Verifier · Queue",
+      "reviewDetail": "Verifier · Review",
+      "decided": "Verifier · Decided",
+      "runs": "Verifier · Eval runs",
+      "benchmarks": "Verifier · Benchmarks",
+      "redteam": "Verifier · Red team",
+      "reports": "Verifier · Reports",
+      "settings": "Verifier · Settings",
+      "notifications": "Verifier · Notifications"
+    },
+    "sovereign": {
+      "layout": "Sovereign Ops · AI Registry",
+      "dashboard": "Sovereign Ops · Dashboard",
+      "catalog": "Sovereign · National catalogue",
+      "topology": "Sovereign · Topology",
+      "sectors": "Sovereign · Sectors",
+      "partners": "Sovereign · Partners",
+      "risk": "Sovereign · Risk",
+      "policies": "Sovereign · Policies",
+      "incidents": "Sovereign · Incidents",
+      "reports": "Sovereign · Reports",
+      "settings": "Sovereign · Settings",
+      "notifications": "Sovereign · Notifications"
+    },
+    "portal": {
+      "home": "Your account",
+      "resources": "My resources",
+      "resourcesNew": "New resource",
+      "resourcesEdit": "Edit resource"
+    },
+    "public": {
+      "signIn": "Sign in",
+      "register": "Create an account",
+      "resetPassword": "Reset password",
+      "setNewPassword": "Set new password",
+      "verifyEmail": "Verify email",
+      "verifyContact": "Verify contact email",
+      "resourceDetail": "Resource detail",
+      "registry": "Registry",
+      "providers": "Providers",
+      "provider": "Provider",
+      "contact": "Contact",
+      "docs": "Documentation",
+      "ecosystem": "Ecosystem",
+      "governance": "Governance",
+      "pricing": "Pricing",
+      "terms": "Terms of use",
+      "privacy": "Privacy",
+      "acceptableUse": "Acceptable use",
+      "whitepaper": "Whitepaper",
+      "openData": "Open data",
+      "verification": "Verification proofs",
+      "sovereigntyRubric": "Sovereignty rubric",
+      "audit": "Audit log"
+    }
   }
 }

@@ -2,7 +2,11 @@ import { getTranslations } from "next-intl/server";
 import { AuthShell } from "../auth-ui/AuthShell";
 import { ResetPasswordForm } from "../auth-ui/ResetPasswordForm";
 
-export const metadata = { title: "Set new password" };
+import { publicPageMetadata } from "../lib/page-metadata";
+
+export async function generateMetadata() {
+  return publicPageMetadata("public.setNewPassword");
+}
 
 export default async function ResetTokenPage({
   params

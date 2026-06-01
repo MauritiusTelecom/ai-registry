@@ -8,11 +8,16 @@ import { PortalProfileForm } from "@/components/portal/PortalProfileForm";
 import { CONTACT_TOPIC_LABELS, type ContactTopicCode } from "@airegistry/sdk";
 import { loadPortalHome } from "@airegistry/sdk/server";
 
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("portal.home");
+}
+
 function isStaff(roles: string[]) {
   return roles.includes("admin") || roles.includes("reviewer");
 }
 
-export const metadata = { title: "Your account" };
 
 function topicLabel(code: string): string {
   return CONTACT_TOPIC_LABELS[code as ContactTopicCode] ?? code;

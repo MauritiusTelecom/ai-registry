@@ -5,7 +5,12 @@ import { getConfig } from "@airegistry/sdk";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 import { StatusPill } from "@/components/portals/StatusPill";
 
-export const metadata = { title: "Sovereign · Partners" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("sovereign.partners");
+}
+
 export const dynamic = "force-dynamic";
 
 type Row = {

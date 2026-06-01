@@ -4,7 +4,12 @@ import { getConfig } from "@airegistry/sdk";
 import { countReferenceTable } from "@airegistry/sdk/server";
 import { loadAdminSettingsProviderCount } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Admin · Settings" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.settings");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {

@@ -3,7 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { Icon } from "@airegistry/ui-kit";
 import { prisma } from "@airegistry/core/prisma";
 
-export const metadata = { title: "Admin · Site content" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.site");
+}
+
 export const dynamic = "force-dynamic";
 
 /**

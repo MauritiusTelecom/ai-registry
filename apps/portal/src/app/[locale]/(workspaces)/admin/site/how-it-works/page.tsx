@@ -3,7 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { listAllHowItWorksSteps } from "@airegistry/core/services/public-cms";
 import { Icon } from "@airegistry/ui-kit";
 
-export const metadata = { title: "Admin · Site content · How it works" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.siteHowItWorks");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminHowItWorksListPage() {

@@ -5,7 +5,7 @@ import { DocPage, DocPanel } from "../sections/DocPage";
 import { publicPageMetadata } from "../lib/page-metadata";
 
 export async function generateMetadata() {
-  return publicPageMetadata("Whitepaper");
+  return publicPageMetadata("public.whitepaper");
 }
 
 export default async function WhitepaperPage() {

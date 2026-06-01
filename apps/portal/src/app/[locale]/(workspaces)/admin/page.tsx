@@ -4,7 +4,12 @@ import { getCurrentUser } from "@airegistry/sdk/server";
 import { StatCard } from "@/components/portals/StatCard";
 import { loadAdminDashboardStats } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Admin · Dashboard" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.dashboard");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {

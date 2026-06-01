@@ -23,7 +23,7 @@ type Props = {
 };
 
 export function ProviderReviewsGrid({ rows, types }: Props) {
-  const t = useTranslations("provider.reviews");
+  const t = useTranslations("providerReviews");
   const columns: EntityColumn<ProviderReviewRow>[] = [
     {
       key: "target",
@@ -69,14 +69,14 @@ export function ProviderReviewsGrid({ rows, types }: Props) {
     },
     {
       key: "thread",
-      label: "Conversation",
+      label: t("colConversation"),
       render: (row) => (
         <Link
           href={`/provider/reviews/${row.id}`}
           className="r-card-action-link"
           style={{ fontSize: 11 }}
         >
-          Open →
+          {t("openLink")}
         </Link>
       )
     }
@@ -86,8 +86,8 @@ export function ProviderReviewsGrid({ rows, types }: Props) {
     <EntityGrid
       rows={rows}
       columns={columns}
-      emptyState="No reviews of your resources yet."
-      searchPlaceholder="Search reviews by target or decision summary…"
+      emptyState={t("emptyState")}
+      searchPlaceholder={t("searchPlaceholder")}
       searchableKeys={["target", "decisionSummary"]}
       filters={[
         {

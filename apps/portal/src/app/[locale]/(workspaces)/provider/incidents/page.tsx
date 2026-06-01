@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
 import {
   ProviderIncidentsGrid,
   type ProviderIncidentRow
@@ -7,7 +8,11 @@ import {
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadMyIncidents } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Provider · Incidents" };
+
+export async function generateMetadata() {
+  return workspaceMetadata("provider.incidents");
+}
+
 export const dynamic = "force-dynamic";
 
 /**

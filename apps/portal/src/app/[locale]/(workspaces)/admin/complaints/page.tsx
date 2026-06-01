@@ -5,7 +5,12 @@ import { DataTable, type Column } from "@/components/portals/DataTable";
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadAdminComplaintsView } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Admin · Complaints" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.complaints");
+}
+
 export const dynamic = "force-dynamic";
 
 /**

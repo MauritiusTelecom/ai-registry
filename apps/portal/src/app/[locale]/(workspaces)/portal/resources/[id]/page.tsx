@@ -8,7 +8,12 @@ import { PageHero } from "@airegistry/ui-kit";
 import { EditResourceForm } from "@/components/portal/EditResourceForm";
 import { loadPortalResourceForOwner } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Edit resource" };
+
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("portal.resourcesEdit");
+}
 
 export default async function PortalResourceEditPage({ params }: { params: Promise<{ id: string }> }) {
   const t = await getTranslations("portal.resourceEdit");

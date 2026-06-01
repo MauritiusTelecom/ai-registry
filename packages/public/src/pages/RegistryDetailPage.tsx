@@ -8,8 +8,11 @@ import { prisma } from "@airegistry/core";
 import { getCurrentUser } from "@airegistry/core/auth/current-user";
 import { AirIdCopy } from "../sections/AirIdCopy";
 import { ResourceReportButton } from "../shell/ResourceReportButton";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = { title: "Resource detail" };
+export async function generateMetadata() {
+  return publicPageMetadata("public.resourceDetail");
+}
 export const dynamic = "force-dynamic";
 
 export default async function ResourceDetailPage({

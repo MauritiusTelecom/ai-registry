@@ -7,9 +7,14 @@ import { ProviderOrganisationForm } from "@/components/portals/ProviderOrganisat
 import { ProviderDocumentsCard } from "@/components/portal/ProviderDocumentsCard";
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadProviderForSettings } from "@airegistry/sdk/server";
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("provider.settings");
+}
+
 // import { ProviderNotificationsForm } from "@/components/portals/ProviderNotificationsForm";
 
-export const metadata = { title: "Provider · Settings" };
 export const dynamic = "force-dynamic";
 
 export default async function ProviderSettingsPage() {

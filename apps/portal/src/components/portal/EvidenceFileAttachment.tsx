@@ -235,6 +235,7 @@ function PendingFilePicker({
   onChange: (f: File | null) => void;
   disabled?: boolean;
 }) {
+  const t = useTranslations("evidenceFile");
   const inputRef = useRef<HTMLInputElement>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -245,11 +246,11 @@ function PendingFilePicker({
       return;
     }
     if (!ALLOWED.has(f.type)) {
-      setErr(`Type ${f.type || "unknown"} not allowed`);
+      setErr(t("typeNotAllowed", { type: f.type || "unknown" }));
       return;
     }
     if (f.size > MAX) {
-      setErr("File exceeds 10 MB");
+      setErr(t("fileExceeds10MB"));
       return;
     }
     setErr(null);
@@ -276,7 +277,7 @@ function PendingFilePicker({
         </span>
         <span style={{ opacity: 0.6 }}>{formatSize(file.size)}</span>
         <span style={{ fontSize: 11, opacity: 0.7, fontStyle: "italic" }}>
-          will upload when you Save changes
+          {t("uploadOnSave")}
         </span>
         {!disabled && (
           <button
@@ -293,7 +294,7 @@ function PendingFilePicker({
               fontSize: 14,
               padding: 0
             }}
-            aria-label="Remove staged file"
+            aria-label={t("removeStagedAria")}
           >
             ✕
           </button>
@@ -317,11 +318,11 @@ function PendingFilePicker({
             cursor: "pointer"
           }}
         >
-          📎 Attach file (optional)
+          📎 {t("attachOptional")}
         </button>
       )}
       <span style={{ opacity: 0.5, fontSize: 11 }}>
-        PDF, image, txt, zip · max 10 MB
+        {t("fileTypesHint")}
       </span>
       <input
         ref={inputRef}

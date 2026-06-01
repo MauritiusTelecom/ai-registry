@@ -5,7 +5,7 @@ import { RegistrySection } from "../sections/RegistrySection";
 import { publicPageMetadata } from "../lib/page-metadata";
 
 export async function generateMetadata() {
-  return publicPageMetadata("Registry");
+  return publicPageMetadata("public.registry");
 }
 
 type RegistryKind = "all" | "model" | "agent" | "skill";

@@ -5,7 +5,12 @@ import { CONTACT_TOPIC_LABELS } from "@airegistry/sdk";
 import { ContactAdminPanel } from "@/components/admin/ContactAdminPanel";
 import { loadAdminContactDetail } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Admin · Contact message" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.contactDetail");
+}
+
 export const dynamic = "force-dynamic";
 
 function labelFor(topic: string): string {

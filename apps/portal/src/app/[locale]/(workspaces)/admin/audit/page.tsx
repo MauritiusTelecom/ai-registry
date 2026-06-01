@@ -2,7 +2,12 @@ import { getTranslations } from "next-intl/server";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 import { loadAdminAuditLog } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Admin · Audit log" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.audit");
+}
+
 export const dynamic = "force-dynamic";
 
 type Row = {

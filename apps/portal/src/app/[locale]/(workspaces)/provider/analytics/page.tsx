@@ -5,7 +5,12 @@ import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadProviderAnalytics } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Provider · Analytics" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("provider.analytics");
+}
+
 export const dynamic = "force-dynamic";
 
 /**

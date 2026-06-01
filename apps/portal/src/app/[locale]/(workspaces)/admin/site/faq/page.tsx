@@ -3,7 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { listAllFaqEntries } from "@airegistry/core/services/public-cms";
 import { Icon } from "@airegistry/ui-kit";
 
-export const metadata = { title: "Admin · Site content · FAQ" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.siteFaq");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminFaqListPage() {

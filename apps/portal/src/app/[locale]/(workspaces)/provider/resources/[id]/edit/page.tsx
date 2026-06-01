@@ -7,7 +7,12 @@ import { ProviderResourceEditForm } from "@/components/portal/ProviderResourceEd
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadProviderResourceForEdit } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Provider · Edit resource" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("provider.resourcesEdit");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function ProviderResourceEditPage({

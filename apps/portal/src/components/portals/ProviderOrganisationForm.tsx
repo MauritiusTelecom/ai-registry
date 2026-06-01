@@ -98,7 +98,7 @@ export function ProviderOrganisationForm({
       </p>
 
 <div style={{ display: "grid", gap: 14, marginBottom: 20 }}>
-        <Field id="org-display" label="Display name" required>
+        <Field id="org-display" label={t("displayName")} required>
           <Input
             id="org-display"
             value={displayName}
@@ -110,9 +110,9 @@ export function ProviderOrganisationForm({
 
         <Field
           id="org-slug"
-          label="Organisation slug"
+          label={t("orgSlug")}
           required
-hint="Lowercase letters, digits, and hyphens. Used in public provider URLs."
+          hint={t("slugHint")}
         >
           <Input
             id="org-slug"
@@ -125,7 +125,7 @@ hint="Lowercase letters, digits, and hyphens. Used in public provider URLs."
           />
         </Field>
 
-        <Field id="org-email" label="Contact email" required>
+        <Field id="org-email" label={t("contactEmail")} required>
           <Input
             id="org-email"
             type="email"
@@ -135,7 +135,7 @@ hint="Lowercase letters, digits, and hyphens. Used in public provider URLs."
           />
         </Field>
 
-        <Field id="org-type" label="Provider type" required>
+        <Field id="org-type" label={t("providerType")} required>
           <Select
             id="org-type"
             value={providerTypeCode}
@@ -149,7 +149,7 @@ hint="Lowercase letters, digits, and hyphens. Used in public provider URLs."
           </Select>
         </Field>
 
-        <Field id="org-jur" label="Home jurisdiction" required>
+        <Field id="org-jur" label={t("homeJurisdiction")} required>
           <Select
             id="org-jur"
             value={jurisdictionCode}
@@ -163,7 +163,7 @@ hint="Lowercase letters, digits, and hyphens. Used in public provider URLs."
           </Select>
         </Field>
 
-        <Field id="org-legal" label="Legal name (optional)">
+        <Field id="org-legal" label={t("legalName")}>
           <Input
             id="org-legal"
             value={legalName}
@@ -171,7 +171,7 @@ hint="Lowercase letters, digits, and hyphens. Used in public provider URLs."
           />
         </Field>
 
-        <Field id="org-desc" label="Public description (optional)">
+        <Field id="org-desc" label={t("publicDescription")}>
           <TextArea
             id="org-desc"
             rows={3}
@@ -193,7 +193,7 @@ hint="Lowercase letters, digits, and hyphens. Used in public provider URLs."
       ) : null}
 
 <Button type="submit" intent="primary" disabled={saving}>
-        {saving ? "Saving…" : "Save organisation"}
+        {saving ? t("saving") : t("saveButton")}
       </Button>
     </form>
   );

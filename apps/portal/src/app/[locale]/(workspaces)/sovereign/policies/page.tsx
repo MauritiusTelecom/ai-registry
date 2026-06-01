@@ -4,7 +4,12 @@ import { getConfig } from "@airegistry/sdk";
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadSovereignPoliciesView } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Sovereign · Policies" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("sovereign.policies");
+}
+
 export const dynamic = "force-dynamic";
 
 /**

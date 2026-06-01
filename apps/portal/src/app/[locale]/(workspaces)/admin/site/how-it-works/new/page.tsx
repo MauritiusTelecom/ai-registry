@@ -2,7 +2,12 @@ import { getTranslations } from "next-intl/server";
 import { listAllHowItWorksSteps } from "@airegistry/core/services/public-cms";
 import { HowItWorksStepForm } from "@/components/admin/site/HowItWorksStepForm";
 
-export const metadata = { title: "Admin · Site · How it works · New" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.siteHowItWorksNew");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminHowItWorksNewPage() {

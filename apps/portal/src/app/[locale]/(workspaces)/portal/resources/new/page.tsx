@@ -7,7 +7,12 @@ import { PageHero } from "@airegistry/ui-kit";
 import { NewResourceForm } from "@/components/portal/NewResourceForm";
 import { listReferenceTable } from "@airegistry/sdk/server";
 
-export const metadata = { title: "New resource" };
+
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("portal.resourcesNew");
+}
 
 export default async function PortalNewResourcePage() {
   const t = await getTranslations("portal.resourceNew");

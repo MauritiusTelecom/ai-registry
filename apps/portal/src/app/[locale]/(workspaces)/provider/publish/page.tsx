@@ -6,7 +6,12 @@ import { NewResourceForm } from "@/components/portal/NewResourceForm";
 import { StubPanel } from "@/components/portals/StubPanel";
 import { listReferenceTable } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Provider · Publish" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("provider.publish");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function ProviderPublishPage() {

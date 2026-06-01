@@ -350,25 +350,25 @@ export function ProviderResourceEditForm({
       {/* ── 1. Identity (read-only context) ────────────────────────────── */}
       <Section title={t("sectionIdentity")}>
         <Row>
-<Field label="Title">
+<Field label={t("fieldTitle")}>
             <Input
                             value={title}
               disabled={!canEdit}
               onChange={(e) => setTitle(e.target.value)}
             />
           </Field>
-<Field label="Slug (immutable)">
+<Field label={t("fieldSlugImmutable")}>
             <Input value={initial.slug} disabled />
           </Field>
         </Row>
         <Row>
-          <Field label="Kind (immutable)">
+          <Field label={t("fieldKindImmutable")}>
             <Input
                             value={`${initial.kindName} (${initial.kindCode})`}
               disabled
             />
           </Field>
-          <Field label="Provider (immutable)">
+          <Field label={t("fieldProviderImmutable")}>
             <Input
                             value={`${initial.providerName} (${initial.providerSlug})`}
               disabled
@@ -376,13 +376,13 @@ export function ProviderResourceEditForm({
           </Field>
         </Row>
         <Row>
-<Field label="Primary jurisdiction (admin-managed)">
+<Field label={t("fieldPrimaryJurisdictionAdmin")}>
             <Input
                             value={`${initial.jurisdictionName} (${initial.jurisdictionCode})`}
               disabled
             />
           </Field>
-          <Field label="Risk level (admin-managed)">
+          <Field label={t("fieldRiskLevelAdmin")}>
             <Input value={initial.riskCode} disabled />
           </Field>
         </Row>
@@ -393,7 +393,7 @@ export function ProviderResourceEditForm({
 
       {/* ── 2. Descriptions ─────────────────────────────────────────────── */}
 <Section title="Descriptions">
-        <Field label="Short description (8+ chars, shown on cards)">
+        <Field label={t("fieldShortDescCards")}>
           <TextArea
                           style={{ minHeight: 70, fontFamily: "inherit" }}
             value={shortDescription}
@@ -401,7 +401,7 @@ export function ProviderResourceEditForm({
             onChange={(e) => setShortDescription(e.target.value)}
           />
         </Field>
-<Field label="Long description (markdown OK, shown on detail page)">
+<Field label={t("fieldLongDescMarkdown")}>
           <TextArea
                           style={{ minHeight: 140, fontFamily: "inherit" }}
             value={longDescription}
@@ -414,7 +414,7 @@ export function ProviderResourceEditForm({
       {/* ── 3. Versioning & access URLs ─────────────────────────────────── */}
       <Section title={t("sectionVersioning")}>
         <Row>
-<Field label="License">
+<Field label={t("fieldLicense")}>
             <Input
                             placeholder="Commercial, Apache-2.0, ..."
               value={license}
@@ -422,7 +422,7 @@ export function ProviderResourceEditForm({
               onChange={(e) => setLicense(e.target.value)}
             />
           </Field>
-<Field label="Version label">
+<Field label={t("fieldVersionLabel")}>
             <Input
                             placeholder="200k tokens, Multi-step, ..."
               value={versionLabel}
@@ -432,7 +432,7 @@ export function ProviderResourceEditForm({
           </Field>
         </Row>
         <Row>
-<Field label="Version number">
+<Field label={t("fieldVersionNumber")}>
             <Input
                             placeholder="0.1.0"
               value={versionNumber}
@@ -440,7 +440,7 @@ export function ProviderResourceEditForm({
               onChange={(e) => setVersionNumber(e.target.value)}
             />
           </Field>
-<Field label="Latency tier">
+<Field label={t("fieldLatencyTier")}>
             <Input
                             placeholder="0.8s, Async (job), ..."
               value={latencyTier}
@@ -449,7 +449,7 @@ export function ProviderResourceEditForm({
             />
           </Field>
         </Row>
-<Field label="Access URL">
+<Field label={t("fieldAccessUrl")}>
           <Input
                           placeholder="https://..."
             value={accessUrl}
@@ -457,7 +457,7 @@ export function ProviderResourceEditForm({
             onChange={(e) => setAccessUrl(e.target.value)}
           />
         </Field>
-<Field label="Source code URL">
+<Field label={t("fieldSourceCodeUrl")}>
           <Input
                           placeholder="https://github.com/..."
             value={sourceCodeUrl}
@@ -465,7 +465,7 @@ export function ProviderResourceEditForm({
             onChange={(e) => setSourceCodeUrl(e.target.value)}
           />
         </Field>
-<Field label="Documentation URL">
+<Field label={t("fieldDocumentationUrl")}>
           <Input
                           placeholder="https://..."
             value={documentationUrl}
@@ -473,7 +473,7 @@ export function ProviderResourceEditForm({
             onChange={(e) => setDocumentationUrl(e.target.value)}
           />
         </Field>
-<Field label="Terms URL">
+<Field label={t("fieldTermsUrl")}>
           <Input
                           placeholder="https://..."
             value={termsUrl}
@@ -543,7 +543,7 @@ export function ProviderResourceEditForm({
               style={{ padding: 14, display: "grid", gap: 10 }}
             >
               <Row>
-<Field label="Evidence type">
+<Field label={t("fieldEvidenceType")}>
                   <Select
                                   value={e.evidenceTypeCode}
                     disabled={!canEdit}
@@ -558,7 +558,7 @@ export function ProviderResourceEditForm({
                     ))}
                   </Select>
                 </Field>
-<Field label="Sovereignty basis">
+<Field label={t("fieldSovereigntyBasis")}>
                   <Select
                                   value={e.sovereigntyBasisCode}
                     disabled={!canEdit}
@@ -574,14 +574,14 @@ export function ProviderResourceEditForm({
                   </Select>
                 </Field>
               </Row>
-<Field label="Title">
+<Field label={t("fieldEvidenceTitle")}>
                 <Input
                                 value={e.title}
                   disabled={!canEdit}
                   onChange={(ev) => updateEvidence(i, { title: ev.target.value })}
                 />
               </Field>
-<Field label="Description">
+<Field label={t("fieldDescription")}>
                 <TextArea
                                 style={{ minHeight: 70, fontFamily: "inherit" }}
                   value={e.description ?? ""}
@@ -592,7 +592,7 @@ export function ProviderResourceEditForm({
                 />
               </Field>
               <Row>
-<Field label="Reference URL">
+<Field label={t("fieldReferenceUrl")}>
                   <Input
                                   placeholder="https://..."
                     value={e.referenceUrl ?? ""}
@@ -602,7 +602,7 @@ export function ProviderResourceEditForm({
                     }
                   />
                 </Field>
-<Field label="Reference identifier">
+<Field label={t("fieldReferenceId")}>
                   <Input
                                   placeholder="DPA 2017, ..."
                     value={e.referenceIdentifier ?? ""}
@@ -613,7 +613,7 @@ export function ProviderResourceEditForm({
                   />
                 </Field>
               </Row>
-<Field label="Issuing body">
+<Field label={t("fieldIssuingBody")}>
                 <Input
                                 placeholder="Data Protection Office, ..."
                   value={e.issuingBody ?? ""}
@@ -700,7 +700,7 @@ export function ProviderResourceEditForm({
             style={{ padding: 14, display: "grid", gap: 10 }}
           >
             <Row>
-<Field label="Protocol">
+<Field label={t("fieldProtocol")}>
                 <Select
                                 value={ep.protocolCode}
                   disabled={!canEdit}
@@ -713,7 +713,7 @@ export function ProviderResourceEditForm({
                   ))}
                 </Select>
               </Field>
-<Field label="Endpoint URL">
+<Field label={t("fieldEndpointUrl")}>
                 <Input
                                 placeholder="https://..."
                   value={ep.endpointUrl}
@@ -722,7 +722,7 @@ export function ProviderResourceEditForm({
                 />
               </Field>
             </Row>
-<Field label="Documentation URL">
+<Field label={t("fieldEndpointDocUrl")}>
               <Input
                               placeholder="https://..."
                 value={ep.documentationUrl ?? ""}
@@ -733,7 +733,7 @@ export function ProviderResourceEditForm({
               />
             </Field>
             <Row>
-<Field label="Auth method">
+<Field label={t("fieldAuthMethod")}>
                 <Select
                                 value={ep.authMethodCode}
                   disabled={!canEdit}
@@ -748,7 +748,7 @@ export function ProviderResourceEditForm({
                   ))}
                 </Select>
               </Field>
-<Field label="Access model">
+<Field label={t("fieldAccessModel")}>
                 <Select
                                 value={ep.accessModelCode}
                   disabled={!canEdit}
@@ -811,7 +811,7 @@ export function ProviderResourceEditForm({
 
       {/* ── 6. Taxonomy tags ───────────────────────────────────────────── */}
       <Section title={t("sectionLanguages")}>
-        <Field label={`Languages (${languageCodes.length})`}>
+        <Field label={`${t("fieldLanguages")} (${languageCodes.length})`}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {languages.map((l) => (
               <label
@@ -838,7 +838,7 @@ export function ProviderResourceEditForm({
             ))}
           </div>
         </Field>
-        <Field label={`Sectors (${sectorCodes.length})`}>
+        <Field label={`${t("fieldSectors")} (${sectorCodes.length})`}>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {sectors.map((s) => (
               <label
@@ -890,16 +890,16 @@ export function ProviderResourceEditForm({
         }}
       >
 <Button href="/provider/resources" intent="secondary">
-          Back to resources
+          {t("backToResources")}
         </Button>
         {canEdit ? (
           <Button intent="secondary" onClick={save} disabled={busy}>
-            {pending === "save" ? "Saving..." : "Save changes"}
+            {pending === "save" ? t("saving") : t("saveChanges")}
           </Button>
         ) : null}
         {canSubmit ? (
           <Button intent="primary" onClick={submitForReview} disabled={busy}>
-            {pending === "submit" ? "Submitting..." : "Submit for review"}
+            {pending === "submit" ? t("submitting") : t("submitForReview")}
           </Button>
         ) : null}
       </div>

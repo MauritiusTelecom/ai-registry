@@ -5,7 +5,12 @@ import { ResourcesAdmin } from "@/components/admin/ResourcesAdmin";
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadActiveProvidersForFilter } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Admin · Resources" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.resources");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminResourcesPage() {

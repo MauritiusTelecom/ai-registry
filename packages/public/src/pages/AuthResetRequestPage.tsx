@@ -2,8 +2,11 @@ import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { AuthShell } from "../auth-ui/AuthShell";
 import { RequestResetForm } from "../auth-ui/RequestResetForm";
+import { publicPageMetadata } from "../lib/page-metadata";
 
-export const metadata = { title: "Reset password" };
+export async function generateMetadata() {
+  return publicPageMetadata("public.resetPassword");
+}
 
 export default async function RequestResetPage() {
   const t = await getTranslations("auth");

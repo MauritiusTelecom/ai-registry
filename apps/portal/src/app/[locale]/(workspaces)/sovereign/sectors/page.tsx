@@ -1,12 +1,17 @@
 import { getTranslations } from "next-intl/server";
 import { getConfig } from "@airegistry/sdk";
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
 import {
   listReferenceTable,
   loadSovereignSectorMemberships
 } from "@airegistry/sdk/server";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 
-export const metadata = { title: "Sovereign · Sectors" };
+
+export async function generateMetadata() {
+  return workspaceMetadata("sovereign.sectors");
+}
+
 export const dynamic = "force-dynamic";
 
 type Row = {

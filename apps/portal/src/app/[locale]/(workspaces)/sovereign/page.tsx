@@ -2,12 +2,17 @@ import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { getConfig } from "@airegistry/sdk";
 import { StatCard } from "@/components/portals/StatCard";
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
 import {
   countReferenceTable,
   loadSovereignDashboardStats
 } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Sovereign Ops · Dashboard" };
+
+export async function generateMetadata() {
+  return workspaceMetadata("sovereign.dashboard");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function SovereignDashboardPage() {

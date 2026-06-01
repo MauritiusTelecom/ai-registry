@@ -6,7 +6,11 @@ import { ResendVerificationForm } from "../auth-ui/ResendVerificationForm";
 import { writeAudit } from "@airegistry/sdk";
 import { consumeEmailVerificationToken } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Verify email" };
+import { publicPageMetadata } from "../lib/page-metadata";
+
+export async function generateMetadata() {
+  return publicPageMetadata("public.verifyEmail");
+}
 
 /**
  * Server-side verification page. Performs the same DB transition as

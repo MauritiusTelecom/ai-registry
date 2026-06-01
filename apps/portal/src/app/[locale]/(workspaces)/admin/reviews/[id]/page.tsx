@@ -6,7 +6,12 @@ import { PageHero } from "@airegistry/ui-kit";
 import { ReviewDecideForm } from "@/components/admin/ReviewDecideForm";
 import { loadAdminReviewForDecide } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Review decision" };
+
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.reviewDecision");
+}
 
 export default async function AdminReviewDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const t = await getTranslations("admin.reviewDetail");

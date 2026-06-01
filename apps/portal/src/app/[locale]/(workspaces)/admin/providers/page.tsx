@@ -4,7 +4,12 @@ import { getCurrentUser } from "@airegistry/sdk/server";
 import { ProvidersAdmin } from "@/components/admin/ProvidersAdmin";
 import { listReferenceTable } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Admin · Providers" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.providers");
+}
+
 export const dynamic = "force-dynamic";
 
 /**

@@ -273,18 +273,18 @@ export function ResourceEditForm({
       {/* ── 1. Identity & classification ───────────────────────────────── */}
       <Section title={t("sectionIdentity")}>
         <Row>
-<Field label="Title">
+<Field label={t("fieldTitle")}>
             <Input
                             value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </Field>
-          <Field label="Slug (immutable)">
+          <Field label={t("fieldSlugImmutable")}>
             <Input value={initial.slug} disabled />
           </Field>
         </Row>
         <Row>
-          <Field label="Kind / resource type">
+          <Field label={t("fieldKindResourceType")}>
             <Select
                             value={kindCode}
               onChange={(e) => setKindCode(e.target.value)}
@@ -296,7 +296,7 @@ export function ResourceEditForm({
               ))}
             </Select>
           </Field>
-<Field label="Provider">
+<Field label={t("fieldProvider")}>
             <Select
                             value={providerSlug}
               onChange={(e) => setProviderSlug(e.target.value)}
@@ -310,7 +310,7 @@ export function ResourceEditForm({
           </Field>
         </Row>
         <Row>
-<Field label="Primary jurisdiction">
+<Field label={t("fieldPrimaryJurisdiction")}>
             <Select
                             value={jurisdictionCode}
               onChange={(e) => setJurisdictionCode(e.target.value)}
@@ -322,7 +322,7 @@ export function ResourceEditForm({
               ))}
             </Select>
           </Field>
-<Field label="Risk level">
+<Field label={t("fieldRiskLevel")}>
             <Select
                             value={riskCode}
               onChange={(e) => setRiskCode(e.target.value)}
@@ -336,7 +336,7 @@ export function ResourceEditForm({
           </Field>
         </Row>
         <Row>
-<Field label="Listing origin">
+<Field label={t("fieldListingOrigin")}>
             <Select
                             value={listingOriginCode}
               onChange={(e) => setListingOriginCode(e.target.value)}
@@ -348,7 +348,7 @@ export function ResourceEditForm({
               ))}
             </Select>
           </Field>
-<Field label="Lifecycle status (use the sidebar to change)">
+<Field label={t("fieldLifecycleStatus")}>
             <Input
                             value={`${initial.lifecycleName} (${initial.lifecycleCode})`}
               disabled
@@ -371,14 +371,14 @@ export function ResourceEditForm({
 
       {/* ── 2. Descriptions ─────────────────────────────────────────────── */}
 <Section title={t("sectionDescriptions")}>
-        <Field label="Short description (8+ chars, shown on cards)">
+        <Field label={t("fieldShortDescription")}>
           <TextArea
                           style={{ minHeight: 70, fontFamily: "inherit" }}
             value={shortDescription}
             onChange={(e) => setShortDescription(e.target.value)}
           />
         </Field>
-<Field label="Long description (markdown OK, shown on detail page)">
+<Field label={t("fieldLongDescription")}>
           <TextArea
                           style={{ minHeight: 140, fontFamily: "inherit" }}
             value={longDescription}
@@ -390,14 +390,14 @@ export function ResourceEditForm({
       {/* ── 3. Versioning & access URLs ─────────────────────────────────── */}
       <Section title={t("sectionVersioning")}>
         <Row>
-<Field label="License">
+<Field label={t("fieldLicense")}>
             <Input
                             placeholder="Commercial, Apache-2.0, …"
               value={license}
               onChange={(e) => setLicense(e.target.value)}
             />
           </Field>
-<Field label="Version label">
+<Field label={t("fieldVersionLabel")}>
             <Input
                             placeholder="200k tokens, Multi-step, …"
               value={versionLabel}
@@ -406,14 +406,14 @@ export function ResourceEditForm({
           </Field>
         </Row>
         <Row>
-<Field label="Version number">
+<Field label={t("fieldVersionNumber")}>
             <Input
                             placeholder="0.1.0"
               value={versionNumber}
               onChange={(e) => setVersionNumber(e.target.value)}
             />
           </Field>
-<Field label="Latency tier">
+<Field label={t("fieldLatencyTier")}>
             <Input
                             placeholder="0.8s, Async (job), …"
               value={latencyTier}
@@ -421,28 +421,28 @@ export function ResourceEditForm({
             />
           </Field>
         </Row>
-<Field label="Access URL">
+<Field label={t("fieldAccessUrl")}>
           <Input
                           placeholder="https://…"
             value={accessUrl}
             onChange={(e) => setAccessUrl(e.target.value)}
           />
         </Field>
-<Field label="Source code URL">
+<Field label={t("fieldSourceCodeUrl")}>
           <Input
                           placeholder="https://github.com/…"
             value={sourceCodeUrl}
             onChange={(e) => setSourceCodeUrl(e.target.value)}
           />
         </Field>
-<Field label="Documentation URL">
+<Field label={t("fieldDocumentationUrl")}>
           <Input
                           placeholder="https://…"
             value={documentationUrl}
             onChange={(e) => setDocumentationUrl(e.target.value)}
           />
         </Field>
-<Field label="Terms URL">
+<Field label={t("fieldTermsUrl")}>
           <Input
                           placeholder="https://…"
             value={termsUrl}
@@ -510,7 +510,7 @@ export function ResourceEditForm({
               style={{ padding: 14, display: "grid", gap: 10 }}
             >
               <Row>
-<Field label="Evidence type">
+<Field label={t("fieldEvidenceType")}>
                   <Select
                                   value={e.evidenceTypeCode}
                     onChange={(ev) =>
@@ -524,7 +524,7 @@ export function ResourceEditForm({
                     ))}
                   </Select>
                 </Field>
-<Field label="Sovereignty basis">
+<Field label={t("fieldSovereigntyBasis")}>
                   <Select
                                   value={e.sovereigntyBasisCode}
                     onChange={(ev) =>
@@ -539,13 +539,13 @@ export function ResourceEditForm({
                   </Select>
                 </Field>
               </Row>
-<Field label="Title">
+<Field label={t("fieldEvidenceTitle")}>
                 <Input
                                 value={e.title}
                   onChange={(ev) => updateEvidence(i, { title: ev.target.value })}
                 />
               </Field>
-              <Field label="Description">
+              <Field label={t("fieldEvidenceDescription")}>
                 <TextArea
                                 style={{ minHeight: 70, fontFamily: "inherit" }}
                   value={e.description ?? ""}
@@ -555,7 +555,7 @@ export function ResourceEditForm({
                 />
               </Field>
               <Row>
-<Field label="Reference URL">
+<Field label={t("fieldReferenceUrl")}>
                   <Input
                                   placeholder="https://…"
                     value={e.referenceUrl ?? ""}
@@ -564,7 +564,7 @@ export function ResourceEditForm({
                     }
                   />
                 </Field>
-<Field label="Reference identifier">
+<Field label={t("fieldReferenceIdentifier")}>
                   <Input
                                   placeholder="DPA 2017, MT-CLOUD-EBN, …"
                     value={e.referenceIdentifier ?? ""}
@@ -574,7 +574,7 @@ export function ResourceEditForm({
                   />
                 </Field>
               </Row>
-<Field label="Issuing body">
+<Field label={t("fieldIssuingBody")}>
                 <Input
                                 placeholder="Data Protection Office, …"
                   value={e.issuingBody ?? ""}
@@ -650,7 +650,7 @@ export function ResourceEditForm({
             style={{ padding: 14, display: "grid", gap: 10 }}
           >
             <Row>
-<Field label="Protocol">
+<Field label={t("fieldProtocol")}>
                 <Select
                                 value={ep.protocolCode}
                   onChange={(e) => updateEndpoint(i, { protocolCode: e.target.value })}
@@ -662,7 +662,7 @@ export function ResourceEditForm({
                   ))}
                 </Select>
               </Field>
-<Field label="Endpoint URL">
+<Field label={t("fieldEndpointUrl")}>
                 <Input
                                 placeholder="https://…"
                   value={ep.endpointUrl}
@@ -670,7 +670,7 @@ export function ResourceEditForm({
                 />
               </Field>
             </Row>
-<Field label="Documentation URL">
+<Field label={t("fieldEndpointDocUrl")}>
               <Input
                               placeholder="https://…"
                 value={ep.documentationUrl ?? ""}
@@ -680,7 +680,7 @@ export function ResourceEditForm({
               />
             </Field>
             <Row>
-<Field label="Auth method">
+<Field label={t("fieldAuthMethod")}>
                 <Select
                                 value={ep.authMethodCode}
                   onChange={(e) =>
@@ -694,7 +694,7 @@ export function ResourceEditForm({
                   ))}
                 </Select>
               </Field>
-<Field label="Access model">
+<Field label={t("fieldAccessModel")}>
                 <Select
                                 value={ep.accessModelCode}
                   onChange={(e) =>
@@ -837,7 +837,7 @@ export function ResourceEditForm({
           onClick={submit}
           disabled={busy}
         >
-          {busy ? "Saving…" : "Save changes"}
+          {busy ? t("saving") : t("saveChanges")}
         </Button>
       </div>
     </div>

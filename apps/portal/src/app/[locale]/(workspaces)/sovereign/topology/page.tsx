@@ -3,7 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { loadSovereignTopology } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 
-export const metadata = { title: "Sovereign · Topology" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("sovereign.topology");
+}
+
 export const dynamic = "force-dynamic";
 
 const STATUS_COLOUR: Record<string, string> = {

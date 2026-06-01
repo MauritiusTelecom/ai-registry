@@ -5,7 +5,11 @@ import { getCurrentUser } from "@airegistry/sdk/server";
 import { AuthShell } from "../auth-ui/AuthShell";
 import { RegisterForm } from "../auth-ui/RegisterForm";
 
-export const metadata = { title: "Create an account" };
+import { publicPageMetadata } from "../lib/page-metadata";
+
+export async function generateMetadata() {
+  return publicPageMetadata("public.register");
+}
 
 export default async function RegisterPage() {
   const user = await getCurrentUser();

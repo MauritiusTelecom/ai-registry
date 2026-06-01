@@ -2,7 +2,12 @@ import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 import { refTablesByGroup } from "@airegistry/sdk";
 
-export const metadata = { title: "Admin · Reference tables" };
+
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.ref");
+}
 
 /**
  * Index of every reference table, grouped by area. The sidebar already

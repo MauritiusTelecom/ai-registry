@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { GatedPublishButton } from "@/components/portals/GatedPublishButton";
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
 import {
   ProviderResourcesGrid,
   type ProviderResourceRow
@@ -8,7 +9,11 @@ import {
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadMyResources } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Provider · Resources" };
+
+export async function generateMetadata() {
+  return workspaceMetadata("provider.resources");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function ProviderResourcesPage() {

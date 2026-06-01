@@ -5,7 +5,7 @@ import { DocPage, DocPanel } from "../sections/DocPage";
 import { publicPageMetadata } from "../lib/page-metadata";
 
 export async function generateMetadata() {
-  return publicPageMetadata("Open data");
+  return publicPageMetadata("public.openData");
 }
 
 export default async function OpenDataPage() {

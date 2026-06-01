@@ -4,11 +4,16 @@ import { DataTable, type Column } from "@/components/portals/DataTable";
 import { CONTACT_TOPIC_LABELS } from "@airegistry/sdk";
 import { loadAdminContactsView } from "@airegistry/sdk/server";
 
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.contacts");
+}
+
 function labelFor(topic: string): string {
   return (CONTACT_TOPIC_LABELS as Record<string, string>)[topic] ?? topic;
 }
 
-export const metadata = { title: "Admin · Contact messages" };
 export const dynamic = "force-dynamic";
 
 /**

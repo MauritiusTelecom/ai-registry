@@ -3,7 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { listAllListingCriteria } from "@airegistry/core/services/public-cms";
 import { ListingCriterionForm } from "@/components/admin/site/ListingCriterionForm";
 
-export const metadata = { title: "Admin · Site · Listing criteria · Edit" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.siteListingCriteriaEdit");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminListingCriteriaEditPage({

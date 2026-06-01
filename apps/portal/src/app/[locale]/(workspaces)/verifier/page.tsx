@@ -3,7 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { loadVerifierDashboardStats } from "@airegistry/sdk/server";
 import { StatCard } from "@/components/portals/StatCard";
 
-export const metadata = { title: "Verifier · Dashboard" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("verifier.dashboard");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function VerifierDashboardPage() {

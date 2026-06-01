@@ -4,7 +4,7 @@ import { DocPage, DocPanel } from "../sections/DocPage";
 import { publicPageMetadata } from "../lib/page-metadata";
 
 export async function generateMetadata() {
-  return publicPageMetadata("Verification proofs");
+  return publicPageMetadata("public.verification");
 }
 
 export default async function VerificationPage() {

@@ -3,7 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { getConfig } from "@airegistry/sdk";
 import { loadSovereignReportsSnapshot } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Sovereign · Reports" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("sovereign.reports");
+}
+
 export const dynamic = "force-dynamic";
 
 /**

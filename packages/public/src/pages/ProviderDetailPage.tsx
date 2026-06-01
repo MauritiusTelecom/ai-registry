@@ -13,7 +13,7 @@ import { loadProviderDocuments } from "@airegistry/core/services/sovereignty-doc
 import { publicPageMetadata } from "../lib/page-metadata";
 
 export async function generateMetadata() {
-  return publicPageMetadata("Provider");
+  return publicPageMetadata("public.provider");
 }
 export const dynamic = "force-dynamic";
 

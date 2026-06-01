@@ -4,7 +4,12 @@ import { getCurrentUser, loadProviderDashboardStats } from "@airegistry/sdk/serv
 import { StatCard } from "@/components/portals/StatCard";
 import { GatedPublishButton } from "@/components/portals/GatedPublishButton";
 
-export const metadata = { title: "Provider · Dashboard" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("provider.dashboard");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function ProviderDashboardPage() {

@@ -4,7 +4,7 @@ import { DocPage, DocPanel } from "../sections/DocPage";
 import { publicPageMetadata } from "../lib/page-metadata";
 
 export async function generateMetadata() {
-  return publicPageMetadata("Sovereignty rubric");
+  return publicPageMetadata("public.sovereigntyRubric");
 }
 
 export default async function SovereigntyRubricPage() {

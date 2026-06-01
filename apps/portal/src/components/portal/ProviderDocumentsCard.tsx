@@ -151,7 +151,9 @@ function DeleteButton({ id, onDeleted }: { id: string; onDeleted: () => void }) 
         method: "DELETE"
       });
       if (!res.ok) {
-        alert("Delete failed: " + ((await res.json().catch(() => ({}))).error ?? res.status));
+        alert(
+          `${t("deleteFailed")}: ${(await res.json().catch(() => ({}))).error ?? res.status}`
+        );
       }
       onDeleted();
     } finally {
@@ -419,6 +421,7 @@ function FilePicker({
   file: File | null;
   onPick: (f: File | null) => void;
 }) {
+  const t = useTranslations("providerDocs");
   const ref = useRef<HTMLInputElement>(null);
   return (
     <div
@@ -458,13 +461,13 @@ function FilePicker({
               fontSize: 16,
               padding: 0
             }}
-            aria-label="Remove file"
+            aria-label={t("removeFileAria")}
           >
             ✕
           </button>
         </>
       ) : (
-        <span style={{ opacity: 0.7 }}>Click to choose a file…</span>
+        <span style={{ opacity: 0.7 }}>{t("pickFilePrompt")}</span>
       )}
       <input
         ref={ref}

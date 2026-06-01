@@ -5,7 +5,12 @@ import { UsersAdmin } from "@/components/admin/UsersAdmin";
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadActiveProvidersForFilter } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Admin · Users & roles" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.users");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminUsersPage() {

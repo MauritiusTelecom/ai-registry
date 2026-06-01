@@ -201,7 +201,7 @@ export function EditResourceForm({
           disabled={isBusy}
           onClick={() => void save()}
         >
-{pending === "save" ? "Saving…" : "Save changes"}
+{pending === "save" ? t("saving") : t("saveChanges")}
         </Button>
       ) : null}
       {canSubmit ? (
@@ -230,7 +230,7 @@ export function EditResourceForm({
             disabled={isBusy}
             onClick={() => void submitForReview()}
           >
-{pending === "submit" ? "Submitting…" : "Submit for review"}
+{pending === "submit" ? t("submitting") : t("submitForReview")}
           </Button>
         </>
       ) : null}

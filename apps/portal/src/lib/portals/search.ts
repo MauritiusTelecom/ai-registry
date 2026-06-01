@@ -22,6 +22,7 @@
  * Returns are capped per source so the dropdown stays usable even on a
  * very broad term like "a". Empty query short-circuits to an empty list.
  */
+import { getTranslations } from "next-intl/server";
 import {
   searchResourcesRows,
   searchProvidersRows,
@@ -75,16 +76,16 @@ export async function executeSearch(
   }
 
   try {
-    const [resources, providers, complaints, reviews, incidents, users] =
+    const [resources, providers, complaints, reviews, incidents, users, pages] =
       await Promise.all([
         searchResources(q, user, role),
         searchProviders(q, role),
         searchComplaints(q, user, role),
         searchReviews(q, user, role),
         searchIncidents(q, user, role),
-        searchUsers(q, role)
+        searchUsers(q, role),
+        searchPages(q, role)
       ]);
-    const pages = searchPages(q, role);
 
     // Ordering: pages first (instant nav), then the inbox-style entries,
     // then catalogue entries (resources / providers / users). The client
@@ -361,22 +362,27 @@ async function searchReviews(
   }
 
   const rows = await searchReviewsRows(baseWhere, RESULTS_PER_GROUP);
+  const tPages = await getTranslations("portalSearch.pages");
+  const providerRecordFallback = tPages("providerRecordFallback");
 
   return rows.map((r) => ({
     id: `review:${r.id}`,
     kind: "review" as const,
-    title: titleForReview(r),
+    title: titleForReview(r, providerRecordFallback),
     subtitle: subtitleForReview(r),
     href: hrefForReview(r.id, role, q),
     icon: "check"
   }));
 }
 
-function titleForReview(r: {
-  reviewType: { name: string };
-  resource: { title: string } | null;
-}): string {
-  const target = r.resource?.title ?? "Provider record";
+function titleForReview(
+  r: {
+    reviewType: { name: string };
+    resource: { title: string } | null;
+  },
+  providerRecordFallback: string
+): string {
+  const target = r.resource?.title ?? providerRecordFallback;
   return `${r.reviewType.name} — ${target}`;
 }
 
@@ -523,41 +529,41 @@ async function searchUsers(
 
 type StaticPage = {
   id: string;
-  title: string;
-  subtitle: string;
+  titleKey: string;
+  subtitleKey: string;
   href: string;
   icon: string;
 };
 
 const PAGES_BY_ROLE: Record<PortalRole, StaticPage[]> = {
   provider: [
-    { id: "provider/dashboard", title: "Dashboard", subtitle: "Provider · overview", href: "/provider", icon: "home-alt" },
-    { id: "provider/resources", title: "My resources", subtitle: "Provider · catalogue", href: "/provider/resources", icon: "layers" },
-    { id: "provider/submissions", title: "Submissions", subtitle: "Provider · in flight", href: "/provider/submissions", icon: "inbox" },
-    { id: "provider/publish", title: "Publish new resource", subtitle: "Provider · new draft", href: "/provider/publish", icon: "plus" },
-    { id: "provider/complaints", title: "Complaints", subtitle: "Provider · inbox", href: "/provider/complaints", icon: "flag" },
-    { id: "provider/reviews", title: "Reviews", subtitle: "Provider · inbox", href: "/provider/reviews", icon: "check" },
-    { id: "provider/incidents", title: "Incidents", subtitle: "Provider · inbox", href: "/provider/incidents", icon: "shield" },
-    { id: "provider/settings", title: "Settings", subtitle: "Provider · account", href: "/provider/settings", icon: "settings" }
+    { id: "provider/dashboard", titleKey: "provider_dashboard_title", subtitleKey: "provider_dashboard_subtitle", href: "/provider", icon: "home-alt" },
+    { id: "provider/resources", titleKey: "provider_resources_title", subtitleKey: "provider_resources_subtitle", href: "/provider/resources", icon: "layers" },
+    { id: "provider/submissions", titleKey: "provider_submissions_title", subtitleKey: "provider_submissions_subtitle", href: "/provider/submissions", icon: "inbox" },
+    { id: "provider/publish", titleKey: "provider_publish_title", subtitleKey: "provider_publish_subtitle", href: "/provider/publish", icon: "plus" },
+    { id: "provider/complaints", titleKey: "provider_complaints_title", subtitleKey: "provider_complaints_subtitle", href: "/provider/complaints", icon: "flag" },
+    { id: "provider/reviews", titleKey: "provider_reviews_title", subtitleKey: "provider_reviews_subtitle", href: "/provider/reviews", icon: "check" },
+    { id: "provider/incidents", titleKey: "provider_incidents_title", subtitleKey: "provider_incidents_subtitle", href: "/provider/incidents", icon: "shield" },
+    { id: "provider/settings", titleKey: "provider_settings_title", subtitleKey: "provider_settings_subtitle", href: "/provider/settings", icon: "settings" }
   ],
   admin: [
-    { id: "admin/dashboard", title: "Dashboard", subtitle: "Admin · overview", href: "/admin", icon: "home-alt" },
-    { id: "admin/resources", title: "Resources", subtitle: "Admin · catalogue", href: "/admin/resources", icon: "layers" },
-    { id: "admin/providers", title: "Providers", subtitle: "Admin · catalogue", href: "/admin/providers", icon: "users" },
-    { id: "admin/reviews", title: "Review queue", subtitle: "Admin · governance", href: "/admin/reviews", icon: "check" },
-    { id: "admin/complaints", title: "Flags & incidents", subtitle: "Admin · governance", href: "/admin/complaints", icon: "flag" },
-    { id: "admin/policies", title: "Policies", subtitle: "Admin · governance", href: "/admin/policies", icon: "shield" },
-    { id: "admin/users", title: "Users & roles", subtitle: "Admin · account", href: "/admin/users", icon: "user" },
-    { id: "admin/audit", title: "Audit log", subtitle: "Admin · governance", href: "/admin/audit", icon: "audit" },
-    { id: "admin/integrations", title: "Integrations", subtitle: "Admin · platform", href: "/admin/integrations", icon: "database" },
-    { id: "admin/settings", title: "Settings", subtitle: "Admin · account", href: "/admin/settings", icon: "settings" }
+    { id: "admin/dashboard", titleKey: "admin_dashboard_title", subtitleKey: "admin_dashboard_subtitle", href: "/admin", icon: "home-alt" },
+    { id: "admin/resources", titleKey: "admin_resources_title", subtitleKey: "admin_resources_subtitle", href: "/admin/resources", icon: "layers" },
+    { id: "admin/providers", titleKey: "admin_providers_title", subtitleKey: "admin_providers_subtitle", href: "/admin/providers", icon: "users" },
+    { id: "admin/reviews", titleKey: "admin_reviews_title", subtitleKey: "admin_reviews_subtitle", href: "/admin/reviews", icon: "check" },
+    { id: "admin/complaints", titleKey: "admin_complaints_title", subtitleKey: "admin_complaints_subtitle", href: "/admin/complaints", icon: "flag" },
+    { id: "admin/policies", titleKey: "admin_policies_title", subtitleKey: "admin_policies_subtitle", href: "/admin/policies", icon: "shield" },
+    { id: "admin/users", titleKey: "admin_users_title", subtitleKey: "admin_users_subtitle", href: "/admin/users", icon: "user" },
+    { id: "admin/audit", titleKey: "admin_audit_title", subtitleKey: "admin_audit_subtitle", href: "/admin/audit", icon: "audit" },
+    { id: "admin/integrations", titleKey: "admin_integrations_title", subtitleKey: "admin_integrations_subtitle", href: "/admin/integrations", icon: "database" },
+    { id: "admin/settings", titleKey: "admin_settings_title", subtitleKey: "admin_settings_subtitle", href: "/admin/settings", icon: "settings" }
   ],
   verifier: [
-    { id: "verifier/dashboard", title: "Dashboard", subtitle: "Verifier · queue", href: "/verifier", icon: "home-alt" },
-    { id: "verifier/settings", title: "Settings", subtitle: "Verifier · account", href: "/verifier/settings", icon: "settings" }
+    { id: "verifier/dashboard", titleKey: "verifier_dashboard_title", subtitleKey: "verifier_dashboard_subtitle", href: "/verifier", icon: "home-alt" },
+    { id: "verifier/settings", titleKey: "verifier_settings_title", subtitleKey: "verifier_settings_subtitle", href: "/verifier/settings", icon: "settings" }
   ],
   sovereign: [
-    { id: "sovereign/dashboard", title: "Dashboard", subtitle: "Sovereign · overview", href: "/sovereign", icon: "home-alt" }
+    { id: "sovereign/dashboard", titleKey: "sovereign_dashboard_title", subtitleKey: "sovereign_dashboard_subtitle", href: "/sovereign", icon: "home-alt" }
   ]
 };
 
@@ -568,22 +574,26 @@ const PAGES_BY_ROLE: Record<PortalRole, StaticPage[]> = {
  * `RESULTS_PER_GROUP` to 10 here because pages are cheap (no DB) and the
  * full admin list has nine entries.
  */
-function searchPages(q: string, role: PortalRole): PortalSearchResult[] {
+async function searchPages(q: string, role: PortalRole): Promise<PortalSearchResult[]> {
+  const t = await getTranslations("portalSearch.pages");
   const needle = q.toLowerCase();
   const pages = PAGES_BY_ROLE[role] ?? [];
   const matched =
     needle === ""
       ? pages
-      : pages.filter(
-          (p) =>
-            p.title.toLowerCase().includes(needle) ||
-            p.subtitle.toLowerCase().includes(needle)
-        );
+      : pages.filter((p) => {
+          const title = t(p.titleKey);
+          const subtitle = t(p.subtitleKey);
+          return (
+            title.toLowerCase().includes(needle) ||
+            subtitle.toLowerCase().includes(needle)
+          );
+        });
   return matched.slice(0, 10).map((p) => ({
     id: `page:${p.id}`,
     kind: "page" as const,
-    title: p.title,
-    subtitle: p.subtitle,
+    title: t(p.titleKey),
+    subtitle: t(p.subtitleKey),
     href: p.href,
     icon: p.icon
   }));

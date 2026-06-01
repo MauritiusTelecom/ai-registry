@@ -3,7 +3,12 @@ import { requireRole } from "@/lib/portals/auth-gate";
 import { PORTAL_CONFIGS } from "@/lib/portals/nav-config";
 import { PortalLayoutChrome } from "@/components/portals/PortalLayoutChrome";
 
-export const metadata = { title: "Sovereign Ops · AI Registry" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("sovereign.layout");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function SovereignLayout({ children }: { children: ReactNode }) {

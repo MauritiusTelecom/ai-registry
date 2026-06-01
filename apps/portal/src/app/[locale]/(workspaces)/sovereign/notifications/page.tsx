@@ -3,7 +3,12 @@ import { getCurrentUser } from "@airegistry/sdk/server";
 import { loadPortalNotifications } from "@/lib/portals/notifications";
 import { NotificationsBrowser } from "@/components/portals/NotificationsBrowser";
 
-export const metadata = { title: "Sovereign · Notifications" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("sovereign.notifications");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function SovereignNotificationsPage() {

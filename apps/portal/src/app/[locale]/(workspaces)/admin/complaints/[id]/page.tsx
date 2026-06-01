@@ -5,7 +5,12 @@ import { ComplaintAdminPanel } from "@/components/admin/ComplaintAdminPanel";
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadAdminComplaintDetail } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Admin · Complaint" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.complaintDetail");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminComplaintDetailPage({

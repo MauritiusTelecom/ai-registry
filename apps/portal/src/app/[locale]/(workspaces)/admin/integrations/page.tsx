@@ -1,7 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import { getConfig } from "@airegistry/sdk";
 
-export const metadata = { title: "Admin · Integrations" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.integrations");
+}
+
 export const dynamic = "force-dynamic";
 
 type Integration = {

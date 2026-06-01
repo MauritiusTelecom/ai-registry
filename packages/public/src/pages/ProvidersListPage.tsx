@@ -5,7 +5,7 @@ import { ProvidersSection } from "../sections/ProvidersSection";
 import { publicPageMetadata } from "../lib/page-metadata";
 
 export async function generateMetadata() {
-  return publicPageMetadata("Providers");
+  return publicPageMetadata("public.providers");
 }
 
 export default async function ProvidersPage() {

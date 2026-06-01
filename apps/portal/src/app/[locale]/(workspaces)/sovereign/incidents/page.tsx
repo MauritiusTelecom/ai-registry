@@ -4,7 +4,12 @@ import { loadSovereignIncidents } from "@airegistry/sdk/server";
 import { getConfig } from "@airegistry/sdk";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 
-export const metadata = { title: "Sovereign · Incidents" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("sovereign.incidents");
+}
+
 export const dynamic = "force-dynamic";
 
 type Row = {

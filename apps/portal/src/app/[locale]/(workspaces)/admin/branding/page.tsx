@@ -3,7 +3,12 @@ import { getConfig } from "@airegistry/sdk";
 import { BrandingForm } from "@/components/admin/BrandingForm";
 import { loadAdminBrandingForm } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Admin · Branding" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.branding");
+}
+
 export const dynamic = "force-dynamic";
 
 const SINGLETON_ID = "default";

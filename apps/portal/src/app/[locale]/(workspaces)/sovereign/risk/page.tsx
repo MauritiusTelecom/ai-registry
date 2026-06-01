@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
 import {
   listReferenceTable,
   loadSovereignResourcesForRisk
@@ -7,7 +8,11 @@ import {
 import { getConfig } from "@airegistry/sdk";
 import { DataTable, type Column } from "@/components/portals/DataTable";
 
-export const metadata = { title: "Sovereign · Risk" };
+
+export async function generateMetadata() {
+  return workspaceMetadata("sovereign.risk");
+}
+
 export const dynamic = "force-dynamic";
 
 type Tier = {

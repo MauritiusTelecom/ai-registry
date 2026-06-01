@@ -24,7 +24,7 @@ type Props = {
 };
 
 export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
-  const t = useTranslations("provider.resources");
+  const t = useTranslations("providerResources");
   const columns: EntityColumn<ProviderResourceRow>[] = [
     {
       key: "title",
@@ -71,7 +71,7 @@ export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
             intent="secondary"
             size="sm"
           >
-Edit / submit
+{t("editSubmit")}
           </Button>
         ) : row.lifecycleCode === "listed" ? (
           <Button
@@ -79,7 +79,7 @@ Edit / submit
             intent="secondary"
             size="sm"
           >
-Public
+            {t("public")}
           </Button>
         ) : (
           <span style={{ color: "var(--text-3)", fontSize: 12 }}>-</span>
@@ -91,8 +91,8 @@ Public
     <EntityGrid
       rows={rows}
       columns={columns}
-      emptyState="You haven't published any resources yet."
-      searchPlaceholder="Search title, AIR-ID, or slug…"
+      emptyState={t("emptyState")}
+      searchPlaceholder={t("searchPlaceholder")}
       searchableKeys={["title", "airId", "slug"]}
       filters={[
         {

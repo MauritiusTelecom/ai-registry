@@ -3,7 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { loadVerifierSettingsStats } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Verifier · Settings" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("verifier.settings");
+}
+
 export const dynamic = "force-dynamic";
 
 /**

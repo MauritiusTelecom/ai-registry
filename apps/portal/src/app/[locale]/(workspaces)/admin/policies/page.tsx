@@ -3,7 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { SOVEREIGNTY_CHECKLIST_ITEMS } from "@airegistry/sdk";
 import { listReferenceTable } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Admin · Policies" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.policies");
+}
+
 export const dynamic = "force-dynamic";
 
 /**

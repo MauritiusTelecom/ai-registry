@@ -5,7 +5,12 @@ import { getCurrentUser } from "@airegistry/sdk/server";
 import { PageHero } from "@airegistry/ui-kit";
 import { loadAdminReviewQueue } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Review queue" };
+
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("admin.reviews");
+}
 
 export default async function AdminReviewsPage() {
   const user = await getCurrentUser();

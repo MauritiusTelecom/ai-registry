@@ -4,6 +4,7 @@ import { localeRedirect } from "@/i18n/locale-redirect";
 import { getTranslations } from "next-intl/server";
 
 import { getCurrentUser } from "@airegistry/sdk/server";
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
 import {
   canAccessThread,
   loadReviewForAccess
@@ -11,7 +12,11 @@ import {
 
 import { ThreadConversation } from "@/components/portal/ThreadConversation";
 
-export const metadata = { title: "Provider · Review" };
+
+export async function generateMetadata() {
+  return workspaceMetadata("provider.reviewDetail");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function ProviderReviewDetailPage({

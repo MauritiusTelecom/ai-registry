@@ -6,7 +6,12 @@ import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { PageHero } from "@airegistry/ui-kit";
 import { loadPortalResourceList } from "@airegistry/sdk/server";
 
-export const metadata = { title: "My resources" };
+
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("portal.resources");
+}
 
 const LIFECYCLE_FILTERS = ["", "draft", "submitted", "in_review", "listed", "needs_update"] as const;
 

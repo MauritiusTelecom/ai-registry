@@ -24,7 +24,7 @@ type Props = {
 };
 
 export function ProviderSubmissionsGrid({ rows, kinds, lifecycles }: Props) {
-  const t = useTranslations("provider.submissions");
+  const t = useTranslations("providerSubmissions");
   const columns: EntityColumn<ProviderSubmissionRow>[] = [
     {
       key: "title",
@@ -69,7 +69,7 @@ export function ProviderSubmissionsGrid({ rows, kinds, lifecycles }: Props) {
             intent="secondary"
             size="sm"
           >
-Edit / submit
+{t("editSubmit")}
           </Button>
         ) : row.lifecycleCode === "listed" ? (
           <Button
@@ -77,7 +77,7 @@ Edit / submit
             intent="secondary"
             size="sm"
           >
-Public
+            {t("public")}
           </Button>
         ) : (
           <span style={{ color: "var(--text-3)", fontSize: 12 }}>-</span>
@@ -89,8 +89,8 @@ Public
     <EntityGrid
       rows={rows}
       columns={columns}
-      emptyState="No in-flight submissions — all your resources are either listed or removed."
-      searchPlaceholder="Search submissions by title or slug…"
+      emptyState={t("emptyState")}
+      searchPlaceholder={t("searchPlaceholder")}
       searchableKeys={["title", "slug"]}
       filters={[
         {

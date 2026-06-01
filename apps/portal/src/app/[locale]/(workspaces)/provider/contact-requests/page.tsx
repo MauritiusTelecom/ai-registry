@@ -2,7 +2,12 @@ import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { loadMyContactRequests } from "@airegistry/sdk/server";
 
-export const metadata = { title: "Provider · Contact requests" };
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
+
+export async function generateMetadata() {
+  return workspaceMetadata("provider.contactRequests");
+}
+
 export const dynamic = "force-dynamic";
 
 /**

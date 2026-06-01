@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { prisma } from "@airegistry/core";
+import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
 import {
   canAccessThread,
   loadReviewForAccess
@@ -14,7 +15,11 @@ import { loadProviderDocuments } from "@airegistry/core/services/sovereignty-doc
 import { ThreadConversation } from "@/components/portal/ThreadConversation";
 import { VerificationDocumentsPanel } from "@/components/portal/VerificationDocumentsPanel";
 
-export const metadata = { title: "Verifier · Review" };
+
+export async function generateMetadata() {
+  return workspaceMetadata("verifier.reviewDetail");
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function VerifierReviewDetailPage({
