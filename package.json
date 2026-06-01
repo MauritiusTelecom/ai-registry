@@ -8,6 +8,7 @@
     "node": ">=20.0.0"
   },
   "scripts": {
+    "prepare": "node scripts/install-git-hooks.mjs",
     "dev": "turbo run dev --filter=@airegistry/portal",
     "start": "pnpm --filter @airegistry/portal start",
     "build": "turbo run build",
@@ -25,6 +26,7 @@
     "deploy:db": "pnpm --filter @airegistry/core deploy:db",
     "config:validate": "pnpm --filter @airegistry/portal config:validate",
     "check:env-secrets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-no-env-secrets.ps1",
+    "install:hooks": "node scripts/install-git-hooks.mjs",
     "test:emails": "pnpm --filter @airegistry/portal test:emails",
     "test:smtp": "pnpm --filter @airegistry/portal test:smtp",
     "smoke": "pnpm --filter @airegistry/portal smoke",

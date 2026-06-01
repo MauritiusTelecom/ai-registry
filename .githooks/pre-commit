@@ -1,0 +1,15 @@
+#!/bin/sh
+# Block commits that stage or track real env files (.env, .env.prod, etc.).
+set -e
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+if command -v powershell.exe >/dev/null 2>&1 && [ -n "${WINDIR:-}${OS:-}" ]; then
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/check-no-env-secrets.ps1
+elif [ -f scripts/check-no-env-secrets.sh ]; then
+  sh scripts/check-no-env-secrets.sh
+else
+  echo "pre-commit: check-no-env-secrets script not found" >&2
+  exit 1
+fi
