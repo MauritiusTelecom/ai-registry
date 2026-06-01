@@ -26,11 +26,10 @@ apps/portal/public/branding/
 # never source.
 /storage/
 
+# Real production env values live in deploy/secrets/ (never commit).
+deploy/secrets/
 # Local-only deploy machine config (host, user, paths). Real values live here.
 deploy/deploy.config.sh
-# Never commit anything dropped into deploy/secrets/. It is consumed by
-# deploy.sh and rsync'd to the server, but the contents are sensitive.
-deploy/secrets/
 # Release artefacts produced by `pnpm deploy:build`.
 deploy/build/
 deploy/release-*.tar.gz
