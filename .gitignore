@@ -1,11 +1,11 @@
 node_modules/
+
+# Local secrets — NEVER commit real credentials or production env files.
+# Templates (.env.example, deploy/.env.production.example) stay tracked on purpose.
 .env
-.env.local
-.env.production
-.env.production.local
-.env.prod
-.env.*.local
-packages/core/.env
+.env.*
+!.env.example
+!deploy/.env.production.example
 
 # Build artefacts
 .next/

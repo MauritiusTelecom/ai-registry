@@ -24,6 +24,7 @@
     "db:bootstrap": "pnpm --filter @airegistry/core db:bootstrap",
     "deploy:db": "pnpm --filter @airegistry/core deploy:db",
     "config:validate": "pnpm --filter @airegistry/portal config:validate",
+    "check:env-secrets": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check-no-env-secrets.ps1",
     "test:emails": "pnpm --filter @airegistry/portal test:emails",
     "test:smtp": "pnpm --filter @airegistry/portal test:smtp",
     "smoke": "pnpm --filter @airegistry/portal smoke",
