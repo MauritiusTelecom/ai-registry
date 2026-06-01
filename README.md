@@ -12,7 +12,7 @@ The reference deployment is [airegistry.mu](https://www.airegistry.mu), operated
 
 ## What this is
 
-A national or municipal AI Registry tells people, developers and AI systems what sovereign AI resources exist, who provides them, why they are locally relevant, and where to find them. It exposes structured metadata and stable identifiers, but does not sit on the runtime path between consumer and provider.
+A national AI Registry tells people, developers and AI systems what sovereign AI resources exist, who provides them, why they are locally relevant, and where to find them. It exposes structured metadata and stable identifiers, but does not sit on the runtime path between consumer and provider.
 
 Three resource types are covered: **models** (trained or tuned with local data, language or purpose), **agents** (AI systems that perform tasks in a local context) and **skills** (packaged local expertise that AI systems can load and use). Each must meet a published sovereignty test against local law, data, systems or language and culture.
 
