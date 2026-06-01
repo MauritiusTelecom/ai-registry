@@ -6,6 +6,7 @@ import { PortalSearch } from "./header/PortalSearch";
 // portal header entirely. The component file remains in place for now in
 // case it's reintroduced as a settings-page surface.
 // import { PortalPalette } from "./header/PortalPalette";
+import { PortalLocaleSwitcher } from "./header/PortalLocaleSwitcher";
 import { PortalThemeToggle } from "./header/PortalThemeToggle";
 import { PortalNotifications } from "./header/PortalNotifications";
 import { PortalUserDropdown } from "./header/PortalUserDropdown";
@@ -79,6 +80,7 @@ export async function PortalHeader({
                 : t("searchDefault"))
           }
         />
+        <PortalLocaleSwitcher />
         <PortalThemeToggle />
         <PortalNotifications initial={notifications} currentRole={currentRole} />
         <PortalUserDropdown
