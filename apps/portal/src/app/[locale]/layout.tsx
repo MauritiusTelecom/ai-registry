@@ -5,6 +5,7 @@ import { setRequestLocale } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { getBranding } from "@/lib/branding";
+import { withBase } from "@airegistry/core";
 import { SAR_THEME_KEY, themeFromCookie, ThemeProvider } from "@airegistry/ui-kit";
 import { ensurePluginsLoaded } from "@/lib/plugins/ensure-loaded";
 import { routing } from "@/i18n/routing";
@@ -15,10 +16,15 @@ export function generateStaticParams() {
 
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await getBranding();
+  // Favicon follows the admin-uploaded logo (set in /admin/branding); falls back
+  // to the bundled gradient mark when no logo is configured. withBase keeps the
+  // href correct when the app is mounted under a sub-path deployment.
+  const iconHref = withBase(branding.logoUrl ?? "/favicon.svg");
   return {
     title: branding.registryName,
     description:
-      "Mauritius AI Registry - public portal for the locally-governed AI Registry under AIR-SPEC 0.4."
+      "Mauritius AI Registry - public portal for the locally-governed AI Registry under AIR-SPEC 0.4.",
+    icons: { icon: iconHref, shortcut: iconHref, apple: iconHref }
   };
 }
 

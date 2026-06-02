@@ -1988,7 +1988,7 @@
   },
   "adminBranding": {
     "logoTitle": "Logo",
-    "logoDescription": "PNG, JPEG, SVG or WebP, up to 1 MB. Replaces the default gradient mark in the top navigation, the portal sidebar, and the footer brand block.",
+    "logoDescription": "PNG, JPEG, SVG or WebP, up to 1 MB. Replaces the default gradient mark in the top navigation, the portal sidebar, the footer brand block, and the browser tab favicon.",
     "logoConfirmRemove": "Remove the custom logo and fall back to the default mark?",
     "heroTitle": "Hero chip icon",
     "heroDescription": "Tiny image rendered to the left of the hero chip text on the homepage. Defaults to the Mauritius flag SVG when unset.",

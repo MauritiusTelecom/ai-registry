@@ -1988,7 +1988,7 @@
   },
   "adminBranding": {
     "logoTitle": "Logo",
-    "logoDescription": "PNG, JPEG, SVG ou WebP, jusqu'à 1 Mo. Remplace le marquage dégradé par défaut dans la navigation supérieure, la barre latérale du portail et le bloc de marque du pied de page.",
+    "logoDescription": "PNG, JPEG, SVG ou WebP, jusqu'à 1 Mo. Remplace le marquage dégradé par défaut dans la navigation supérieure, la barre latérale du portail, le bloc de marque du pied de page et le favicon de l'onglet du navigateur.",
     "logoConfirmRemove": "Supprimer le logo personnalisé et revenir au marquage par défaut ?",
     "heroTitle": "Icône du chip héros",
     "heroDescription": "Petite image affichée à gauche du texte du chip héros sur la page d'accueil. Par défaut le drapeau de Maurice SVG lorsqu'absent.",
