@@ -2202,17 +2202,17 @@
   "whatGetsListed": {
     "eyebrow": "Ce qui est répertorié",
     "heading": "Trois types de ressources.",
-    "headingAccent": "Un seul registre.",
-    "description": "Le registre catalogue les ressources d'IA souveraine — modèles, agents et compétences — chacune portant un AIR-ID stable et des métadonnées vérifiables.",
-    "modelEyebrow": "Modèle",
-    "modelTitle": "Modèles de base et affinés",
-    "modelDesc": "Grands modèles de langage, modèles de vision et variantes affinées localement hébergés dans une infrastructure souveraine.",
-    "agentEyebrow": "Agent",
-    "agentTitle": "Agents autonomes",
-    "agentDesc": "Agents orientés tâches combinant modèles, outils et logique métier pour exécuter des flux de travail multi-étapes.",
-    "skillEyebrow": "Compétence / Outil MCP",
-    "skillTitle": "Compétences et outils MCP",
-    "skillDesc": "Capacités discrètes — wrappers API, connecteurs de données, vérifications de conformité — appelables par des agents ou directement."
+    "headingAccent": "Composables par l'IA.",
+    "description": "Le registre couvre trois types de ressources d'IA souveraine - modèles, agents et compétences. Chacun a son propre modèle de fiche et un AIR-ID stable, afin que les consommateurs et les systèmes d'IA puissent les trouver et les combiner par programmation.",
+    "modelEyebrow": "Type · Modèle",
+    "modelTitle": "Modèles",
+    "modelDesc": "Modèles de langage, de vision ou de domaine entraînés sur le contexte, la langue et les normes locales, ou conscients de ceux-ci.",
+    "agentEyebrow": "Type · Agent",
+    "agentTitle": "Agents",
+    "agentDesc": "Flux de travail autonomes agissant sur les processus locaux - inscriptions, déclarations, navigation des services publics.",
+    "skillEyebrow": "Type · Compétence",
+    "skillTitle": "Compétences",
+    "skillDesc": "Expertise packagée - flux de travail fiscaux, juridiques, comptables - prête à être intégrée aux agents."
   },
   "listingCriteria": {
     "eyebrow": "Test de souveraineté",

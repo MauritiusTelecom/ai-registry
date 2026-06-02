@@ -2200,19 +2200,19 @@
     "mauritius": "Mauritius"
   },
   "whatGetsListed": {
-    "eyebrow": "What Gets Listed",
+    "eyebrow": "What gets listed",
     "heading": "Three resource types.",
-    "headingAccent": "One registry.",
-    "description": "The registry catalogues sovereign AI resources — models, agents, and skills — each carrying a stable AIR-ID and verifiable metadata.",
-    "modelEyebrow": "Model",
-    "modelTitle": "Foundation & fine-tuned models",
-    "modelDesc": "Large language models, vision models, and locally fine-tuned variants hosted inside sovereign infrastructure.",
-    "agentEyebrow": "Agent",
-    "agentTitle": "Autonomous agents",
-    "agentDesc": "Task-oriented agents that combine models, tools, and business logic to execute multi-step workflows.",
-    "skillEyebrow": "Skill / MCP Tool",
-    "skillTitle": "Skills & MCP tools",
-    "skillDesc": "Discrete capabilities — API wrappers, data connectors, compliance checks — callable by agents or directly."
+    "headingAccent": "Composable by AI.",
+    "description": "The registry covers three kinds of sovereign AI resource - models, agents and skills. Each has its own listing template and stable AIR-ID, so consumers and AI systems can find and combine them programmatically.",
+    "modelEyebrow": "Type · Model",
+    "modelTitle": "Models",
+    "modelDesc": "Language, vision or domain models trained on or aware of local context, language and norms.",
+    "agentEyebrow": "Type · Agent",
+    "agentTitle": "Agents",
+    "agentDesc": "Autonomous workflows that act on local processes - registrations, filings, public-service navigation.",
+    "skillEyebrow": "Type · Skill",
+    "skillTitle": "Skills",
+    "skillDesc": "Packaged expertise - tax, legal, accounting workflows - ready to plug into agents."
   },
   "listingCriteria": {
     "eyebrow": "Sovereignty Test",
