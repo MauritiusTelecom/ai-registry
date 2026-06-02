@@ -461,12 +461,12 @@
       "rulePublicSafe": "<strong>Public-safe projections.</strong> Internal review notes, complainant PII, and reset/verification tokens never cross <code>src/lib/discovery/serializers.ts</code>.",
       "lifecycleStates": "Lifecycle states ({count})",
       "providerVerificationLadder": "Provider verification ladder ({count})",
-      "providerVerificationNote": "Operators set provider status via <code>POST /api/admin/providers/{'{'}id{'}'}/verify</code> (T035) — every change writes a paired <code>provider_verification</code> trust signal.",
+      "providerVerificationNote": "Operators set provider status via <code>POST /api/admin/providers/[id]/verify</code> (T035) — every change writes a paired <code>provider_verification</code> trust signal.",
       "trustSignalKinds": "Trust signal kinds ({count})",
       "riskTiers": "Risk tiers ({count})",
       "sovereigntyBases": "Sovereignty bases ({count})",
       "sovereigntyChecklist": "§11 sovereignty checklist",
-      "sovereigntyChecklistNote": "Reviewers must record an answer (yes / no / n_a) for every item before approving a review; any <code>no</code> answer blocks approval. Wired into <code>POST /api/admin/reviews/{'{'}id{'}'}/decide</code>."
+      "sovereigntyChecklistNote": "Reviewers must record an answer (yes / no / n_a) for every item before approving a review; any <code>no</code> answer blocks approval. Wired into <code>POST /api/admin/reviews/[id]/decide</code>."
     },
     "contacts": {
       "title": "Contact messages",
@@ -1634,6 +1634,7 @@
     "viewPublicDetail": "View public detail",
     "edit": "Edit",
     "delete": "Delete",
+    "remove": "Remove",
     "deleteTitle": "Delete resource?",
     "deleteWarning": "<title></title> will be deleted permanently. Delete is refused once an AIR-ID has been minted or any review / trust-signal exists — use <remove></remove> instead to tombstone the row.",
     "cancel": "Cancel",

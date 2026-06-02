@@ -461,12 +461,12 @@
       "rulePublicSafe": "<strong>Projections sûres pour le public.</strong> Les notes d'examen internes, les données personnelles des plaignants et les jetons de réinitialisation/vérification ne traversent jamais <code>src/lib/discovery/serializers.ts</code>.",
       "lifecycleStates": "États du cycle de vie ({count})",
       "providerVerificationLadder": "Échelle de vérification des fournisseurs ({count})",
-      "providerVerificationNote": "Les opérateurs définissent le statut du fournisseur via <code>POST /api/admin/providers/{'{'}id{'}'}/verify</code> (T035) — chaque modification écrit un signal de confiance <code>provider_verification</code> associé.",
+      "providerVerificationNote": "Les opérateurs définissent le statut du fournisseur via <code>POST /api/admin/providers/[id]/verify</code> (T035) — chaque modification écrit un signal de confiance <code>provider_verification</code> associé.",
       "trustSignalKinds": "Types de signaux de confiance ({count})",
       "riskTiers": "Niveaux de risque ({count})",
       "sovereigntyBases": "Bases de souveraineté ({count})",
       "sovereigntyChecklist": "§11 liste de contrôle de souveraineté",
-      "sovereigntyChecklistNote": "Les évaluateurs doivent enregistrer une réponse (oui / non / n_a) pour chaque élément avant d'approuver un examen ; toute réponse <code>non</code> bloque l'approbation. Intégré dans <code>POST /api/admin/reviews/{'{'}id{'}'}/decide</code>."
+      "sovereigntyChecklistNote": "Les évaluateurs doivent enregistrer une réponse (oui / non / n_a) pour chaque élément avant d''approuver un examen ; toute réponse <code>non</code> bloque l''approbation. Intégré dans <code>POST /api/admin/reviews/[id]/decide</code>."
     },
     "contacts": {
       "title": "Messages de contact",
@@ -1634,6 +1634,7 @@
     "viewPublicDetail": "Voir le détail public",
     "edit": "Modifier",
     "delete": "Supprimer",
+    "remove": "Retirer",
     "deleteTitle": "Supprimer la ressource ?",
     "deleteWarning": "<title></title> sera supprimée définitivement. La suppression est refusée lorsqu'un AIR-ID a été émis ou qu'un signal de confiance / revue existe — utilisez <remove></remove> pour archiver la ligne.",
     "cancel": "Annuler",
