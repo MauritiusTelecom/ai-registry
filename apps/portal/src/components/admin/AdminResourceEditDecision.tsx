@@ -8,10 +8,19 @@ import { registryFetch } from "@airegistry/ui-kit";
 
 type Delta = { field: string; was: string | null; now: string | null };
 
+export type ProposedRelations = {
+  sovereigntyBasisCodes?: string[];
+  languageCodes?: string[];
+  sectorCodes?: string[];
+  evidence?: { title?: string; referenceUrl?: string | null }[];
+  endpoints?: { endpointUrl?: string; protocolCode?: string }[];
+} | null;
+
 type Props = {
   resourceId: string;
   versionId: string;
   diff: Delta[];
+  proposed?: ProposedRelations;
 };
 
 const FIELD_LABEL: Record<string, string> = {
@@ -29,7 +38,12 @@ const FIELD_LABEL: Record<string, string> = {
   riskLevelId: "Risk level"
 };
 
-export function AdminResourceEditDecision({ resourceId, versionId, diff }: Props) {
+export function AdminResourceEditDecision({
+  resourceId,
+  versionId,
+  diff,
+  proposed
+}: Props) {
   const router = useRouter();
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState<null | "approve" | "reject">(null);
@@ -93,6 +107,45 @@ export function AdminResourceEditDecision({ resourceId, versionId, diff }: Props
           ))}
         </tbody>
       </table>
+
+      {proposed ? (
+        <div
+          style={{
+            fontSize: 13,
+            color: "var(--text-2)",
+            border: "1px solid var(--border)",
+            borderRadius: 10,
+            padding: "12px 14px",
+            display: "grid",
+            gap: 6
+          }}
+        >
+          <div style={{ color: "var(--text-3)", fontSize: 12, marginBottom: 2 }}>
+            Proposed full state (applied on approve)
+          </div>
+          <div>
+            <strong>Sovereignty bases:</strong>{" "}
+            {proposed.sovereigntyBasisCodes?.join(", ") || "—"}
+          </div>
+          <div>
+            <strong>Languages:</strong> {proposed.languageCodes?.join(", ") || "—"}
+          </div>
+          <div>
+            <strong>Sectors:</strong> {proposed.sectorCodes?.join(", ") || "—"}
+          </div>
+          <div>
+            <strong>Evidence ({proposed.evidence?.length ?? 0}):</strong>{" "}
+            {proposed.evidence?.map((e) => e.title).filter(Boolean).join("; ") || "—"}
+          </div>
+          <div>
+            <strong>Endpoints ({proposed.endpoints?.length ?? 0}):</strong>{" "}
+            {proposed.endpoints
+              ?.map((e) => `${e.protocolCode ?? ""} ${e.endpointUrl ?? ""}`.trim())
+              .filter(Boolean)
+              .join("; ") || "—"}
+          </div>
+        </div>
+      ) : null}
 
       <Field label="Decision note (optional)">
         <TextArea

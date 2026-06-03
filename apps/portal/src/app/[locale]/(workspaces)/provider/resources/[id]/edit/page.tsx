@@ -4,7 +4,6 @@ import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { ProviderResourceEditForm } from "@/components/portal/ProviderResourceEditForm";
-import { ProviderResourceDraftEditor } from "@/components/portal/ProviderResourceDraftEditor";
 import { listReferenceTable } from "@airegistry/sdk/server";
 import { loadProviderResourceForEdit, getDraftState } from "@airegistry/sdk/server";
 
@@ -15,6 +14,32 @@ export async function generateMetadata() {
 }
 
 export const dynamic = "force-dynamic";
+
+// Shape the form's `initial` expects for the editable evidence/endpoint rows.
+type DraftPayload = {
+  title?: unknown;
+  shortDescription?: unknown;
+  longDescription?: unknown;
+  license?: unknown;
+  versionLabel?: unknown;
+  versionNumber?: unknown;
+  latencyTier?: unknown;
+  accessUrl?: unknown;
+  sourceCodeUrl?: unknown;
+  documentationUrl?: unknown;
+  termsUrl?: unknown;
+  sovereigntyBasisCodes?: unknown;
+  languageCodes?: unknown;
+  sectorCodes?: unknown;
+  evidence?: unknown;
+  endpoints?: unknown;
+};
+
+const str = (v: unknown): string => (typeof v === "string" ? v : "");
+const strOrNull = (v: unknown): string | null =>
+  typeof v === "string" && v.trim() !== "" ? v : null;
+const codeList = (v: unknown): string[] =>
+  Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
 
 export default async function ProviderResourceEditPage({
   params
@@ -28,85 +53,11 @@ export default async function ProviderResourceEditPage({
   const { id } = await params;
   const providerId = await ensureUserProviderLinked(user.id);
 
-  // loadProviderResourceForEdit centralises the deep include shape this form
-  // needs (resourceType, provider, jurisdiction, lifecycle, risk, bases,
-  // languages, sectors, evidence, endpoints). Returns null when the id
-  // doesn't belong to the actor's provider.
   const resource = await loadProviderResourceForEdit(id, providerId);
   if (!resource) notFound();
 
   const lifecycleCode = resource.lifecycleStatus.code;
-  const canEdit = lifecycleCode === "draft" || lifecycleCode === "needs_update";
-  const canSubmit = canEdit;
-
-  // A listed resource is public: edits route through the approval-gated draft
-  // flow instead of mutating the live record. Render the dedicated draft editor.
-  if (lifecycleCode === "listed") {
-    const draftState = await getDraftState(id, user);
-    const liveScalars = {
-      title: draftState.live.title ?? "",
-      shortDescription: draftState.live.shortDescription ?? "",
-      longDescription: draftState.live.longDescription,
-      versionLabel: draftState.live.versionLabel,
-      versionNumber: draftState.live.providerVersionNumber,
-      latencyTier: draftState.live.latencyTier,
-      license: draftState.live.license,
-      accessUrl: draftState.live.accessUrl,
-      documentationUrl: draftState.live.documentationUrl,
-      sourceCodeUrl: draftState.live.sourceCodeUrl,
-      termsUrl: draftState.live.termsUrl
-    };
-    const d = draftState.draft;
-    const draftScalars = d
-      ? {
-          title: d.title,
-          shortDescription: d.shortDescription,
-          longDescription: d.longDescription,
-          versionLabel: d.versionLabel,
-          versionNumber: d.providerVersionNumber,
-          latencyTier: d.latencyTier,
-          license: d.license,
-          accessUrl: d.accessUrl,
-          documentationUrl: d.documentationUrl,
-          sourceCodeUrl: d.sourceCodeUrl,
-          termsUrl: d.termsUrl
-        }
-      : null;
-
-    return (
-      <div className="p-content">
-        <div className="p-page-header">
-          <div style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 6 }}>
-            <Link href="/provider/resources" style={{ color: "var(--text-3)" }}>
-              {t("backToResources")}
-            </Link>
-          </div>
-          <h1 className="p-title">{resource.title}</h1>
-          <p className="p-subtitle">
-            <span className="tag">{resource.resourceType.code}</span>{" "}
-            <span style={{ marginLeft: 6 }}>
-              {t("lifecycle")} <strong>{resource.lifecycleStatus.name}</strong>
-            </span>
-            {resource.airId ? (
-              <>
-                <br />
-                <code style={{ fontSize: 11.5 }}>{resource.airId}</code>
-              </>
-            ) : null}
-          </p>
-        </div>
-        <ProviderResourceDraftEditor
-          resourceId={resource.id}
-          live={liveScalars}
-          draft={draftScalars}
-          draftStatus={
-            draftState.draftStatus as "draft" | "submitted" | "rejected" | null
-          }
-          postSubmitPath="/provider/resources"
-        />
-      </div>
-    );
-  }
+  const isListed = lifecycleCode === "listed";
 
   const [
     sovereigntyBases,
@@ -180,6 +131,95 @@ export default async function ProviderResourceEditPage({
     }))
   };
 
+  // For a listed resource, edits go through an approval-gated draft. If an
+  // in-progress draft exists, hydrate the form from its proposed payload so the
+  // provider resumes their edit (incl. after a rejection).
+  let draftStatus: string | null = null;
+  let canEdit = lifecycleCode === "draft" || lifecycleCode === "needs_update";
+
+  if (isListed) {
+    const state = await getDraftState(id, user);
+    draftStatus = state.draftStatus;
+    canEdit = draftStatus !== "submitted"; // locked while awaiting approval
+    const p = state.draft?.proposedPayload as DraftPayload | null | undefined;
+    if (p && typeof p === "object") {
+      if (typeof p.title === "string") initial.title = p.title;
+      if (typeof p.shortDescription === "string")
+        initial.shortDescription = p.shortDescription;
+      initial.longDescription = strOrNull(p.longDescription);
+      initial.license = strOrNull(p.license);
+      initial.versionLabel = strOrNull(p.versionLabel);
+      initial.versionNumber = strOrNull(p.versionNumber);
+      initial.latencyTier = strOrNull(p.latencyTier);
+      initial.accessUrl = strOrNull(p.accessUrl);
+      initial.sourceCodeUrl = strOrNull(p.sourceCodeUrl);
+      initial.documentationUrl = strOrNull(p.documentationUrl);
+      initial.termsUrl = strOrNull(p.termsUrl);
+      initial.sovereigntyBasisCodes = codeList(p.sovereigntyBasisCodes);
+      initial.languageCodes = codeList(p.languageCodes);
+      initial.sectorCodes = codeList(p.sectorCodes);
+      if (Array.isArray(p.evidence)) {
+        initial.evidence = (p.evidence as Record<string, unknown>[]).map((e) => ({
+          id: undefined as unknown as string,
+          evidenceTypeCode: str(e.evidenceTypeCode),
+          sovereigntyBasisCode: str(e.sovereigntyBasisCode),
+          title: str(e.title),
+          description: strOrNull(e.description),
+          referenceUrl: strOrNull(e.referenceUrl),
+          referenceIdentifier: strOrNull(e.referenceIdentifier),
+          issuingBody: strOrNull(e.issuingBody),
+          publicVisibility: e.publicVisibility !== false,
+          fileFilename: null,
+          fileSizeBytes: null,
+          fileContentType: null
+        }));
+      }
+      if (Array.isArray(p.endpoints)) {
+        initial.endpoints = (p.endpoints as Record<string, unknown>[]).map((ep) => ({
+          id: undefined as unknown as string,
+          protocolCode: str(ep.protocolCode),
+          endpointUrl: str(ep.endpointUrl),
+          documentationUrl: strOrNull(ep.documentationUrl),
+          authMethodCode: str(ep.authMethodCode),
+          accessModelCode: str(ep.accessModelCode),
+          primary: ep.primary === true,
+          active: ep.active !== false
+        }));
+      }
+    }
+  }
+
+  const banner = isListed ? (
+    <div
+      style={{
+        padding: "12px 16px",
+        borderRadius: 12,
+        border:
+          draftStatus === "submitted"
+            ? "1px solid rgba(245,158,11,0.45)"
+            : draftStatus === "rejected"
+              ? "1px solid rgba(239,68,68,0.4)"
+              : "1px solid rgba(59,130,246,0.4)",
+        background:
+          draftStatus === "submitted"
+            ? "rgba(245,158,11,0.08)"
+            : draftStatus === "rejected"
+              ? "rgba(239,68,68,0.08)"
+              : "rgba(59,130,246,0.08)",
+        marginBottom: 18,
+        fontSize: 13,
+        color: "var(--text-2)",
+        lineHeight: 1.5
+      }}
+    >
+      {draftStatus === "submitted"
+        ? "This update has been submitted and is awaiting approval. The live listing is unchanged until it is approved."
+        : draftStatus === "rejected"
+          ? "Your previous update was not approved. Edit and resubmit it for another review — the live listing is unchanged."
+          : "This resource is live. Your changes create a pending update that goes for approval; the current version stays public until an admin approves it."}
+    </div>
+  ) : null;
+
   return (
     <div className="p-content">
       <div className="p-page-header">
@@ -188,7 +228,7 @@ export default async function ProviderResourceEditPage({
             {t("backToResources")}
           </Link>
         </div>
-        <h1 className="p-title">{initial.title}</h1>
+        <h1 className="p-title">{resource.title}</h1>
         <p className="p-subtitle">
           <span className="tag">{initial.kindCode}</span>{" "}
           <span style={{ marginLeft: 6 }}>
@@ -202,6 +242,7 @@ export default async function ProviderResourceEditPage({
           ) : null}
         </p>
       </div>
+      {banner}
       <ProviderResourceEditForm
         initial={initial}
         sovereigntyBases={sovereigntyBases}
@@ -212,8 +253,9 @@ export default async function ProviderResourceEditPage({
         languages={languages}
         sectors={sectors}
         canEdit={canEdit}
-        canSubmit={canSubmit}
-        postSubmitPath="/provider/submissions"
+        canSubmit={canEdit}
+        draftMode={isListed}
+        postSubmitPath={isListed ? "/provider/resources" : "/provider/submissions"}
       />
     </div>
   );

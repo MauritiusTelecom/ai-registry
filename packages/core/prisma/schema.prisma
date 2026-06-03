@@ -760,6 +760,12 @@ model ResourceVersion {
   latencyTier           String?
   riskLevelId           String
 
+  // Full proposed edit (scalars + sovereignty bases + evidence + endpoints +
+  // language/sector tags) for a listed resource going through re-approval.
+  // Replayed onto the live Resource via resolveAndApplyResourceEdit on approve.
+  // Null for scalar-only or legacy drafts.
+  proposedPayload       Json?
+
   createdById   String    @db.Uuid
   createdAt     DateTime  @default(now())
 

@@ -3,55 +3,34 @@ import {
   getCurrentUser,
   getDraftState,
   openOrGetDraft,
-  updateDraft,
+  saveDraftFull,
   discardDraft,
+  resolveResourceEdit,
+  loadMyResourceLifecycle,
   VersioningError,
-  type VersionedFieldPatch
+  type RawEditPayload
 } from "@airegistry/sdk/server";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { authoringGateForbiddenResponse } from "@/lib/portal/authoring-gate-response";
-import { loadMyResourceLifecycle } from "@airegistry/sdk/server";
-import { isHttpUrl } from "@airegistry/sdk";
 
 /**
  * Draft-version editing for a LIVE (listed) resource. Edits never touch the
- * published record: they accumulate on a ResourceVersion draft that goes for
- * re-approval. The live listing stays public until the draft is approved.
+ * published record: they accumulate on a ResourceVersion draft (full payload —
+ * scalars + sovereignty bases + evidence + endpoints + language/sector tags)
+ * that goes for re-approval. The live listing stays public until the draft is
+ * approved, at which point the proposed edit is replayed onto it.
  *
  *   GET    - current draft (if any) + live snapshot + field diff
  *   POST   - open (or return) a draft, snapshotting the live scalars
- *   PATCH  - update the draft's editable scalar fields
+ *   PATCH  - validate + store the full proposed edit on the draft
  *   DELETE - discard an un-submitted draft
  *
  * draft / needs_update resources are edited in place via the sibling
  * `[id]` route; only `listed` resources route through versioning.
  */
 
-// Lifecycle states from which a provider may open a draft edit. A listed
-// resource is public, so its edits must be re-approved before going live.
+// Lifecycle states from which a provider may open a draft edit.
 const DRAFTABLE_LIFECYCLE = new Set(["listed"]);
-
-type PatchBody = {
-  title?: unknown;
-  shortDescription?: unknown;
-  longDescription?: unknown | null;
-  versionLabel?: unknown | null;
-  versionNumber?: unknown | null;
-  latencyTier?: unknown | null;
-  license?: unknown | null;
-  accessUrl?: unknown | null;
-  documentationUrl?: unknown | null;
-  sourceCodeUrl?: unknown | null;
-  termsUrl?: unknown | null;
-};
-
-function nullable(v: unknown): string | null | undefined {
-  if (v === undefined) return undefined;
-  if (v === null) return null;
-  if (typeof v !== "string") return undefined;
-  const t = v.trim();
-  return t === "" ? null : t;
-}
 
 function versioningErrorResponse(err: unknown): NextResponse {
   if (err instanceof VersioningError) {
@@ -130,66 +109,22 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
   const { id } = await ctx.params;
   await ensureUserProviderLinked(auth.user.id);
 
-  let body: PatchBody;
+  let body: RawEditPayload;
   try {
-    body = (await req.json()) as PatchBody;
+    body = (await req.json()) as RawEditPayload;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  // Build a scalar patch. Risk level / jurisdiction / lifecycle stay admin-only
-  // and are never accepted here.
-  const patch: VersionedFieldPatch = {};
-
-  if (typeof body.title === "string") {
-    const t = body.title.trim();
-    if (t.length < 2) {
-      return NextResponse.json({ error: "title too short" }, { status: 400 });
-    }
-    patch.title = t;
-  }
-  if (typeof body.shortDescription === "string") {
-    const t = body.shortDescription.trim();
-    if (t.length < 8) {
-      return NextResponse.json(
-        { error: "shortDescription must be at least 8 characters" },
-        { status: 400 }
-      );
-    }
-    patch.shortDescription = t;
-  }
-
-  const longDescription = nullable(body.longDescription);
-  if (longDescription !== undefined) patch.longDescription = longDescription;
-  const versionLabel = nullable(body.versionLabel);
-  if (versionLabel !== undefined) patch.versionLabel = versionLabel;
-  // Provider-facing version label ("1.0" → "1.1") maps to providerVersionNumber.
-  const versionNumber = nullable(body.versionNumber);
-  if (versionNumber !== undefined) patch.providerVersionNumber = versionNumber;
-  const latencyTier = nullable(body.latencyTier);
-  if (latencyTier !== undefined) patch.latencyTier = latencyTier;
-  const license = nullable(body.license);
-  if (license !== undefined) patch.license = license;
-
-  for (const [key, val] of [
-    ["accessUrl", nullable(body.accessUrl)],
-    ["documentationUrl", nullable(body.documentationUrl)],
-    ["sourceCodeUrl", nullable(body.sourceCodeUrl)],
-    ["termsUrl", nullable(body.termsUrl)]
-  ] as const) {
-    if (val === undefined) continue;
-    if (val && !isHttpUrl(val)) {
-      return NextResponse.json({ error: `${key} must be http(s)` }, { status: 400 });
-    }
-    (patch as Record<string, string | null>)[key] = val;
-  }
-
-  if (Object.keys(patch).length === 0) {
-    return NextResponse.json({ error: "No editable fields supplied" }, { status: 400 });
+  // Validate the full payload the same way the live apply would, so the
+  // provider gets immediate feedback — but write it to the draft, not live.
+  const check = await resolveResourceEdit(auth.user.id, id, body);
+  if (!check.ok) {
+    return NextResponse.json({ error: check.error }, { status: check.status });
   }
 
   try {
-    const draft = await updateDraft(id, auth.user, patch);
+    const draft = await saveDraftFull(id, auth.user, body);
     return NextResponse.json({ ok: true, draft });
   } catch (err) {
     return versioningErrorResponse(err);

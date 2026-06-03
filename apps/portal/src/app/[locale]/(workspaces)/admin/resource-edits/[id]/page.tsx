@@ -2,7 +2,10 @@ import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { getCurrentUser, getDraftState } from "@airegistry/sdk/server";
 import { PageHero } from "@airegistry/ui-kit";
-import { AdminResourceEditDecision } from "@/components/admin/AdminResourceEditDecision";
+import {
+  AdminResourceEditDecision,
+  type ProposedRelations
+} from "@/components/admin/AdminResourceEditDecision";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +57,9 @@ export default async function AdminResourceEditDetailPage({
               resourceId={id}
               versionId={state.draft.id}
               diff={state.diff}
+              proposed={
+                (state.draft.proposedPayload as unknown as ProposedRelations) ?? null
+              }
             />
           )}
         </div>

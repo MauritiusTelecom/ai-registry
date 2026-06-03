@@ -235,10 +235,17 @@ export type {
 } from "@airegistry/core/services/admin";
 
 export {
+  resolveResourceEdit,
+  resolveAndApplyResourceEdit,
+  type RawEditPayload
+} from "@airegistry/core/services/resource-edit-apply";
+
+export {
   getDraftState,
   listPendingResourceEdits,
   openOrGetDraft,
   updateDraft,
+  saveDraftFull,
   submitDraft,
   approveDraft,
   rejectDraft,

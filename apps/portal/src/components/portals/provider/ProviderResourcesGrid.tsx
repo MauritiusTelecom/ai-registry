@@ -1,9 +1,16 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
-import { Button, EntityGrid, type EntityColumn } from "@/components/library";
+import { EntityGrid, Icon, type EntityColumn } from "@/components/library";
 import { useTranslations } from "next-intl";
 import { StatusPill } from "../StatusPill";
+
+const iconBtnStyle = {
+  padding: "4px 6px",
+  minWidth: 28,
+  justifyContent: "center",
+  color: "var(--text)"
+} as const;
 
 export type ProviderResourceRow = {
   id: string;
@@ -64,20 +71,43 @@ export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
     {
       key: "actions",
       label: "",
-      render: (row) =>
-        row.lifecycleCode === "draft" ||
-        row.lifecycleCode === "needs_update" ||
-        row.lifecycleCode === "listed" ? (
-          <Button
-            href={`/provider/resources/${row.id}/edit`}
-            intent="secondary"
-            size="sm"
-          >
-{t("editSubmit")}
-          </Button>
-        ) : (
-          <span style={{ color: "var(--text-3)", fontSize: 12 }}>-</span>
-        )
+      render: (row) => {
+        const editable =
+          row.lifecycleCode === "draft" ||
+          row.lifecycleCode === "needs_update" ||
+          row.lifecycleCode === "listed";
+        return (
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            {row.airId ? (
+              <Link
+                href={`/registry/${row.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="r-card-action-link"
+                title={t("public")}
+                aria-label={t("public")}
+                style={iconBtnStyle}
+              >
+                <Icon name="eye" size={14} />
+              </Link>
+            ) : null}
+            {editable ? (
+              <Link
+                href={`/provider/resources/${row.id}/edit`}
+                className="r-card-action-link"
+                title={t("editSubmit")}
+                aria-label={t("editSubmit")}
+                style={iconBtnStyle}
+              >
+                <Icon name="edit" size={14} />
+              </Link>
+            ) : null}
+            {!row.airId && !editable ? (
+              <span style={{ color: "var(--text-3)", fontSize: 12 }}>-</span>
+            ) : null}
+          </div>
+        );
+      }
     }
   ];
 

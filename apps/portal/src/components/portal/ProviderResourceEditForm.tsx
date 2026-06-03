@@ -80,7 +80,8 @@ export function ProviderResourceEditForm({
   sectors,
   canEdit,
   canSubmit,
-  postSubmitPath = "/provider/submissions"
+  postSubmitPath = "/provider/submissions",
+  draftMode = false
 }: {
   initial: ProviderResourceEditInitial;
   sovereigntyBases: RefRow[];
@@ -93,6 +94,8 @@ export function ProviderResourceEditForm({
   canEdit: boolean;
   canSubmit: boolean;
   postSubmitPath?: string;
+  /** Listed resource: save to an approval-gated draft instead of the live record. */
+  draftMode?: boolean;
 }) {
   const router = useRouter();
   const t = useTranslations("providerResourceEdit");
@@ -244,6 +247,37 @@ export function ProviderResourceEditForm({
         }))
       };
 
+      if (draftMode) {
+        // Listed resource: store the full edit on an approval-gated draft.
+        // Ensure a draft exists (idempotent), then write the payload to it.
+        const open = await registryFetch(
+          withBase(`/api/portal/resources/${initial.id}/draft`),
+          { method: "POST" }
+        );
+        if (!open.ok) {
+          const od = (await open.json().catch(() => ({}))) as { error?: string };
+          setError(od.error ?? t("saveFailed"));
+          return false;
+        }
+        const dres = await registryFetch(
+          withBase(`/api/portal/resources/${initial.id}/draft`),
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          }
+        );
+        const ddata = (await dres.json().catch(() => ({}))) as { error?: string };
+        if (!dres.ok) {
+          setError(ddata.error ?? t("saveFailed"));
+          return false;
+        }
+        // Evidence file uploads aren't versioned in draft mode (metadata only).
+        setOkMsg(t("saved"));
+        router.refresh();
+        return true;
+      }
+
       const res = await registryFetch(withBase(`/api/portal/resources/${initial.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -255,7 +289,7 @@ export function ProviderResourceEditForm({
       };
       if (!res.ok) {
         setError(data.error ?? t("saveFailed"));
-        return;
+        return false;
       }
 
       // Upload any staged evidence files now that we have the new ids.
@@ -294,8 +328,10 @@ export function ProviderResourceEditForm({
         setOkMsg(t("saved"));
       }
       router.refresh();
+      return true;
     } catch {
       setError(t("networkError"));
+      return false;
     } finally {
       setPending(null);
     }
@@ -306,6 +342,23 @@ export function ProviderResourceEditForm({
     setOkMsg(null);
     setPending("submit");
     try {
+      if (draftMode) {
+        // Persist the latest edit to the draft, then submit it for approval.
+        if (!(await save())) return;
+        const dres = await registryFetch(
+          withBase(`/api/portal/resources/${initial.id}/draft/submit`),
+          { method: "POST" }
+        );
+        const ddata = (await dres.json().catch(() => ({}))) as { error?: string };
+        if (!dres.ok) {
+          setError(ddata.error ?? t("submitFailed"));
+          return;
+        }
+        router.push(postSubmitPath);
+        router.refresh();
+        return;
+      }
+
       const res = await registryFetch(
         withBase(`/api/portal/resources/${initial.id}/submit`),
         {

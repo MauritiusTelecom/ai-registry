@@ -12,7 +12,12 @@
  */
 
 import type { SessionUser } from "../auth/current-user";
+import { Prisma } from "../../generated/prisma";
 import { prisma } from "../prisma";
+import {
+  resolveAndApplyResourceEdit,
+  type RawEditPayload
+} from "./resource-edit-apply";
 
 // ─── Constants + helpers ───────────────────────────────────
 
@@ -299,6 +304,72 @@ export async function updateDraft(
   return updated;
 }
 
+// ─── Save a full edit onto the draft (scalars + relations) ─
+
+function pstr(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const t = v.trim();
+  return t === "" ? null : t;
+}
+
+/**
+ * Store a complete proposed edit on the resource's draft version: the full
+ * payload (incl. sovereignty bases, evidence, endpoints, language/sector tags)
+ * is kept in proposedPayload for replay on approval, and the scalar fields are
+ * mirrored into the version columns so the diff/preview works without parsing
+ * the JSON. Opens a draft if none exists.
+ */
+export async function saveDraftFull(
+  resourceId: string,
+  user: SessionUser,
+  payload: RawEditPayload
+) {
+  if (!isAdmin(user) && !(await userOwnsResource(user, resourceId))) {
+    throw new VersioningError("forbidden", "You cannot edit this resource");
+  }
+
+  const draft = await openOrGetDraft(resourceId, user);
+
+  const statusRow = await prisma.resourceVersionStatusType.findUnique({
+    where: { id: draft.statusId }
+  });
+  if (statusRow?.code !== "draft" && statusRow?.code !== "rejected") {
+    throw new VersioningError(
+      "not_editable",
+      `Draft is in status ${statusRow?.code}; cannot edit`
+    );
+  }
+
+  const draftStatusId = await getStatusIdByCode("draft");
+  const title =
+    typeof payload.title === "string" && payload.title.trim()
+      ? payload.title.trim()
+      : draft.title;
+  const shortDescription =
+    typeof payload.shortDescription === "string" && payload.shortDescription.trim()
+      ? payload.shortDescription.trim()
+      : draft.shortDescription;
+
+  return prisma.resourceVersion.update({
+    where: { id: draft.id },
+    data: {
+      title,
+      shortDescription,
+      longDescription: pstr(payload.longDescription),
+      accessUrl: pstr(payload.accessUrl),
+      sourceCodeUrl: pstr(payload.sourceCodeUrl),
+      documentationUrl: pstr(payload.documentationUrl),
+      termsUrl: pstr(payload.termsUrl),
+      license: pstr(payload.license),
+      versionLabel: pstr(payload.versionLabel),
+      providerVersionNumber: pstr(payload.versionNumber),
+      latencyTier: pstr(payload.latencyTier),
+      proposedPayload: payload as Prisma.InputJsonValue,
+      statusId: draftStatusId
+    }
+  });
+}
+
 // ─── Submit draft for review ───────────────────────────────
 
 export async function submitDraft(resourceId: string, user: SessionUser) {
@@ -347,6 +418,44 @@ export async function approveDraft(opts: {
   const approvedStatusId = await getStatusIdByCode("approved");
   const now = new Date();
 
+  // Full-payload drafts (provider edited a listed resource via the full form):
+  // replay the proposed edit — scalars AND relations (evidence, endpoints,
+  // language/sector tags) — onto the live resource, attributed to the draft's
+  // author. applyMyResourceUpdate runs its own transaction, so this happens
+  // before we flip the version/pointers.
+  const payload = version.proposedPayload;
+  if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+    const applied = await resolveAndApplyResourceEdit(
+      version.createdById,
+      opts.resourceId,
+      payload as unknown as RawEditPayload
+    );
+    if (!applied.ok) {
+      throw new VersioningError("apply_failed", applied.error);
+    }
+
+    const approved = await prisma.resourceVersion.update({
+      where: { id: version.id },
+      data: {
+        statusId: approvedStatusId,
+        approvedById: opts.user.id,
+        approvedAt: now,
+        decisionNote: opts.decisionNote ?? null
+      }
+    });
+    await prisma.resource.update({
+      where: { id: opts.resourceId },
+      data: {
+        currentPublishedVersionId: approved.id,
+        draftVersionId: null,
+        lastReviewedAt: now,
+        lastProviderUpdateAt: now
+      }
+    });
+    return approved;
+  }
+
+  // Scalar-only / legacy draft: copy the snapshot columns onto the resource.
   return prisma.$transaction(async (tx) => {
     const approved = await tx.resourceVersion.update({
       where: { id: version.id },
