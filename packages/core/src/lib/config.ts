@@ -39,7 +39,7 @@ export type RegistryConfig = {
   identityDomain: string;
   /** Display name of the deploying operator. */
   operatorName: string;
-  /** Public contact email shown on /contact (defaults to no-reply@{portalDomain}). */
+  /** Public contact email shown on /contact (defaults to airegistry@telecom.mu). */
   operatorContactEmail: string;
   /** First line of the office block on /contact (defaults to operatorName). */
   operatorOfficeName: string;
@@ -288,7 +288,7 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
   const operatorName = readRequired(env, "OPERATOR_NAME");
   const operatorContactEmailRaw = readOptional(env, "OPERATOR_CONTACT_EMAIL");
   const operatorContactEmail =
-    operatorContactEmailRaw || `no-reply@${portalDomain}`;
+    operatorContactEmailRaw || "airegistry@telecom.mu";
   const operatorOfficeNameRaw = readOptional(env, "OPERATOR_OFFICE_NAME");
   const operatorOfficeName = operatorOfficeNameRaw || operatorName;
   const operatorOfficeAddress = readOptionalMultiline(env, "OPERATOR_OFFICE_ADDRESS");
