@@ -4,8 +4,9 @@ import { getTranslations } from "next-intl/server";
 import { getCurrentUser } from "@airegistry/sdk/server";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { ProviderResourceEditForm } from "@/components/portal/ProviderResourceEditForm";
+import { ProviderResourceDraftEditor } from "@/components/portal/ProviderResourceDraftEditor";
 import { listReferenceTable } from "@airegistry/sdk/server";
-import { loadProviderResourceForEdit } from "@airegistry/sdk/server";
+import { loadProviderResourceForEdit, getDraftState } from "@airegistry/sdk/server";
 
 import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
 
@@ -37,6 +38,75 @@ export default async function ProviderResourceEditPage({
   const lifecycleCode = resource.lifecycleStatus.code;
   const canEdit = lifecycleCode === "draft" || lifecycleCode === "needs_update";
   const canSubmit = canEdit;
+
+  // A listed resource is public: edits route through the approval-gated draft
+  // flow instead of mutating the live record. Render the dedicated draft editor.
+  if (lifecycleCode === "listed") {
+    const draftState = await getDraftState(id, user);
+    const liveScalars = {
+      title: draftState.live.title ?? "",
+      shortDescription: draftState.live.shortDescription ?? "",
+      longDescription: draftState.live.longDescription,
+      versionLabel: draftState.live.versionLabel,
+      versionNumber: draftState.live.providerVersionNumber,
+      latencyTier: draftState.live.latencyTier,
+      license: draftState.live.license,
+      accessUrl: draftState.live.accessUrl,
+      documentationUrl: draftState.live.documentationUrl,
+      sourceCodeUrl: draftState.live.sourceCodeUrl,
+      termsUrl: draftState.live.termsUrl
+    };
+    const d = draftState.draft;
+    const draftScalars = d
+      ? {
+          title: d.title,
+          shortDescription: d.shortDescription,
+          longDescription: d.longDescription,
+          versionLabel: d.versionLabel,
+          versionNumber: d.providerVersionNumber,
+          latencyTier: d.latencyTier,
+          license: d.license,
+          accessUrl: d.accessUrl,
+          documentationUrl: d.documentationUrl,
+          sourceCodeUrl: d.sourceCodeUrl,
+          termsUrl: d.termsUrl
+        }
+      : null;
+
+    return (
+      <div className="p-content">
+        <div className="p-page-header">
+          <div style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 6 }}>
+            <Link href="/provider/resources" style={{ color: "var(--text-3)" }}>
+              {t("backToResources")}
+            </Link>
+          </div>
+          <h1 className="p-title">{resource.title}</h1>
+          <p className="p-subtitle">
+            <span className="tag">{resource.resourceType.code}</span>{" "}
+            <span style={{ marginLeft: 6 }}>
+              {t("lifecycle")} <strong>{resource.lifecycleStatus.name}</strong>
+            </span>
+            {resource.airId ? (
+              <>
+                <br />
+                <code style={{ fontSize: 11.5 }}>{resource.airId}</code>
+              </>
+            ) : null}
+          </p>
+        </div>
+        <ProviderResourceDraftEditor
+          resourceId={resource.id}
+          live={liveScalars}
+          draft={draftScalars}
+          draftStatus={
+            draftState.draftStatus as "draft" | "submitted" | "rejected" | null
+          }
+          postSubmitPath="/provider/resources"
+        />
+      </div>
+    );
+  }
 
   const [
     sovereigntyBases,

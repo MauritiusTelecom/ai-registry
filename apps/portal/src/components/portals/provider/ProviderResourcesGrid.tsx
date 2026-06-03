@@ -65,21 +65,15 @@ export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
       key: "actions",
       label: "",
       render: (row) =>
-        row.lifecycleCode === "draft" || row.lifecycleCode === "needs_update" ? (
+        row.lifecycleCode === "draft" ||
+        row.lifecycleCode === "needs_update" ||
+        row.lifecycleCode === "listed" ? (
           <Button
             href={`/provider/resources/${row.id}/edit`}
             intent="secondary"
             size="sm"
           >
 {t("editSubmit")}
-          </Button>
-        ) : row.lifecycleCode === "listed" ? (
-          <Button
-            href={`/registry/${row.slug}`}
-            intent="secondary"
-            size="sm"
-          >
-            {t("public")}
           </Button>
         ) : (
           <span style={{ color: "var(--text-3)", fontSize: 12 }}>-</span>
