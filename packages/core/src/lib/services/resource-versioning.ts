@@ -59,8 +59,10 @@ function isAdmin(user: SessionUser): boolean {
   return user.roles.includes("admin") || user.role.code === "admin";
 }
 
-function isVerifier(user: SessionUser): boolean {
-  return user.roles.includes("verifier") || user.role.code === "verifier";
+// The seeded review role is "reviewer" (see prisma/seed.ts USER_ROLES); this
+// matches the gate used by the sovereignty review-decide flow.
+function isReviewer(user: SessionUser): boolean {
+  return user.roles.includes("reviewer") || user.role.code === "reviewer";
 }
 
 async function getStatusIdByCode(code: "draft" | "submitted" | "approved" | "rejected"): Promise<string> {
@@ -288,7 +290,7 @@ export async function approveDraft(opts: {
   user: SessionUser;
   decisionNote?: string;
 }) {
-  if (!isAdmin(opts.user) && !isVerifier(opts.user)) {
+  if (!isAdmin(opts.user) && !isReviewer(opts.user)) {
     throw new VersioningError("forbidden", "Only verifiers or admins can approve");
   }
 
@@ -351,7 +353,7 @@ export async function rejectDraft(opts: {
   user: SessionUser;
   decisionNote?: string;
 }) {
-  if (!isAdmin(opts.user) && !isVerifier(opts.user)) {
+  if (!isAdmin(opts.user) && !isReviewer(opts.user)) {
     throw new VersioningError("forbidden", "Only verifiers or admins can reject");
   }
 
