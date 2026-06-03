@@ -145,6 +145,15 @@ const CHECKLIST_RESULTS: RefRow[] = [
   { code: "n_a", name: "Not applicable" }
 ];
 
+// Status of a ResourceVersion (draft edit of a listed resource going for
+// re-approval). See packages/core/src/lib/services/resource-versioning.ts.
+const RESOURCE_VERSION_STATUSES: RefRow[] = [
+  { code: "draft", name: "Draft" },
+  { code: "submitted", name: "Submitted" },
+  { code: "approved", name: "Approved" },
+  { code: "rejected", name: "Rejected" }
+];
+
 const PROTOCOLS: RefRow[] = [
   { code: "rest", name: "REST" },
   { code: "grpc", name: "gRPC" },
@@ -306,6 +315,7 @@ async function main() {
     await seedRef(prisma.reviewType, REVIEW_TYPES, "review types");
     await seedRef(prisma.reviewStatusType, REVIEW_STATUSES, "review statuses");
     await seedRef(prisma.checklistResultType, CHECKLIST_RESULTS, "checklist results");
+    await seedRef(prisma.resourceVersionStatusType, RESOURCE_VERSION_STATUSES, "resource version statuses");
     const protocolIds = await seedRef(prisma.protocol, PROTOCOLS, "protocols");
     const accessModelIds = await seedRef(prisma.accessModelType, ACCESS_MODELS, "access models");
     const authMethodIds = await seedRef(prisma.authMethodType, AUTH_METHODS, "auth methods");

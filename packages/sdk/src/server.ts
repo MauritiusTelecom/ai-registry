@@ -235,6 +235,25 @@ export type {
 } from "@airegistry/core/services/admin";
 
 export {
+  getDraftState,
+  openOrGetDraft,
+  updateDraft,
+  submitDraft,
+  approveDraft,
+  rejectDraft,
+  discardDraft,
+  listVersions,
+  diffVersionsScalar,
+  VersioningError,
+  VERSIONED_FIELDS
+} from "@airegistry/core/services/resource-versioning";
+export type {
+  VersionedFieldPatch,
+  VersionedFieldName,
+  FieldDelta
+} from "@airegistry/core/services/resource-versioning";
+
+export {
   loadPortalNotifications,
   listPortalNotificationKeys,
   markNotificationsRead

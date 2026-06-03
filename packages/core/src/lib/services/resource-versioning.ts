@@ -103,6 +103,71 @@ async function loadResourceForVersionOps(resourceId: string) {
   });
 }
 
+// ─── Read draft state (live snapshot + draft + diff) ───────
+
+/** The live Resource's versioned scalar fields, keyed as a ResourceVersion. */
+function liveSnapshot(resource: {
+  title: string;
+  shortDescription: string;
+  longDescription: string | null;
+  accessUrl: string | null;
+  sourceCodeUrl: string | null;
+  documentationUrl: string | null;
+  termsUrl: string | null;
+  license: string | null;
+  versionLabel: string | null;
+  versionNumber: string | null;
+  latencyTier: string | null;
+  riskLevelId: string;
+}): Record<VersionedFieldName, string | null> {
+  return {
+    title: resource.title,
+    shortDescription: resource.shortDescription,
+    longDescription: resource.longDescription,
+    accessUrl: resource.accessUrl,
+    sourceCodeUrl: resource.sourceCodeUrl,
+    documentationUrl: resource.documentationUrl,
+    termsUrl: resource.termsUrl,
+    license: resource.license,
+    versionLabel: resource.versionLabel,
+    // Resource.versionNumber is the provider's label; on a version it is providerVersionNumber.
+    providerVersionNumber: resource.versionNumber,
+    latencyTier: resource.latencyTier,
+    riskLevelId: resource.riskLevelId
+  };
+}
+
+/**
+ * State for the provider edit UI: the live published scalars, the pending
+ * draft (or null), the draft's status code, and the field-level diff between
+ * them. Owner (or admin) only.
+ */
+export async function getDraftState(resourceId: string, user: SessionUser) {
+  if (!isAdmin(user) && !(await userOwnsResource(user, resourceId))) {
+    throw new VersioningError("forbidden", "You cannot view this resource");
+  }
+
+  const resource = await loadResourceForVersionOps(resourceId);
+  if (!resource) throw new VersioningError("not_found", "Resource not found");
+
+  const live = liveSnapshot(resource);
+  const draft = resource.draftVersion;
+  const diff = draft
+    ? diffVersionsScalar(live, draft as unknown as Record<string, unknown>)
+    : [];
+
+  let draftStatus: string | null = null;
+  if (draft) {
+    const status = await prisma.resourceVersionStatusType.findUnique({
+      where: { id: draft.statusId },
+      select: { code: true }
+    });
+    draftStatus = status?.code ?? null;
+  }
+
+  return { live, draft, draftStatus, diff };
+}
+
 // ─── Open / get a draft ────────────────────────────────────
 
 export async function openOrGetDraft(resourceId: string, user: SessionUser) {
@@ -170,14 +235,12 @@ export async function updateDraft(
   if (!resource.draftVersion) {
     throw new VersioningError("no_draft", "No draft exists. Call openOrGetDraft first.");
   }
-  if (resource.draftVersion.status && resource.draftVersion.statusId) {
-    // confirm the draft is still editable
-    const status = await prisma.resourceVersionStatusType.findUnique({
-      where: { id: resource.draftVersion.statusId }
-    });
-    if (status?.code !== "draft" && status?.code !== "rejected") {
-      throw new VersioningError("not_editable", `Draft is in status ${status?.code}; cannot edit`);
-    }
+  // Confirm the draft is still editable (draft or rejected — not submitted/approved).
+  const draftStatus = await prisma.resourceVersionStatusType.findUnique({
+    where: { id: resource.draftVersion.statusId }
+  });
+  if (draftStatus?.code !== "draft" && draftStatus?.code !== "rejected") {
+    throw new VersioningError("not_editable", `Draft is in status ${draftStatus?.code}; cannot edit`);
   }
 
   // If the draft was previously rejected and the provider is editing again,
