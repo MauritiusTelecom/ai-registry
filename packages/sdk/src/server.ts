@@ -236,6 +236,7 @@ export type {
 
 export {
   getDraftState,
+  listPendingResourceEdits,
   openOrGetDraft,
   updateDraft,
   submitDraft,

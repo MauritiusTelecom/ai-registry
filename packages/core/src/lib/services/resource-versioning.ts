@@ -95,6 +95,45 @@ export async function listVersions(resourceId: string) {
   });
 }
 
+/**
+ * Resources that have an edit awaiting approval (a draft version in
+ * "submitted" status). Powers the admin "pending edits" queue. Newest
+ * submission first.
+ */
+export async function listPendingResourceEdits() {
+  const submitted = await prisma.resourceVersionStatusType.findUnique({
+    where: { code: "submitted" },
+    select: { id: true }
+  });
+  if (!submitted) return [];
+
+  const rows = await prisma.resource.findMany({
+    where: { draftVersion: { is: { statusId: submitted.id } } },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      airId: true,
+      provider: { select: { displayName: true, slug: true } },
+      resourceType: { select: { code: true } },
+      draftVersion: {
+        select: {
+          id: true,
+          versionNumber: true,
+          submittedAt: true,
+          createdBy: { select: { name: true, email: true } }
+        }
+      }
+    }
+  });
+
+  return rows.sort((a, b) => {
+    const at = a.draftVersion?.submittedAt?.getTime() ?? 0;
+    const bt = b.draftVersion?.submittedAt?.getTime() ?? 0;
+    return bt - at;
+  });
+}
+
 async function loadResourceForVersionOps(resourceId: string) {
   return prisma.resource.findUnique({
     where: { id: resourceId },

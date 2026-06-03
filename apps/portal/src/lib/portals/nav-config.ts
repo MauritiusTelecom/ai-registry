@@ -81,6 +81,13 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         label: "governance",
         items: [
           { id: "reviews", label: "reviews", href: "/admin/reviews", icon: "check" },
+          {
+            id: "resource-edits",
+            label: "resourceEdits",
+            rawLabel: "Resource edits",
+            href: "/admin/resource-edits",
+            icon: "layers"
+          },
           { id: "verifications", label: "verifications", href: "/admin/verifications", icon: "shield" },
           { id: "complaints", label: "complaints", href: "/admin/complaints", icon: "flag" },
           { id: "policies", label: "policies", href: "/admin/policies", icon: "doc" }
