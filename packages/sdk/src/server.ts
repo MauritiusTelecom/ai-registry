@@ -241,6 +241,16 @@ export {
 } from "@airegistry/core/services/resource-edit-apply";
 
 export {
+  ensureResourceVerificationRows,
+  loadVerificationStatusForResource,
+  isResourceFullyVerified,
+  markResourceRequirementVerified,
+  markResourceRequirementRejected,
+  listPendingResourceVerifications,
+  ResourceVerificationError
+} from "@airegistry/core/services/resource-verification";
+
+export {
   getDraftState,
   listPendingResourceEdits,
   openOrGetDraft,

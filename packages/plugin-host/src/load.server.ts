@@ -12,6 +12,7 @@ import {
 } from "./registry";
 import { importRestHandler, importUiComponent } from "./resolve-module.server";
 import { setVerificationManifestSource } from "@airegistry/core/services/verification";
+import { setResourceRequirementManifestSource } from "@airegistry/core/services/resource-verification";
 
 // Re-exported synchronous manifest discovery lives in ./discover.ts so
 // non-Next contexts (tsx scripts) can read manifests without pulling in
@@ -151,6 +152,7 @@ export async function loadPlugins(): Promise<void> {
   // extension's verificationRequirements without creating a direct
   // dependency on plugin-host (which would be circular).
   setVerificationManifestSource(() => listPlugins().map((p) => p.manifest));
+  setResourceRequirementManifestSource(() => listPlugins().map((p) => p.manifest));
 }
 
 export function ensurePluginsLoaded(): Promise<void> {

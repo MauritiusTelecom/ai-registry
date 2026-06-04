@@ -467,6 +467,7 @@ model User {
   resourceVersionsApproved ResourceVersion[]         @relation("ResourceVersionApprovedBy")
   resourceVersionsRejected ResourceVersion[]         @relation("ResourceVersionRejectedBy")
   providerVerificationsDone ProviderVerification[]   @relation("ProviderVerificationVerifiedBy")
+  resourceVerificationsDone ResourceVerification[]   @relation("ResourceVerificationVerifiedBy")
 
   @@index([providerId])
   @@index([roleId])
@@ -709,6 +710,7 @@ model Resource {
   versions            ResourceVersion[]                @relation("ResourceVersionsAll")
   currentPublishedVersion ResourceVersion?             @relation("ResourceCurrentPublishedVersion", fields: [currentPublishedVersionId], references: [id], onDelete: SetNull)
   draftVersion            ResourceVersion?             @relation("ResourceDraftVersion", fields: [draftVersionId], references: [id], onDelete: SetNull)
+  verifications       ResourceVerification[]
 
   @@unique([providerId, slug])
   @@index([providerId])
@@ -949,6 +951,35 @@ model ProviderVerification {
 
   @@unique([providerId, extensionId, requirementCode])
   @@index([providerId])
+  @@index([extensionId])
+  @@index([verifiedAt])
+  @@schema("registry")
+}
+
+// ─── Multi-requirement resource verification ────────────
+// Resource-level analog of ProviderVerification. Each extension may
+// contribute resourceRequirements via its manifest; each row here is one
+// applicable requirement for one resource. A resource is publicly listed
+// only once every applicable requirement is verified.
+
+model ResourceVerification {
+  id              String    @id @default(uuid())
+  resourceId      String
+  extensionId     String
+  requirementCode String
+  label           String
+  documentTypeHint String?
+  verifiedAt      DateTime?
+  verifiedById    String?   @db.Uuid
+  rejectionNote   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  verifiedBy User?    @relation("ResourceVerificationVerifiedBy", fields: [verifiedById], references: [id])
+
+  @@unique([resourceId, extensionId, requirementCode])
+  @@index([resourceId])
   @@index([extensionId])
   @@index([verifiedAt])
   @@schema("registry")

@@ -155,7 +155,11 @@ export async function buildResourceWhere(
     // Provider must have every applicable verification requirement
     // satisfied. "Applicable" is determined by the loaded extension
     // manifests; see packages/core/src/lib/services/verification.ts.
-    { provider: { verifications: { none: { verifiedAt: null } } } }
+    { provider: { verifications: { none: { verifiedAt: null } } } },
+    // …and the resource itself must have every applicable resource-level
+    // requirement satisfied (resource-verification.ts). Resources with no
+    // applicable requirements have no rows and pass automatically.
+    { verifications: { none: { verifiedAt: null } } }
   ];
 
   const badge = normalizeDisplayStatus(filters.status);
@@ -315,8 +319,10 @@ export async function findResourceForDetail(args: {
         publicVisibility: true,
         lifecycleStatus: { code: { in: PUBLIC_LIFECYCLE_CODES } },
         // Verification gate (see buildResourceWhere): provider must have
-        // every applicable verification requirement satisfied.
-        provider: { verifications: { none: { verifiedAt: null } } }
+        // every applicable verification requirement satisfied, and the
+        // resource itself must clear its own resource-level requirements.
+        provider: { verifications: { none: { verifiedAt: null } } },
+        verifications: { none: { verifiedAt: null } }
       },
       include: RESOURCE_DETAIL_INCLUDE
     });

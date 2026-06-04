@@ -3,6 +3,7 @@ import {
   getCurrentUser,
   getReferenceRow,
   submitMyResourceForReview,
+  ensureResourceVerificationRows,
   emailTemplates,
   uniqueValidEmails,
   sendTransactionalEmailAll
@@ -51,6 +52,12 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     openReviewStatusId: openReview.id,
     sovereigntyReviewTypeId: sovereigntyReviewType.id
   });
+
+  // Materialise any applicable resource-level verification requirements so they
+  // surface in the admin queue and gate public listing until verified.
+  if (result.ok) {
+    await ensureResourceVerificationRows(id).catch(() => {});
+  }
 
   if (!result.ok) {
     if (result.code === "not_found") {

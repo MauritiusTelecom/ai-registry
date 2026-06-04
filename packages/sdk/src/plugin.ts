@@ -38,6 +38,34 @@ export type PluginManifest = {
   /** Provider verification requirements this extension contributes.
    *  See docs/specs/multi-requirement-verification.md. */
   verificationRequirements?: PluginVerificationRequirement[];
+  /** Resource-level requirements this extension contributes — extra
+   *  details/documents an individual resource must satisfy (and an admin must
+   *  verify) before it is publicly listed. The resource-level analog of
+   *  verificationRequirements. */
+  resourceRequirements?: PluginResourceRequirement[];
+};
+
+export type PluginResourceRequirement = {
+  /** Stable code within the extension (e.g. "dpia", "iso-27001"). */
+  code: string;
+  /** Human-readable label shown to providers + verifiers. */
+  label: string;
+  /** Conditions that select which resources this requirement applies to.
+   *  Empty object = every resource. Conditions are AND-combined; arrays OR. */
+  appliesWhen?: PluginResourceApplicability;
+  /** Hint for the admin UI: which evidence/document class best supports this. */
+  documentTypeHint?: string;
+};
+
+export type PluginResourceApplicability = {
+  /** Jurisdiction codes (e.g. "MU", "RW"). The resource's provider home
+   *  jurisdiction must match one. Omit for "any jurisdiction". */
+  providerJurisdiction?: string[];
+  /** Sector codes. The resource itself must be tagged with at least one of
+   *  these sectors. Omit for "any sector". */
+  resourceSectors?: string[];
+  /** Resource type codes (model | agent | tool | skill). Omit for "any kind". */
+  resourceKinds?: string[];
 };
 
 export type PluginVerificationRequirement = {
