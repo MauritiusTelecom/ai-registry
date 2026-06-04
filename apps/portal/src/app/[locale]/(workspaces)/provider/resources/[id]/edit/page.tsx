@@ -159,20 +159,30 @@ export default async function ProviderResourceEditPage({
       initial.languageCodes = codeList(p.languageCodes);
       initial.sectorCodes = codeList(p.sectorCodes);
       if (Array.isArray(p.evidence)) {
-        initial.evidence = (p.evidence as Record<string, unknown>[]).map((e) => ({
-          id: undefined as unknown as string,
-          evidenceTypeCode: str(e.evidenceTypeCode),
-          sovereigntyBasisCode: str(e.sovereigntyBasisCode),
-          title: str(e.title),
-          description: strOrNull(e.description),
-          referenceUrl: strOrNull(e.referenceUrl),
-          referenceIdentifier: strOrNull(e.referenceIdentifier),
-          issuingBody: strOrNull(e.issuingBody),
-          publicVisibility: e.publicVisibility !== false,
-          fileFilename: null,
-          fileSizeBytes: null,
-          fileContentType: null
-        }));
+        initial.evidence = (p.evidence as Record<string, unknown>[]).map((e) => {
+          const staged = (e.stagedFile ?? null) as {
+            storageKey: string;
+            filename: string;
+            contentType: string;
+            sizeBytes: number;
+          } | null;
+          return {
+            id: undefined as unknown as string,
+            evidenceTypeCode: str(e.evidenceTypeCode),
+            sovereigntyBasisCode: str(e.sovereigntyBasisCode),
+            title: str(e.title),
+            description: strOrNull(e.description),
+            referenceUrl: strOrNull(e.referenceUrl),
+            referenceIdentifier: strOrNull(e.referenceIdentifier),
+            issuingBody: strOrNull(e.issuingBody),
+            publicVisibility: e.publicVisibility !== false,
+            // Show the staged file's name so the provider sees it persisted.
+            fileFilename: staged?.filename ?? null,
+            fileSizeBytes: staged?.sizeBytes ?? null,
+            fileContentType: staged?.contentType ?? null,
+            stagedFile: staged
+          };
+        });
       }
       if (Array.isArray(p.endpoints)) {
         initial.endpoints = (p.endpoints as Record<string, unknown>[]).map((ep) => ({

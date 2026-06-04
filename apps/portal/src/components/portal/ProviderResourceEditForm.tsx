@@ -11,6 +11,14 @@ import { EvidenceFileAttachment } from "@/components/portal/EvidenceFileAttachme
 
 type RefRow = { code: string; name: string };
 
+type StagedFile = {
+  storageKey: string;
+  filename: string;
+  contentType: string;
+  sizeBytes: number;
+  checksumSha256?: string;
+};
+
 type EvidenceRow = {
   id?: string;
   evidenceTypeCode: string;
@@ -24,6 +32,8 @@ type EvidenceRow = {
   fileFilename?: string | null;
   fileSizeBytes?: number | null;
   fileContentType?: string | null;
+  // Draft mode only: file staged for an evidence row that doesn't exist yet.
+  stagedFile?: StagedFile | null;
 };
 
 type EndpointRow = {
@@ -249,7 +259,7 @@ export function ProviderResourceEditForm({
 
       if (draftMode) {
         // Listed resource: store the full edit on an approval-gated draft.
-        // Ensure a draft exists (idempotent), then write the payload to it.
+        // Ensure a draft exists (idempotent) first.
         const open = await registryFetch(
           withBase(`/api/portal/resources/${initial.id}/draft`),
           { method: "POST" }
@@ -259,12 +269,46 @@ export function ProviderResourceEditForm({
           setError(od.error ?? t("saveFailed"));
           return false;
         }
+
+        // Stage any newly-attached evidence files; the staged ref is carried in
+        // the payload and linked to the real evidence row on approval. Rows
+        // without a new file keep whatever was staged on a previous save.
+        const stagedByIndex: (StagedFile | null)[] = [];
+        for (let i = 0; i < evidence.length; i++) {
+          const file = pendingEvidenceFiles[i];
+          if (file) {
+            const fd = new FormData();
+            fd.append("file", file);
+            const up = await registryFetch(
+              withBase(`/api/portal/resources/${initial.id}/draft/evidence-file`),
+              { method: "POST", body: fd }
+            );
+            if (!up.ok) {
+              const ud = (await up.json().catch(() => ({}))) as { error?: string };
+              setError(ud.error ?? t("saveFailed"));
+              return false;
+            }
+            const sf = (await up.json()) as StagedFile;
+            stagedByIndex[i] = sf;
+          } else {
+            stagedByIndex[i] = evidence[i]?.stagedFile ?? null;
+          }
+        }
+
+        const draftPayload = {
+          ...payload,
+          evidence: payload.evidence.map((e, i) => ({
+            ...e,
+            stagedFile: stagedByIndex[i] ?? null
+          }))
+        };
+
         const dres = await registryFetch(
           withBase(`/api/portal/resources/${initial.id}/draft`),
           {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(draftPayload)
           }
         );
         const ddata = (await dres.json().catch(() => ({}))) as { error?: string };
@@ -272,7 +316,11 @@ export function ProviderResourceEditForm({
           setError(ddata.error ?? t("saveFailed"));
           return false;
         }
-        // Evidence file uploads aren't versioned in draft mode (metadata only).
+        // Reflect staged files back onto the rows and clear the picker queue.
+        setEvidence((rows) =>
+          rows.map((r, i) => ({ ...r, stagedFile: stagedByIndex[i] ?? null }))
+        );
+        setPendingEvidenceFiles(evidence.map(() => null));
         setOkMsg(t("saved"));
         router.refresh();
         return true;

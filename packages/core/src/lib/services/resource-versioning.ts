@@ -53,6 +53,16 @@ export type VersionedFieldPatch = Partial<{
   riskLevelId: string;
 }>;
 
+// A draft evidence file staged before its evidence row exists; linked to the
+// created row on approval. Mirrors the /draft/evidence-file response.
+type StagedFileRef = {
+  storageKey?: string;
+  filename?: string | null;
+  contentType?: string | null;
+  sizeBytes?: number | null;
+  checksumSha256?: string | null;
+};
+
 export class VersioningError extends Error {
   constructor(public readonly code: string, message: string) {
     super(message);
@@ -432,6 +442,30 @@ export async function approveDraft(opts: {
     );
     if (!applied.ok) {
       throw new VersioningError("apply_failed", applied.error);
+    }
+
+    // Link any staged evidence files to the freshly-created evidence rows.
+    // applyMyResourceUpdate returns evidence ids in payload order, so the
+    // i-th created row matches the i-th proposed evidence entry.
+    const proposedEvidence = (payload as { evidence?: unknown }).evidence;
+    if (applied.evidenceIds && Array.isArray(proposedEvidence)) {
+      for (let i = 0; i < applied.evidenceIds.length; i++) {
+        const staged = (proposedEvidence[i] as { stagedFile?: StagedFileRef } | undefined)
+          ?.stagedFile;
+        if (staged?.storageKey) {
+          await prisma.sovereigntyEvidence.update({
+            where: { id: applied.evidenceIds[i] },
+            data: {
+              fileStorageKey: staged.storageKey,
+              fileFilename: staged.filename ?? null,
+              fileContentType: staged.contentType ?? null,
+              fileSizeBytes: staged.sizeBytes ?? null,
+              fileChecksumSha256: staged.checksumSha256 ?? null,
+              fileUploadedAt: now
+            }
+          });
+        }
+      }
     }
 
     const approved = await prisma.resourceVersion.update({
