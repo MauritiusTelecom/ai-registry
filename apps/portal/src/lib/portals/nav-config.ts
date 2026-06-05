@@ -89,6 +89,13 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
             icon: "layers"
           },
           { id: "verifications", label: "verifications", href: "/admin/verifications", icon: "shield" },
+          {
+            id: "resource-verifications",
+            label: "resourceVerifications",
+            rawLabel: "Resource verifications",
+            href: "/admin/resource-verifications",
+            icon: "shield"
+          },
           { id: "complaints", label: "complaints", href: "/admin/complaints", icon: "flag" },
           { id: "policies", label: "policies", href: "/admin/policies", icon: "doc" }
         ]

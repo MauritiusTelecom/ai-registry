@@ -1,0 +1,21 @@
+{
+  "id": "example-resource-requirement",
+  "name": "Example: per-resource requirement",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "maintainer": "Mauritius Telecom <airegistry@telecom.mu>",
+  "coreRange": "^0.2.0",
+  "description": "Template extension showing how a country/sector regulator declares a requirement that applies to an individual RESOURCE (not the provider). An admin verifies it, and the resource stays hidden from the public catalogue until it passes. Inert by default: appliesWhen targets jurisdiction 'ZZ' (unassigned) so it matches nothing. Copy this folder and change appliesWhen (providerJurisdiction / resourceSectors / resourceKinds) to activate it for your jurisdiction.",
+  "homepage": "https://www.airegistry.mu/",
+  "resourceRequirements": [
+    {
+      "code": "dpia",
+      "label": "Data Protection Impact Assessment (per resource)",
+      "appliesWhen": {
+        "providerJurisdiction": ["ZZ"],
+        "resourceSectors": ["health"]
+      },
+      "documentTypeHint": "regulatory_reference"
+    }
+  ]
+}

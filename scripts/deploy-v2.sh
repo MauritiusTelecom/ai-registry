@@ -120,6 +120,10 @@ ${SSH} "${HOST}" "
   # as verified so they don't vanish from public catalog. Idempotent.
   pnpm tsx scripts/backfill-verifications.ts
 
+  # Same for resource-level requirements: ensure ResourceVerification rows and
+  # grandfather pending rows on already-listed resources. Idempotent.
+  pnpm tsx scripts/backfill-resource-verifications.ts
+
   pm2 restart ${PM2_NAME}
 "
 echo

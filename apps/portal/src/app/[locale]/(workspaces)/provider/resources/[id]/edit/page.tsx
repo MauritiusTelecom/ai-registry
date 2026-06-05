@@ -5,7 +5,11 @@ import { getCurrentUser } from "@airegistry/sdk/server";
 import { ensureUserProviderLinked } from "@/lib/portal/ensure-provider";
 import { ProviderResourceEditForm } from "@/components/portal/ProviderResourceEditForm";
 import { listReferenceTable } from "@airegistry/sdk/server";
-import { loadProviderResourceForEdit, getDraftState } from "@airegistry/sdk/server";
+import {
+  loadProviderResourceForEdit,
+  getDraftState,
+  loadVerificationStatusForResource
+} from "@airegistry/sdk/server";
 
 import { workspaceMetadata } from "@/lib/i18n/workspace-metadata";
 
@@ -199,6 +203,65 @@ export default async function ProviderResourceEditPage({
     }
   }
 
+  // Resource-level requirements contributed by extensions (e.g. a country
+  // requiring a DPIA per resource). Informational for the provider; an admin
+  // verifies them, and the resource stays hidden publicly until all pass.
+  const reqStatus = await loadVerificationStatusForResource(id);
+  const requirementsCard =
+    reqStatus.applicable.length > 0 ? (
+      <div
+        style={{
+          border: "1px solid var(--border)",
+          borderRadius: 12,
+          padding: "14px 16px",
+          marginBottom: 18,
+          background: "var(--panel)"
+        }}
+      >
+        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 8 }}>
+          Resource requirements
+        </div>
+        <div style={{ display: "grid", gap: 8 }}>
+          {reqStatus.applicable.map((r) => {
+            const color =
+              r.status === "verified"
+                ? "#34d399"
+                : r.status === "rejected"
+                  ? "#fca5a5"
+                  : "#f59e0b";
+            return (
+              <div
+                key={`${r.extensionId}:${r.requirementCode}`}
+                style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}
+              >
+                <span style={{ color: "var(--text-2)" }}>
+                  {r.label}
+                  {r.documentTypeHint ? (
+                    <span style={{ color: "var(--text-3)", fontSize: 11.5 }}>
+                      {" "}
+                      · provide: {r.documentTypeHint}
+                    </span>
+                  ) : null}
+                  {r.status === "rejected" && r.rejectionNote ? (
+                    <div style={{ color: "#fca5a5", fontSize: 11.5 }}>{r.rejectionNote}</div>
+                  ) : null}
+                </span>
+                <span style={{ color, fontSize: 12, textTransform: "uppercase" }}>
+                  {r.status}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        {!reqStatus.isFullyVerified ? (
+          <div style={{ fontSize: 12, color: "var(--text-3)", marginTop: 8 }}>
+            Until every requirement is verified, this resource stays hidden from the public
+            catalogue. Attach the supporting document as evidence below.
+          </div>
+        ) : null}
+      </div>
+    ) : null;
+
   const banner = isListed ? (
     <div
       style={{
@@ -252,6 +315,7 @@ export default async function ProviderResourceEditPage({
           ) : null}
         </p>
       </div>
+      {requirementsCard}
       {banner}
       <ProviderResourceEditForm
         initial={initial}
