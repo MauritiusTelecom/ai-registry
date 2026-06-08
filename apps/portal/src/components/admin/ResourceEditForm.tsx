@@ -254,9 +254,16 @@ export function ResourceEditForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      const data = (await res.json()) as { error?: string };
+      const data = (await res.json()) as { error?: string; pendingDraft?: boolean };
       if (!res.ok) {
         setError(data.error ?? t("saveFailed"));
+        return;
+      }
+      // Listed resource: content edits were held as a draft for approval.
+      // Send the admin to the diff/approve screen to publish them.
+      if (data.pendingDraft) {
+        router.push(`/admin/resource-edits/${initial.id}`);
+        router.refresh();
         return;
       }
       setOkMsg(t("saved"));

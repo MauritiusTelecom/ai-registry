@@ -71,14 +71,19 @@ export async function POST(
     return NextResponse.json({ error: "Resource not found" }, { status: 404 });
   }
 
-  // Separation of duties: a reviewer cannot decide on their own provider's edit.
-  try {
-    assertCanReview(user, { providerId: resource.provider.id });
-  } catch (err) {
-    if (err instanceof SeparationOfDutiesError) {
-      return NextResponse.json({ error: err.message }, { status: 403 });
+  // Separation of duties applies to reviewers, not admins. Admins are the
+  // trusted validators and may approve their own edits to a live resource
+  // (the "same admin can publish" policy), so we only enforce SoD for the
+  // reviewer role.
+  if (!user.roles.includes("admin")) {
+    try {
+      assertCanReview(user, { providerId: resource.provider.id });
+    } catch (err) {
+      if (err instanceof SeparationOfDutiesError) {
+        return NextResponse.json({ error: err.message }, { status: 403 });
+      }
+      throw err;
     }
-    throw err;
   }
 
   try {

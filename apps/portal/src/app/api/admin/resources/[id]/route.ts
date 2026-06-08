@@ -8,7 +8,11 @@ import {
   loadAdminResourceForEditPrecheck,
   applyAdminResourceUpdate,
   loadAdminResourceForDeleteWithCount,
-  deleteAdminResource
+  deleteAdminResource,
+  saveDraftFull,
+  submitDraft,
+  VersioningError,
+  type RawEditPayload
 } from "@airegistry/sdk/server";
 import { isHttpUrl } from "@airegistry/sdk";
 
@@ -532,6 +536,72 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   if (!hasAnyChange) {
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
+  }
+
+  // Approval gate for live resources. When an admin edits a LISTED resource,
+  // content changes (descriptions, URLs, evidence, endpoints, taxonomy) are
+  // held as a draft for approval instead of publishing instantly — the live
+  // listing stays public until the admin approves the draft. Governance fields
+  // (risk, jurisdiction, kind, provider, listing origin, visibility) remain the
+  // admin's immediate prerogative and apply directly.
+  const GOVERNANCE_KEYS = new Set([
+    "riskLevelId",
+    "primaryJurisdictionId",
+    "resourceTypeId",
+    "providerId",
+    "listingOriginId",
+    "publicVisibility"
+  ]);
+  const isListed = target.lifecycleStatus.code === "listed";
+  const govData: Record<string, unknown> = {};
+  const contentData: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(data)) {
+    if (GOVERNANCE_KEYS.has(k)) govData[k] = v;
+    else contentData[k] = v;
+  }
+  const hasContentChange =
+    Object.keys(contentData).length > 0 ||
+    basisCodes !== undefined ||
+    languageCodes !== undefined ||
+    sectorCodes !== undefined ||
+    evidenceResolved !== undefined ||
+    endpointsResolved !== undefined;
+
+  if (isListed && hasContentChange) {
+    // Governance fields apply immediately (no relation changes here).
+    if (Object.keys(govData).length > 0) {
+      await applyAdminResourceUpdate(actor.id, id, {
+        data: govData,
+        before,
+        newValue: { ...govData },
+        basisRows: [],
+        languageRows: [],
+        sectorRows: [],
+        action: "resource.updated"
+      });
+    }
+    // Hold content edits as a draft and submit for approval. The editing admin
+    // can approve their own draft (staff carry no provider conflict), so they
+    // are redirected to the diff/approve screen.
+    try {
+      await saveDraftFull(id, actor, body as RawEditPayload);
+      await submitDraft(id, actor);
+    } catch (err) {
+      if (err instanceof VersioningError) {
+        return NextResponse.json(
+          {
+            error:
+              err.code === "not_editable"
+                ? "An update is already pending approval for this resource. Approve or discard it first."
+                : err.message,
+            code: err.code
+          },
+          { status: 409 }
+        );
+      }
+      throw err;
+    }
+    return NextResponse.json({ ok: true, pendingDraft: true, resourceId: id });
   }
 
   await applyAdminResourceUpdate(actor.id, id, {
