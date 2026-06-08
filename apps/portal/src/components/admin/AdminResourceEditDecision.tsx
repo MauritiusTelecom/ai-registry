@@ -76,7 +76,13 @@ export function AdminResourceEditDecision({
 
   return (
     <div style={{ display: "grid", gap: 18 }}>
-      <table style={{ width: "100%", fontSize: 13.5, borderCollapse: "collapse" }}>
+      {diff.length === 0 ? (
+        <p style={{ color: "var(--text-3)", fontSize: 13 }}>
+          No changes to the core fields. The proposed state below (endpoints,
+          evidence, languages, sectors) is what will be published on approval.
+        </p>
+      ) : (
+        <table style={{ width: "100%", fontSize: 13.5, borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ textAlign: "left", color: "var(--text-3)", fontSize: 12 }}>
             <th style={{ padding: "8px 10px", width: "20%" }}>Field</th>
@@ -107,6 +113,7 @@ export function AdminResourceEditDecision({
           ))}
         </tbody>
       </table>
+      )}
 
       {proposed ? (
         <div

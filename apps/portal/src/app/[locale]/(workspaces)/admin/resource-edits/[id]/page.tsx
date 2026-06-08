@@ -48,11 +48,11 @@ export default async function AdminResourceEditDetailPage({
             <p style={{ color: "var(--text-2)", fontSize: 14 }}>
               This draft is not awaiting approval (status: {state.draftStatus ?? "none"}).
             </p>
-          ) : state.diff.length === 0 ? (
-            <p style={{ color: "var(--text-2)", fontSize: 14 }}>
-              The submitted draft has no field changes against the live listing.
-            </p>
           ) : (
+            // Always show the decision UI for a submitted draft. The scalar diff
+            // may be empty when only relations changed (endpoints, evidence,
+            // languages, sectors) — those appear in the "Proposed full state"
+            // block, so the admin can still approve.
             <AdminResourceEditDecision
               resourceId={id}
               versionId={state.draft.id}
