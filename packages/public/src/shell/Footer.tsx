@@ -54,17 +54,14 @@ export function Footer({
   registryName,
   logoUrl,
   copyrightLine,
-  buildLine,
   openSourceRepoUrl
 }: {
   registryName: string;
   logoUrl?: string | null;
   copyrightLine: string;
-  buildLine: string;
   openSourceRepoUrl: string;
 }) {
   const t = useTranslations("footer");
-  const tc = useTranslations("common");
   const repo = openSourceRepoUrl.replace(/\/$/, "");
 
   const productLinks: FooterLink[] = [
@@ -121,11 +118,6 @@ export function Footer({
             <span style={{ fontSize: 15 }}>{registryName}</span>
           </Link>
           <p className="footer-brand">{t("brandDescription")}</p>
-          <div style={{ marginTop: 18, display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <span className="tag" style={{ color: "#10b981" }}>
-              <span className="status-dot" style={{ background: "#10b981" }} /> {tc("operational")}
-            </span>
-          </div>
         </div>
 
         <FooterColumn title={t("product")} links={productLinks} />
@@ -137,7 +129,6 @@ export function Footer({
 
       <div className="footer-bottom">
         <span>{copyrightLine}</span>
-        <span>{buildLine}</span>
       </div>
     </footer>
   );

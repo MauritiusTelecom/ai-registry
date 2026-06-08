@@ -29,7 +29,6 @@ export async function SiteShell({ children }: { children: ReactNode }) {
             registryName={branding.registryName}
             logoUrl={branding.logoUrl}
             copyrightLine={branding.copyrightLine}
-            buildLine={branding.buildLine}
             openSourceRepoUrl={branding.openSourceRepoUrl}
           />
           <ReportModal />
