@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Link } from "@/i18n/navigation";
 import type { SessionUser } from "@airegistry/sdk";
 import { getTranslations } from "next-intl/server";
 import type { PortalConfig } from "@/lib/portals/nav-config";
@@ -32,7 +31,6 @@ export async function ProviderPortalChrome({
   const isAdmin = user.roles.includes("admin");
   const currentRole: "admin" | "provider" = isAdmin ? "admin" : "provider";
   const branding = await getBranding();
-  const t = await getTranslations("portalShell");
   const tHeader = await getTranslations("portalHeader");
 
   return (
@@ -62,13 +60,6 @@ export async function ProviderPortalChrome({
           older pages use the public PageHero pattern. Both work.
         */}
         <main>{children}</main>
-
-        <footer className="p-footer">
-          <span>{t("disclaimer")}</span>
-          <Link href="/governance" className="p-footer-link">
-            {t("governanceCharter")}
-          </Link>
-        </footer>
       </div>
     </div>
   );

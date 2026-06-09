@@ -1,6 +1,6 @@
 # Contributing to ai-registry
 
-Thanks for your interest. The reference implementation tracks [AIR-SPEC 0.4](../ai-registry-specs/.speckit/specification.md) and the [constitution](../ai-registry-specs/.speckit/constitution.md). This guide describes how to set up a local environment, the contribution flow, the per-package scope rules, and the small set of conventions that keep the codebase consistent across portals.
+Thanks for your interest. The reference implementation tracks [the specification](../ai-registry-specs/.speckit/specification.md) and the [constitution](../ai-registry-specs/.speckit/constitution.md). This guide describes how to set up a local environment, the contribution flow, the per-package scope rules, and the small set of conventions that keep the codebase consistent across portals.
 
 ## Local setup
 

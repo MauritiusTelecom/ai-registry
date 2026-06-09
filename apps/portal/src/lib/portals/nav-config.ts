@@ -96,8 +96,7 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
             href: "/admin/resource-verifications",
             icon: "shield"
           },
-          { id: "complaints", label: "complaints", href: "/admin/complaints", icon: "flag" },
-          { id: "policies", label: "policies", href: "/admin/policies", icon: "doc" }
+          { id: "complaints", label: "complaints", href: "/admin/complaints", icon: "flag" }
         ]
       },
       {
@@ -254,7 +253,6 @@ export const PORTAL_CONFIGS: Record<PortalRole, PortalConfig> = {
         label: "governance",
         items: [
           { id: "risk", label: "risk", href: "/sovereign/risk", icon: "shield" },
-          { id: "policies", label: "policies", href: "/sovereign/policies", icon: "doc" },
           { id: "incidents", label: "incidents", href: "/sovereign/incidents", icon: "flag" }
         ]
       },

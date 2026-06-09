@@ -2,7 +2,7 @@
 
 This document describes how the **`ai-registry`** reference implementation is governed: who maintains it, how decisions are made, what is in scope, and - critically - what is **explicitly out of scope** so that contributors can spot scope creep early.
 
-It is grounded in [AIR-SPEC 0.4 §3 and §16](../ai-registry-specs/.speckit/specification.md) and the [constitution](../ai-registry-specs/.speckit/constitution.md). Where this document and the constitution disagree, the constitution wins.
+It is grounded in [§3 and §16](../ai-registry-specs/.speckit/specification.md) and the [constitution](../ai-registry-specs/.speckit/constitution.md). Where this document and the constitution disagree, the constitution wins.
 
 ## 1. Mission
 
@@ -60,7 +60,7 @@ When reviewing a contribution, maintainers must ask: *Does this change move us c
 
 ## 6. Conformance
 
-The `ai-registry` reference implementation tracks AIR-SPEC 0.4. The §22 conformance checklist lives in `ai-registry-specs/` and is validated in CI as part of Phase 5 (T102). Any merge that breaks conformance must restore it within the same PR series - `main` should always be conformant.
+The `ai-registry` reference implementation tracks the specification. The §22 conformance checklist lives in `ai-registry-specs/` and is validated in CI as part of Phase 5 (T102). Any merge that breaks conformance must restore it within the same PR series - `main` should always be conformant.
 
 ## 7. Versioning
 

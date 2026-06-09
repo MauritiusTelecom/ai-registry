@@ -1,6 +1,6 @@
 # AI Registry - Data model
 
-This document extracts **entities**, **fields**, and **relationships** for the AI Registry. It aligns the **normative conceptual model** ([`.speckit/specification.md`](.speckit/specification.md), AIR-SPEC 0.4) with the **reference relational implementation** in [`packages/core/prisma/schema.prisma`](packages/core/prisma/schema.prisma) (PostgreSQL schema `registry`).
+This document extracts **entities**, **fields**, and **relationships** for the AI Registry. It aligns the **normative conceptual model** ([`../ai-registry-specs/.speckit/specification.md`](../ai-registry-specs/.speckit/specification.md)) with the **reference relational implementation** in [`packages/core/prisma/schema.prisma`](packages/core/prisma/schema.prisma) (PostgreSQL schema `registry`).
 
 > **Path note.** This document is kept in sync between the `ai-registry` repo (where it lives at the root) and `ai-registry-specs/`. Paths in this file are anchored to the **`ai-registry` repo root** — after the monorepo split, the authoritative Prisma schema lives at `packages/core/prisma/schema.prisma`. When viewing this file from the specs repo, prefix with `../ai-registry/`.
 
@@ -638,10 +638,9 @@ Unique (`sourceRegistryId`, `sourceAirId`).
 
 | Document | Role |
 |---------|------|
-| [`.speckit/specification.md`](.speckit/specification.md) | Normative MVP behaviour and API. |
-| [`.speckit/constitution.md`](.speckit/constitution.md) | Architectural rules (listing vs endorsement, federation trust). |
-| [`README.md`](README.md) | How this specs repo relates to [`ai-registry`](../ai-registry/). |
-| [`ai-registry/specs.md`](../ai-registry/specs.md) | Full operating specification for the reference Registry app. |
-| [`ai-registry/README.md`](../ai-registry/README.md) | Quick start, scripts, REST table, MCP tools list. |
-| [`ai-registry/specs/001-ai-registry/data-model.md`](../ai-registry/specs/001-ai-registry/data-model.md) | Feature-level implementation notes and code lists. |
-| [`ai-registry/packages/core/prisma/schema.prisma`](../ai-registry/packages/core/prisma/schema.prisma) | Authoritative DDL shape for the reference build (under `@airegistry/core` after the monorepo split). |
+| [`../ai-registry-specs/.speckit/specification.md`](../ai-registry-specs/.speckit/specification.md) | Normative MVP behaviour and API. |
+| [`../ai-registry-specs/.speckit/constitution.md`](../ai-registry-specs/.speckit/constitution.md) | Architectural rules (listing vs endorsement, federation trust). |
+| [`../ai-registry-specs/README.md`](../ai-registry-specs/README.md) | How the specs repo relates to this implementation. |
+| [`README.md`](README.md) | Quick start, scripts, monorepo layout. |
+| [`apps/portal/README.md`](apps/portal/README.md) | Portal host, REST `/api/...`, MCP `/api/mcp`. |
+| [`packages/core/prisma/schema.prisma`](packages/core/prisma/schema.prisma) | Authoritative DDL shape (`@airegistry/core`). |

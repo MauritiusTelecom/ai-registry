@@ -1,100 +1,39 @@
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { ProviderPortalFooterLink } from "./ProviderPortalFooterLink";
 import { withBase } from "@airegistry/sdk";
 
 type FooterLink = { label: string; href: string; external?: boolean };
-type FooterProviderPortalItem = { kind: "provider-portal" };
-type FooterColumnLink = FooterLink | FooterProviderPortalItem;
 
-function isProviderPortalFooterItem(link: FooterColumnLink): link is FooterProviderPortalItem {
-  return "kind" in link && link.kind === "provider-portal";
-}
-
-function FooterColumn({
-  title,
-  links,
-  className
-}: {
-  title: string;
-  links: FooterColumnLink[];
-  className?: string;
-}) {
+function FooterLinkItem({ link }: { link: FooterLink }) {
+  if (link.href.startsWith("/")) {
+    return <Link href={link.href}>{link.label}</Link>;
+  }
   return (
-    <div className={`footer-col${className ? ` ${className}` : ""}`}>
-      <h5>{title}</h5>
-      <ul>
-        {links.map((link) =>
-          isProviderPortalFooterItem(link) ? (
-            <li key="provider-portal">
-              <ProviderPortalFooterLink />
-            </li>
-          ) : (
-            <li key={link.label}>
-              {link.href.startsWith("/") ? (
-                <Link href={link.href}>{link.label}</Link>
-              ) : (
-                <a
-                  href={link.href}
-                  target={link.external ? "_blank" : undefined}
-                  rel={link.external ? "noopener noreferrer" : undefined}
-                >
-                  {link.label}
-                </a>
-              )}
-            </li>
-          )
-        )}
-      </ul>
-    </div>
+    <a
+      href={link.href}
+      target={link.external ? "_blank" : undefined}
+      rel={link.external ? "noopener noreferrer" : undefined}
+    >
+      {link.label}
+    </a>
   );
 }
 
 export function Footer({
   registryName,
   logoUrl,
-  copyrightLine,
-  openSourceRepoUrl
+  copyrightLine
 }: {
   registryName: string;
   logoUrl?: string | null;
   copyrightLine: string;
-  openSourceRepoUrl: string;
 }) {
   const t = useTranslations("footer");
-  const repo = openSourceRepoUrl.replace(/\/$/, "");
-
-  const productLinks: FooterLink[] = [
-    { label: t("registry"), href: "/registry" },
-    { label: t("providers"), href: "/providers" },
-    { label: t("ecosystem"), href: "/ecosystem" }
-  ];
-
-  const providerLinks: FooterColumnLink[] = [
-    { kind: "provider-portal" },
-    { label: t("sovereigntyRubric"), href: "/sovereignty-rubric" },
-    { label: t("verificationProofs"), href: "/verification" },
-    { label: t("pricingFree"), href: "/pricing" }
-  ];
-
-  const governanceLinks: FooterLink[] = [
-    { label: t("charter"), href: "/governance#charter" },
-    { label: t("reviewBoard"), href: "/governance#review-board" },
-    { label: t("appeals"), href: "/governance#appeals" }
-  ];
-
-  const resourceLinks: FooterLink[] = [
-    { label: t("documentation"), href: "/docs" },
-    { label: t("whitepaper"), href: "/whitepaper" },
-    { label: t("openData"), href: "/open-data" },
-    { label: t("referenceImpl"), href: repo, external: true }
-  ];
 
   const legalLinks: FooterLink[] = [
     { label: t("termsOfUse"), href: "/terms" },
     { label: t("privacy"), href: "/privacy" },
     { label: t("acceptableUse"), href: "/acceptable-use" },
-    { label: t("licenseApache"), href: `${repo}/blob/main/LICENSE`, external: true },
     { label: t("contact"), href: "/contact" }
   ];
 
@@ -120,11 +59,11 @@ export function Footer({
           <p className="footer-brand">{t("brandDescription")}</p>
         </div>
 
-        <FooterColumn title={t("product")} links={productLinks} />
-        <FooterColumn title={t("resources")} links={resourceLinks} />
-        <FooterColumn title={t("providers")} links={providerLinks} />
-        <FooterColumn title={t("governance")} links={governanceLinks} className="col-collapse" />
-        <FooterColumn title={t("legal")} links={legalLinks} />
+        <nav className="footer-links-row" aria-label={t("legal")}>
+          {legalLinks.map((link) => (
+            <FooterLinkItem key={link.label} link={link} />
+          ))}
+        </nav>
       </div>
 
       <div className="footer-bottom">
@@ -133,5 +72,3 @@ export function Footer({
     </footer>
   );
 }
-
-export { FooterColumn };

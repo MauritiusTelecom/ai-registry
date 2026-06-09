@@ -115,12 +115,6 @@ export default async function VerifierSettingsPage() {
 
         <Card title={i18n("cardReviewerReferences")}>
           <p style={{ fontSize: 13, color: "var(--text-2)", margin: 0, lineHeight: 1.5 }}>
-            <Link href="/admin/policies" className="p-footer-link">
-              {i18n("linkSovereigntyChecklist")}
-            </Link>{" "}
-            · {i18n("checklistNote")}
-          </p>
-          <p style={{ fontSize: 13, color: "var(--text-2)", marginTop: 6, lineHeight: 1.5 }}>
             <Link href="/verifier/queue" className="p-footer-link">
               {i18n("linkQueue")}
             </Link>{" "}

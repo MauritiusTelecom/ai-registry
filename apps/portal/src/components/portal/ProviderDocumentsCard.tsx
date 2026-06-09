@@ -242,20 +242,7 @@ function UploadDialog({
     }
   }
 
-  const inputStyle: CSSProperties = {
-    display: "block",
-    marginTop: 6,
-    width: "100%",
-    padding: "8px 10px",
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid var(--hairline, rgba(255,255,255,0.1))",
-    borderRadius: 6,
-    color: "var(--text, inherit)",
-    fontSize: 13,
-    fontFamily: "inherit",
-    outline: "none",
-    boxSizing: "border-box"
-  };
+  const fieldSpacing: CSSProperties = { marginTop: 6 };
   const labelStyle: CSSProperties = {
     fontSize: 12,
     fontWeight: 500,
@@ -305,9 +292,10 @@ function UploadDialog({
           <div>
             <div style={labelStyle}>{t("colType")}</div>
             <select
+              className="auth-input p-select"
               value={documentTypeCode}
               onChange={(e) => setDocumentTypeCode(e.target.value)}
-              style={inputStyle}
+              style={fieldSpacing}
             >
               {documentTypes.map((t) => (
                 <option key={t.code} value={t.code}>
@@ -321,20 +309,22 @@ function UploadDialog({
             <div style={labelStyle}>{t("colTitle")}</div>
             <input
               type="text"
+              className="auth-input"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t("titlePlaceholder")}
-              style={inputStyle}
+              style={fieldSpacing}
             />
           </div>
 
           <div>
             <div style={labelStyle}>{t("descriptionOptional")}</div>
             <textarea
+              className="p-input"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={2}
-              style={{ ...inputStyle, resize: "vertical" }}
+              style={{ ...fieldSpacing, minHeight: 70, height: "auto", resize: "vertical" }}
             />
           </div>
 
@@ -347,9 +337,10 @@ function UploadDialog({
             <div style={labelStyle}>{t("expiresOptional")}</div>
             <input
               type="date"
+              className="auth-input"
               value={expiresAt}
               onChange={(e) => setExpiresAt(e.target.value)}
-              style={inputStyle}
+              style={fieldSpacing}
             />
           </div>
 

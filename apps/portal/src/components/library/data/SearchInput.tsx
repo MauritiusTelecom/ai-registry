@@ -42,24 +42,8 @@ export function SearchInput({
   }, [draft, debounceMs]);
 
   return (
-    <div
-      className="p-grid-search"
-      style={{
-        position: "relative",
-        width,
-        maxWidth: "100%"
-      }}
-    >
-      <span
-        style={{
-          position: "absolute",
-          left: 10,
-          top: "50%",
-          transform: "translateY(-50%)",
-          color: "var(--text-2)",
-          pointerEvents: "none"
-        }}
-      >
+    <div className="p-grid-search-field" style={{ width, maxWidth: "100%" }}>
+      <span className="p-grid-search-icon" aria-hidden="true">
         <Icon name="search" size={14} />
       </span>
       <input
@@ -67,8 +51,6 @@ export function SearchInput({
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         placeholder={placeholder}
-        className="p-input"
-        style={{ paddingLeft: 32, width: "100%" }}
       />
     </div>
   );

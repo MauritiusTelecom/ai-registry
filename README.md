@@ -4,7 +4,7 @@
 
 AI Registry is an open specification and a generic open-source platform that any country, city, telco or trusted public digital infrastructure operator can deploy to create a sovereign registry of locally relevant AI resources. It lists, identifies, describes and helps discover those resources. It does not host, execute, authorise or intermediate them.
 
-The reference implementation tracks [AIR-SPEC 0.4](../ai-registry-specs/.speckit/specification.md) as a **pnpm + Turborepo monorepo**: a stable `@airegistry/core`, a forkable `@airegistry/portal`, and forthcoming extension surfaces via `@airegistry/sdk`.
+The reference implementation is deployed as: a stable `@airegistry/core`, a forkable `@airegistry/portal`, and forthcoming extension surfaces via `@airegistry/sdk`.
 
 The reference deployment is [airegistry.mu](https://www.airegistry.mu), operated by Mauritius Telecom.
 
@@ -14,7 +14,7 @@ The reference deployment is [airegistry.mu](https://www.airegistry.mu), operated
 
 A national AI Registry tells people, developers and AI systems what sovereign AI resources exist, who provides them, why they are locally relevant, and where to find them. It exposes structured metadata and stable identifiers, but does not sit on the runtime path between consumer and provider.
 
-Three resource types are covered: **models** (trained or tuned with local data, language or purpose), **agents** (AI systems that perform tasks in a local context) and **skills** (packaged local expertise that AI systems can load and use). Each must meet a published sovereignty test against local law, data, systems or language and culture.
+Four resource types are covered: **models** (trained or tuned with local data, language or purpose), **agents** (AI systems that perform tasks in a local context), **tools** (callable APIs or functions in a local context), and **skills** (packaged local expertise that AI systems can load and use). Each must meet a published sovereignty test against local law, data, systems or language and culture.
 
 ## Monorepo layout
 
@@ -42,11 +42,10 @@ This repository is at **v0.4 (working draft)**. The specification is stable enou
 | Public UI package layout | [`packages/public/README.md`](packages/public/README.md) |
 | Next.js portal host | [`apps/portal/README.md`](apps/portal/README.md) |
 
-The illustrated whitepaper is the canonical introduction: what the registry is, why it matters, how it works, and what is in and out of scope.
+Introduction and technical detail:
 
-- [`docs/AI_Registry_Whitepaper_Illustrated_v0.4.docx`](docs/AI_Registry_Whitepaper_Illustrated_v0.4.docx)
-
-Other artefacts (concept whitepaper, technical specification, presentation deck, prior versions) live alongside it in `docs/` and `docs/archive/`.
+- **Public whitepaper** — served at `/whitepaper` on a deployed portal (what the registry is, why it matters, how it works).
+- **Technical specification** — [`../ai-registry-specs/.speckit/specification.md`](../ai-registry-specs/.speckit/specification.md).
 
 ## Architecture in one line
 

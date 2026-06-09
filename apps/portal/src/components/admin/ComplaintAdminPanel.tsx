@@ -248,8 +248,7 @@ function ManageCard({
       <label style={{ display: "grid", gap: 6 }}>
         <span style={{ fontSize: 11, color: "var(--text-3)" }}>{t("labelStatus")}</span>
         <select
-          className="glass"
-          style={{ padding: 8, borderRadius: 8, fontSize: 13 }}
+          className="auth-input p-select"
           value={statusId}
           onChange={(e) => setStatusId(e.target.value)}
         >
@@ -263,8 +262,7 @@ function ManageCard({
       <label style={{ display: "grid", gap: 6 }}>
         <span style={{ fontSize: 11, color: "var(--text-3)" }}>{t("labelAssignedTo")}</span>
         <select
-          className="glass"
-          style={{ padding: 8, borderRadius: 8, fontSize: 13 }}
+          className="auth-input p-select"
           value={assignee}
           onChange={(e) => setAssignee(e.target.value)}
         >

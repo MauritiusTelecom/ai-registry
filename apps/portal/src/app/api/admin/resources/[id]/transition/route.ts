@@ -22,7 +22,7 @@ import { getPublicOrigin } from "@/lib/public-origin";
  *                 "remove",
  *         reason: string }
  *
- * Lifecycle codes follow `ai-registry/specs.md` §8.1. The §11 sovereignty
+ * Lifecycle codes follow `ai-registry-specs/.speckit/specification.md` §11. The §11 sovereignty
  * checklist remains required for the proper review pathway at
  * `/admin/reviews/[id]/decide`; this endpoint is the **direct admin
  * shortcut** used from the resources grid (e.g. for resources already
