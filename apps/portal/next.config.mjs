@@ -67,7 +67,9 @@ const nextConfig = {
   assetPrefix: basePath || undefined,
 
   env: {
-    NEXT_PUBLIC_DEFAULT_LANGUAGE: primaryLanguageTag(process.env.DEFAULT_LANGUAGE)
+    NEXT_PUBLIC_DEFAULT_LANGUAGE: primaryLanguageTag(process.env.DEFAULT_LANGUAGE),
+    /** Client bundles cannot read root .env; mirror for locale switcher hydration. */
+    NEXT_PUBLIC_SUPPORTED_LANGUAGES: process.env.SUPPORTED_LANGUAGES ?? ""
   },
 
   async headers() {

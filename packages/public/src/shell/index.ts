@@ -6,6 +6,7 @@
 // admin pages can reuse Modal/ReportContext/etc. when they need to.
 
 export * from "./Footer";
+export * from "./LocaleSwitcherControl";
 export * from "./Modal";
 export * from "./PrototypeHtmlPage";
 export * from "./PrototypeHtmlRuntime";

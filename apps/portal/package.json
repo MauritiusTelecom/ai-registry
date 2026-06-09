@@ -13,6 +13,7 @@
     "test:emails": "tsx ../../scripts/test-emails.ts",
     "test:smtp": "tsx ../../scripts/test-smtp.ts",
     "smoke": "tsx ../../scripts/smoke-public.ts",
+    "ai_registry_test": "tsx ../../scripts/ai-registry-test.ts",
     "clean": "rm -rf .next .turbo"
   },
   "dependencies": {

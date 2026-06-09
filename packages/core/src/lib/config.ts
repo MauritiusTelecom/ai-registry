@@ -257,6 +257,17 @@ function validateApiBaseUrl(value: string): string {
   }
 }
 
+/** English, French, then remaining codes A–Z (ignores order in .env). */
+function sortLanguageCodes(codes: string[]): string[] {
+  const rank = (code: string) => (code === "en" ? 0 : code === "fr" ? 1 : 2);
+  return [...codes].sort((a, b) => {
+    const ra = rank(a);
+    const rb = rank(b);
+    if (ra !== rb) return ra - rb;
+    return a.localeCompare(b, "en", { sensitivity: "base" });
+  });
+}
+
 function validateLanguageCode(code: string): string {
   // Normalize env values such as FR, " fr ", en-US → fr, fr, en-us.
   const normalized = code.trim().toLowerCase();
@@ -307,8 +318,8 @@ function loadFromEnv(env: NodeJS.ProcessEnv): RegistryConfig {
   const openSourceRepoUrl =
     openSourceRepoUrlRaw || "https://github.com/MauritiusTelecom/ai-registry";
 
-  const supportedLanguages = splitCsv(readRequired(env, "SUPPORTED_LANGUAGES")).map(
-    validateLanguageCode
+  const supportedLanguages = sortLanguageCodes(
+    splitCsv(readRequired(env, "SUPPORTED_LANGUAGES")).map(validateLanguageCode)
   );
   if (supportedLanguages.length === 0) {
     throw new ConfigError("SUPPORTED_LANGUAGES must list at least one language code.");

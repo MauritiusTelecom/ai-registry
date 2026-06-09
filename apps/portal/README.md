@@ -66,3 +66,21 @@ pnpm --filter @airegistry/portal dev   # http://localhost:3002
 ```
 
 Root `.env` is loaded via `next.config.mjs` — do not maintain a separate `apps/portal/.env`. See [`INSTALL.md`](../../INSTALL.md).
+
+## UI text test and pre-commit
+
+Public **homepage** sign-off copy is in [`messages/validated-text.json`](messages/validated-text.json). `pnpm ai_registry_test` smoke-tests the portal: all public routes (EN + FR), registry/provider detail when listed, and admin/provider/verifier/sovereign sidebars when auth credentials allow.
+
+`scripts/ai-registry-test.ts` checks:
+
+1. **Validated text** — homepage keys in `en.json` / `fr.json` match `validated-text.json`.
+2. **Public routes** — all marketing pages under `(public)/` plus `/registry/{slug}` and `/providers/{slug}` when the DB has rows; nav, footer, locale switcher, and page copy (EN + FR).
+3. **Workspaces** (with login env) — admin, provider, verifier, and sovereign sidebars (skipped if the test account lacks that role).
+
+```bash
+pnpm ai_registry_test
+```
+
+**Requirement:** the portal must be running on **http://localhost:3002** (`pnpm dev`) before you commit or run the test manually. If the server is down, `server present` fails and the hook blocks the commit.
+
+Pre-commit (`.githooks/pre-commit`, enabled via `pnpm install:hooks`) runs the same test automatically. Any **FAIL** blocks `git commit`. After copy is approved, update `validated-text.json` together with `en.json` / `fr.json`.

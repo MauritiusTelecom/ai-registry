@@ -1612,8 +1612,10 @@
   },
   "localeSwitcher": {
     "label": "Langue",
+    "chooseLanguage": "Choisir la langue",
     "en": "English",
-    "fr": "Français"
+    "fr": "Français",
+    "switchTo": "Passer en {language}"
   },
   "adminResources": {
     "filterKind": "Type",

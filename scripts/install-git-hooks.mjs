@@ -21,7 +21,7 @@ if (!existsSync(hook)) {
 try {
   execSync("git config core.hooksPath .githooks", { stdio: "pipe" });
   chmodSync(hook, 0o755);
-  console.log("install-git-hooks: core.hooksPath → .githooks (pre-commit runs check:env-secrets)");
+  console.log("install-git-hooks: core.hooksPath → .githooks (pre-commit: env-secrets + ai_registry_test)");
 } catch {
   // CI or read-only .git — do not fail the install.
   process.exit(0);

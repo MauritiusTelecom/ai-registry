@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://airegistry.mu/schemas/validated-text.json",
+  "title": "Validated public homepage text",
+  "type": "object",
+  "required": ["scope", "description", "branding", "literals", "en", "fr"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "scope": { "type": "string", "const": "homepage" },
+    "description": { "type": "string" },
+    "branding": {
+      "type": "object",
+      "required": ["registryName", "portalDomain", "jurisdictionDisplay"],
+      "properties": {
+        "registryName": { "type": "string" },
+        "portalDomain": { "type": "string" },
+        "jurisdictionDisplay": { "type": "string" }
+      }
+    },
+    "literals": {
+      "type": "object",
+      "required": ["en", "fr"],
+      "properties": {
+        "en": { "type": "object", "additionalProperties": { "type": "string" } },
+        "fr": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "en": {
+      "type": "object",
+      "description": "Homepage namespaces in English (same shape as en.json sections)",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": { "type": "string" }
+      }
+    },
+    "fr": {
+      "type": "object",
+      "description": "Homepage namespaces in French (same shape as fr.json sections)",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": { "type": "string" }
+      }
+    }
+  },
+  "additionalProperties": false
+}

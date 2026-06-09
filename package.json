@@ -30,6 +30,7 @@
     "test:emails": "pnpm --filter @airegistry/portal test:emails",
     "test:smtp": "pnpm --filter @airegistry/portal test:smtp",
     "smoke": "pnpm --filter @airegistry/portal smoke",
+    "ai_registry_test": "pnpm --filter @airegistry/portal ai_registry_test",
     "deploy": "bash deploy/deploy.sh",
     "deploy:dry": "DRY_RUN=1 bash deploy/deploy.sh",
     "deploy:db:remote": "bash deploy/deploy-db.sh",
@@ -37,6 +38,7 @@
     "backup:prod": "bash scripts/backup-prod.sh"
   },
   "devDependencies": {
+    "@types/node": "^24.10.0",
     "turbo": "^2.3.0",
     "typescript": "^5"
   }
