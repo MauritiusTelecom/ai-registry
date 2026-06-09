@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Icon } from "@airegistry/ui-kit";
 import { useTheme } from "@airegistry/ui-kit";
 import { useAuth } from "@airegistry/ui-kit";
 import { withBase } from "@airegistry/sdk";
-import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { routing } from "@/i18n/routing";
+import { Link, usePathname } from "@/i18n/navigation";
+import { LocaleSwitcherControl } from "./LocaleSwitcherControl";
 
 const NAV_ITEM_IDS = ["home", "registry", "providers", "contact"] as const;
 const NAV_HREFS: Record<string, string> = {
@@ -20,34 +20,6 @@ const NAV_HREFS: Record<string, string> = {
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-function LocaleSwitcherSlot() {
-  const t = useTranslations("localeSwitcher");
-  const locale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname() ?? "/";
-
-  function switchTo(nextLocale: string) {
-    router.replace(pathname, { locale: nextLocale });
-  }
-
-  const otherLocale =
-    (routing.locales as readonly string[]).find((l) => l !== locale) ??
-    (locale === "fr" ? "en" : "fr");
-
-  return (
-    <button
-      type="button"
-      className="theme-toggle"
-      onClick={() => switchTo(otherLocale)}
-      aria-label={t("label")}
-      title={t(otherLocale)}
-      style={{ fontSize: 12, fontFamily: "IBM Plex Mono, monospace", letterSpacing: "0.04em" }}
-    >
-      {otherLocale.toUpperCase()}
-    </button>
-  );
 }
 
 function ThemeToggle() {
@@ -281,7 +253,7 @@ export function TopNav({
           ))}
         </div>
         <div className="nav-actions">
-          <LocaleSwitcherSlot />
+          <LocaleSwitcherControl variant="nav" />
           <ThemeToggle />
           <UserMenu />
           <MobileMenu pathname={pathname} />

@@ -20,6 +20,10 @@ export async function importRestHandler(specifier: string): Promise<RestModule> 
   switch (specifier) {
     case "@airegistry/extension-hello/rest/ping":
       return import("@airegistry/extension-hello/rest/ping");
+    case "@airegistry/extension-mauritius-bom-banking-license/rest/validate":
+      return import("@airegistry/extension-mauritius-bom-banking-license/rest/validate");
+    case "@airegistry/extension-mauritius-brn-check/rest/validate":
+      return import("@airegistry/extension-mauritius-brn-check/rest/validate");
     default:
       throw new Error(`Unknown plugin REST handler: ${specifier}`);
   }

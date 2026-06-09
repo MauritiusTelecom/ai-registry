@@ -83,7 +83,15 @@ For a fuller walkthrough — prerequisites by OS, the full env-var list, postgre
 | Prisma generate / migrate / seed | `pnpm prisma:generate`, `pnpm prisma:migrate`, `pnpm db:seed` |
 | Validate `.env` | `pnpm config:validate` |
 | Smoke-test the public API | `pnpm smoke` |
+| UI text test (homepage validated text + live HTML) | `pnpm ai_registry_test` |
+| Install git hooks (env-secrets + UI test on commit) | `pnpm install:hooks` |
 | Per-package tasks | `pnpm --filter @airegistry/<pkg> <script>` |
+
+### UI text test and pre-commit
+
+Sign-off **homepage** copy lives in [`apps/portal/messages/validated-text.json`](apps/portal/messages/validated-text.json). Run `pnpm ai_registry_test` to smoke-test all public portal routes (EN/FR), detail pages when listed, and workspace sidebars when auth is enabled.
+
+**The portal must be running on http://localhost:3002** (`pnpm dev`) before you commit. Pre-commit runs the test automatically; any failed check blocks the commit. Update `validated-text.json` only after copy is approved.
 
 ## Customising the public portal
 

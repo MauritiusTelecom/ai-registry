@@ -1,5 +1,7 @@
 #!/bin/sh
-# Block commits that stage or track real env files (.env, .env.prod, etc.).
+# Block commits that:
+#   1) stage or track real env files (.env, .env.prod, etc.)
+#   2) fail validated-text / live UI text checks (ai_registry_test)
 set -e
 
 ROOT="$(git rev-parse --show-toplevel)"
@@ -13,3 +15,13 @@ else
   echo "pre-commit: check-no-env-secrets script not found" >&2
   exit 1
 fi
+
+echo "pre-commit: running ai_registry_test (validated text + live UI)…"
+echo "  Tip: portal must be running on http://localhost:3002 (pnpm dev)"
+
+PRE_COMMIT=1 TEST_SKIP_AUTH=1 pnpm ai_registry_test || {
+  echo "" >&2
+  echo "pre-commit: ai_registry_test failed — commit blocked." >&2
+  echo "  Fix flagged checks or update validated-text.json after copy sign-off." >&2
+  exit 1
+}
