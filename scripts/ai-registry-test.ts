@@ -497,10 +497,9 @@ function checkFooter(page: string, html: string): void {
     footer !== null,
     [
       { label: REGISTRY_NAME, text: REGISTRY_NAME },
-      { label: "Product column", text: msg("footer", "product") },
-      { label: "Resources column", text: msg("footer", "resources") },
-      { label: "Governance column", text: msg("footer", "governance") },
-      { label: "Legal column", text: msg("footer", "legal") },
+      { label: "Terms of use", text: msg("footer", "termsOfUse") },
+      { label: "Privacy", text: msg("footer", "privacy") },
+      { label: "Acceptable use", text: msg("footer", "acceptableUse") },
       { label: "Contact link", text: msg("footer", "contact") }
     ],
     [{ label: "logo icon", test: (s) => /nav-logo-mark/.test(s) }]

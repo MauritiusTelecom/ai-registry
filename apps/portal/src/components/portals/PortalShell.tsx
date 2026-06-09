@@ -1,7 +1,5 @@
 import type { ReactNode } from "react";
-import { Link } from "@/i18n/navigation";
 import type { SessionUser } from "@airegistry/sdk";
-import { getTranslations } from "next-intl/server";
 import type { PortalConfig } from "@/lib/portals/nav-config";
 import { getBranding } from "@/lib/branding";
 import { LogoutButton } from "@airegistry/ui-kit";
@@ -39,7 +37,6 @@ export async function PortalShell({
   children: ReactNode;
 }) {
   const branding = await getBranding();
-  const t = await getTranslations("portalShell");
   return (
     <div className="p-shell">
       <PortalSidebar
@@ -82,13 +79,6 @@ export async function PortalShell({
           </div>
           {children}
         </main>
-
-        <footer className="p-footer">
-          <span>{t("disclaimer")}</span>
-          <Link href="/governance" className="p-footer-link">
-            {t("governanceCharter")}
-          </Link>
-        </footer>
       </div>
     </div>
   );

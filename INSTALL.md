@@ -238,7 +238,7 @@ Prisma is running without picking up the root `.env`. Causes:
 
 ### Prisma: `Validation Error Count: N ... [Context: getConfig]`
 
-The schema file failed to parse. If `N` is suspiciously close to your model count, the schema is probably truncated. Run `pnpm prisma:validate` for a cleaner error surface, and check that `packages/core/prisma/schema.prisma` is the expected length (~1157 lines for the current AIR-SPEC 0.4 schema).
+The schema file failed to parse. If `N` is suspiciously close to your model count, the schema is probably truncated. Run `pnpm prisma:validate` for a cleaner error surface, and check that `packages/core/prisma/schema.prisma` is the expected length (~1157 lines for the current registry schema).
 
 ### `ConfigError: Missing required environment variable ...`
 

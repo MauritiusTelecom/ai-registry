@@ -552,7 +552,6 @@ const PAGES_BY_ROLE: Record<PortalRole, StaticPage[]> = {
     { id: "admin/providers", titleKey: "admin_providers_title", subtitleKey: "admin_providers_subtitle", href: "/admin/providers", icon: "users" },
     { id: "admin/reviews", titleKey: "admin_reviews_title", subtitleKey: "admin_reviews_subtitle", href: "/admin/reviews", icon: "check" },
     { id: "admin/complaints", titleKey: "admin_complaints_title", subtitleKey: "admin_complaints_subtitle", href: "/admin/complaints", icon: "flag" },
-    { id: "admin/policies", titleKey: "admin_policies_title", subtitleKey: "admin_policies_subtitle", href: "/admin/policies", icon: "shield" },
     { id: "admin/users", titleKey: "admin_users_title", subtitleKey: "admin_users_subtitle", href: "/admin/users", icon: "user" },
     { id: "admin/audit", titleKey: "admin_audit_title", subtitleKey: "admin_audit_subtitle", href: "/admin/audit", icon: "audit" },
     { id: "admin/integrations", titleKey: "admin_integrations_title", subtitleKey: "admin_integrations_subtitle", href: "/admin/integrations", icon: "database" },

@@ -1217,11 +1217,11 @@
   "docs": {
     "title": "Documentation",
     "subtitle": "Documentation technique pour les opérateurs, fournisseurs et intégrateurs.",
-    "crumb": "Documentation · AIR-SPEC 0.4 MVP",
+    "crumb": "Documentation · MVP",
     "pageTitle": "La <accent>spécification</accent> technique.",
     "pageSubtitle": "Tout ce dont vous avez besoin pour publier, résoudre et auditer les inscriptions par rapport à l'implémentation de référence v0.4 sur {portalDomain}.",
     "section_overview_label": "Aperçu",
-    "section_overview_body": "AIR-SPEC 0.4 définit le schéma d'inscription, la grille de souveraineté, le format d'identifiant et les preuves de vérification que le registre implémente.",
+    "section_overview_body": "La spécification définit le schéma d'inscription, la grille de souveraineté, le format d'identifiant et les preuves de vérification que le registre implémente.",
     "section_air-id_label": "Format AIR-ID",
     "section_air-id_body": "air://[juridiction]/[type]/[fournisseur]/[nom]@[version] — stable, résolvable et lisible par l'humain.",
     "section_metadata_label": "Métadonnées d'inscription",
@@ -1467,7 +1467,7 @@
     "governanceTitle": "Gouvernance sans excès",
     "governanceBody": "Chaque ressource publique porte <link>trois signaux de gouvernance indépendants</link> : vérification du fournisseur, revue de souveraineté et statut de ressource officielle. Les maintenir séparés empêche l'échec le plus courant des registres publics : devenir un certificateur de facto et attirer une responsabilité qui n'était jamais prévue.",
     "companionDocsTitle": "Documents compagnons",
-    "companionDocsBody": "Ce livre blanc accompagne la <docsLink>spécification technique AIR-SPEC 0.4</docsLink> et la <govLink>charte de gouvernance</govLink>.",
+    "companionDocsBody": "Ce livre blanc accompagne la <docsLink>spécification technique</docsLink> et la <govLink>charte de gouvernance</govLink>.",
     "referenceImpl": "Implémentation de référence : {portalDomain}, opérée par {operatorName}."
   },
   "openData": {
@@ -1531,7 +1531,7 @@
     "howClaimReviewedTitle": "Comment une revendication est revue",
     "howClaimReviewedBody": "Pour chaque revendication, le réviseur applique une checklist publiée et enregistre la décision (EN ATTENTE · ACCEPTÉE · REJETÉE), plus des notes publiques du réviseur. Chaque revendication est horodatée par rapport à la version de la grille appliquée au moment de la revue, de sorte que les décisions historiques restent interprétables lorsque la grille est ultérieurement mise à jour.",
     "whereFitsTitle": "Où cela s'inscrit",
-    "whereFitsBody": "La revue de souveraineté est l'un des trois signaux de gouvernance indépendants. Voir <verificationLink>preuves de vérification</verificationLink> pour la vue d'ensemble, et <docsLink>AIR-SPEC 0.4 §4</docsLink> pour la forme normative."
+    "whereFitsBody": "La revue de souveraineté est l'un des trois signaux de gouvernance indépendants. Voir <verificationLink>preuves de vérification</verificationLink> pour la vue d'ensemble, et <docsLink>§4</docsLink> pour la forme normative."
   },
   "publicAudit": {
     "governanceLink": "Gouvernance",
@@ -1548,7 +1548,7 @@
     "appendOnlyTitle": "Ajout seul par conception",
     "appendOnlyBody": "Les lignes d'audit ne sont jamais supprimées ni réécrites. Les ressources sont supprimées de manière douce via un champ deletedAt, mais la trace d'audit derrière une ressource supprimée reste intacte et résolvable. Les notes des réviseurs sur les décisions de souveraineté et de ressource officielle sont publiques sur la page de détail de la ressource.",
     "publicLogTitle": "Journal public",
-    "publicLogBody": "Un journal public en lecture seule des événements récents apparaîtra ici. Tandis que la surface d'inscription est en cours de développement, les données d'audit sous-jacentes sont déjà capturées pour chaque action de gouvernance. Voir <docsLink>AIR-SPEC 0.4 §8</docsLink> pour la forme normative, et <govLink>gouvernance</govLink> pour qui décide quoi."
+    "publicLogBody": "Un journal public en lecture seule des événements récents apparaîtra ici. Tandis que la surface d'inscription est en cours de développement, les données d'audit sous-jacentes sont déjà capturées pour chaque action de gouvernance. Voir <docsLink>§8</docsLink> pour la forme normative, et <govLink>gouvernance</govLink> pour qui décide quoi."
   },
   "portal": {
     "title": "Votre compte",

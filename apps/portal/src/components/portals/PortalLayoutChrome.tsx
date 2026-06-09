@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
-import { Link } from "@/i18n/navigation";
 import type { PortalConfig } from "@/lib/portals/nav-config";
 import type { SessionUser } from "@airegistry/sdk";
-import { getTranslations } from "next-intl/server";
 import { getBranding } from "@/lib/branding";
 import { PortalSidebar } from "./PortalSidebar";
 import { PortalHeader } from "./PortalHeader";
@@ -31,7 +29,6 @@ export async function PortalLayoutChrome({
   // role filter aliases admin → every portal (PortalUserDropdown).
   const currentRole = user.roles.includes("admin") ? "admin" : config.role;
   const branding = await getBranding();
-  const t = await getTranslations("portalShell");
 
   return (
     <div className="p-shell">
@@ -49,13 +46,6 @@ export async function PortalLayoutChrome({
           older pages use the public PageHero pattern. Both work.
         */}
         <main>{children}</main>
-
-        <footer className="p-footer">
-          <span>{t("disclaimer")}</span>
-          <Link href="/governance" className="p-footer-link">
-            {t("governanceCharter")}
-          </Link>
-        </footer>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@
 **Status:** Draft for discussion
 **Owners:** Core team
 **Companion docs:** [`migration-plan.md`](./migration-plan.md), [`open-source-readiness.md`](./open-source-readiness.md)
-**Aligns with:** `ai-registry-specs/.speckit/constitution.md` (§1, §3, §7), AIR-SPEC 0.4
+**Aligns with:** `ai-registry-specs/.speckit/constitution.md` (§1, §3, §7)
 
 ## 1. Goal
 
@@ -42,7 +42,7 @@ What is **missing** and this document specifies:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  apps/portal  (and apps/public)                             │
+│  apps/portal  (mounts packages/public)                      │
 │  - reads UI slot registrations from plugin-host             │
 │  - renders <Slot id="..."/> at known points                 │
 └──────────────┬──────────────────────────────────────────────┘

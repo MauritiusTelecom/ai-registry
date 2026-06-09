@@ -1,6 +1,6 @@
 // airegistry — Prisma schema (PostgreSQL `registry`)
 // Aligned with the normative data model in `airegistry-specs/data-model.md` and
-// the reference implementation in `ai-registry/src/prisma/schema.prisma`.
+// the reference implementation in `ai-registry/packages/core/prisma/schema.prisma`.
 //
 // Convention: every controlled vocabulary is a small reference table
 // (id / code / name / description / active / sortOrder). No SQL enums.

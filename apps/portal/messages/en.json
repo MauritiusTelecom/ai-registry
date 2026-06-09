@@ -1217,11 +1217,11 @@
   "docs": {
     "title": "Documentation",
     "subtitle": "Technical documentation for operators, providers, and integrators.",
-    "crumb": "Documentation · AIR-SPEC 0.4 MVP",
+    "crumb": "Documentation · MVP",
     "pageTitle": "The technical <accent>specification</accent>.",
     "pageSubtitle": "Everything you need to publish, resolve and audit listings against the v0.4 reference implementation at {portalDomain}.",
     "section_overview_label": "Overview",
-    "section_overview_body": "AIR-SPEC 0.4 defines the listing schema, sovereignty rubric, identifier format, and verification proofs the registry implements.",
+    "section_overview_body": "The specification defines the listing schema, sovereignty rubric, identifier format, and verification proofs the registry implements.",
     "section_air-id_label": "AIR-ID format",
     "section_air-id_body": "air://[jurisdiction]/[kind]/[provider]/[name]@[version] - stable, resolvable, and human-readable.",
     "section_metadata_label": "Listing metadata",
@@ -1467,7 +1467,7 @@
     "governanceTitle": "Governance without overreach",
     "governanceBody": "Every public resource carries <link>three independent governance signals</link>: provider verification, sovereignty review, and official-resource status. Keeping them separate prevents the most common failure of public registries: becoming a de-facto certifier and attracting liability that was never intended.",
     "companionDocsTitle": "Companion documents",
-    "companionDocsBody": "This whitepaper sits alongside the <docsLink>AIR-SPEC 0.4 technical specification</docsLink> and the <govLink>governance charter</govLink>.",
+    "companionDocsBody": "This whitepaper sits alongside the <docsLink>technical specification</docsLink> and the <govLink>governance charter</govLink>.",
     "referenceImpl": "Reference implementation: {portalDomain}, operated by {operatorName}."
   },
   "openData": {
@@ -1531,7 +1531,7 @@
     "howClaimReviewedTitle": "How a claim is reviewed",
     "howClaimReviewedBody": "For each claim, the reviewer applies a published checklist and records the decision (PENDING · ACCEPTED · REJECTED), plus public reviewer notes. Every claim is timestamped against the rubric version applied at review time, so historical decisions remain interpretable when the rubric is later updated.",
     "whereFitsTitle": "Where this fits",
-    "whereFitsBody": "Sovereignty review is one of three independent governance signals. See <verificationLink>verification proofs</verificationLink> for the full picture, and <docsLink>AIR-SPEC 0.4 §4</docsLink> for the normative form."
+    "whereFitsBody": "Sovereignty review is one of three independent governance signals. See <verificationLink>verification proofs</verificationLink> for the full picture, and <docsLink>§4</docsLink> for the normative form."
   },
   "publicAudit": {
     "governanceLink": "Governance",
@@ -1548,7 +1548,7 @@
     "appendOnlyTitle": "Append-only by design",
     "appendOnlyBody": "Audit rows are never deleted or rewritten. Resources are soft-deleted via a deletedAt field, but the audit trail behind a removed resource stays intact and resolvable. Reviewer notes on sovereignty and official-resource decisions are public on the resource detail page.",
     "publicLogTitle": "Public log",
-    "publicLogBody": "A read-only public log of recent events will appear here. While the listing surface is being built out, the underlying audit data is already captured for every governance action. See <docsLink>AIR-SPEC 0.4 §8</docsLink> for the normative form, and <govLink>governance</govLink> for who decides what."
+    "publicLogBody": "A read-only public log of recent events will appear here. While the listing surface is being built out, the underlying audit data is already captured for every governance action. See <docsLink>§8</docsLink> for the normative form, and <govLink>governance</govLink> for who decides what."
   },
   "portal": {
     "title": "Your account",

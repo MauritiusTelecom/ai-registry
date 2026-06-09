@@ -7,7 +7,7 @@
  * is no Mauritius-specific literal anywhere in `src/`; the reference operator
  * supplies the strings via `.env`.
  *
- * Source spec: AIR-SPEC 0.4 §4 (Deployment configuration).
+ * Source spec: §4 (Deployment configuration).
  *
  * Usage:
  *
