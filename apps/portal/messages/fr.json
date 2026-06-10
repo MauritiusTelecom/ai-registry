@@ -77,11 +77,17 @@
     "appeals": "Recours",
     "termsOfUse": "Conditions d'utilisation",
     "privacy": "Confidentialité",
+    "privacyPolicy": "Politique de confidentialité",
     "acceptableUse": "Politique d'utilisation acceptable",
     "licenseApache": "Licence (Apache-2.0)",
     "contact": "Contact",
     "brandDescription": "Infrastructure open-source pour la découverte souveraine de l'IA. Le registre pointe ; le fournisseur opère ; l'environnement d'hébergement sécurise.",
-    "providerPortal": "Portail fournisseur"
+    "providerPortal": "Portail fournisseur",
+    "tagline": "Le registre de confiance pour l'IA souveraine à Maurice",
+    "browseRegistry": "Parcourir le registre",
+    "contactUs": "Nous contacter",
+    "governanceTrust": "Gouvernance et confiance",
+    "legalContact": "Mentions légales et contact"
   },
   "hero": {
     "subtitle": "Gouvernez, orchestrez et surveillez les agents IA de confiance, les modèles et l'infrastructure MCP depuis une plateforme souveraine unifiée — conçue pour les nations, les régulateurs et les entreprises dont ils dépendent.",

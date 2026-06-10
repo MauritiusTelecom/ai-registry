@@ -77,11 +77,17 @@
     "appeals": "Appeals",
     "termsOfUse": "Terms of use",
     "privacy": "Privacy",
+    "privacyPolicy": "Privacy policy",
     "acceptableUse": "Acceptable use",
     "licenseApache": "License (Apache-2.0)",
     "contact": "Contact",
     "brandDescription": "Open-source infrastructure for sovereign AI discovery. The registry points; the provider operates; the hosting environment secures.",
-    "providerPortal": "Provider portal"
+    "providerPortal": "Provider portal",
+    "tagline": "The trusted registry for sovereign AI in Mauritius",
+    "browseRegistry": "Browse the registry",
+    "contactUs": "Contact us",
+    "governanceTrust": "Governance & Trust",
+    "legalContact": "Legal & Contact"
   },
   "hero": {
     "subtitle": "Govern, orchestrate, and monitor trusted AI agents, models, and MCP infrastructure from a unified sovereign platform - built for nations, regulators, and the enterprises they depend on.",

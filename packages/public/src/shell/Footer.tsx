@@ -2,20 +2,33 @@ import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { withBase } from "@airegistry/sdk";
 
+const GITHUB_URL = "https://github.com/MauritiusTelecom/ai-registry";
+const CONTACT_EMAIL = "desk@airegistry.mu";
+
 type FooterLink = { label: string; href: string; external?: boolean };
 
-function FooterLinkItem({ link }: { link: FooterLink }) {
-  if (link.href.startsWith("/")) {
-    return <Link href={link.href}>{link.label}</Link>;
-  }
+function FooterColumn({ title, links }: { title: string; links: FooterLink[] }) {
   return (
-    <a
-      href={link.href}
-      target={link.external ? "_blank" : undefined}
-      rel={link.external ? "noopener noreferrer" : undefined}
-    >
-      {link.label}
-    </a>
+    <div className="footer-col">
+      <h5>{title}</h5>
+      <ul>
+        {links.map((link) => (
+          <li key={link.label}>
+            {link.href.startsWith("/") ? (
+              <Link href={link.href}>{link.label}</Link>
+            ) : (
+              <a
+                href={link.href}
+                target={link.external ? "_blank" : undefined}
+                rel={link.external ? "noopener noreferrer" : undefined}
+              >
+                {link.label}
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -30,11 +43,23 @@ export function Footer({
 }) {
   const t = useTranslations("footer");
 
+  const registryLinks: FooterLink[] = [
+    { label: t("browseRegistry"), href: "/registry" },
+    { label: t("providers"), href: "/providers" }
+  ];
+
+  const governanceLinks: FooterLink[] = [
+    { label: t("charter"), href: "/governance#charter" },
+    { label: t("reviewBoard"), href: "/governance#review-board" },
+    { label: t("appeals"), href: "/governance#appeals" }
+  ];
+
   const legalLinks: FooterLink[] = [
     { label: t("termsOfUse"), href: "/terms" },
-    { label: t("privacy"), href: "/privacy" },
+    { label: t("privacyPolicy"), href: "/privacy" },
     { label: t("acceptableUse"), href: "/acceptable-use" },
-    { label: t("contact"), href: "/contact" }
+    { label: t("contactUs"), href: "/contact" },
+    { label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` }
   ];
 
   return (
@@ -56,18 +81,27 @@ export function Footer({
             )}
             <span style={{ fontSize: 15 }}>{registryName}</span>
           </Link>
-          <p className="footer-brand">{t("brandDescription")}</p>
+          <p className="footer-brand">{t("tagline")}</p>
         </div>
 
-        <nav className="footer-links-row" aria-label={t("legal")}>
-          {legalLinks.map((link) => (
-            <FooterLinkItem key={link.label} link={link} />
-          ))}
-        </nav>
+        <FooterColumn title={t("registry")} links={registryLinks} />
+        <FooterColumn title={t("governanceTrust")} links={governanceLinks} />
+        <FooterColumn title={t("legalContact")} links={legalLinks} />
       </div>
 
       <div className="footer-bottom">
-        <span>{copyrightLine}</span>
+        <span>{copyrightLine} · Powered by Mauritius Telecom</span>
+        <span>
+          Built on the open-source{" "}
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "var(--primary)", textDecoration: "none" }}
+          >
+            AI Registry
+          </a>
+        </span>
       </div>
     </footer>
   );

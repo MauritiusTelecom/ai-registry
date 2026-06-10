@@ -23,7 +23,7 @@ export type Branding = {
   openSourceRepoUrl: string;
 };
 
-const DEFAULT_COPYRIGHT_LINE = "(c) 2026 Mauritius AI Registry - airegistry.mu";
+const DEFAULT_COPYRIGHT_LINE = "© 2026 Mauritius AI Registry";
 const DEFAULT_BUILD_LINE = "BUILD 2026.05.07-r3 - TZ:GMT+4";
 
 let cache: { value: Branding; expiresAt: number } | null = null;
