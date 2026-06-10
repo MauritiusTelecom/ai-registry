@@ -8,6 +8,7 @@ import { getBranding } from "@/lib/branding";
 import { withBase } from "@airegistry/core";
 import { SAR_THEME_KEY, themeFromCookie, ThemeProvider } from "@airegistry/ui-kit";
 import { ensurePluginsLoaded } from "@/lib/plugins/ensure-loaded";
+import { getConfiguredOrigin } from "@/lib/public-origin";
 import { routing } from "@/i18n/routing";
 
 export function generateStaticParams() {
@@ -20,11 +21,36 @@ export async function generateMetadata(): Promise<Metadata> {
   // to the bundled gradient mark when no logo is configured. withBase keeps the
   // href correct when the app is mounted under a sub-path deployment.
   const iconHref = withBase(branding.logoUrl ?? "/favicon.svg");
+  const origin = getConfiguredOrigin();
+  const title = branding.registryName;
+  // Distinct, accurate description so search engines replace any stale cached
+  // snippet from whatever previously lived on this domain.
+  const description = `${branding.registryName} - the trusted registry for sovereign AI in ${branding.jurisdictionDisplayName}. Discover verified, locally-governed AI resources: models, agents, datasets and skills. Operated by ${branding.operatorName}.`;
+  const ogImage = branding.logoUrl ? withBase(branding.logoUrl) : `${origin}/favicon.svg`;
   return {
-    title: branding.registryName,
-    description:
-      "Mauritius AI Registry - public portal for the locally-governed AI Registry.",
-    icons: { icon: iconHref, shortcut: iconHref, apple: iconHref }
+    metadataBase: new URL(origin),
+    title: {
+      default: title,
+      template: `%s · ${title}`
+    },
+    description,
+    applicationName: title,
+    alternates: { canonical: "/" },
+    icons: { icon: iconHref, shortcut: iconHref, apple: iconHref },
+    openGraph: {
+      type: "website",
+      siteName: title,
+      title,
+      description,
+      url: origin,
+      images: [{ url: ogImage }]
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage]
+    }
   };
 }
 

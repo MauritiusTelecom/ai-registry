@@ -1,6 +1,27 @@
 import { getConfig } from "@airegistry/sdk";
 
 /**
+ * Request-free public origin (scheme + host, no trailing slash), derived
+ * purely from deployment config (`PORTAL_DOMAIN`). Used by metadata, robots,
+ * and sitemap where no incoming Request is available. Falls back to a local
+ * dev origin if config is unavailable.
+ */
+export function getConfiguredOrigin(): string {
+  try {
+    const { portalDomain } = getConfig();
+    if (portalDomain) {
+      const scheme = /^localhost(:\d+)?$|^127\.0\.0\.1(:\d+)?$/.test(portalDomain)
+        ? "http"
+        : "https";
+      return `${scheme}://${portalDomain}`.replace(/\/+$/, "");
+    }
+  } catch {
+    // config not loaded — fall through
+  }
+  return "http://localhost:3000";
+}
+
+/**
  * Returns the public absolute origin (scheme + host, no trailing slash)
  * for transactional emails and other off-site links.
  *
