@@ -2,7 +2,7 @@ import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { withBase } from "@airegistry/sdk";
 
-const GITHUB_URL = "https://github.com/MauritiusTelecom/ai-registry";
+const OSS_URL = "https://airegistry.dev";
 const CONTACT_EMAIL = "airegistry@telecom.mu";
 
 type FooterLink = { label: string; href: string; external?: boolean };
@@ -92,14 +92,14 @@ export function Footer({
       <div className="footer-bottom">
         <span>{copyrightLine} · Powered by Mauritius Telecom</span>
         <span>
-          Built on the open-source{" "}
+          Built on the{" "}
           <a
-            href={GITHUB_URL}
+            href={OSS_URL}
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: "var(--primary)", textDecoration: "none" }}
           >
-            AI Registry
+            Opensource AI Registry
           </a>
         </span>
       </div>
