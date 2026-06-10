@@ -1,16 +1,14 @@
-import { getBranding } from "@airegistry/core/branding";
 import { listActiveFaqEntries } from "@airegistry/core/services/public-cms";
 import { getTranslations } from "next-intl/server";
 import { FaqClient, type FaqClientItem } from "./Faq.client";
 
-function fallbackFaqs(t: (key: string, values?: Record<string, string>) => string, portalDomain: string): FaqClientItem[] {
+function fallbackFaqs(t: (key: string, values?: Record<string, string>) => string): FaqClientItem[] {
   return [
     { question: t("faq1Q"), answer: t("faq1A") },
     { question: t("faq2Q"), answer: t("faq2A") },
     { question: t("faq3Q"), answer: t("faq3A") },
     { question: t("faq4Q"), answer: t("faq4A") },
-    { question: t("faq5Q"), answer: t("faq5A", { portalDomain }) },
-    { question: t("faq6Q"), answer: t("faq6A") }
+    { question: t("faq5Q"), answer: t("faq5A") }
   ];
 }
 
@@ -25,8 +23,7 @@ function fallbackFaqs(t: (key: string, values?: Record<string, string>) => strin
  */
 export async function Faq() {
   const t = await getTranslations("faq");
-  const { portalDomain } = await getBranding();
-  const fallback = fallbackFaqs(t, portalDomain);
+  const fallback = fallbackFaqs(t);
   let items: FaqClientItem[];
   try {
     const rows = await listActiveFaqEntries();

@@ -57,7 +57,10 @@ export function Footer({
   const legalLinks: FooterLink[] = [
     { label: t("termsOfUse"), href: "/terms" },
     { label: t("privacyPolicy"), href: "/privacy" },
-    { label: t("acceptableUse"), href: "/acceptable-use" },
+    { label: t("acceptableUse"), href: "/acceptable-use" }
+  ];
+
+  const contactLinks: FooterLink[] = [
     { label: t("contactUs"), href: "/contact" },
     { label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}` }
   ];
@@ -86,7 +89,8 @@ export function Footer({
 
         <FooterColumn title={t("registry")} links={registryLinks} />
         <FooterColumn title={t("governanceTrust")} links={governanceLinks} />
-        <FooterColumn title={t("legalContact")} links={legalLinks} />
+        <FooterColumn title={t("legal")} links={legalLinks} />
+        <FooterColumn title={t("contact")} links={contactLinks} />
       </div>
 
       <div className="footer-bottom">

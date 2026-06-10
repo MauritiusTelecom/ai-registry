@@ -938,7 +938,7 @@ async function main() {
       code: "verified",
       question: 'What does "verified" mean?',
       answer:
-        "Provider verification confirms that the listing is bound to the rightful operator via DNS and email proofs. It does not imply endorsement of the resource itself."
+        "Provider verification confirms that the listing is bound to the rightful operator. It does not imply endorsement of the resource itself."
     },
     {
       code: "submitter",
@@ -947,16 +947,10 @@ async function main() {
         "Any organisation or accredited individual that operates a sovereign AI resource can submit. Government endorsement is a separate, stronger signal granted only by the responsible authority."
     },
     {
-      code: "open-source",
-      question: "Is the platform open source?",
-      answer:
-        "Yes. The reference implementation at airegistry.mu and the AIR-SPEC are openly licensed. Each jurisdiction operates its own instance with local governance."
-    },
-    {
       code: "resolve",
       question: "How are listings resolved at runtime?",
       answer:
-        "AIR-IDs (under air://) resolve to provider endpoints described in the listing metadata. Optionally, hosting environments issue SPIFFE/SPIRE SVIDs for runtime identity."
+        "AIR-IDs (under air://) resolve to provider endpoints described in the listing metadata."
     }
   ];
 

@@ -3,8 +3,8 @@ import { getTranslations } from "next-intl/server";
 import { Icon, type IconName } from "@airegistry/ui-kit";
 import { Reveal } from "../shell/Reveal";
 
-// "Listing criteria" — the sovereignty test. Left panel explains how it works
-// and the quality-over-quantity stance; right panel is a 2x2 grid of the four
+// "Listing criteria" — the sovereignty test. Left panel explains how it works;
+// right panel is a 2x2 grid of the four
 // sovereignty bases. The bases come from cms_listing_criterion; the tone
 // (primary / tertiary / secondary / emerald) is derived from sortOrder mod 4
 // so the colour rotation stays stable across reorders without storing it.
@@ -135,23 +135,6 @@ export async function ListingCriteria() {
                 )
               })}
             </p>
-            <div
-              style={{
-                marginTop: 18,
-                padding: "14px 16px",
-                borderRadius: 10,
-                background: "rgba(245, 158, 11, 0.08)",
-                border: "1px solid rgba(245, 158, 11, 0.30)",
-                color: "var(--text-2)",
-                fontSize: 13,
-                lineHeight: 1.55
-              }}
-            >
-              <strong style={{ color: "#f59e0b", fontWeight: 500 }}>
-                {t("qualityTitle")}
-              </strong>{" "}
-              {t("qualityBody")}
-            </div>
           </div>
 
           {/* Right: 2x2 grid of sovereignty bases */}
