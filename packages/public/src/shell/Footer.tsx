@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 import { withBase } from "@airegistry/sdk";
 
 const GITHUB_URL = "https://github.com/MauritiusTelecom/ai-registry";
-const CONTACT_EMAIL = "desk@airegistry.mu";
+const CONTACT_EMAIL = "airegistry@telecom.mu";
 
 type FooterLink = { label: string; href: string; external?: boolean };
 
