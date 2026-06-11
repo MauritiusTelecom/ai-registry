@@ -26,7 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
   // Distinct, accurate description so search engines replace any stale cached
   // snippet from whatever previously lived on this domain.
   const description = `${branding.registryName} - the trusted registry for sovereign AI in ${branding.jurisdictionDisplayName}. Discover verified, locally-governed AI resources: models, agents, datasets and skills. Operated by ${branding.operatorName}.`;
-  const ogImage = branding.logoUrl ? withBase(branding.logoUrl) : `${origin}/favicon.svg`;
+  // og:image / twitter:image are supplied by the file-based opengraph-image.tsx
+  // and twitter-image.tsx (a generated 1200x630 PNG) — not set here, so we
+  // never point a social card at the unsupported SVG.
   return {
     metadataBase: new URL(origin),
     title: {
@@ -42,14 +44,12 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: title,
       title,
       description,
-      url: origin,
-      images: [{ url: ogImage }]
+      url: origin
     },
     twitter: {
       card: "summary_large_image",
       title,
-      description,
-      images: [ogImage]
+      description
     }
   };
 }
