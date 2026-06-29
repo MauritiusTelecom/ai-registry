@@ -387,11 +387,25 @@ export function Globe({ motionIntensity = 1 }: GlobeProps) {
   const speed = 0.0003 + (motionIntensity / 100) * 0.0008;
 
   useEffect(() => {
+    // Respect reduced-motion: render a static globe, no animation loop at all.
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+
+    // Each setRot triggers a full re-render of the projected SVG globe (hundreds
+    // of nodes). At 60fps that's a continuous, heavy CPU cost for a slow,
+    // decorative rotation. Throttle the state updates to ~30fps — visually
+    // identical for this motion, roughly half the cost. (The rAF callback still
+    // runs per frame but only accumulates time; the expensive re-render is gated.)
+    const FRAME_MS = 1000 / 30;
     let last = performance.now();
+    let acc = 0;
     const tick = (now: number) => {
-      const dt = now - last;
+      acc += now - last;
       last = now;
-      setRot((r) => r + dt * speed);
+      if (acc >= FRAME_MS) {
+        const elapsed = acc;
+        acc = 0;
+        setRot((r) => r + elapsed * speed);
+      }
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
