@@ -27,8 +27,12 @@ export type ProviderRow = {
 
 type RefRow = { code: string; name: string };
 
-const STATUS_DISPLAY: Record<string, string> = {
-  unverified: "experimental",
+// Provider status is its own vocabulary (unverified / verified /
+// official_provider / suspended) - the same set the STATUS filter offers.
+// Show the real status name; map only the pill *colour* onto the shared
+// `.r-status` palette (unverified is neutral, not "experimental").
+const STATUS_TONE: Record<string, string> = {
+  unverified: "active",
   verified: "verified",
   official_provider: "trusted",
   suspended: "isolated"
@@ -115,7 +119,9 @@ export function ProvidersAdmin({
     {
       key: "status",
       label: t("colStatus"),
-      render: (row) => <StatusPill status={STATUS_DISPLAY[row.statusCode] ?? "active"} />
+      render: (row) => (
+        <StatusPill status={STATUS_TONE[row.statusCode] ?? "active"} label={row.statusName} />
+      )
     }
   ];
 
