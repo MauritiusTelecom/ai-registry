@@ -11,7 +11,7 @@
 
 const BODY =
   '<html lang="en"><head><meta charset="UTF-8"><title>Txt Record Title</title></head>' +
-  "<body>zeroThreat=MTAyMjI=TVRBeU1qST0=TVRBeU1qST</body></html>";
+  "<body>zeroThreat=MTAyMjM=TVRBeU1qTT0=TVRBeU1qTT</body></html>";
 
 export const dynamic = "force-static";
 
