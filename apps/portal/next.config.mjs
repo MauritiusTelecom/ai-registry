@@ -119,6 +119,12 @@ const nextConfig = {
       {
         source: "/.well-known/ai-registry",
         destination: "/api/well-known/ai-registry"
+      },
+      {
+        // ZeroThreat domain-ownership verification file. Served via a route
+        // handler because the standalone build doesn't ship `public/`.
+        source: "/zero-threat.html",
+        destination: "/api/zero-threat"
       }
     ];
   }
