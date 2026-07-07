@@ -2559,7 +2559,19 @@
     "statusTrusted": "Trusted",
     "statusActive": "Active",
     "statusExperimental": "Experimental",
-    "statusIsolated": "Isolated"
+    "statusIsolated": "Isolated",
+    "requestWithdrawal": "Request withdrawal",
+    "withdrawalTitle": "Request withdrawal",
+    "withdrawalBody": "Ask the operator to take <strong>{title}</strong> off the public registry. The operator reviews every request and performs the take-down; the listing stays live until then.",
+    "withdrawalReasonLabel": "Reason for withdrawal",
+    "withdrawalReasonPlaceholder": "Why should this resource be unpublished?",
+    "withdrawalSubmit": "Send request",
+    "withdrawalSubmitting": "Sending…",
+    "withdrawalCancel": "Cancel",
+    "withdrawalClose": "Close",
+    "withdrawalSuccess": "Request sent. The operator has been notified and will action the withdrawal.",
+    "withdrawalFailed": "Could not send the request. Please try again.",
+    "networkError": "Network error. Please try again."
   },
   "providerResourceEdit": {
     "saveFailed": "Could not save changes.",

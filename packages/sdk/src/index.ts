@@ -34,7 +34,7 @@ export type { AirIdParts } from "@airegistry/core/validators";
 export { withBase } from "@airegistry/core/with-base";
 
 // Audit primitive (AIR-SPEC 18.1).
-export { writeAudit } from "@airegistry/core/audit";
+export { writeAudit, countRecentAudit } from "@airegistry/core/audit";
 
 // Discovery surface.
 export {

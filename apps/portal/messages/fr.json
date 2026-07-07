@@ -2559,7 +2559,19 @@
     "statusTrusted": "De confiance",
     "statusActive": "Actif",
     "statusExperimental": "Expérimental",
-    "statusIsolated": "Isolé"
+    "statusIsolated": "Isolé",
+    "requestWithdrawal": "Demander le retrait",
+    "withdrawalTitle": "Demander le retrait",
+    "withdrawalBody": "Demandez à l'opérateur de retirer <strong>{title}</strong> du registre public. L'opérateur examine chaque demande et effectue le retrait ; l'inscription reste active jusque-là.",
+    "withdrawalReasonLabel": "Motif du retrait",
+    "withdrawalReasonPlaceholder": "Pourquoi cette ressource doit-elle être retirée ?",
+    "withdrawalSubmit": "Envoyer la demande",
+    "withdrawalSubmitting": "Envoi…",
+    "withdrawalCancel": "Annuler",
+    "withdrawalClose": "Fermer",
+    "withdrawalSuccess": "Demande envoyée. L'opérateur a été notifié et effectuera le retrait.",
+    "withdrawalFailed": "Impossible d'envoyer la demande. Veuillez réessayer.",
+    "networkError": "Erreur réseau. Veuillez réessayer."
   },
   "providerResourceEdit": {
     "saveFailed": "Impossible d'enregistrer les modifications.",

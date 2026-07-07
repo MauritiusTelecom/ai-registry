@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { EntityGrid, Icon, type EntityColumn } from "@/components/library";
 import { useTranslations } from "next-intl";
 import { StatusPill } from "../StatusPill";
+import { WithdrawalRequestAction } from "./WithdrawalRequestAction";
 
 const iconBtnStyle = {
   padding: "4px 6px",
@@ -102,7 +103,10 @@ export function ProviderResourcesGrid({ rows, kinds, lifecycles }: Props) {
                 <Icon name="edit" size={14} />
               </Link>
             ) : null}
-            {!row.airId && !editable ? (
+            {row.lifecycleCode === "listed" ? (
+              <WithdrawalRequestAction resourceId={row.id} resourceTitle={row.title} />
+            ) : null}
+            {!row.airId && !editable && row.lifecycleCode !== "listed" ? (
               <span style={{ color: "var(--text-3)", fontSize: 12 }}>-</span>
             ) : null}
           </div>

@@ -27,3 +27,24 @@ export async function writeAudit(input: {
     }
   });
 }
+
+/**
+ * Count audit rows for a given (entityType, entityId, action) within the last
+ * `sinceMs` milliseconds. Used to debounce provider-initiated actions (e.g.
+ * withdrawal requests) so repeated clicks don't spam the operator.
+ */
+export async function countRecentAudit(input: {
+  entityType: string;
+  entityId: string;
+  action: string;
+  sinceMs: number;
+}): Promise<number> {
+  return prisma.auditLog.count({
+    where: {
+      entityType: input.entityType,
+      entityId: input.entityId,
+      action: input.action,
+      createdAt: { gte: new Date(Date.now() - input.sinceMs) }
+    }
+  });
+}
