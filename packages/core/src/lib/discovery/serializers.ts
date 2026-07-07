@@ -37,7 +37,8 @@ import type {
   EndpointHealthType,
   TrustSignal,
   TrustSignalType,
-  TrustSignalStatusType
+  TrustSignalStatusType,
+  ProviderStatusType
 } from "../../generated/prisma";
 import type {
   CountsByKind,
@@ -122,7 +123,7 @@ export function isPubliclyVisibleLifecycle(code: string): boolean {
 
 export type ResourceForCard = Resource & {
   resourceType: ResourceType;
-  provider: Provider;
+  provider: Provider & { status?: ProviderStatusType };
   primaryJurisdiction: Jurisdiction;
   lifecycleStatus: LifecycleStatus;
   riskLevel: RiskLevel;
@@ -204,9 +205,9 @@ function deriveSovereigntyReviewStatus(
 function deriveProviderVerificationStatus(
   r: ResourceForDetail
 ): RegistryCardDetail["governance"]["providerVerificationStatus"] {
-  // Placeholder: a real lookup would query the provider's status. v0.4 maps
-  // the provider's `statusId` code via the ProviderStatusType reference.
-  const code = (r.provider as Provider & { statusCode?: string }).statusCode;
+  // Maps the provider's `statusId` code via the ProviderStatusType reference
+  // (loaded through the `status` relation in RESOURCE_INCLUDE).
+  const code = r.provider.status?.code;
   if (code === "official_provider") return "official_provider";
   if (code === "verified") return "verified";
   return "unverified";
@@ -242,6 +243,7 @@ export function toRegistryCardDetail(r: ResourceForDetail): RegistryCardDetail {
   return {
     ...card,
     longDescription: r.longDescription,
+    accessUrl: r.accessUrl,
     documentationUrl: r.documentationUrl,
     sourceCodeUrl: r.sourceCodeUrl,
     termsUrl: r.termsUrl,

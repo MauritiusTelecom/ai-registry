@@ -43,7 +43,7 @@ const PUBLIC_LIFECYCLE_CODES = ["listed", "deprecated", "needs_update", "suspend
 
 const RESOURCE_INCLUDE = {
   resourceType: true,
-  provider: true,
+  provider: { include: { status: true } },
   primaryJurisdiction: true,
   lifecycleStatus: true,
   riskLevel: true,
