@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
-    "nodemailer": "^8.0.7",
+    "nodemailer": "^9.1.1",
     "prisma": "^6.19.3"
   },
   "peerDependencies": {
@@ -65,7 +65,7 @@
     "@types/nodemailer": "^6.4.17",
     "dotenv": "^16.4.5",
     "dotenv-cli": "^7.4.2",
-    "next": "^16.0.1",
+    "next": "^16.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5"
   }
