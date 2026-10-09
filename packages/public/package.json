@@ -26,7 +26,7 @@
     "@airegistry/plugin-host": "workspace:*",
     "@airegistry/sdk": "workspace:*",
     "@airegistry/ui-kit": "workspace:*",
-    "next-intl": "^4.14.5"
+    "next-intl": "^4.14.9"
   },
   "peerDependencies": {
     "next": "^16.0.0",
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
-    "next": "^16.3.5",
+    "next": "^16.3.8",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "typescript": "^5"
